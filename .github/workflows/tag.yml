@@ -1,0 +1,17 @@
+name: Update Documentation
+on:
+  push:
+    tags: ['v*']
+jobs:
+  publish_docs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set-up Go
+        uses: actions/setup-go@v3.0.0
+        with:
+          go-version: "1.17.7"
+      - name: Get version
+        id: get_version
+        run: echo ::set-output name=VERSION::${GITHUB_REF##*/v}
+      - name: Publish Documentation
+        run: GOPROXY=https://proxy.golang.org GO111MODULE=on go get github.com/AppleGamer22/rake@v${{steps.get_version.outputs.VERSION}}

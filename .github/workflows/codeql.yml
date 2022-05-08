@@ -1,0 +1,42 @@
+name: CodeQL
+on:
+  push:
+    paths:
+      - "*.go"
+      - "go.mod"
+      - "go.work"
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - closed
+jobs:
+  analyze:
+    strategy:
+        fail-fast: false
+        matrix:
+          os:
+            - ubuntu-latest
+            - macos-latest
+            - windows-latest
+    name: Analyze
+    runs-on: ${{matrix.os}}
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    steps:
+    - name: Pull Source Code
+      uses: actions/checkout@v3.0.1
+    - name: Set-up Go
+      uses: actions/setup-go@v3.0.0
+      with:
+        go-version: "1.17.8"
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v2
+      with:
+        languages: go
+    - name: Build
+      run: make debug
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v2
