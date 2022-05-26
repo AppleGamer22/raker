@@ -2,7 +2,7 @@ SHELL:=/bin/bash
 VERSION:=$(shell git describe --tags --abbrev=0)
 HASH:=$(shell git rev-list -1 HEAD)
 PACKAGE:=github.com/AppleGamer22/rake
-LDFLAGS:=-ldflags="-X '$(PACKAGE)/info.Version=$(subst v,,$(VERSION))' -X '$(PACKAGE)/info.Hash=$(HASH)'"
+LDFLAGS:=-ldflags="-X '$(PACKAGE)/shared.Version=$(subst v,,$(VERSION))' -X '$(PACKAGE)/shared.Hash=$(HASH)'"
 
 test:
 	go clean -testcache
@@ -20,10 +20,10 @@ completion:
 manual:
 	if [[ "$$OSTYPE" == "linux-gnu"* ]]; then \
 		sed -i "s/vVERSION/$(VERSION)/" rake.1; \
-		sed -i "s/DATE/$(shell date -Idate)/" rake.1; \
+		sed -i "s/DATE/$$(date -Idate)/" rake.1; \
 	elif [[ "$$OSTYPE" == "darwin"* ]]; then \
 		sed -I '' "s/vVERSION/$(VERSION)/" rake.1; \
-		sed -I '' "s/DATE/$(shell date -Idate)/" rake.1; \
+		sed -I '' "s/DATE/$$(date -Idate)/" rake.1; \
 	fi
 
 clean:
