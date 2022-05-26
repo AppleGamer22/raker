@@ -1,0 +1,12 @@
+*.csv
+*.exe
+rake
+rake.bash
+rake.fish
+rake.zsh
+rake.ps1
+bin
+vendor
+.vagrant
+**/.DS_Store
+dist/

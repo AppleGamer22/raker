@@ -2,7 +2,7 @@ SHELL:=/bin/bash
 VERSION:=$(shell git describe --tags --abbrev=0)
 HASH:=$(shell git rev-list -1 HEAD)
 PACKAGE:=github.com/AppleGamer22/rake
-LDFLAGS:=-ldflags="-X '$(PACKAGE)/cmd.Version=$(subst v,,$(VERSION))' -X '$(PACKAGE)/cmd.Hash=$(HASH)'"
+LDFLAGS:=-ldflags="-X '$(PACKAGE)/info.Version=$(subst v,,$(VERSION))' -X '$(PACKAGE)/info.Hash=$(HASH)'"
 
 test:
 	go clean -testcache
