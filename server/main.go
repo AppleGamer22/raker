@@ -31,7 +31,7 @@ func main() {
 	log.Printf("Storage path: %s\n", conf.Storage)
 	log.Printf("Users path: %s\n", conf.Users)
 	log.Printf("MongoDB database URL: %s", conf.Database)
-	log.Printf("Server is listening at TCP port %d\n", conf.Port)
+	log.Printf("Server is listening at http://localhost:%d\n", conf.Port)
 
 	http.HandleFunc("/instagram", handlers.Instagram)
 	http.HandleFunc("/story", handlers.Story)
@@ -40,5 +40,9 @@ func main() {
 	http.HandleFunc("/auth", handlers.Authentication)
 	http.HandleFunc("/storage", handlers.Storage)
 	http.HandleFunc("/info", handlers.Version)
+
+	fs := http.FileServer(http.Dir(conf.Storage))
+	http.Handle("/api/storage/", http.StripPrefix("/api/storage/", fs))
+
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", conf.Port), nil))
 }

@@ -12,5 +12,5 @@ var conf = config{
 	Database: "mongodb://localhost:27017/rake",
 	Storage:  ".",
 	Users:    ".",
-	Port:     4200,
+	Port:     4100,
 }
