@@ -13,7 +13,7 @@ type version struct {
 	Hash    string `json:"hash"`
 }
 
-func Version(writer http.ResponseWriter, request *http.Request) {
+func Information(writer http.ResponseWriter, request *http.Request) {
 	switch request.URL.Query().Get("about") {
 	case "":
 		jsonPayload := version{shared.Version, shared.Hash}
