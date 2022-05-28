@@ -39,6 +39,6 @@ func main() {
 	http.HandleFunc("/vsco", handlers.VSCO)
 	http.HandleFunc("/auth", handlers.Authentication)
 	http.HandleFunc("/storage", handlers.Storage)
-	http.HandleFunc("/version", handlers.Version)
+	http.HandleFunc("/info", handlers.Version)
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", conf.Port), nil))
 }
