@@ -2,6 +2,7 @@ package main
 
 type config struct {
 	Secret   string
+	URI      string
 	Database string
 	Storage  string
 	Users    string
@@ -9,7 +10,8 @@ type config struct {
 }
 
 var conf = config{
-	Database: "mongodb://localhost:27017/rake",
+	URI:      "mongodb://localhost:27017/rake",
+	Database: "rake",
 	Storage:  ".",
 	Users:    ".",
 	Port:     4100,
