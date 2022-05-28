@@ -39,7 +39,7 @@ func main() {
 	http.HandleFunc("/vsco", handlers.VSCO)
 	http.HandleFunc("/auth", handlers.Authentication)
 	http.HandleFunc("/storage", handlers.Storage)
-	http.HandleFunc("/info", handlers.Version)
+	http.HandleFunc("/api/info", handlers.Version)
 
 	fs := http.FileServer(http.Dir(conf.Storage))
 	http.Handle("/api/storage/", http.StripPrefix("/api/storage/", fs))

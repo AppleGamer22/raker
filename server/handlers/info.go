@@ -26,5 +26,7 @@ func Version(writer http.ResponseWriter, request *http.Request) {
 		fmt.Fprint(writer, shared.Version)
 	case "hash":
 		fmt.Fprint(writer, shared.Hash)
+	default:
+		http.Error(writer, `about query parameter can be either "", "version" or "hash"`, http.StatusBadRequest)
 	}
 }
