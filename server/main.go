@@ -51,22 +51,24 @@ func main() {
 	log.Printf("MongoDB database URL: %s", path.Join(conf.URI, conf.Database))
 	log.Printf("Server is listening at http://localhost:%d\n", conf.Port)
 
-	http.HandleFunc("/api/auth", handlers.Authentication)
-	http.HandleFunc("/api/history", handlers.History)
-	http.HandleFunc("/api/api/info", handlers.Information)
-	http.HandleFunc("/api/instagram", handlers.Instagram)
-	http.HandleFunc("/api/story", handlers.Story)
-	http.HandleFunc("/api/tiktok", handlers.TikTok)
-	http.HandleFunc("/api/vsco", handlers.VSCO)
-	http.Handle("/api/storage/", handlers.NewStorageHandler("/api/storage", conf.Storage, conf.Directories))
+	mux := http.NewServeMux()
 
-	http.HandleFunc("/auth", handlers.AuthenticationPage)
-	http.HandleFunc("/history", handlers.HistoryPage)
-	http.HandleFunc("/instagram", handlers.InstagramPage)
-	http.HandleFunc("/story", handlers.StoryPage)
-	http.HandleFunc("/tiktok", handlers.TikTokPage)
+	mux.HandleFunc("/api/auth", handlers.Authentication)
+	mux.HandleFunc("/api/history", handlers.History)
+	mux.HandleFunc("/api/api/info", handlers.Information)
+	mux.HandleFunc("/api/instagram", handlers.Instagram)
+	mux.HandleFunc("/api/story", handlers.Story)
+	mux.HandleFunc("/api/tiktok", handlers.TikTok)
+	mux.HandleFunc("/api/vsco", handlers.VSCO)
+	mux.Handle("/api/storage/", handlers.NewStorageHandler("/api/storage", conf.Storage, conf.Directories))
 
-	if err := http.ListenAndServe(fmt.Sprintf(":%d", conf.Port), nil); err != nil {
+	mux.HandleFunc("/auth", handlers.AuthenticationPage)
+	mux.HandleFunc("/history", handlers.HistoryPage)
+	mux.HandleFunc("/instagram", handlers.InstagramPage)
+	mux.HandleFunc("/story", handlers.StoryPage)
+	mux.HandleFunc("/tiktok", handlers.TikTokPage)
+
+	if err := http.ListenAndServe(fmt.Sprintf(":%d", conf.Port), handlers.Log(mux)); err != nil {
 		log.Fatal(err)
 	}
 }
