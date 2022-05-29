@@ -60,7 +60,7 @@ func main() {
 	mux.HandleFunc("/api/story", handlers.Story)
 	mux.HandleFunc("/api/tiktok", handlers.TikTok)
 	mux.HandleFunc("/api/vsco", handlers.VSCO)
-	mux.Handle("/api/storage/", handlers.NewStorageHandler("/api/storage", conf.Storage, conf.Directories))
+	mux.Handle("/api/storage/", http.StripPrefix("/api/storage", handlers.NewStorageHandler(conf.Storage, conf.Directories)))
 
 	mux.HandleFunc("/auth", handlers.AuthenticationPage)
 	mux.HandleFunc("/history", handlers.HistoryPage)
