@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"path"
 
 	"github.com/AppleGamer22/rake/server/db"
 	"github.com/AppleGamer22/rake/server/handlers"
@@ -43,8 +44,11 @@ func main() {
 	db.Users = *database.Collection("users")
 
 	log.Printf("Storage path: %s\n", conf.Storage)
+	if conf.Directories {
+		log.Println("allowing directory listing")
+	}
 	log.Printf("Users path: %s\n", conf.Users)
-	log.Printf("MongoDB database URL: %s/%s", conf.URI, conf.Database)
+	log.Printf("MongoDB database URL: %s", path.Join(conf.URI, conf.Database))
 	log.Printf("Server is listening at http://localhost:%d\n", conf.Port)
 
 	http.HandleFunc("/api/auth", handlers.Authentication)
@@ -54,7 +58,7 @@ func main() {
 	http.HandleFunc("/api/story", handlers.Story)
 	http.HandleFunc("/api/tiktok", handlers.TikTok)
 	http.HandleFunc("/api/vsco", handlers.VSCO)
-	http.Handle("/api/storage/", handlers.NewStorageServer("/api/storage", conf.Storage))
+	http.Handle("/api/storage/", handlers.NewStorageHandler("/api/storage", conf.Storage, conf.Directories))
 
 	http.HandleFunc("/auth", handlers.AuthenticationPage)
 	http.HandleFunc("/history", handlers.HistoryPage)
