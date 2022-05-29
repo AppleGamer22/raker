@@ -51,19 +51,16 @@ func main() {
 	http.HandleFunc("/api/history", handlers.History)
 	http.HandleFunc("/api/api/info", handlers.Information)
 	http.HandleFunc("/api/instagram", handlers.Instagram)
-	http.HandleFunc("/api/storage", handlers.Storage)
 	http.HandleFunc("/api/story", handlers.Story)
 	http.HandleFunc("/api/tiktok", handlers.TikTok)
 	http.HandleFunc("/api/vsco", handlers.VSCO)
+	http.Handle("/api/storage/", handlers.NewStorageServer("/api/storage", conf.Storage))
 
 	http.HandleFunc("/auth", handlers.AuthenticationPage)
 	http.HandleFunc("/history", handlers.HistoryPage)
 	http.HandleFunc("/instagram", handlers.InstagramPage)
 	http.HandleFunc("/story", handlers.StoryPage)
 	http.HandleFunc("/tiktok", handlers.TikTokPage)
-
-	fs := http.FileServer(http.Dir(conf.Storage))
-	http.Handle("/api/storage/", http.StripPrefix("/api/storage/", fs))
 
 	if err := http.ListenAndServe(fmt.Sprintf(":%d", conf.Port), nil); err != nil {
 		log.Fatal(err)
