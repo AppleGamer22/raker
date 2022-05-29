@@ -6,6 +6,7 @@ require (
 	github.com/spf13/cobra v1.4.0
 	github.com/spf13/viper v1.12.0
 	go.mongodb.org/mongo-driver v1.9.1
+	github.com/golang-jwt/jwt/v4 v4.4.1
 )
 
 require (

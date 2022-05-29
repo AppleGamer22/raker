@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"path"
 
+	"github.com/AppleGamer22/rake/server/authenticator"
 	"github.com/AppleGamer22/rake/server/db"
 	"github.com/AppleGamer22/rake/server/handlers"
 	"github.com/spf13/viper"
@@ -32,6 +33,7 @@ func main() {
 	if conf.Secret == "" && !viper.IsSet("secret") {
 		log.Fatal("A JWT secret must be set via a config file or an environment variable")
 	}
+	handlers.Authenticator = authenticator.New(conf.Secret)
 
 	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(conf.URI))
 	if err != nil {
