@@ -34,3 +34,11 @@ type History struct {
 	Date       time.Time `bson:"date" json:"date"`
 	Categories []string  `bson:"categories" json:"categories"`
 }
+
+func ValidMediaType(media string) bool {
+	return media == Instagram || media == Highlight || media == Story || media == VSCO || media == TikTok
+}
+
+func ValidNetworkType(media string) bool {
+	return media == Instagram || media == VSCO || media == TikTok
+}
