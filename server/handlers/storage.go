@@ -54,6 +54,14 @@ func (handler storageHandler) Save(media, owner, fileName, URL string) error {
 		return fmt.Errorf("file %s already exists", filePath)
 	}
 
+	directoryName := path.Dir(mediaPath)
+	if _, err := os.Stat(directoryName); err != nil {
+		const userGroupReadable = 660
+		if err := os.MkdirAll(directoryName, userGroupReadable); err != nil {
+			return err
+		}
+	}
+
 	response, err := http.Get(URL)
 	if err != nil {
 		return err
@@ -70,7 +78,7 @@ func (handler storageHandler) Save(media, owner, fileName, URL string) error {
 	return err
 }
 
-func (handler storageHandler) Delete(media, owner, fileName, URL string) error {
+func (handler storageHandler) Delete(media, owner, fileName string) error {
 	if !db.ValidMediaType(media) {
 		return fmt.Errorf("invalid media type: %s", media)
 	}
