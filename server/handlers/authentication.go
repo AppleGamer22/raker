@@ -14,12 +14,6 @@ import (
 
 var Authenticator authenticator.Authenticator
 
-type credentials struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
-	WebToken string `json:"token"`
-}
-
 func InstagramSignUp(writer http.ResponseWriter, request *http.Request) {
 	username := request.Form.Get("username")
 	if username == "" {
