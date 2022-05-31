@@ -19,9 +19,9 @@ func New(secret string) Authenticator {
 	return Authenticator{[]byte(secret)}
 }
 
-func (authenticator *Authenticator) Parse(tokenString string) (Payload, error) {
+func (a *Authenticator) Parse(tokenString string) (Payload, error) {
 	token, err := jwt.ParseWithClaims(tokenString, &Payload{}, func(token *jwt.Token) (interface{}, error) {
-		return authenticator.secret, nil
+		return a.secret, nil
 	}, jwt.WithValidMethods(jwt.GetAlgorithms()))
 	if payload, ok := token.Claims.(*Payload); ok && token.Valid {
 		return *payload, nil
@@ -30,7 +30,7 @@ func (authenticator *Authenticator) Parse(tokenString string) (Payload, error) {
 	}
 }
 
-func (authenticator *Authenticator) Sign(payload Payload) (string, error) {
+func (a *Authenticator) Sign(payload Payload) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, payload)
-	return token.SignedString(authenticator.secret)
+	return token.SignedString(a.secret)
 }
