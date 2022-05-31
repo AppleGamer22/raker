@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -22,13 +21,19 @@ type credentials struct {
 }
 
 func InstagramSignUp(writer http.ResponseWriter, request *http.Request) {
-	var creds credentials
-	if err := json.NewDecoder(request.Body).Decode(&creds); err != nil {
-		http.Error(writer, err.Error(), http.StatusBadRequest)
+	username := request.Form.Get("username")
+	if username == "" {
+		http.Error(writer, "username must be provided", http.StatusBadRequest)
 		return
 	}
 
-	count, err := db.Users.CountDocuments(context.TODO(), db.User{Username: creds.Username})
+	password := request.Form.Get("password")
+	if password == "" {
+		http.Error(writer, "password must be provided", http.StatusBadRequest)
+		return
+	}
+
+	count, err := db.Users.CountDocuments(context.TODO(), db.User{Username: username})
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
 		return
@@ -37,15 +42,15 @@ func InstagramSignUp(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	hashed, err := authenticator.Hash(creds.Password)
+	hashed, err := authenticator.Hash(password)
 	if err != nil {
 		http.Error(writer, "failed to store password securely", http.StatusInternalServerError)
 		return
 	}
 	user := db.User{
 		ID:        primitive.NewObjectID(),
+		Username:  username,
 		Hash:      hashed,
-		Username:  creds.Username,
 		Joined:    time.Now(),
 		Network:   db.Instagram,
 		Instagram: false,
@@ -60,13 +65,19 @@ func InstagramSignUp(writer http.ResponseWriter, request *http.Request) {
 }
 
 func InstagramSignIn(writer http.ResponseWriter, request *http.Request) {
-	var creds credentials
-	if err := json.NewDecoder(request.Body).Decode(&creds); err != nil {
-		http.Error(writer, err.Error(), http.StatusBadRequest)
-		log.Println(err)
+	username := request.Form.Get("username")
+	if username == "" {
+		http.Error(writer, "username must be provided", http.StatusBadRequest)
 		return
 	}
-	result := db.Users.FindOne(context.TODO(), db.User{Username: creds.Username})
+
+	password := request.Form.Get("password")
+	if password == "" {
+		http.Error(writer, "password must be provided", http.StatusBadRequest)
+		return
+	}
+
+	result := db.Users.FindOne(context.TODO(), db.User{Username: username})
 	var user db.User
 	if err := result.Decode(&user); err != nil {
 		http.Error(writer, "sign-in failed", http.StatusBadRequest)
@@ -74,7 +85,7 @@ func InstagramSignIn(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	if err := authenticator.Compare(user.Hash, creds.Password); err != nil {
+	if err := authenticator.Compare(user.Hash, password); err != nil {
 		http.Error(writer, "sign-in failed", http.StatusUnauthorized)
 		log.Println(err)
 		return
@@ -98,13 +109,13 @@ func InstagramSignIn(writer http.ResponseWriter, request *http.Request) {
 }
 
 func InstagramSignOut(writer http.ResponseWriter, request *http.Request) {
-	var creds credentials
-	if err := json.NewDecoder(request.Body).Decode(&creds); err != nil {
-		http.Error(writer, err.Error(), http.StatusBadRequest)
+	webToken := request.Form.Get("token")
+	if webToken == "" {
+		http.Error(writer, "JWT must be provided", http.StatusBadRequest)
 		return
 	}
 
-	payload, err := Authenticator.Parse(creds.WebToken)
+	payload, err := Authenticator.Parse(webToken)
 	if err != nil {
 		http.Error(writer, "sign-out failed", http.StatusUnauthorized)
 		log.Println(err)
