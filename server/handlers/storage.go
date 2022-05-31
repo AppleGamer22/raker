@@ -26,10 +26,10 @@ func NewStorageHandler(root string, directories bool) storageHandler {
 }
 
 func (handler storageHandler) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
+	mediaPath := path.Join(handler.root, request.URL.Path)
+	info, err := os.Stat(mediaPath)
 	switch request.Method {
-	case http.MethodGet:
-		mediaPath := path.Join(handler.root, request.URL.Path)
-		info, err := os.Stat(mediaPath)
+	default:
 		if handler.directories || (err == nil && !info.IsDir()) {
 			handler.fileServer.ServeHTTP(writer, request)
 		} else {
