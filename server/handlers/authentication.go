@@ -33,7 +33,7 @@ func InstagramSignUp(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	count, err := db.Users.CountDocuments(context.TODO(), db.User{Username: username})
+	count, err := db.Users.CountDocuments(context.Background(), db.User{Username: username})
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
 		return
@@ -55,7 +55,7 @@ func InstagramSignUp(writer http.ResponseWriter, request *http.Request) {
 		Network:   db.Instagram,
 		Instagram: false,
 	}
-	result, err := db.Users.InsertOne(context.TODO(), user)
+	result, err := db.Users.InsertOne(context.Background(), user)
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
 		return
@@ -77,7 +77,7 @@ func InstagramSignIn(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	result := db.Users.FindOne(context.TODO(), db.User{Username: username})
+	result := db.Users.FindOne(context.Background(), db.User{Username: username})
 	var user db.User
 	if err := result.Decode(&user); err != nil {
 		http.Error(writer, "sign-in failed", http.StatusBadRequest)
@@ -92,7 +92,7 @@ func InstagramSignIn(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	user.Instagram = true
-	if _, err := db.Users.UpdateOne(context.TODO(), db.User{ID: user.ID}, user); err != nil {
+	if _, err := db.Users.UpdateOne(context.Background(), db.User{ID: user.ID}, user); err != nil {
 		http.Error(writer, "sign-in failed", http.StatusUnauthorized)
 		log.Println(err)
 		return
@@ -122,7 +122,7 @@ func InstagramSignOut(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	count, err := db.Users.CountDocuments(context.TODO(), db.User{ID: payload.U_ID})
+	count, err := db.Users.CountDocuments(context.Background(), db.User{ID: payload.U_ID})
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
 		return

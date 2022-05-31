@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"path"
+	"time"
 
 	"github.com/AppleGamer22/rake/server/authenticator"
 	"github.com/AppleGamer22/rake/server/db"
@@ -35,11 +35,17 @@ func main() {
 	}
 	handlers.Authenticator = authenticator.New(conf.Secret)
 
-	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(conf.URI))
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(conf.URI))
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer client.Disconnect(context.TODO())
+	defer client.Disconnect(context.Background())
+
+	if err := client.Ping(ctx, nil); err != nil {
+		log.Fatal(err)
+	}
 
 	database := client.Database(conf.Database, options.Database())
 	db.Histories = *database.Collection("histories")
@@ -50,7 +56,8 @@ func main() {
 		log.Println("allowing directory listing")
 	}
 	log.Printf("Users path: %s\n", conf.Users)
-	log.Printf("MongoDB database URL: %s", path.Join(conf.URI, conf.Database))
+	log.Printf("MongoDB database URI: %s", conf.URI)
+	log.Printf("MongoDB database: %s", conf.Database)
 	log.Printf("Server is listening at http://localhost:%d\n", conf.Port)
 
 	mux := http.NewServeMux()

@@ -1,8 +1,22 @@
 package handlers
 
-import "net/http"
+import (
+	"net/http"
+)
 
 func History(writer http.ResponseWriter, request *http.Request) {
+
+}
+
+func filterHistory(writer http.ResponseWriter, request *http.Request) {
+
+}
+
+func editHistory(writer http.ResponseWriter, request *http.Request) {
+
+}
+
+func deleteHistory() {
 
 }
 
