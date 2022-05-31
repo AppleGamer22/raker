@@ -122,15 +122,20 @@ func InstagramSignOut(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	count, err := db.Users.CountDocuments(context.Background(), db.User{ID: payload.U_ID})
-	if err != nil {
+	result := db.Users.FindOne(context.Background(), db.User{ID: payload.U_ID})
+	var user db.User
+	if err := result.Decode(&user); err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
 		return
-	} else if count == 0 {
-		http.Error(writer, "username does not exist", http.StatusUnauthorized)
+	}
+
+	// TODO: sign-out instagram
+	user.Instagram = false
+	if _, err := db.Users.UpdateOne(context.Background(), db.User{ID: user.ID}, user); err != nil {
+		http.Error(writer, err.Error(), http.StatusUnauthorized)
+		log.Println(err)
 		return
 	}
-	// TODO: sign-out instagram
 	fmt.Fprint(writer, "signed-out")
 }
 
