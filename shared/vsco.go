@@ -1,7 +1,9 @@
 package shared
 
 import (
+	"context"
 	"fmt"
+	"time"
 
 	"github.com/chromedp/chromedp"
 )
@@ -26,11 +28,15 @@ type VSCOPost struct {
 func (browser Browser) VSCO(owner, post string) (URLs []string, username string, err error) {
 	defer browser.CannelAllocator()
 	defer browser.CancelTask()
+
+	timeout, cancel := context.WithTimeout(browser.Task, time.Second*15)
+	defer cancel()
+
 	postURL := fmt.Sprintf("https://vsco.co/%s/media/%s", owner, post)
 
 	var vscoPost VSCOPost
 
-	err = chromedp.Run(browser.Task,
+	err = chromedp.Run(timeout,
 		chromedp.Navigate(postURL),
 		chromedp.WaitNotPresent(VSCOErrorCheckSelector),
 		chromedp.WaitReady(VSCOScriptSelector),
