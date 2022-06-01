@@ -33,7 +33,7 @@ type InstagramPost struct {
 	EntryData struct {
 		PostPage []struct {
 			GraphQL struct {
-				ShortcodeMedia struct {
+				ShortCodeMedia struct {
 					DisplayURL            string `json:"display_url"`
 					VideoURL              string `json:"video_url"`
 					EdgeSidecarToChildren struct {
@@ -53,7 +53,7 @@ type InstagramPost struct {
 	} `json:"entry_data"`
 }
 
-func (browser Browser) InstagramPost(post string) (URLs []string, username string, err error) {
+func (browser Browser) Instagram(post string) (URLs []string, username string, err error) {
 	defer browser.CannelAllocator()
 	defer browser.CancelTask()
 	postURL := fmt.Sprintf("https://www.instagram.com/p/%s", post)
@@ -72,9 +72,9 @@ func (browser Browser) InstagramPost(post string) (URLs []string, username strin
 
 	if browser.Incognito {
 		page := instagramPost.EntryData.PostPage[0]
-		username = page.GraphQL.ShortcodeMedia.Owner.Username
-		if len(page.GraphQL.ShortcodeMedia.EdgeSidecarToChildren.Edges) > 0 {
-			for _, edge := range page.GraphQL.ShortcodeMedia.EdgeSidecarToChildren.Edges {
+		username = page.GraphQL.ShortCodeMedia.Owner.Username
+		if len(page.GraphQL.ShortCodeMedia.EdgeSidecarToChildren.Edges) > 0 {
+			for _, edge := range page.GraphQL.ShortCodeMedia.EdgeSidecarToChildren.Edges {
 				if edge.Node.VideoURL != "" {
 					URLs = append(URLs, edge.Node.VideoURL)
 				} else {
@@ -82,10 +82,10 @@ func (browser Browser) InstagramPost(post string) (URLs []string, username strin
 				}
 			}
 		} else {
-			if page.GraphQL.ShortcodeMedia.VideoURL != "" {
-				URLs = append(URLs, page.GraphQL.ShortcodeMedia.VideoURL)
+			if page.GraphQL.ShortCodeMedia.VideoURL != "" {
+				URLs = append(URLs, page.GraphQL.ShortCodeMedia.VideoURL)
 			} else {
-				URLs = append(URLs, page.GraphQL.ShortcodeMedia.DisplayURL)
+				URLs = append(URLs, page.GraphQL.ShortCodeMedia.DisplayURL)
 			}
 		}
 	} else {
