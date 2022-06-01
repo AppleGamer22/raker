@@ -6,7 +6,10 @@ import (
 	"github.com/chromedp/chromedp"
 )
 
-const VSCOScriptSelector = "body > script:nth-child(3)"
+const (
+	VSCOScriptSelector     = "body > script:nth-child(3)"
+	VSCOErrorCheckSelector = "p.NotFound-heading"
+)
 
 var VSCOScript = fmt.Sprintf(`JSON.parse(document.querySelector("body > script:nth-child(3)").text.slice(%d))`, len("window.__PRELOADED_STATE__ = "))
 
@@ -29,6 +32,7 @@ func (browser Browser) VSCO(owner, post string) (URLs []string, username string,
 
 	err = chromedp.Run(browser.Task,
 		chromedp.Navigate(postURL),
+		chromedp.WaitNotPresent(VSCOErrorCheckSelector),
 		chromedp.WaitReady(VSCOScriptSelector),
 		chromedp.Evaluate(VSCOScript, &vscoPost),
 	)

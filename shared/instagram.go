@@ -6,6 +6,10 @@ import (
 	"github.com/chromedp/chromedp"
 )
 
+const (
+	InstagramErrorCheckSelector = "div.error-container"
+)
+
 type InstagramPost struct {
 	Items []struct {
 		CarouselMedia []struct {
@@ -62,6 +66,7 @@ func (browser Browser) Instagram(post string) (URLs []string, username string, e
 
 	err = chromedp.Run(browser.Task,
 		chromedp.Navigate(postURL),
+		chromedp.WaitNotPresent(InstagramErrorCheckSelector),
 		chromedp.WaitReady(browser.InstagramScriptSelector()),
 		chromedp.Evaluate(browser.InstagramScript(post), &instagramPost),
 	)
