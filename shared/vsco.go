@@ -13,7 +13,10 @@ const (
 	VSCOErrorCheckSelector = "p.NotFound-heading"
 )
 
-var VSCOScript = fmt.Sprintf(`JSON.parse(document.querySelector("body > script:nth-child(3)").text.slice(%d))`, len("window.__PRELOADED_STATE__ = "))
+var VSCOScript = fmt.Sprintf(
+	`JSON.parse(document.querySelector("body > script:nth-child(3)").text.slice(%d))`,
+	len("window.__PRELOADED_STATE__ = "),
+)
 
 type VSCOPost struct {
 	Medias struct {
@@ -25,7 +28,7 @@ type VSCOPost struct {
 	} `json:"medias"`
 }
 
-func (browser Browser) VSCO(owner, post string) (URLs []string, username string, err error) {
+func (browser Browser) VSCO(owner, post string) (URL string, username string, err error) {
 	defer browser.CannelAllocator()
 	defer browser.CancelTask()
 
@@ -44,17 +47,17 @@ func (browser Browser) VSCO(owner, post string) (URLs []string, username string,
 	)
 
 	if err != nil {
-		return URLs, username, err
+		return URL, username, err
 	}
 
 	media := vscoPost.Medias.ByID[post]
 	username = media.PermaSubdomain
 
 	if len(media.VideoURL) > 0 {
-		URLs = append(URLs, fmt.Sprintf("https://%s", media.VideoURL))
+		URL = fmt.Sprintf("https://%s", media.VideoURL)
 	} else {
-		URLs = append(URLs, fmt.Sprintf("https://%s", media.ResponsiveURL))
+		URL = fmt.Sprintf("https://%s", media.ResponsiveURL)
 	}
 
-	return URLs, username, err
+	return URL, username, err
 }
