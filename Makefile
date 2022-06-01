@@ -1,12 +1,20 @@
 SHELL:=/bin/bash
-VERSION:=$(shell git describe --tags --abbrev=0)
-HASH:=$(shell git rev-list -1 HEAD)
 PACKAGE:=github.com/AppleGamer22/rake
+VERSION:=$(shell git describe --tags --abbrev=0 || echo '$(PACKAGE)/shared.Version')
+HASH:=$(shell git rev-list -1 HEAD)
 LDFLAGS:=-ldflags="-X '$(PACKAGE)/shared.Version=$(subst v,,$(VERSION))' -X '$(PACKAGE)/shared.Hash=$(HASH)'"
+
+build: server cli
+
+server:
+	go build -race $(LDFLAGS) -o rakeserver ./server
+
+cli:
+	go build -race $(LDFLAGS) -o rake ./cli
 
 test:
 	go clean -testcache
-	go test -v -race -cover ./session ./ps ./cmd
+	go test -v -race -cover ./shared/... ./server/...
 
 debug:
 	go build -race $(LDFLAGS) .
@@ -27,7 +35,7 @@ manual:
 	fi
 
 clean:
-	rm -rf rake bin dist rake.bash rake.fish rake.zsh rake.ps1
+	rm -rf rake rakeserver bin dist rake.bash rake.fish rake.zsh rake.ps1
 	go clean -testcache -cache
 
-.PHONY: debug test clean completion manual
+.PHONY: server cli debug test clean completion manual
