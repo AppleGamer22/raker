@@ -11,3 +11,7 @@ var RootCommand = cobra.Command{
 	Long:    "scrape common social media networks",
 	Version: shared.Version,
 }
+
+func init() {
+	RootCommand.SetVersionTemplate("{{.Version}}\n")
+}
