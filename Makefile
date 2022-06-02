@@ -17,10 +17,10 @@ test:
 	go test -v -race -cover ./shared/... ./server/...
 
 completion:
-	go run . completion bash > rake.bash
-	go run . completion fish > rake.fish
-	go run . completion zsh > rake.zsh
-	go run . completion powershell > rake.ps1
+	go run ./cli completion bash > rake.bash
+	go run ./cli completion fish > rake.fish
+	go run ./cli completion zsh > rake.zsh
+	go run ./cli completion powershell > rake.ps1
 
 manual:
 	if [[ "$$OSTYPE" == "linux-gnu"* ]]; then \
