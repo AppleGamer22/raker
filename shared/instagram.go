@@ -127,6 +127,22 @@ func (browser *Browser) Instagram(post string) (URLs []string, username string, 
 	return URLs, username, err
 }
 
+func (browser *Browser) InstagramSignIn(username, password string) error {
+	defer browser.CannelAllocator()
+	defer browser.CancelTask()
+
+	return chromedp.Run(browser.Task,
+		chromedp.Navigate("https://www.instagram.com/accounts/login/"),
+		chromedp.WaitVisible(`input[name="username"]`),
+		chromedp.SendKeys(`input[name="username"]`, username),
+		chromedp.SendKeys(`input[name="password"]`, password),
+		chromedp.Click(`button[type="submit"]`),
+		chromedp.WaitVisible("button.sqdOP"),
+		chromedp.Click("button.sqdOP"),
+		// wait for homepage,
+	)
+}
+
 func (browser *Browser) InstagramScriptSelector() string {
 	if browser.Debug || browser.Incognito {
 		return "script:nth-child(15)"
