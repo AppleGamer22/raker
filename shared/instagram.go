@@ -63,15 +63,20 @@ func (browser Browser) Instagram(post string) (URLs []string, username string, e
 	defer browser.CannelAllocator()
 	defer browser.CancelTask()
 
-	timeout, cancel := context.WithTimeout(browser.Task, time.Second*15)
+	timeout, cancel := context.WithTimeout(browser.Task, time.Second*5)
 	defer cancel()
 
 	postURL := fmt.Sprintf("https://www.instagram.com/p/%s", post)
+	if err = chromedp.Run(timeout, chromedp.Navigate(postURL)); err != nil {
+		return URLs, username, err
+	}
+
+	timeout, cancel = context.WithTimeout(browser.Task, time.Second*10)
+	defer cancel()
 
 	var instagramPost InstagramPost
 
 	err = chromedp.Run(timeout,
-		chromedp.Navigate(postURL),
 		chromedp.WaitNotPresent(InstagramErrorCheckSelector),
 		chromedp.WaitReady(browser.InstagramScriptSelector()),
 		chromedp.Evaluate(browser.InstagramScript(post), &instagramPost),

@@ -32,15 +32,20 @@ func (browser Browser) VSCO(owner, post string) (URL string, username string, er
 	defer browser.CannelAllocator()
 	defer browser.CancelTask()
 
-	timeout, cancel := context.WithTimeout(browser.Task, time.Second*15)
+	timeout, cancel := context.WithTimeout(browser.Task, time.Second*5)
 	defer cancel()
 
 	postURL := fmt.Sprintf("https://vsco.co/%s/media/%s", owner, post)
+	if err = chromedp.Run(timeout, chromedp.Navigate(postURL)); err != nil {
+		return URL, username, err
+	}
+
+	timeout, cancel = context.WithTimeout(browser.Task, time.Second*10)
+	defer cancel()
 
 	var vscoPost VSCOPost
 
 	err = chromedp.Run(timeout,
-		chromedp.Navigate(postURL),
 		chromedp.WaitNotPresent(VSCOErrorCheckSelector),
 		chromedp.WaitReady(VSCOScriptSelector),
 		chromedp.Evaluate(VSCOScript, &vscoPost),

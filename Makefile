@@ -16,9 +16,6 @@ test:
 	go clean -testcache
 	go test -v -race -cover ./shared/... ./server/...
 
-debug:
-	go build -race $(LDFLAGS) .
-
 completion:
 	go run . completion bash > rake.bash
 	go run . completion fish > rake.fish
