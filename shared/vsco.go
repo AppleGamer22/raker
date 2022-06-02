@@ -28,7 +28,7 @@ type VSCOPost struct {
 	} `json:"medias"`
 }
 
-func (browser Browser) VSCO(owner, post string) (URL string, username string, err error) {
+func (browser *Browser) VSCO(owner, post string) (URL string, username string, err error) {
 	defer browser.CannelAllocator()
 	defer browser.CancelTask()
 

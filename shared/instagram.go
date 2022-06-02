@@ -59,7 +59,7 @@ type InstagramPost struct {
 	} `json:"entry_data"`
 }
 
-func (browser Browser) Instagram(post string) (URLs []string, username string, err error) {
+func (browser *Browser) Instagram(post string) (URLs []string, username string, err error) {
 	defer browser.CannelAllocator()
 	defer browser.CancelTask()
 
@@ -127,14 +127,14 @@ func (browser Browser) Instagram(post string) (URLs []string, username string, e
 	return URLs, username, err
 }
 
-func (browser Browser) InstagramScriptSelector() string {
+func (browser *Browser) InstagramScriptSelector() string {
 	if browser.Debug || browser.Incognito {
 		return "script:nth-child(15)"
 	}
 	return "script:nth-child(16)"
 }
 
-func (browser Browser) InstagramScript(post string) string {
+func (browser *Browser) InstagramScript(post string) string {
 	prefixLength := len("window.__additionalDataLoaded(/p/") + len(post) + 4
 	if browser.Incognito {
 		return "window._sharedData"
