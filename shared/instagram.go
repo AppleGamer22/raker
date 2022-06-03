@@ -59,11 +59,11 @@ type InstagramPost struct {
 	} `json:"entry_data"`
 }
 
-func (browser *Browser) Instagram(post string) (URLs []string, username string, err error) {
-	defer browser.CannelAllocator()
-	defer browser.CancelTask()
+func (raker *Raker) Instagram(post string) (URLs []string, username string, err error) {
+	defer raker.CannelAllocator()
+	defer raker.CancelTask()
 
-	timeout, cancel := context.WithTimeout(browser.Task, time.Second*5)
+	timeout, cancel := context.WithTimeout(raker.Task, time.Second*5)
 	defer cancel()
 
 	postURL := fmt.Sprintf("https://www.instagram.com/p/%s", post)
@@ -71,22 +71,22 @@ func (browser *Browser) Instagram(post string) (URLs []string, username string, 
 		return URLs, username, err
 	}
 
-	timeout, cancel = context.WithTimeout(browser.Task, time.Second*10)
+	timeout, cancel = context.WithTimeout(raker.Task, time.Second*10)
 	defer cancel()
 
 	var instagramPost InstagramPost
 
 	err = chromedp.Run(timeout,
 		chromedp.WaitNotPresent(InstagramErrorCheckSelector),
-		chromedp.WaitReady(browser.InstagramScriptSelector()),
-		chromedp.Evaluate(browser.InstagramScript(post), &instagramPost),
+		chromedp.WaitReady(raker.InstagramScriptSelector()),
+		chromedp.Evaluate(raker.InstagramScript(post), &instagramPost),
 	)
 
 	if err != nil {
 		return URLs, username, err
 	}
 
-	if browser.Incognito {
+	if raker.Incognito {
 		page := instagramPost.EntryData.PostPage[0]
 		username = page.GraphQL.ShortCodeMedia.Owner.Username
 		if len(page.GraphQL.ShortCodeMedia.EdgeSidecarToChildren.Edges) > 0 {
@@ -127,11 +127,11 @@ func (browser *Browser) Instagram(post string) (URLs []string, username string, 
 	return URLs, username, err
 }
 
-func (browser *Browser) InstagramSignIn(username, password string) error {
-	defer browser.CannelAllocator()
-	defer browser.CancelTask()
+func (raker *Raker) InstagramSignIn(username, password string) error {
+	defer raker.CannelAllocator()
+	defer raker.CancelTask()
 
-	return chromedp.Run(browser.Task,
+	return chromedp.Run(raker.Task,
 		chromedp.Navigate("https://www.instagram.com/accounts/login/"),
 		chromedp.WaitVisible(`input[name="username"]`),
 		chromedp.SendKeys(`input[name="username"]`, username),
@@ -139,22 +139,22 @@ func (browser *Browser) InstagramSignIn(username, password string) error {
 		chromedp.Click(`button[type="submit"]`),
 		chromedp.WaitVisible("button.sqdOP"),
 		chromedp.Click("button.sqdOP"),
-		// wait for homepage,
+		chromedp.WaitVisible(fmt.Sprintf(`a:contains("%s")`, username)),
 	)
 }
 
-func (browser *Browser) InstagramScriptSelector() string {
-	if browser.Debug || browser.Incognito {
+func (raker *Raker) InstagramScriptSelector() string {
+	if raker.Debug || raker.Incognito {
 		return "script:nth-child(15)"
 	}
 	return "script:nth-child(16)"
 }
 
-func (browser *Browser) InstagramScript(post string) string {
+func (raker *Raker) InstagramScript(post string) string {
 	prefixLength := len("window.__additionalDataLoaded(/p/") + len(post) + 4
-	if browser.Incognito {
+	if raker.Incognito {
 		return "window._sharedData"
-	} else if browser.Debug {
+	} else if raker.Debug {
 		return fmt.Sprintf(`JSON.parse(document.querySelector("script:nth-child(15)").text.slice(%d, -2))`, prefixLength)
 	}
 	return fmt.Sprintf(`JSON.parse(document.querySelector("script:nth-child(16)").text.slice(%d, -2))`, prefixLength)

@@ -6,7 +6,7 @@ import (
 	"github.com/chromedp/chromedp"
 )
 
-type Browser struct {
+type Raker struct {
 	Debug           bool
 	Incognito       bool
 	Allocator       context.Context
@@ -15,7 +15,7 @@ type Browser struct {
 	CancelTask      context.CancelFunc
 }
 
-func NewBrowser(execPath, userDateDir string, debug, incognito bool) (Browser, error) {
+func NewRaker(execPath, userDateDir string, debug, incognito bool) (Raker, error) {
 	opts := append(
 		chromedp.DefaultExecAllocatorOptions[:],
 		chromedp.DisableGPU,
@@ -28,7 +28,7 @@ func NewBrowser(execPath, userDateDir string, debug, incognito bool) (Browser, e
 	allocator, cancelAllocator := chromedp.NewExecAllocator(context.Background(), opts...)
 	task, cancelTask := chromedp.NewContext(allocator)
 
-	browser := Browser{
+	raker := Raker{
 		Debug:           debug,
 		Incognito:       incognito,
 		Allocator:       allocator,
@@ -37,6 +37,6 @@ func NewBrowser(execPath, userDateDir string, debug, incognito bool) (Browser, e
 		CancelTask:      cancelTask,
 	}
 
-	err := chromedp.Run(browser.Task, chromedp.Evaluate("delete Object.getPrototypeOf(navigator).webdriver", nil))
-	return browser, err
+	err := chromedp.Run(raker.Task, chromedp.Evaluate("delete Object.getPrototypeOf(navigator).webdriver", nil))
+	return raker, err
 }

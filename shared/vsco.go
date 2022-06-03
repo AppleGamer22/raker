@@ -28,11 +28,11 @@ type VSCOPost struct {
 	} `json:"medias"`
 }
 
-func (browser *Browser) VSCO(owner, post string) (URL string, username string, err error) {
-	defer browser.CannelAllocator()
-	defer browser.CancelTask()
+func (raker *Raker) VSCO(owner, post string) (URL string, username string, err error) {
+	defer raker.CannelAllocator()
+	defer raker.CancelTask()
 
-	timeout, cancel := context.WithTimeout(browser.Task, time.Second*5)
+	timeout, cancel := context.WithTimeout(raker.Task, time.Second*5)
 	defer cancel()
 
 	postURL := fmt.Sprintf("https://vsco.co/%s/media/%s", owner, post)
@@ -40,7 +40,7 @@ func (browser *Browser) VSCO(owner, post string) (URL string, username string, e
 		return URL, username, err
 	}
 
-	timeout, cancel = context.WithTimeout(browser.Task, time.Second*10)
+	timeout, cancel = context.WithTimeout(raker.Task, time.Second*10)
 	defer cancel()
 
 	var vscoPost VSCOPost
