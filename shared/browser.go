@@ -2,6 +2,8 @@ package shared
 
 import (
 	"context"
+	"os"
+	"runtime"
 
 	"github.com/chromedp/chromedp"
 )
@@ -13,6 +15,25 @@ type Raker struct {
 	CannelAllocator context.CancelFunc
 	Task            context.Context
 	CancelTask      context.CancelFunc
+}
+
+var (
+	UserDataDirectory string
+	ExecutablePath    string
+)
+
+func FindExecutablePath() string {
+	if os.Getenv("ENV") == "docker" {
+		return "/usr/bin/chromium-browser"
+	}
+	switch runtime.GOOS {
+	case "darwin":
+		return "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+	case "windows":
+		return "C:/Program Files (x86)/Google/Chrome/Application/chrome.exe"
+	default:
+		return "/opt/google/chrome/google-chrome"
+	}
 }
 
 func NewRaker(execPath, userDateDir string, debug, incognito bool) (Raker, error) {

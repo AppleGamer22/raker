@@ -10,6 +10,7 @@ import (
 	"github.com/AppleGamer22/rake/server/authenticator"
 	"github.com/AppleGamer22/rake/server/db"
 	"github.com/AppleGamer22/rake/server/handlers"
+	"github.com/AppleGamer22/rake/shared"
 	"github.com/spf13/viper"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -45,6 +46,10 @@ func main() {
 
 	if err := client.Ping(ctx, nil); err != nil {
 		log.Fatal(err)
+	}
+
+	if conf.Executable == "" {
+		shared.ExecutablePath = shared.FindExecutablePath()
 	}
 
 	database := client.Database(conf.Database, options.Database())

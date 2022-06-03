@@ -5,6 +5,7 @@ type config struct {
 	URI         string
 	Database    string
 	Storage     string
+	Executable  string
 	Directories bool
 	Users       string
 	Port        uint
