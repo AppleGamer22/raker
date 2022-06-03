@@ -13,3 +13,6 @@ dist/
 **/*.env
 **/*.rake*
 **/*rake*
+**/users**
+**/database**
+**/docker-compose.yml

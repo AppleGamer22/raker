@@ -40,11 +40,19 @@ func NewRaker(execPath, userDateDir string, debug, incognito bool) (Raker, error
 	opts := append(
 		chromedp.DefaultExecAllocatorOptions[:],
 		chromedp.DisableGPU,
-		chromedp.UserDataDir(userDateDir),
-		chromedp.ExecPath(execPath),
 		chromedp.Flag("incognito", incognito),
 		chromedp.Flag("headless", !debug),
 	)
+
+	if execPath != "" {
+		opts = append(opts, chromedp.ExecPath(execPath))
+	} else {
+		opts = append(opts, chromedp.ExecPath(FindExecutablePath()))
+	}
+
+	if userDateDir != "" {
+		opts = append(opts, chromedp.UserDataDir(userDateDir))
+	}
 
 	allocator, cancelAllocator := chromedp.NewExecAllocator(context.Background(), opts...)
 	task, cancelTask := chromedp.NewContext(allocator)
