@@ -31,6 +31,7 @@ func TestInstagramPublicSingleImage(t *testing.T) {
 	assert.Len(t, URLs, 1)
 	URL := URLs[0]
 	assert.True(t, strings.HasPrefix(URL, "https://"), URL)
+	assert.True(t, strings.Contains(URL, "cdninstagram.com"))
 	assert.Regexp(t, instagramURLRegularExpression, URL)
 }
 
@@ -45,6 +46,7 @@ func TestInstagramPublicSingleVideo(t *testing.T) {
 	assert.Len(t, URLs, 1)
 	URL := URLs[0]
 	assert.True(t, strings.HasPrefix(URL, "https://"), URL)
+	assert.True(t, strings.Contains(URL, "cdninstagram.com"))
 	assert.Regexp(t, instagramURLRegularExpression, URL)
 }
 
@@ -59,6 +61,7 @@ func TestInstagramPublicBundleImages(t *testing.T) {
 	assert.Len(t, URLs, 2)
 	for _, URL := range URLs {
 		assert.True(t, strings.HasPrefix(URL, "https://"), URL)
+		assert.True(t, strings.Contains(URL, "cdninstagram.com"))
 		assert.Regexp(t, instagramURLRegularExpression, URL)
 	}
 }
