@@ -5,10 +5,12 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"path"
 	"time"
 
 	"github.com/AppleGamer22/rake/server/authenticator"
 	"github.com/AppleGamer22/rake/server/db"
+	"github.com/AppleGamer22/rake/shared"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -85,6 +87,22 @@ func InstagramSignIn(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
+	if !user.Instagram {
+		userDataDirectory := path.Join(shared.UserDataDirectory, user.ID.String())
+		raker, err := shared.NewRaker(shared.ExecutablePath, userDataDirectory, false, false)
+		if err != nil {
+			http.Error(writer, "sign-in failed", http.StatusUnauthorized)
+			log.Println(err)
+			return
+		}
+
+		if err := raker.InstagramSignIn(username, password); err != nil {
+			http.Error(writer, "sign-in failed", http.StatusUnauthorized)
+			log.Println(err)
+			return
+		}
+	}
+
 	user.Instagram = true
 	if _, err := db.Users.UpdateOne(context.Background(), db.User{ID: user.ID}, user); err != nil {
 		http.Error(writer, "sign-in failed", http.StatusUnauthorized)
@@ -98,7 +116,6 @@ func InstagramSignIn(writer http.ResponseWriter, request *http.Request) {
 		log.Println(err)
 		return
 	}
-	// TODO: sign-in instagram
 	fmt.Fprint(writer, webToken)
 }
 
