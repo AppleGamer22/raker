@@ -131,7 +131,10 @@ func (raker *Raker) InstagramSignIn(username, password string) error {
 	defer raker.CannelAllocator()
 	defer raker.CancelTask()
 
-	return chromedp.Run(raker.Task,
+	timeout, cancel := context.WithTimeout(raker.Task, time.Second*30)
+	defer cancel()
+
+	return chromedp.Run(timeout,
 		chromedp.Navigate("https://www.instagram.com/accounts/login/"),
 		chromedp.WaitVisible(`input[name="username"]`),
 		chromedp.SendKeys(`input[name="username"]`, username),
