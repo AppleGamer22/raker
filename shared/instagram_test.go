@@ -1,6 +1,7 @@
 package shared_test
 
 import (
+	"net/url"
 	"regexp"
 	"strings"
 	"testing"
@@ -11,7 +12,7 @@ import (
 )
 
 var (
-	instagramURLRegularExpression = regexp.MustCompile(`\.(jpg)|(webp)|(mp4)|(webm)`)
+	filePathRegularExpression = regexp.MustCompile(`\.(jpg)|(webp)|(mp4)|(webm)`)
 )
 
 func init() {
@@ -29,10 +30,11 @@ func TestInstagramPublicSingleImage(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, "wikipedia", username)
 	assert.Len(t, URLs, 1)
-	URL := URLs[0]
-	assert.True(t, strings.HasPrefix(URL, "https://"), URL)
-	assert.True(t, strings.Contains(URL, "cdninstagram.com"))
-	assert.Regexp(t, instagramURLRegularExpression, URL)
+	URL, err := url.Parse(URLs[0])
+	assert.NoError(t, err)
+	assert.Equal(t, "https", URL.Scheme)
+	assert.True(t, strings.Contains(URL.Host, "cdninstagram.com"))
+	assert.Regexp(t, filePathRegularExpression, URL.Path)
 }
 
 func TestInstagramPublicSingleVideo(t *testing.T) {
@@ -44,10 +46,11 @@ func TestInstagramPublicSingleVideo(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, "wikipedia", username)
 	assert.Len(t, URLs, 1)
-	URL := URLs[0]
-	assert.True(t, strings.HasPrefix(URL, "https://"), URL)
-	assert.True(t, strings.Contains(URL, "cdninstagram.com"))
-	assert.Regexp(t, instagramURLRegularExpression, URL)
+	URL, err := url.Parse(URLs[0])
+	assert.NoError(t, err)
+	assert.Equal(t, "https", URL.Scheme)
+	assert.True(t, strings.Contains(URL.Host, "cdninstagram.com"))
+	assert.Regexp(t, filePathRegularExpression, URL.Path)
 }
 
 func TestInstagramPublicBundleImages(t *testing.T) {
@@ -59,9 +62,11 @@ func TestInstagramPublicBundleImages(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, "wikipedia", username)
 	assert.Len(t, URLs, 2)
-	for _, URL := range URLs {
-		assert.True(t, strings.HasPrefix(URL, "https://"), URL)
-		assert.True(t, strings.Contains(URL, "cdninstagram.com"))
-		assert.Regexp(t, instagramURLRegularExpression, URL)
+	for _, urlString := range URLs {
+		URL, err := url.Parse(urlString)
+		assert.NoError(t, err)
+		assert.Equal(t, "https", URL.Scheme)
+		assert.True(t, strings.Contains(URL.Host, "cdninstagram.com"))
+		assert.Regexp(t, filePathRegularExpression, URL.Path)
 	}
 }

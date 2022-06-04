@@ -9,8 +9,9 @@ import (
 )
 
 const (
-	TikTokMediaScript    = `document.querySelector("video").src`
-	TikTokUsernameScript = `document.querySelector("h3").innerText`
+	TikTokMediaScript           = `document.querySelector("video").src`
+	TikTokUsernameScript        = `document.querySelector("h3").innerText`
+	TikTokErrorCheckingSelector = "div.error-page"
 )
 
 func (raker *Raker) TikTok(owner, post string) (URL string, username string, err error) {
@@ -24,7 +25,7 @@ func (raker *Raker) TikTok(owner, post string) (URL string, username string, err
 
 	err = chromedp.Run(timeout,
 		chromedp.Navigate(postURL),
-		chromedp.WaitNotPresent("div.error-page"),
+		chromedp.WaitNotPresent(TikTokErrorCheckingSelector),
 		chromedp.WaitReady("video"),
 		chromedp.Evaluate(TikTokMediaScript, &URL),
 		chromedp.Evaluate(TikTokUsernameScript, &username),

@@ -1,6 +1,7 @@
 package shared_test
 
 import (
+	"net/url"
 	"strings"
 	"testing"
 
@@ -16,13 +17,13 @@ func init() {
 }
 
 func TestTikTokPublicSingleVideo(t *testing.T) {
-	err := viper.ReadInConfig()
+	raker, err := shared.NewRaker("", "", false, true)
 	assert.NoError(t, err)
-	raker, err := shared.NewRaker(shared.FindExecutablePath(), "", false, true)
-	assert.NoError(t, err)
-	URL, username, err := raker.TikTok("f1", "7048983181063687430")
+	urlString, username, err := raker.TikTok("f1", "7048983181063687430")
 	assert.NoError(t, err)
 	assert.Equal(t, "f1", username)
-	assert.True(t, strings.HasPrefix(URL, "https://"), URL)
-	assert.True(t, strings.Contains(URL, "-webapp.tiktok.com"), URL)
+	URL, err := url.Parse(urlString)
+	assert.NoError(t, err)
+	assert.Equal(t, "https", URL.Scheme)
+	assert.True(t, strings.Contains(URL.Host, "-webapp.tiktok.com"), URL)
 }

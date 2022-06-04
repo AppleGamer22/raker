@@ -9,59 +9,29 @@ import (
 )
 
 const (
-	VSCOScriptSelector     = "body > script:nth-child(3)"
+	VSCOMediaSelector      = "img, video"
+	VSCOMediaScript        = `document.querySelectorAll("img, video")[1].src`
 	VSCOErrorCheckSelector = "p.NotFound-heading"
 )
-
-var VSCOScript = fmt.Sprintf(
-	`JSON.parse(document.querySelector("body > script:nth-child(3)").text.slice(%d))`,
-	len("window.__PRELOADED_STATE__ = "),
-)
-
-type VSCOPost struct {
-	Medias struct {
-		ByID map[string]struct {
-			PermaSubdomain string `json:"permaSubdomain"`
-			ResponsiveURL  string `json:"responsiveUrl"`
-			VideoURL       string `json:"videoUrl"`
-		} `json:"byId"`
-	} `json:"medias"`
-}
 
 func (raker *Raker) VSCO(owner, post string) (URL string, username string, err error) {
 	defer raker.CannelAllocator()
 	defer raker.CancelTask()
 
-	timeout, cancel := context.WithTimeout(raker.Task, time.Second*5)
+	timeout, cancel := context.WithTimeout(raker.Task, time.Second*30)
 	defer cancel()
 
 	postURL := fmt.Sprintf("https://vsco.co/%s/media/%s", owner, post)
-	if err = chromedp.Run(timeout, chromedp.Navigate(postURL)); err != nil {
-		return URL, username, err
-	}
-
-	timeout, cancel = context.WithTimeout(raker.Task, time.Second*10)
-	defer cancel()
-
-	var vscoPost VSCOPost
-
 	err = chromedp.Run(timeout,
+		chromedp.Navigate(postURL),
 		chromedp.WaitNotPresent(VSCOErrorCheckSelector),
-		chromedp.WaitReady(VSCOScriptSelector),
-		chromedp.Evaluate(VSCOScript, &vscoPost),
+		chromedp.WaitReady(VSCOMediaSelector),
+		chromedp.Evaluate(VSCOMediaScript, &URL),
+		chromedp.TextContent("h4 > a", &username),
 	)
 
-	if err != nil {
-		return URL, username, err
-	}
-
-	media := vscoPost.Medias.ByID[post]
-	username = media.PermaSubdomain
-
-	if len(media.VideoURL) > 0 {
-		URL = fmt.Sprintf("https://%s", media.VideoURL)
-	} else {
-		URL = fmt.Sprintf("https://%s", media.ResponsiveURL)
+	if err == nil {
+		URL = fmt.Sprintf("https:%s", URL)
 	}
 
 	return URL, username, err
