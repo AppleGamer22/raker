@@ -14,13 +14,14 @@ import (
 )
 
 func History(writer http.ResponseWriter, request *http.Request) {
-	webToken := request.Form.Get("token")
-	if webToken == "" {
-		http.Error(writer, "JWT must be provided", http.StatusBadRequest)
+	cookie, err := request.Cookie("jwt")
+	if err != nil {
+		http.Error(writer, "a JWT must be provided", http.StatusBadRequest)
+		log.Println(err)
 		return
 	}
 
-	payload, err := Authenticator.Parse(webToken)
+	payload, err := Authenticator.Parse(cookie.Value)
 	if err != nil {
 		http.Error(writer, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 		log.Println(err)
@@ -31,6 +32,11 @@ func History(writer http.ResponseWriter, request *http.Request) {
 	var user db.User
 	if err := result.Decode(&user); err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if err := request.ParseForm(); err != nil {
+		http.Error(writer, "failed to read request form", http.StatusBadRequest)
 		return
 	}
 	media := request.Form.Get("media")

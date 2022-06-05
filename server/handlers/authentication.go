@@ -17,6 +17,11 @@ import (
 var Authenticator authenticator.Authenticator
 
 func InstagramSignUp(writer http.ResponseWriter, request *http.Request) {
+	if err := request.ParseForm(); err != nil {
+		http.Error(writer, "failed to read request form", http.StatusBadRequest)
+		return
+	}
+
 	username := request.Form.Get("username")
 	if username == "" {
 		http.Error(writer, "username must be provided", http.StatusBadRequest)
@@ -61,6 +66,11 @@ func InstagramSignUp(writer http.ResponseWriter, request *http.Request) {
 }
 
 func InstagramSignIn(writer http.ResponseWriter, request *http.Request) {
+	if err := request.ParseForm(); err != nil {
+		http.Error(writer, "failed to read request form", http.StatusBadRequest)
+		return
+	}
+
 	username := request.Form.Get("username")
 	if username == "" {
 		http.Error(writer, "username must be provided", http.StatusBadRequest)
@@ -116,17 +126,26 @@ func InstagramSignIn(writer http.ResponseWriter, request *http.Request) {
 		log.Println(err)
 		return
 	}
-	fmt.Fprint(writer, webToken)
+
+	cookie := &http.Cookie{
+		Name:   "jwt",
+		Value:  webToken,
+		Path:   "/",
+		Domain: request.Host,
+	}
+
+	http.SetCookie(writer, cookie)
 }
 
 func InstagramSignOut(writer http.ResponseWriter, request *http.Request) {
-	webToken := request.Form.Get("token")
-	if webToken == "" {
-		http.Error(writer, "JWT must be provided", http.StatusBadRequest)
+	cookie, err := request.Cookie("jwt")
+	if err != nil {
+		http.Error(writer, "a JWT must be provided", http.StatusBadRequest)
+		log.Println(err)
 		return
 	}
 
-	payload, err := Authenticator.Parse(webToken)
+	payload, err := Authenticator.Parse(cookie.Value)
 	if err != nil {
 		http.Error(writer, "sign-out failed", http.StatusUnauthorized)
 		log.Println(err)
@@ -136,7 +155,8 @@ func InstagramSignOut(writer http.ResponseWriter, request *http.Request) {
 	result := db.Users.FindOne(context.Background(), db.User{ID: payload.U_ID})
 	var user db.User
 	if err := result.Decode(&user); err != nil {
-		http.Error(writer, err.Error(), http.StatusInternalServerError)
+		http.Error(writer, "sign-out failed", http.StatusUnauthorized)
+		log.Println(err)
 		return
 	}
 
