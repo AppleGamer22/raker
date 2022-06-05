@@ -53,3 +53,22 @@ func (raker *Raker) InstagramSignIn(username, password string) error {
 		chromedp.WaitVisible(fmt.Sprintf(`a:contains("%s")`, username)),
 	)
 }
+
+func (raker *Raker) InstagramSignOut(username string) error {
+	defer raker.CannelAllocator()
+	defer raker.CancelTask()
+
+	timeout, cancel := context.WithTimeout(raker.Task, time.Second*30)
+	defer cancel()
+
+	profileURL := fmt.Sprintf("https://www.instagram.com/%s", username)
+
+	return chromedp.Run(timeout,
+		chromedp.Navigate(profileURL),
+		chromedp.WaitVisible(`svg[aria-label="Options"]`),
+		chromedp.Click(`svg[aria-label="Options"]`),
+		chromedp.WaitVisible("button:nth-child(9)"),
+		chromedp.Click("button:nth-child(9)"),
+		chromedp.WaitVisible(`button[type="submit"], button[type="button"]`),
+	)
+}
