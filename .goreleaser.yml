@@ -5,6 +5,7 @@ before:
     - make completion manual
 builds:
   - id: linux
+    dir: cli
     goos:
       - linux
     goarch:
@@ -15,6 +16,7 @@ builds:
       - -X 'github.com/AppleGamer22/rake/cmd.Version={{ .Version }}'
       - -X 'github.com/AppleGamer22/rake/cmd.Hash={{ .FullCommit }}'
   - id: mac
+    dir: cli
     goos:
       - darwin
     goarch:
@@ -24,6 +26,7 @@ builds:
       - -X 'github.com/AppleGamer22/rake/cmd.Version={{ .Version }}'
       - -X 'github.com/AppleGamer22/rake/cmd.Hash={{ .FullCommit }}'
   - id: windows
+    dir: cli
     goos:
       - windows
     goarch:
@@ -66,7 +69,7 @@ nfpms:
     builds:
       - linux
     dependencies:
-      - dbus
+      - chromium
     formats:
       - apk
       - deb
@@ -124,6 +127,18 @@ release:
     brew install AppleGamer22/tap/rake
     ```
   prerelease: auto
+dockers:
+  - image_templates:
+      - "docker.io/applegamer22/rake:{{ .Tag }}"
+      - "docker.io/applegamer22/rake:latest"
+      - "ghcr.io/applegamer22/rake:{{ .Tag }}"
+      - "ghcr.io/applegamer22/rake:latest"
+    build_flag_templates:
+      - "--pull"
+      - "--label=org.opencontainers.image.created={{.Date}}"
+      - "--label=org.opencontainers.image.title={{.ProjectName}}"
+      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+      - "--label=org.opencontainers.image.version={{.Version}}"
 aurs:
   - homepage: https://github.com/AppleGamer22/rake
     description: Cross-platform caffeinate alternative.
@@ -135,11 +150,7 @@ aurs:
     private_key: "{{ .Env.AUR_SSH_PRIVATE_KEY }}"
     git_url: ssh://aur@aur.archlinux.org/rake-bin.git
     depends:
-      - dbus
-    optdepends:
-      - bash
-      - fish
-      - zsh
+      - chromium
     package: |
       install -Dm755 rake "${pkgdir}/usr/bin/rake"
       install -Dm644 rake.1 "${pkgdir}/usr/share/man/man1/rake.1"
@@ -159,6 +170,8 @@ brews:
       name: Omri Bornstein
       email: omribor@gmail.com
     homepage: https://github.com/AppleGamer22/rake
+    dependencies:
+      - chromium
     description: Cross-platform caffeinate alternative.
     license: GPL-3.0
     install: |
