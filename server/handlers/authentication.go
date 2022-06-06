@@ -128,10 +128,11 @@ func InstagramSignIn(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	cookie := &http.Cookie{
-		Name:   "jwt",
-		Value:  webToken,
-		Path:   "/",
-		Domain: request.Host,
+		Name:     "jwt",
+		Value:    webToken,
+		Path:     "/",
+		Domain:   request.Host,
+		HttpOnly: true,
 	}
 
 	http.SetCookie(writer, cookie)
@@ -167,7 +168,10 @@ func InstagramSignOut(writer http.ResponseWriter, request *http.Request) {
 		log.Println(err)
 		return
 	}
-	fmt.Fprint(writer, "signed-out")
+
+	cookie.Value = ""
+	cookie.MaxAge = -1
+	http.SetCookie(writer, cookie)
 }
 
 func AuthenticationPage(writer http.ResponseWriter, request *http.Request) {
