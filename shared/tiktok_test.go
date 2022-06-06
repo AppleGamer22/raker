@@ -17,7 +17,7 @@ func init() {
 }
 
 func TestTikTokPublicSingleVideo(t *testing.T) {
-	raker, err := shared.NewRaker("", "", false, true)
+	raker, err := shared.NewRaker("", false, true)
 	assert.NoError(t, err)
 	urlString, username, err := raker.TikTok("f1", "7048983181063687430")
 	assert.NoError(t, err)

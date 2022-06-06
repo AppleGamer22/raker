@@ -99,7 +99,7 @@ func InstagramSignIn(writer http.ResponseWriter, request *http.Request) {
 
 	if !user.Instagram {
 		userDataDirectory := path.Join(shared.UserDataDirectory, user.ID.String())
-		raker, err := shared.NewRaker(shared.ExecutablePath, userDataDirectory, false, false)
+		raker, err := shared.NewRaker(userDataDirectory, false, false)
 		if err != nil {
 			http.Error(writer, "sign-in failed", http.StatusUnauthorized)
 			log.Println(err)

@@ -24,7 +24,7 @@ func init() {
 func TestInstagramPublicSingleImage(t *testing.T) {
 	err := viper.ReadInConfig()
 	assert.NoError(t, err)
-	raker, err := shared.NewRaker(shared.FindExecutablePath(), viper.GetString("test"), false, false)
+	raker, err := shared.NewRaker(viper.GetString("test"), false, false)
 	assert.NoError(t, err)
 	URLs, username, err := raker.Instagram("CbgDyqkFBdj")
 	assert.NoError(t, err)
@@ -40,7 +40,7 @@ func TestInstagramPublicSingleImage(t *testing.T) {
 func TestInstagramPublicSingleVideo(t *testing.T) {
 	err := viper.ReadInConfig()
 	assert.NoError(t, err)
-	raker, err := shared.NewRaker(shared.FindExecutablePath(), viper.GetString("test"), false, false)
+	raker, err := shared.NewRaker(viper.GetString("test"), false, false)
 	assert.NoError(t, err)
 	URLs, username, err := raker.Instagram("BKyN0E2AApX")
 	assert.NoError(t, err)
@@ -56,7 +56,7 @@ func TestInstagramPublicSingleVideo(t *testing.T) {
 func TestInstagramPublicBundleImages(t *testing.T) {
 	err := viper.ReadInConfig()
 	assert.NoError(t, err)
-	raker, err := shared.NewRaker(shared.FindExecutablePath(), viper.GetString("test"), false, false)
+	raker, err := shared.NewRaker(viper.GetString("test"), false, false)
 	assert.NoError(t, err)
 	URLs, username, err := raker.Instagram("CZNJeAil1BC")
 	assert.NoError(t, err)

@@ -48,8 +48,8 @@ func main() {
 		log.Fatal(err)
 	}
 
-	if conf.Executable == "" {
-		shared.ExecutablePath = shared.FindExecutablePath()
+	if conf.Users != "" {
+		shared.UserDataDirectory = conf.Users
 	}
 
 	database := client.Database(conf.Database, options.Database())

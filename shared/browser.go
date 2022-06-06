@@ -19,36 +19,33 @@ type Raker struct {
 
 var (
 	UserDataDirectory string
-	ExecutablePath    string
+	// ExecutablePath    string
 )
 
 func FindExecutablePath() string {
-	if os.Getenv("ENV") == "docker" {
-		return "/usr/bin/chromium-browser"
-	}
 	switch runtime.GOOS {
 	case "darwin":
 		return "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
 	case "windows":
-		return "C:/Program Files (x86)/Google/Chrome/Application/chrome.exe"
+		return `C:\Program Files (x86)\Google\Chrome\Application\chrome.exe`
 	default:
+		if _, err := os.Stat("/usr/bin/chromium"); err == nil {
+			return "/usr/bin/chromium"
+		} else if _, err := os.Stat("/usr/bin/chromium-browser"); err == nil {
+			return "/usr/bin/chromium-browser"
+		}
 		return "/opt/google/chrome/google-chrome"
 	}
 }
 
-func NewRaker(execPath, userDateDir string, debug, incognito bool) (Raker, error) {
+func NewRaker(userDateDir string, debug, incognito bool) (Raker, error) {
 	opts := append(
 		chromedp.DefaultExecAllocatorOptions[:],
 		chromedp.DisableGPU,
 		chromedp.Flag("incognito", incognito),
 		chromedp.Flag("headless", !debug),
+		chromedp.ExecPath(FindExecutablePath()),
 	)
-
-	if execPath != "" {
-		opts = append(opts, chromedp.ExecPath(execPath))
-	} else {
-		opts = append(opts, chromedp.ExecPath(FindExecutablePath()))
-	}
 
 	if userDateDir != "" {
 		opts = append(opts, chromedp.UserDataDir(userDateDir))
