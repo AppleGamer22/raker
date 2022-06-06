@@ -161,7 +161,20 @@ func InstagramSignOut(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	// TODO: sign-out instagram
+	userDataDir := path.Join(shared.UserDataDirectory, user.ID.String())
+	raker, err := shared.NewRaker(userDataDir, false, false)
+	if err != nil {
+		http.Error(writer, err.Error(), http.StatusInternalServerError)
+		log.Println(err)
+		return
+	}
+
+	if err := raker.InstagramSignOut(user.Username); err != nil {
+		http.Error(writer, "sign-out failed", http.StatusInternalServerError)
+		log.Println(err)
+		return
+	}
+
 	user.Instagram = false
 	if _, err := db.Users.UpdateOne(context.Background(), db.User{ID: user.ID}, user); err != nil {
 		http.Error(writer, err.Error(), http.StatusUnauthorized)
