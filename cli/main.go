@@ -3,11 +3,11 @@ package main
 import (
 	"os"
 
-	"github.com/AppleGamer22/rake/cli/cmd"
+	"github.com/AppleGamer22/rake/cli/commands"
 )
 
 func main() {
-	if err := cmd.RootCommand.Execute(); err != nil {
+	if err := commands.RootCommand.Execute(); err != nil {
 		os.Exit(1)
 	}
 }

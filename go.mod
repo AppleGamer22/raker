@@ -10,6 +10,7 @@ require (
 	github.com/stretchr/testify v1.7.2
 	go.mongodb.org/mongo-driver v1.9.1
 	golang.org/x/crypto v0.0.0-20220525230936-793ad666bf5e
+	golang.org/x/term v0.0.0-20220526004731-065cf7ba2467
 )
 
 require (
@@ -25,7 +26,7 @@ require (
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
-	github.com/klauspost/compress v1.15.5 // indirect
+	github.com/klauspost/compress v1.15.6 // indirect
 	github.com/magiconair/properties v1.8.6 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect

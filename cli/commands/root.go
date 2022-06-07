@@ -1,8 +1,13 @@
-package cmd
+package commands
 
 import (
 	"github.com/AppleGamer22/rake/shared"
 	"github.com/spf13/cobra"
+)
+
+var (
+	debug     bool
+	incognito bool
 )
 
 var RootCommand = cobra.Command{

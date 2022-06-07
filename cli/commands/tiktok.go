@@ -1,4 +1,4 @@
-package cmd
+package commands
 
 import (
 	"errors"
@@ -6,13 +6,13 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var vscoCommand = cobra.Command{
-	Use:   "vsco",
-	Short: "scrape vsco",
-	Long:  "scrape vsco",
+var tiktokCommand = cobra.Command{
+	Use:   "tiktok",
+	Short: "scrape tiktok",
+	Long:  "scrape tiktok",
 	Args: func(_ *cobra.Command, args []string) error {
 		if len(args) != 1 {
-			return errors.New("vsco expects a post ID as the first argument")
+			return errors.New("tiktok expects a post ID as the first argument")
 		}
 		return nil
 	},
@@ -22,5 +22,5 @@ var vscoCommand = cobra.Command{
 }
 
 func init() {
-	RootCommand.AddCommand(&vscoCommand)
+	RootCommand.AddCommand(&tiktokCommand)
 }
