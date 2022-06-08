@@ -11,6 +11,7 @@ import (
 	"github.com/AppleGamer22/rake/server/authenticator"
 	"github.com/AppleGamer22/rake/server/db"
 	"github.com/AppleGamer22/rake/shared"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -34,7 +35,7 @@ func InstagramSignUp(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	count, err := db.Users.CountDocuments(context.Background(), db.User{Username: username})
+	count, err := db.Users.CountDocuments(context.Background(), bson.M{"username": username})
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
 		return
@@ -83,7 +84,7 @@ func InstagramSignIn(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	result := db.Users.FindOne(context.Background(), db.User{Username: username})
+	result := db.Users.FindOne(context.Background(), bson.M{"username": username})
 	var user db.User
 	if err := result.Decode(&user); err != nil {
 		http.Error(writer, "sign-in failed", http.StatusBadRequest)
@@ -114,7 +115,7 @@ func InstagramSignIn(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	user.Instagram = true
-	if _, err := db.Users.UpdateOne(context.Background(), db.User{ID: user.ID}, user); err != nil {
+	if _, err := db.Users.UpdateOne(context.Background(), bson.M{"_id": user.ID}, user); err != nil {
 		http.Error(writer, "sign-in failed", http.StatusUnauthorized)
 		log.Println(err)
 		return
@@ -153,7 +154,7 @@ func InstagramSignOut(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	result := db.Users.FindOne(context.Background(), db.User{ID: payload.U_ID})
+	result := db.Users.FindOne(context.Background(), bson.M{"_id": payload.U_ID})
 	var user db.User
 	if err := result.Decode(&user); err != nil {
 		http.Error(writer, "sign-out failed", http.StatusUnauthorized)
@@ -176,7 +177,7 @@ func InstagramSignOut(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	user.Instagram = false
-	if _, err := db.Users.UpdateOne(context.Background(), db.User{ID: user.ID}, user); err != nil {
+	if _, err := db.Users.UpdateOne(context.Background(), bson.M{"_id": user.ID}, user); err != nil {
 		http.Error(writer, err.Error(), http.StatusUnauthorized)
 		log.Println(err)
 		return

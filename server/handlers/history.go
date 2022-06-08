@@ -28,7 +28,7 @@ func History(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	result := db.Users.FindOne(context.Background(), db.User{ID: payload.U_ID})
+	result := db.Users.FindOne(context.Background(), bson.M{"_id": payload.U_ID})
 	var user db.User
 	if err := result.Decode(&user); err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
@@ -119,11 +119,11 @@ func FilterHistories(U_ID primitive.ObjectID, media, owner, post string, categor
 }
 
 func EditHistory(U_ID primitive.ObjectID, media, owner, post string, categories []string) (db.History, error) {
-	filter := db.History{
-		U_ID:  U_ID.String(),
-		Type:  media,
-		Owner: owner,
-		Post:  post,
+	filter := bson.M{
+		"U_ID":  U_ID.String(),
+		"type":  media,
+		"owner": owner,
+		"post":  post,
 	}
 
 	update := bson.M{
@@ -157,7 +157,7 @@ func DeleteFile(U_ID primitive.ObjectID, post, file string) (db.History, error) 
 	}
 
 	if len(history.URLs) == 0 {
-		result, err := db.Histories.DeleteOne(context.Background(), db.History{U_ID: U_ID.String(), Post: post})
+		result, err := db.Histories.DeleteOne(context.Background(), bson.M{"U_ID": U_ID.String(), "post": post})
 		if err != nil {
 			return db.History{}, err
 		} else if result.DeletedCount == 0 {
