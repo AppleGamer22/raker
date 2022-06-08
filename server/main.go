@@ -5,15 +5,12 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"time"
 
 	"github.com/AppleGamer22/rake/server/authenticator"
 	"github.com/AppleGamer22/rake/server/db"
 	"github.com/AppleGamer22/rake/server/handlers"
 	"github.com/AppleGamer22/rake/shared"
 	"github.com/spf13/viper"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func main() {
@@ -36,25 +33,15 @@ func main() {
 	}
 	handlers.Authenticator = authenticator.New(conf.Secret)
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI(conf.URI))
+	client, err := db.Connect(conf.URI, conf.Database)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer client.Disconnect(context.Background())
 
-	if err := client.Ping(ctx, nil); err != nil {
-		log.Fatal(err)
-	}
-
 	if conf.Users != "" {
 		shared.UserDataDirectory = conf.Users
 	}
-
-	database := client.Database(conf.Database, options.Database())
-	db.Histories = *database.Collection("histories")
-	db.Users = *database.Collection("users")
 
 	log.Printf("Storage path: %s\n", conf.Storage)
 	if conf.Directories {
