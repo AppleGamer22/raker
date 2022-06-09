@@ -64,7 +64,7 @@ nfpms:
     maintainer: Omri Bornstein <omribor@gmail.com>
     homepage: https://github.com/AppleGamer22/rake
     license: GPL-3.0
-    description: Cross-platform caffeinate alternative.
+    description: A social media scraper with less JavaScript than my previous one.
     file_name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
     builds:
       - linux
@@ -128,20 +128,22 @@ release:
     ```
   prerelease: auto
 dockers:
-  - image_templates:
-      - "docker.io/applegamer22/rake:{{ .Tag }}"
+  - use: buildx
+    image_templates:
+      - "docker.io/applegamer22/rake:{{ .Version }}"
       - "docker.io/applegamer22/rake:latest"
-      - "ghcr.io/applegamer22/rake:{{ .Tag }}"
+      - "ghcr.io/applegamer22/rake:{{ .Version }}"
       - "ghcr.io/applegamer22/rake:latest"
     build_flag_templates:
       - "--pull"
-      - "--label=org.opencontainers.image.created={{.Date}}"
-      - "--label=org.opencontainers.image.title={{.ProjectName}}"
-      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
-      - "--label=org.opencontainers.image.version={{.Version}}"
+      - "--platform=linux/amd64,linux/arm64"
+      - "--label=org.opencontainers.image.created={{ .Date }}"
+      - "--label=org.opencontainers.image.title={{ .ProjectName }}"
+      - "--label=org.opencontainers.image.revision={{ .FullCommit }}"
+      - "--label=org.opencontainers.image.version={{ .Version }}"
 aurs:
   - homepage: https://github.com/AppleGamer22/rake
-    description: Cross-platform caffeinate alternative.
+    description: A social media scraper with less JavaScript than my previous one.
     license: GPL3
     maintainers:
       - Omri Bornstein <omribor@gmail.com>
@@ -172,7 +174,7 @@ brews:
     homepage: https://github.com/AppleGamer22/rake
     dependencies:
       - chromium
-    description: Cross-platform caffeinate alternative.
+    description: A social media scraper with less JavaScript than my previous one.
     license: GPL-3.0
     install: |
       bin.install "rake"
