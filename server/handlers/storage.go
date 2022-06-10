@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"strings"
 
 	"github.com/AppleGamer22/rake/server/db"
 )
@@ -17,18 +18,31 @@ type storageHandler struct {
 	fileServer  http.Handler
 }
 
+var StorageHandler storageHandler
+
 func NewStorageHandler(root string, directories bool) storageHandler {
-	return storageHandler{
+	StorageHandler = storageHandler{
 		root:        root,
 		directories: directories,
 		fileServer:  http.FileServer(http.Dir(root)),
 	}
+	return StorageHandler
 }
 
 func (handler storageHandler) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 	mediaPath := path.Join(handler.root, request.URL.Path)
 	info, err := os.Stat(mediaPath)
 	switch request.Method {
+	case http.MethodDelete:
+		pathComponents := strings.Split(request.URL.Path, "/")
+		if len(pathComponents) != 3 {
+			http.Error(writer, "invalid path", http.StatusBadRequest)
+			return
+		}
+		if err := handler.Delete(pathComponents[0], pathComponents[1], pathComponents[2]); err != nil {
+			http.Error(writer, err.Error(), http.StatusBadRequest)
+		}
+	case http.MethodPatch:
 	default:
 		if handler.directories || (err == nil && !info.IsDir()) {
 			handler.fileServer.ServeHTTP(writer, request)
@@ -41,7 +55,7 @@ func (handler storageHandler) ServeHTTP(writer http.ResponseWriter, request *htt
 	}
 }
 
-func (handler storageHandler) Save(media, owner, fileName, URL string) error {
+func (handler *storageHandler) Save(media, owner, fileName, URL string) error {
 	if !db.ValidMediaType(media) {
 		return fmt.Errorf("invalid media type: %s", media)
 	}
@@ -78,7 +92,7 @@ func (handler storageHandler) Save(media, owner, fileName, URL string) error {
 	return err
 }
 
-func (handler storageHandler) Delete(media, owner, fileName string) error {
+func (handler *storageHandler) Delete(media, owner, fileName string) error {
 	if !db.ValidMediaType(media) {
 		return fmt.Errorf("invalid media type: %s", media)
 	}
@@ -91,18 +105,21 @@ func (handler storageHandler) Delete(media, owner, fileName string) error {
 		return fmt.Errorf("file %s does not exists", filePath)
 	}
 
-	err = os.Remove(mediaPath)
+	if err := os.Remove(mediaPath); err != nil {
+		return err
+	}
 
 	directoryName := path.Dir(mediaPath)
-	files, err2 := os.ReadDir(directoryName)
-	if err2 != nil {
-		err = fmt.Errorf("%v\n%v", err, err2)
+	files, err := os.ReadDir(directoryName)
+	if err != nil {
+		return err
 	}
+
 	if len(files) == 0 {
-		if err3 := os.Remove(directoryName); err3 != nil {
-			err = fmt.Errorf("%v\n%v", err, err3)
+		if err := os.Remove(directoryName); err != nil {
+			return err
 		}
 	}
 
-	return err
+	return nil
 }
