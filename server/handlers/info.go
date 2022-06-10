@@ -9,6 +9,7 @@ import (
 )
 
 type version struct {
+	Name    string `json:"name"`
 	Version string `json:"version"`
 	Hash    string `json:"hash"`
 }
@@ -16,12 +17,11 @@ type version struct {
 func Information(writer http.ResponseWriter, request *http.Request) {
 	switch request.URL.Query().Get("about") {
 	case "":
-		jsonPayload := version{shared.Version, shared.Hash}
-		data, err := json.Marshal(jsonPayload)
-		if err != nil {
-			http.Error(writer, "could not process version information", http.StatusInternalServerError)
+		jsonPayload := version{"rake", shared.Version, shared.Hash}
+		writer.Header().Set("Content-Type", "application/json")
+		if err := json.NewEncoder(writer).Encode(jsonPayload); err != nil {
+			http.Error(writer, err.Error(), http.StatusInternalServerError)
 		}
-		fmt.Fprint(writer, string(data))
 	case "version":
 		fmt.Fprint(writer, shared.Version)
 	case "hash":

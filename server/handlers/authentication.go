@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"net/http"
 	"path"
@@ -57,12 +56,13 @@ func InstagramSignUp(writer http.ResponseWriter, request *http.Request) {
 		Network:   db.Instagram,
 		Instagram: false,
 	}
-	result, err := db.Users.InsertOne(context.Background(), user)
+	_, err = db.Users.InsertOne(context.Background(), user)
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	fmt.Fprint(writer, result.InsertedID)
+
+	InstagramSignIn(writer, request)
 
 }
 
