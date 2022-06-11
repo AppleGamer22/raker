@@ -2,32 +2,57 @@ package authenticator
 
 import (
 	"crypto/aes"
+	"crypto/cipher"
+	"crypto/rand"
+	"crypto/sha256"
 	"encoding/hex"
+	"errors"
+	"io"
 )
 
 func Encrypt(key, pt string) (string, error) {
-	c, err := aes.NewCipher([]byte(key))
+	sum := sha256.Sum256([]byte(key))
+	c, err := aes.NewCipher(sum[:])
 	if err != nil {
 		return "", err
 	}
 
-	out := make([]byte, len(pt))
-	c.Encrypt(out, []byte(pt))
-	return hex.EncodeToString(out), nil
+	gcm, err := cipher.NewGCM(c)
+	if err != nil {
+		return "", err
+	}
+
+	nonce := make([]byte, gcm.NonceSize())
+	if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
+		return "", err
+	}
+
+	ct := hex.EncodeToString(gcm.Seal(nonce, nonce, []byte(pt), nil))
+	return ct, nil
 }
 
 func Decrypt(key, ct string) (string, error) {
-	in, err := hex.DecodeString(ct)
+	sum := sha256.Sum256([]byte(key))
+	c, err := aes.NewCipher(sum[:])
 	if err != nil {
 		return "", err
 	}
 
-	c, err := aes.NewCipher([]byte(key))
+	ctBytes, err := hex.DecodeString(ct)
 	if err != nil {
 		return "", err
 	}
 
-	pt := make([]byte, len(ct))
-	c.Decrypt(pt, in)
-	return string(pt[:]), nil
+	gcm, err := cipher.NewGCM(c)
+	if err != nil {
+		return "", err
+	}
+
+	if len(ctBytes) < gcm.NonceSize() {
+		return "", errors.New("cipher text too short")
+	}
+
+	nonce, ctBytes := ctBytes[:gcm.NonceSize()], ctBytes[gcm.NonceSize():]
+	ptBytes, err := gcm.Open(nil, nonce, ctBytes, nil)
+	return string(ptBytes), err
 }
