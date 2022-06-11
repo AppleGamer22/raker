@@ -22,7 +22,7 @@ func New(secret string) Authenticator {
 func (a *Authenticator) Parse(tokenString string) (Payload, error) {
 	token, err := jwt.ParseWithClaims(tokenString, &Payload{}, func(token *jwt.Token) (interface{}, error) {
 		return a.secret, nil
-	}, jwt.WithValidMethods(jwt.GetAlgorithms()))
+	}, jwt.WithValidMethods([]string{jwt.SigningMethodHS256.Alg()}))
 	if payload, ok := token.Claims.(*Payload); ok && token.Valid {
 		return *payload, nil
 	} else {
