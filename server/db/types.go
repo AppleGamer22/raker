@@ -16,12 +16,13 @@ const (
 
 type User struct {
 	ID         primitive.ObjectID `bson:"_id" json:"-"`
-	Username   string             `bson:"username" json:"username"`
+	Username   string             `bson:"username" json:"-"`
 	Hash       string             `bson:"hash" json:"-"`
-	Joined     time.Time          `bson:"joined" json:"joined"`
-	Network    string             `bson:"network" json:"network"`
-	Instagram  bool               `bson:"instagram" json:"instagram"`
-	Categories []string           `bson:"categories" json:"categories"`
+	Secret     string             `bson:"secret" json:"-"`
+	Joined     time.Time          `bson:"joined" json:"-"`
+	Network    string             `bson:"network" json:"-"`
+	Instagram  bool               `bson:"instagram" json:"-"`
+	Categories []string           `bson:"categories" json:"-"`
 }
 
 type History struct {
