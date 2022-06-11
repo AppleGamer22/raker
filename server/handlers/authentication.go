@@ -51,14 +51,21 @@ func InstagramSignUp(writer http.ResponseWriter, request *http.Request) {
 
 	hashed, err := authenticator.Hash(password)
 	if err != nil {
-		http.Error(writer, "failed to store password securely", http.StatusInternalServerError)
+		http.Error(writer, "failed to store credentials securely", http.StatusInternalServerError)
 		return
 	}
+
+	key, err := authenticator.Encrypt(hashed, secret)
+	if err != nil {
+		http.Error(writer, "failed to store credentials securely", http.StatusInternalServerError)
+		return
+	}
+
 	user := db.User{
 		ID:        primitive.NewObjectID(),
 		Username:  username,
 		Hash:      hashed,
-		Secret:    secret,
+		Key:       key,
 		Joined:    time.Now(),
 		Network:   db.Instagram,
 		Instagram: false,
