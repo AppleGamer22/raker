@@ -18,11 +18,11 @@ type User struct {
 	ID         primitive.ObjectID `bson:"_id" json:"-"`
 	Username   string             `bson:"username" json:"-"`
 	Hash       string             `bson:"hash" json:"-"`
-	Key        string             `bson:"key" json:"-"`
 	Joined     time.Time          `bson:"joined" json:"-"`
 	Network    string             `bson:"network" json:"-"`
-	Instagram  bool               `bson:"instagram" json:"-"`
 	Categories []string           `bson:"categories" json:"-"`
+	// Key        string             `bson:"key" json:"-"`
+	// Instagram  bool               `bson:"instagram" json:"-"`
 }
 
 type History struct {

@@ -55,83 +55,17 @@ func InstagramSignUp(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	key, err := Authenticator.Encrypt(hashed)
-	if err != nil {
-		http.Error(writer, "failed to store credentials securely", http.StatusInternalServerError)
-		return
-	}
-
 	user := db.User{
-		ID:        primitive.NewObjectID(),
-		Username:  username,
-		Hash:      hashed,
-		Key:       key,
-		Joined:    time.Now(),
-		Network:   db.Instagram,
-		Instagram: false,
+		ID:       primitive.NewObjectID(),
+		Username: username,
+		Hash:     hashed,
+		Joined:   time.Now(),
+		Network:  db.Instagram,
+		// Instagram: false,
 	}
 	_, err = db.Users.InsertOne(context.Background(), user)
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	InstagramSignIn(writer, request)
-
-}
-
-func InstagramSignIn(writer http.ResponseWriter, request *http.Request) {
-	if err := request.ParseForm(); err != nil {
-		http.Error(writer, "failed to read request form", http.StatusBadRequest)
-		return
-	}
-
-	username := request.Form.Get("username")
-	if username == "" {
-		http.Error(writer, "username must be provided", http.StatusBadRequest)
-		return
-	}
-
-	password := request.Form.Get("password")
-	if password == "" {
-		http.Error(writer, "password must be provided", http.StatusBadRequest)
-		return
-	}
-
-	result := db.Users.FindOne(context.Background(), bson.M{"username": username})
-	var user db.User
-	if err := result.Decode(&user); err != nil {
-		http.Error(writer, "sign-in failed", http.StatusBadRequest)
-		log.Println(err)
-		return
-	}
-
-	if err := authenticator.Compare(user.Hash, password); err != nil {
-		http.Error(writer, "sign-in failed", http.StatusUnauthorized)
-		log.Println(err)
-		return
-	}
-
-	if !user.Instagram {
-		userDataDirectory := path.Join(shared.UserDataDirectory, user.ID.String())
-		raker, err := shared.NewRaker(userDataDirectory, false, false)
-		if err != nil {
-			http.Error(writer, "sign-in failed", http.StatusUnauthorized)
-			log.Println(err)
-			return
-		}
-
-		if err := raker.InstagramSignIn(username, password); err != nil {
-			http.Error(writer, "sign-in failed", http.StatusUnauthorized)
-			log.Println(err)
-			return
-		}
-	}
-
-	user.Instagram = true
-	if _, err := db.Users.UpdateOne(context.Background(), bson.M{"_id": user.ID}, user); err != nil {
-		http.Error(writer, "sign-in failed", http.StatusUnauthorized)
-		log.Println(err)
 		return
 	}
 
@@ -142,7 +76,7 @@ func InstagramSignIn(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	cookie := &http.Cookie{
+	jwtCookie := &http.Cookie{
 		Name:     "jwt",
 		Value:    webToken,
 		Path:     "/",
@@ -150,18 +84,35 @@ func InstagramSignIn(writer http.ResponseWriter, request *http.Request) {
 		HttpOnly: true,
 	}
 
-	http.SetCookie(writer, cookie)
+	http.SetCookie(writer, jwtCookie)
+
+	instagramCookie := &http.Cookie{
+		Name:     "instagram",
+		Value:    password,
+		Path:     "/",
+		Domain:   request.Host,
+		HttpOnly: true,
+	}
+	http.SetCookie(writer, instagramCookie)
+
 }
 
 func InstagramSignOut(writer http.ResponseWriter, request *http.Request) {
-	cookie, err := request.Cookie("jwt")
+	jwtCookie, err := request.Cookie("jwt")
 	if err != nil {
 		http.Error(writer, "a JWT must be provided", http.StatusBadRequest)
 		log.Println(err)
 		return
 	}
 
-	payload, err := Authenticator.Parse(cookie.Value)
+	instagramCookie, err := request.Cookie("instagram")
+	if err != nil {
+		http.Error(writer, "an Instagram cookie must be provided", http.StatusBadRequest)
+		log.Println(err)
+		return
+	}
+
+	payload, err := Authenticator.Parse(jwtCookie.Value)
 	if err != nil {
 		http.Error(writer, "sign-out failed", http.StatusUnauthorized)
 		log.Println(err)
@@ -171,6 +122,12 @@ func InstagramSignOut(writer http.ResponseWriter, request *http.Request) {
 	result := db.Users.FindOne(context.Background(), bson.M{"_id": payload.U_ID})
 	var user db.User
 	if err := result.Decode(&user); err != nil {
+		http.Error(writer, "sign-out failed", http.StatusUnauthorized)
+		log.Println(err)
+		return
+	}
+
+	if err := authenticator.Compare(user.Hash, instagramCookie.Value); err != nil {
 		http.Error(writer, "sign-out failed", http.StatusUnauthorized)
 		log.Println(err)
 		return
@@ -190,16 +147,18 @@ func InstagramSignOut(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	user.Instagram = false
-	if _, err := db.Users.UpdateOne(context.Background(), bson.M{"_id": user.ID}, user); err != nil {
+	if _, err := db.Users.DeleteOne(context.Background(), bson.M{"_id": user.ID}); err != nil {
 		http.Error(writer, err.Error(), http.StatusUnauthorized)
 		log.Println(err)
 		return
 	}
 
-	cookie.Value = ""
-	cookie.MaxAge = -1
-	http.SetCookie(writer, cookie)
+	jwtCookie.Value = ""
+	jwtCookie.MaxAge = -1
+	http.SetCookie(writer, jwtCookie)
+	instagramCookie.Value = ""
+	instagramCookie.MaxAge = -1
+	http.SetCookie(writer, instagramCookie)
 }
 
 func AuthenticationPage(writer http.ResponseWriter, request *http.Request) {

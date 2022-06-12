@@ -55,7 +55,6 @@ func main() {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/api/auth/sign_up/instagram", handlers.InstagramSignUp)
-	mux.HandleFunc("/api/auth/sign_in/instagram", handlers.InstagramSignIn)
 	mux.HandleFunc("/api/auth/sign_out/instagram", handlers.InstagramSignOut)
 	mux.HandleFunc("/api/history", handlers.History)
 	mux.HandleFunc("/api/api/info", handlers.Information)
