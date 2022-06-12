@@ -32,12 +32,6 @@ func InstagramSignUp(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	secret := request.Form.Get("secret")
-	if secret == "" {
-		http.Error(writer, "secret must be provided", http.StatusBadRequest)
-		return
-	}
-
 	count, err := db.Users.CountDocuments(context.Background(), bson.M{"username": username})
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
@@ -59,7 +53,6 @@ func InstagramSignUp(writer http.ResponseWriter, request *http.Request) {
 		Hash:     hashed,
 		Joined:   time.Now(),
 		Network:  db.Instagram,
-		// Instagram: false,
 	}
 	_, err = db.Users.InsertOne(context.Background(), user)
 	if err != nil {

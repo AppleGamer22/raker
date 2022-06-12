@@ -9,17 +9,18 @@ import (
 	"github.com/AppleGamer22/rake/server/authenticator"
 	"github.com/AppleGamer22/rake/server/db"
 	"github.com/AppleGamer22/rake/server/handlers"
-	"github.com/AppleGamer22/rake/shared"
 	"github.com/spf13/viper"
 )
 
-func main() {
+func init() {
 	viper.SetEnvPrefix("rake")
 	viper.AutomaticEnv()
 	viper.SetConfigName(".rake")
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath(".")
+}
 
+func main() {
 	if err := viper.ReadInConfig(); err != nil {
 		log.Println(err)
 	}
@@ -39,15 +40,10 @@ func main() {
 	}
 	defer client.Disconnect(context.Background())
 
-	if conf.Users != "" {
-		shared.UserDataDirectory = conf.Users
-	}
-
 	log.Printf("Storage path: %s\n", conf.Storage)
 	if conf.Directories {
 		log.Println("allowing directory listing")
 	}
-	log.Printf("Users path: %s\n", conf.Users)
 	log.Printf("MongoDB database URI: %s", conf.URI)
 	log.Printf("MongoDB database: %s", conf.Database)
 	log.Printf("Server is listening at http://localhost:%d\n", conf.Port)

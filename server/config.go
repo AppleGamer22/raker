@@ -6,9 +6,7 @@ type config struct {
 	Database    string
 	Storage     string
 	Directories bool
-	Users       string
 	Port        uint
-	// Executable  string
 }
 
 var conf = config{
@@ -16,6 +14,5 @@ var conf = config{
 	Database:    "rake",
 	Storage:     ".",
 	Directories: false,
-	Users:       ".",
 	Port:        4100,
 }
