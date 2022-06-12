@@ -10,8 +10,8 @@ import (
 	"io"
 )
 
-func Encrypt(key, pt string) (string, error) {
-	sum := sha256.Sum256([]byte(key))
+func (a *Authenticator) Encrypt(pt string) (string, error) {
+	sum := sha256.Sum256([]byte(a.secret))
 	c, err := aes.NewCipher(sum[:])
 	if err != nil {
 		return "", err
@@ -31,8 +31,8 @@ func Encrypt(key, pt string) (string, error) {
 	return ct, nil
 }
 
-func Decrypt(key, ct string) (string, error) {
-	sum := sha256.Sum256([]byte(key))
+func (a *Authenticator) Decrypt(ct string) (string, error) {
+	sum := sha256.Sum256([]byte(a.secret))
 	c, err := aes.NewCipher(sum[:])
 	if err != nil {
 		return "", err
