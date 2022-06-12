@@ -21,8 +21,6 @@ type User struct {
 	Joined     time.Time          `bson:"joined" json:"-"`
 	Network    string             `bson:"network" json:"-"`
 	Categories []string           `bson:"categories" json:"-"`
-	// Key        string             `bson:"key" json:"-"`
-	// Instagram  bool               `bson:"instagram" json:"-"`
 }
 
 type History struct {
