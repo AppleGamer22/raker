@@ -16,6 +16,6 @@ func TestVSCOPicture(t *testing.T) {
 	URL, err := url.Parse(urlString)
 	assert.NoError(t, err)
 	assert.Equal(t, "https", URL.Scheme, urlString)
-	assert.True(t, strings.Contains(URL.Host, "vsco.co"))
+	assert.True(t, strings.Contains(URL.Host, "vsco.co"), urlString)
 	assert.Regexp(t, filePathRegularExpression, URL.Path)
 }
