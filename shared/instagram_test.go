@@ -11,9 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var (
-	filePathRegularExpression = regexp.MustCompile(`\.(jpg)|(webp)|(mp4)|(webm)`)
-)
+var filePathRegularExpression = regexp.MustCompile(`\.(jpg)|(webp)|(mp4)|(webm)`)
 
 func init() {
 	viper.SetConfigName(".rake")
