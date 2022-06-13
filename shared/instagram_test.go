@@ -22,35 +22,35 @@ func init() {
 	}
 }
 
-func TestInstagramPublicSingleImage(t *testing.T) {
+func TestInstagramSingleImage(t *testing.T) {
 	instagram := shared.NewInstagram(viper.GetString("fbsr"), viper.GetString("session"), viper.GetString("app"))
-	URLs, username, err := instagram.Do("CbgDyqkFBdj")
+	URLs, username, err := instagram.Post("CbgDyqkFBdj")
 	assert.NoError(t, err)
 	assert.Equal(t, "wikipedia", username)
 	assert.Len(t, URLs, 1)
 	URL, err := url.Parse(URLs[0])
 	assert.NoError(t, err)
 	assert.Equal(t, "https", URL.Scheme)
-	assert.True(t, strings.Contains(URL.Host, "cdninstagram.com"))
+	assert.True(t, strings.Contains(URL.Host, "cdninstagram.com"), URLs[0])
 	assert.Regexp(t, filePathRegularExpression, URL.Path)
 }
 
-func TestInstagramPublicSingleVideo(t *testing.T) {
+func TestInstagramSingleVideo(t *testing.T) {
 	instagram := shared.NewInstagram(viper.GetString("fbsr"), viper.GetString("session"), viper.GetString("app"))
-	URLs, username, err := instagram.Do("BKyN0E2AApX")
+	URLs, username, err := instagram.Post("BKyN0E2AApX")
 	assert.NoError(t, err)
 	assert.Equal(t, "wikipedia", username)
 	assert.Len(t, URLs, 1)
 	URL, err := url.Parse(URLs[0])
 	assert.NoError(t, err)
 	assert.Equal(t, "https", URL.Scheme)
-	assert.True(t, strings.Contains(URL.Host, "cdninstagram.com"))
+	assert.True(t, strings.Contains(URL.Host, "cdninstagram.com"), URLs[0])
 	assert.Regexp(t, filePathRegularExpression, URL.Path)
 }
 
-func TestInstagramPublicBundleImages(t *testing.T) {
+func TestInstagramBundleImages(t *testing.T) {
 	instagram := shared.NewInstagram(viper.GetString("fbsr"), viper.GetString("session"), viper.GetString("app"))
-	URLs, username, err := instagram.Do("CZNJeAil1BC")
+	URLs, username, err := instagram.Post("CZNJeAil1BC")
 	assert.NoError(t, err)
 	assert.Equal(t, "wikipedia", username)
 	assert.Len(t, URLs, 2)
@@ -58,7 +58,7 @@ func TestInstagramPublicBundleImages(t *testing.T) {
 		URL, err := url.Parse(urlString)
 		assert.NoError(t, err)
 		assert.Equal(t, "https", URL.Scheme)
-		assert.True(t, strings.Contains(URL.Host, "cdninstagram.com"))
+		assert.True(t, strings.Contains(URL.Host, "cdninstagram.com"), urlString)
 		assert.Regexp(t, filePathRegularExpression, URL.Path)
 	}
 }
