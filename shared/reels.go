@@ -16,6 +16,10 @@ func (instagram *Instagram) Reels(id string, highlight bool) (URLs []string, use
 	if highlight {
 		query.Add("reel_ids", fmt.Sprintf("highlight:%s", id))
 	} else {
+		id, err = instagram.userID(id)
+		if err != nil {
+			return URLs, username, err
+		}
 		query.Add("reel_ids", id)
 	}
 	request.URL.RawQuery = query.Encode()
@@ -49,4 +53,23 @@ func (instagram *Instagram) userID(username string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+
+	query := request.URL.Query()
+	query.Add("username", username)
+	request.URL.RawQuery = query.Encode()
+
+	request.AddCookie(&instagram.fbsr)
+	request.AddCookie(&instagram.sessionID)
+	request.Header.Add("x-ig-app-id", instagram.appID)
+	request.Header.Add("user-agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.0.0 Safari/537.36")
+
+	response, err := http.DefaultClient.Do(request)
+	if err != nil {
+		return "", err
+	}
+	defer response.Body.Close()
+
+	var instagramUserID InstagramUserID
+	err = json.NewDecoder(response.Body).Decode(&instagramUserID)
+	return instagramUserID.Data.User.ID, err
 }

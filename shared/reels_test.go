@@ -33,3 +33,18 @@ func TestHighlight(t *testing.T) {
 		assert.Regexp(t, filePathRegularExpression, URL.Path)
 	}
 }
+
+func TestStory(t *testing.T) {
+	instagram := shared.NewInstagram(viper.GetString("fbsr"), viper.GetString("session"), viper.GetString("app"))
+	URLs, username, err := instagram.Reels("f1", false)
+	assert.NoError(t, err)
+	assert.Equal(t, "f1", username)
+	assert.Positive(t, len(URLs))
+	for _, urlString := range URLs {
+		URL, err := url.Parse(urlString)
+		assert.NoError(t, err)
+		assert.Equal(t, "https", URL.Scheme)
+		assert.True(t, strings.Contains(URL.Host, "cdninstagram.com"), urlString)
+		assert.Regexp(t, filePathRegularExpression, URL.Path)
+	}
+}

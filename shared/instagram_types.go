@@ -1,6 +1,16 @@
 package shared
 
-import "net/http"
+import (
+	"net/http"
+)
+
+type InstagramUserID struct {
+	Data struct {
+		User struct {
+			ID string `json:"id"`
+		} `json:"user"`
+	} `json:"data"`
+}
 
 type InstagramItem struct {
 	CarouselMedia []struct {
