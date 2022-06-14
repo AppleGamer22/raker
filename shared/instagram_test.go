@@ -22,17 +22,23 @@ func init() {
 	}
 }
 
+func testInstagramURLs(t *testing.T, URLs []string) {
+	for _, urlString := range URLs {
+		URL, err := url.Parse(urlString)
+		assert.NoError(t, err)
+		assert.Equal(t, "https", URL.Scheme)
+		assert.Regexp(t, instagramDomainRegularExpression, URL.Host, urlString)
+		assert.Regexp(t, filePathRegularExpression, URL.Path)
+	}
+}
+
 func TestInstagramSingleImage(t *testing.T) {
 	instagram := shared.NewInstagram(viper.GetString("fbsr"), viper.GetString("session"), viper.GetString("app"))
 	URLs, username, err := instagram.Post("CbgDyqkFBdj")
 	assert.NoError(t, err)
 	assert.Equal(t, "wikipedia", username)
 	assert.Len(t, URLs, 1)
-	URL, err := url.Parse(URLs[0])
-	assert.NoError(t, err)
-	assert.Equal(t, "https", URL.Scheme)
-	assert.Regexp(t, instagramDomainRegularExpression, URL.Host, URLs[0])
-	assert.Regexp(t, filePathRegularExpression, URL.Path)
+	testInstagramURLs(t, URLs)
 }
 
 func TestInstagramSingleVideo(t *testing.T) {
@@ -41,24 +47,14 @@ func TestInstagramSingleVideo(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, "wikipedia", username)
 	assert.Len(t, URLs, 1)
-	URL, err := url.Parse(URLs[0])
-	assert.NoError(t, err)
-	assert.Equal(t, "https", URL.Scheme)
-	assert.Regexp(t, instagramDomainRegularExpression, URL.Host, URLs[0])
-	assert.Regexp(t, filePathRegularExpression, URL.Path)
+	testInstagramURLs(t, URLs)
 }
 
-func TestInstagramBundleImages(t *testing.T) {
+func TestInstagramBundledImages(t *testing.T) {
 	instagram := shared.NewInstagram(viper.GetString("fbsr"), viper.GetString("session"), viper.GetString("app"))
 	URLs, username, err := instagram.Post("CZNJeAil1BC")
 	assert.NoError(t, err)
 	assert.Equal(t, "wikipedia", username)
 	assert.Len(t, URLs, 2)
-	for _, urlString := range URLs {
-		URL, err := url.Parse(urlString)
-		assert.NoError(t, err)
-		assert.Equal(t, "https", URL.Scheme)
-		assert.Regexp(t, instagramDomainRegularExpression, URL.Host, urlString)
-		assert.Regexp(t, filePathRegularExpression, URL.Path)
-	}
+	testInstagramURLs(t, URLs)
 }

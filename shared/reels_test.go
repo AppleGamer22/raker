@@ -1,7 +1,6 @@
 package shared_test
 
 import (
-	"net/url"
 	"testing"
 
 	"github.com/AppleGamer22/rake/shared"
@@ -18,32 +17,25 @@ func init() {
 	}
 }
 
-func TestHighlight(t *testing.T) {
+func testHighlight(t *testing.T) {
 	instagram := shared.NewInstagram(viper.GetString("fbsr"), viper.GetString("session"), viper.GetString("app"))
 	URLs, username, err := instagram.Reels("17898619759829276", true)
 	assert.NoError(t, err)
 	assert.Equal(t, "wikipedia", username)
 	assert.Len(t, URLs, 8)
-	for _, urlString := range URLs {
-		URL, err := url.Parse(urlString)
-		assert.NoError(t, err)
-		assert.Equal(t, "https", URL.Scheme)
-		assert.Regexp(t, instagramDomainRegularExpression, URL.Host, urlString)
-		assert.Regexp(t, filePathRegularExpression, URL.Path)
-	}
+	testInstagramURLs(t, URLs)
 }
 
-func TestStory(t *testing.T) {
+func testStory(t *testing.T) {
 	instagram := shared.NewInstagram(viper.GetString("fbsr"), viper.GetString("session"), viper.GetString("app"))
 	URLs, username, err := instagram.Reels("f1", false)
 	assert.NoError(t, err)
 	assert.Equal(t, "f1", username)
 	assert.Positive(t, len(URLs))
-	for _, urlString := range URLs {
-		URL, err := url.Parse(urlString)
-		assert.NoError(t, err)
-		assert.Equal(t, "https", URL.Scheme)
-		assert.Regexp(t, instagramDomainRegularExpression, URL.Host, urlString)
-		assert.Regexp(t, filePathRegularExpression, URL.Path)
-	}
+	testInstagramURLs(t, URLs)
+}
+
+func TestReels(t *testing.T) {
+	t.Run("Highlight", testHighlight)
+	t.Run("Story", testStory)
 }
