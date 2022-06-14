@@ -2,7 +2,6 @@ package shared_test
 
 import (
 	"net/url"
-	"strings"
 	"testing"
 
 	"github.com/AppleGamer22/rake/shared"
@@ -29,7 +28,7 @@ func TestHighlight(t *testing.T) {
 		URL, err := url.Parse(urlString)
 		assert.NoError(t, err)
 		assert.Equal(t, "https", URL.Scheme)
-		assert.True(t, strings.Contains(URL.Host, "cdninstagram.com"), urlString)
+		assert.Regexp(t, instagramDomainRegularExpression, URL.Host, urlString)
 		assert.Regexp(t, filePathRegularExpression, URL.Path)
 	}
 }
@@ -44,7 +43,7 @@ func TestStory(t *testing.T) {
 		URL, err := url.Parse(urlString)
 		assert.NoError(t, err)
 		assert.Equal(t, "https", URL.Scheme)
-		assert.True(t, strings.Contains(URL.Host, "cdninstagram.com"), urlString)
+		assert.Regexp(t, instagramDomainRegularExpression, URL.Host, urlString)
 		assert.Regexp(t, filePathRegularExpression, URL.Path)
 	}
 }

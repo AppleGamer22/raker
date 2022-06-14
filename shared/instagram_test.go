@@ -3,7 +3,6 @@ package shared_test
 import (
 	"net/url"
 	"regexp"
-	"strings"
 	"testing"
 
 	"github.com/AppleGamer22/rake/shared"
@@ -12,6 +11,7 @@ import (
 )
 
 var filePathRegularExpression = regexp.MustCompile(`\.(jpg)|(webp)|(mp4)|(webm)`)
+var instagramDomainRegularExpression = regexp.MustCompile(`(cdninstagram\.com)|(fbcdn\.net)`)
 
 func init() {
 	viper.SetConfigName(".rake")
@@ -31,7 +31,7 @@ func TestInstagramSingleImage(t *testing.T) {
 	URL, err := url.Parse(URLs[0])
 	assert.NoError(t, err)
 	assert.Equal(t, "https", URL.Scheme)
-	assert.True(t, strings.Contains(URL.Host, "cdninstagram.com"), URLs[0])
+	assert.Regexp(t, instagramDomainRegularExpression, URL.Host, URLs[0])
 	assert.Regexp(t, filePathRegularExpression, URL.Path)
 }
 
@@ -44,7 +44,7 @@ func TestInstagramSingleVideo(t *testing.T) {
 	URL, err := url.Parse(URLs[0])
 	assert.NoError(t, err)
 	assert.Equal(t, "https", URL.Scheme)
-	assert.True(t, strings.Contains(URL.Host, "cdninstagram.com"), URLs[0])
+	assert.Regexp(t, instagramDomainRegularExpression, URL.Host, URLs[0])
 	assert.Regexp(t, filePathRegularExpression, URL.Path)
 }
 
@@ -58,7 +58,7 @@ func TestInstagramBundleImages(t *testing.T) {
 		URL, err := url.Parse(urlString)
 		assert.NoError(t, err)
 		assert.Equal(t, "https", URL.Scheme)
-		assert.True(t, strings.Contains(URL.Host, "cdninstagram.com"), urlString)
+		assert.Regexp(t, instagramDomainRegularExpression, URL.Host, urlString)
 		assert.Regexp(t, filePathRegularExpression, URL.Path)
 	}
 }
