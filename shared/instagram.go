@@ -18,7 +18,7 @@ func (instagram *Instagram) Post(post string) (URLs []string, username string, e
 	htmlRequest.AddCookie(&instagram.fbsr)
 	htmlRequest.AddCookie(&instagram.sessionID)
 	htmlRequest.Header.Add("x-ig-app-id", instagram.appID)
-	htmlRequest.Header.Add("user-agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.0.0 Safari/537.36")
+	htmlRequest.Header.Add("user-agent", userAgent)
 
 	htmlResponse, err := http.DefaultClient.Do(htmlRequest)
 	if err != nil {
@@ -47,7 +47,7 @@ func (instagram *Instagram) Post(post string) (URLs []string, username string, e
 	jsonRequest.AddCookie(&instagram.fbsr)
 	jsonRequest.AddCookie(&instagram.sessionID)
 	jsonRequest.Header.Add("x-ig-app-id", instagram.appID)
-	jsonRequest.Header.Add("user-agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.0.0 Safari/537.36")
+	jsonRequest.Header.Add("user-agent", userAgent)
 
 	jsonResponse, err := http.DefaultClient.Do(jsonRequest)
 	if err != nil {

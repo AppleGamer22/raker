@@ -25,7 +25,7 @@ func TikTok(owner, post string) (URL string, username string, err error) {
 		return URL, username, err
 	}
 
-	request.Header.Add("user-agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.0.0 Safari/537.36")
+	request.Header.Add("user-agent", userAgent)
 	response, err := http.DefaultClient.Do(request)
 	if err != nil {
 		return URL, username, err
