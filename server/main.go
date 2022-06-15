@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -66,7 +67,9 @@ func main() {
 	mux.HandleFunc("/story", handlers.StoryPage)
 	mux.HandleFunc("/tiktok", handlers.TikTokPage)
 
-	if err := http.ListenAndServe(fmt.Sprintf(":%d", conf.Port), handlers.Log(mux)); err != nil {
-		log.Fatal(err)
+	if err := http.ListenAndServe(fmt.Sprintf("localhost:%d", conf.Port), handlers.Log(mux)); err != nil {
+		if !errors.Is(err, http.ErrServerClosed) {
+			log.Fatal(err)
+		}
 	}
 }
