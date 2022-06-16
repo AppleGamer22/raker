@@ -6,6 +6,9 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/AppleGamer22/rake/server/authenticator"
 	"github.com/AppleGamer22/rake/server/db"
@@ -54,7 +57,7 @@ func main() {
 	mux.HandleFunc("/api/auth/sign_up/instagram", handlers.InstagramSignUp)
 	mux.HandleFunc("/api/auth/sign_out/instagram", handlers.InstagramSignOut)
 	mux.HandleFunc("/api/history", handlers.History)
-	mux.HandleFunc("/api/api/info", handlers.Information)
+	mux.HandleFunc("/api/info", handlers.Information)
 	mux.HandleFunc("/api/instagram", handlers.Instagram)
 	mux.HandleFunc("/api/story", handlers.Story)
 	mux.HandleFunc("/api/tiktok", handlers.TikTok)
@@ -67,9 +70,23 @@ func main() {
 	mux.HandleFunc("/story", handlers.StoryPage)
 	mux.HandleFunc("/tiktok", handlers.TikTokPage)
 
-	if err := http.ListenAndServe(fmt.Sprintf("localhost:%d", conf.Port), handlers.Log(mux)); err != nil {
-		if !errors.Is(err, http.ErrServerClosed) {
+	server := http.Server{
+		Addr:    fmt.Sprintf("localhost:%d", conf.Port),
+		Handler: handlers.Log(mux),
+	}
+
+	go func() {
+		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			log.Fatal(err)
 		}
+	}()
+
+	signals := make(chan os.Signal, 1)
+	signal.Notify(signals, os.Interrupt, syscall.SIGTERM, syscall.SIGQUIT)
+	<-signals
+	fmt.Print("\r")
+	log.Println("termination signal has been received, shutting down server...")
+	if err := server.Shutdown(context.Background()); err != nil {
+		log.Fatal(err)
 	}
 }
