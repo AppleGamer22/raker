@@ -63,6 +63,7 @@ func main() {
 	mux.HandleFunc("/api/tiktok", handlers.TikTok)
 	mux.HandleFunc("/api/vsco", handlers.VSCO)
 	mux.Handle("/api/storage/", http.StripPrefix("/api/storage", handlers.NewStorageHandler(conf.Storage, conf.Directories)))
+	mux.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir("assets"))))
 
 	mux.HandleFunc("/auth", handlers.AuthenticationPage)
 	mux.HandleFunc("/history", handlers.HistoryPage)
