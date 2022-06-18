@@ -76,14 +76,16 @@ func main() {
 		Handler: handlers.Log(mux),
 	}
 
+	signals := make(chan os.Signal, 2)
+	signal.Notify(signals, os.Interrupt, syscall.SIGTERM, syscall.SIGQUIT)
+
 	go func() {
 		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			log.Println(err)
+			signals <- os.Interrupt
 		}
 	}()
 
-	signals := make(chan os.Signal, 2)
-	signal.Notify(signals, os.Interrupt, syscall.SIGTERM, syscall.SIGQUIT)
 	<-signals
 	fmt.Print("\r")
 	log.Println("shutting down server...")
