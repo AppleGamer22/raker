@@ -69,19 +69,38 @@
 				</div>
 				<button type="submit" class="btn btn-primary">Submit</button>
 			</form>
+			{{if gt (len .URLs) 0}}
 			<div class="card">
 				<div class="card-body">
 				{{.Date}}
 				</div>
 			</div>
-			<form>
-				<label for="categories">categories</label>
-				<select class="form-select" name="categories" id="categories" multiple>
-					<option value="1">One</option>
-					<option value="2">Two</option>
-					<option value="3">Three</option>
-				</select>
-			</form>
+			<div class="accordion" id="accordion_categories">
+				<div class="accordion-item">
+					<h2 class="accordion-header" id="heading_categories">
+						<button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapse_categories">
+							Categories:&nbsp;<b>{{join .Categories ", "}}</b>
+						</button>
+					</h2>
+					<div id="collapse_categories" class="accordion-collapse collapse" data-bs-parent="#accordion_categories">
+						<div class="accordion-body">
+							<form action="/instagram?post={{.Post}}" method="post">
+								{{range $category, $checked := .AvailableCategories}}
+									{{if $checked}}
+										<input type="checkbox" id="{{$category}}" name="{{$category}}" value="{{$checked}}" checked>
+									{{else}}
+										<input type="checkbox" id="{{$category}}" name="{{$category}}" value="{{$checked}}">
+									{{end}}
+									<label for="{{$category}}">{{$category}}</label>
+									<br>
+								{{end}}
+								<button type="submit" class="btn btn-secondary">Submit</button>
+							</form>
+						</div>
+					</div>
+				</div>
+			</div>
+			{{end}}
 			<div class="accordion" id="accordion">
 				{{range $i, $v := .URLs}}
 				<div class="accordion-item">
@@ -97,7 +116,7 @@
 							{{else if or (hasSuffix $v ".mp4") (hasSuffix $v ".webm")}}
 								<video src="/api/{{.}}" muted controls loop></video>
 							{{else}}
-
+								<a href="/api/{{.}}">{{.}}</a>
 							{{end}}
 						</div>
 					</div>

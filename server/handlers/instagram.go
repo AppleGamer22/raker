@@ -17,12 +17,12 @@ func Instagram(writer http.ResponseWriter, request *http.Request) {
 }
 
 func InstagramPage(writer http.ResponseWriter, request *http.Request) {
-	// _, err := Verify(request)
-	// if err != nil {
-	// 	http.Error(writer, "unauthorized", http.StatusUnauthorized)
-	// 	log.Println(err)
-	// 	return
-	// }
+	user, err := Verify(request)
+	if err != nil {
+		http.Error(writer, "unauthorized", http.StatusUnauthorized)
+		log.Println(err)
+		return
+	}
 	if err := request.ParseForm(); err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
 		return
@@ -36,7 +36,7 @@ func InstagramPage(writer http.ResponseWriter, request *http.Request) {
 			"type": db.Instagram,
 		}
 		if err := db.Histories.FindOne(context.Background(), filter).Decode(&history); err != nil {
-			http.Error(writer, err.Error(), http.StatusInternalServerError)
+			// http.Error(writer, err.Error(), http.StatusInternalServerError)
 			log.Println(err)
 			return
 		}
@@ -44,6 +44,7 @@ func InstagramPage(writer http.ResponseWriter, request *http.Request) {
 
 	funcs := template.FuncMap{
 		"hasSuffix": strings.HasSuffix,
+		"join":      strings.Join,
 	}
 	tmpl, err := template.New("instagram.html").Funcs(funcs).ParseFiles(filepath.Join("templates", "instagram.html"))
 	if err != nil {
@@ -52,8 +53,27 @@ func InstagramPage(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
+	historyDisplay := db.HistoryDisplay{
+		History: history,
+		AvailableCategories: func() map[string]bool {
+			result := make(map[string]bool)
+			for _, category := range user.Categories {
+				result[category] = true
+			}
+			for _, category := range history.Categories {
+				if _, ok := result[category]; ok {
+					result[category] = false
+				}
+			}
+			for category, c := range result {
+				result[category] = !c
+			}
+			return result
+		}(),
+	}
+
 	writer.Header().Set("Content-Type", "text/html")
-	if err := tmpl.Execute(writer, history); err != nil {
+	if err := tmpl.Execute(writer, historyDisplay); err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
 		log.Println(err)
 		return

@@ -34,6 +34,11 @@ type History struct {
 	Categories []string  `bson:"categories" json:"categories"`
 }
 
+type HistoryDisplay struct {
+	History
+	AvailableCategories map[string]bool
+}
+
 func ValidMediaType(media string) bool {
 	return media == Instagram || media == Highlight || media == Story || media == VSCO || media == TikTok
 }
