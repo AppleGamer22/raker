@@ -1,7 +1,16 @@
 @media (prefers-color-scheme: dark) {
 	:root,
 	.navbar,
-	.navbar-brand, .form-control, .form-control:focus {
+	.navbar-brand,
+	.form-control,
+	.form-control:focus,
+	.accordion,
+	.accordion-header,
+	.accordion-button,
+	.accordion-button:not(.collapsed),
+	.accordion-button:not(.collapsed)::after,
+	.accordion-button.collapsed::after,
+	.accordion-item {
 		--bs-body-bg: var(--bs-dark);
 		--bs-body-color: var(--bs-light);
 		--bs-navbar-color: rgba(255, 255, 255, 0.55);
@@ -16,6 +25,8 @@
 		--bs-navbar-active-color: var(--bs-light);
 		--bs-link-hover-color: var(--bs-gray-dark);
 		--bs-navbar-hover-color: var(--bs-gray-dark);
+		--bs-accordion-color-bg: var(--bs-dark);
+		--bs-accordion-color: var(--bs-light);
 		background-color: var(--bs-dark);
 		color: var(--bs-light);
 	}

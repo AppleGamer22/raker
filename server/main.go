@@ -78,16 +78,17 @@ func main() {
 
 	go func() {
 		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			log.Fatal(err)
+			log.Println(err)
 		}
 	}()
 
-	signals := make(chan os.Signal, 1)
+	signals := make(chan os.Signal, 2)
 	signal.Notify(signals, os.Interrupt, syscall.SIGTERM, syscall.SIGQUIT)
 	<-signals
 	fmt.Print("\r")
 	log.Println("termination signal has been received, shutting down server...")
 	if err := server.Shutdown(context.Background()); err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
+	fmt.Println("aaa")
 }
