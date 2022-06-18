@@ -62,25 +62,39 @@
 			</nav>
 		</header>
 		<main>
-			<form>
+			<form method="get">
 				<div class="mb-3">
-					<label class="form-label">post ID</label>
-					<input type="text" class="form-control" name="post" placeholder="https://instagram.com/p/ID">
+					<label for="post" class="form-label">post ID</label>
+					<input type="text" value="{{.Post}}" class="form-control" id="post" name="post" placeholder="https://instagram.com/p/ID">
 				</div>
 				<button type="submit" class="btn btn-primary">Submit</button>
 			</form>
+			<div class="card">
+				<div class="card-body">
+				{{.Date}}
+				</div>
+			</div>
 			<div class="accordion" id="accordion">
+				{{range $i, $v := .URLs}}
 				<div class="accordion-item">
-					<h2 class="accordion-header" id="headingOne">
-						<button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne">
-							Accordion Item #1
+					<h2 class="accordion-header" id="heading{{$i}}">
+						<button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{$i}}">
+							{{$v}}
 						</button>
 					</h2>
-					<div id="collapseOne" class="accordion-collapse collapse" data-bs-parent="#accordion">
+					<div id="collapse{{$i}}" class="accordion-collapse collapse" data-bs-parent="#accordion">
 						<div class="accordion-body">
+							{{if or (hasSuffix $v ".jpg") (hasSuffix $v ".webp")}}
+								<img class="img-fluid" src="/api/{{.}}">
+							{{else if or (hasSuffix $v ".mp4") (hasSuffix $v ".webm")}}
+								<video src="/api/{{.}}" muted controls loop></video>
+							{{else}}
+
+							{{end}}
 						</div>
 					</div>
 				</div>
+				{{end}}
 			</div>
 		</main>
 		<noscript>Please enable JavaScript to continue using this application.</noscript>

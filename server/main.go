@@ -86,9 +86,8 @@ func main() {
 	signal.Notify(signals, os.Interrupt, syscall.SIGTERM, syscall.SIGQUIT)
 	<-signals
 	fmt.Print("\r")
-	log.Println("termination signal has been received, shutting down server...")
+	log.Println("shutting down server...")
 	if err := server.Shutdown(context.Background()); err != nil {
 		log.Println(err)
 	}
-	fmt.Println("aaa")
 }

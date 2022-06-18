@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"path/filepath"
+	"strings"
 
 	"github.com/AppleGamer22/rake/server/db"
 	"go.mongodb.org/mongo-driver/bson"
@@ -30,13 +31,21 @@ func InstagramPage(writer http.ResponseWriter, request *http.Request) {
 	var history db.History
 	post := request.Form.Get("post")
 	if post != "" {
-		if err := db.Histories.FindOne(context.Background(), bson.M{"post": post}).Decode(&history); err != nil {
+		filter := bson.M{
+			"post": post,
+			"type": db.Instagram,
+		}
+		if err := db.Histories.FindOne(context.Background(), filter).Decode(&history); err != nil {
 			http.Error(writer, err.Error(), http.StatusInternalServerError)
 			log.Println(err)
 			return
 		}
 	}
-	tmpl, err := template.ParseFiles(filepath.Join("templates", "instagram.html"))
+
+	funcs := template.FuncMap{
+		"hasSuffix": strings.HasSuffix,
+	}
+	tmpl, err := template.New("instagram.html").Funcs(funcs).ParseFiles(filepath.Join("templates", "instagram.html"))
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
 		log.Println(err)
@@ -44,7 +53,7 @@ func InstagramPage(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	writer.Header().Set("Content-Type", "text/html")
-	if err := tmpl.Funcs(template.FuncMap{}).Execute(writer, nil); err != nil {
+	if err := tmpl.Execute(writer, history); err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
 		log.Println(err)
 		return
