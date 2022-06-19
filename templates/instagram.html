@@ -84,16 +84,17 @@
 					</h2>
 					<div id="collapse_categories" class="accordion-collapse collapse" data-bs-parent="#accordion_categories">
 						<div class="accordion-body">
-							<form action="/instagram?post={{.Post}}" method="post">
+							<form action="/api/history?media={{.Type}}&post={{.Post}}&owner={{.Owner}}&method=PATCH" method="post">
 								{{range $category, $checked := .AvailableCategories}}
 									{{if $checked}}
-										<input type="checkbox" id="{{$category}}" name="{{$category}}" value="{{$checked}}" checked>
+										<input type="checkbox" id="{{$category}}" name="{{$category}}" value="{{$category}}" checked>
 									{{else}}
-										<input type="checkbox" id="{{$category}}" name="{{$category}}" value="{{$checked}}">
+										<input type="checkbox" id="{{$category}}" name="{{$category}}" value="{{$category}}">
 									{{end}}
 									<label for="{{$category}}">{{$category}}</label>
 									<br>
 								{{end}}
+								<input type="hidden" name="method" value="PATCH">
 								<button type="submit" class="btn btn-secondary">Submit</button>
 							</form>
 						</div>

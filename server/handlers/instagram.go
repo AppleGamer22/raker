@@ -12,10 +12,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-func Instagram(writer http.ResponseWriter, request *http.Request) {
-
-}
-
 func InstagramPage(writer http.ResponseWriter, request *http.Request) {
 	user, err := Verify(request)
 	if err != nil {
@@ -23,6 +19,7 @@ func InstagramPage(writer http.ResponseWriter, request *http.Request) {
 		log.Println(err)
 		return
 	}
+
 	if err := request.ParseForm(); err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
 		return

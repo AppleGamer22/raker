@@ -6,7 +6,6 @@ import (
 	"errors"
 	"log"
 	"net/http"
-	"strings"
 
 	"github.com/AppleGamer22/rake/server/db"
 	"go.mongodb.org/mongo-driver/bson"
@@ -43,7 +42,12 @@ func History(writer http.ResponseWriter, request *http.Request) {
 	owner := request.Form.Get("owner")
 	post := request.Form.Get("post")
 	file := request.URL.Query().Get("delete")
-	categories := strings.Split(request.Form.Get("categories"), ",")
+	categories := make([]string, 0, len(user.Categories))
+	for _, category := range user.Categories {
+		if request.Form.Get(category) == category {
+			categories = append(categories, category)
+		}
+	}
 
 	if media == "" || owner == "" || post == "" {
 		http.Error(writer, "media type, owner & post must be valid", http.StatusBadRequest)
@@ -55,34 +59,39 @@ func History(writer http.ResponseWriter, request *http.Request) {
 		histories, err := FilterHistories(user.ID, media, owner, post, categories)
 		if err != nil {
 			http.Error(writer, err.Error(), http.StatusBadRequest)
+			log.Println(err)
 			return
 		}
 
 		writer.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(writer).Encode(histories)
-	case http.MethodPatch:
-		history, err := EditHistory(user.ID, media, owner, post, categories)
-		if err != nil {
-			http.Error(writer, err.Error(), http.StatusBadRequest)
+	case http.MethodPost:
+		switch request.Form.Get("method") {
+		case http.MethodPatch:
+			_, err := EditHistory(user.ID, media, owner, post, categories)
+			if err != nil {
+				http.Error(writer, err.Error(), http.StatusBadRequest)
+				log.Println(err)
+				return
+			}
+		case http.MethodDelete:
+			if file == "" {
+				http.Error(writer, "file URL must be valid", http.StatusBadRequest)
+				log.Println(err)
+				return
+			}
+
+			_, err := DeleteFileFromHistory(user.ID, post, file)
+			if err != nil {
+				http.Error(writer, err.Error(), http.StatusBadRequest)
+				log.Println(err)
+				return
+			}
+		default:
+			http.Error(writer, "request method is not recognized", http.StatusBadRequest)
 			return
 		}
-
-		writer.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(writer).Encode(history)
-	case http.MethodDelete:
-		if file == "" {
-			http.Error(writer, "file URL must be valid", http.StatusBadRequest)
-			return
-		}
-
-		history, err := DeleteFileFromHistory(user.ID, post, file)
-		if err != nil {
-			http.Error(writer, err.Error(), http.StatusBadRequest)
-			return
-		}
-
-		writer.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(writer).Encode(history)
+		http.Redirect(writer, request, request.Referer(), http.StatusTemporaryRedirect)
 	default:
 		http.Error(writer, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 	}
@@ -93,7 +102,7 @@ func FilterHistories(U_ID primitive.ObjectID, media, owner, post string, categor
 		return []db.History{}, errors.New("media must be valid")
 	}
 
-	filter := bson.M{"U_ID": U_ID.String()}
+	filter := bson.M{"U_ID": U_ID.Hex()}
 
 	if len(categories) != 0 {
 		filter["categories"] = categories
@@ -120,7 +129,7 @@ func FilterHistories(U_ID primitive.ObjectID, media, owner, post string, categor
 
 func EditHistory(U_ID primitive.ObjectID, media, owner, post string, categories []string) (db.History, error) {
 	filter := bson.M{
-		"U_ID":  U_ID.String(),
+		"U_ID":  U_ID.Hex(),
 		"type":  media,
 		"owner": owner,
 		"post":  post,
@@ -132,15 +141,14 @@ func EditHistory(U_ID primitive.ObjectID, media, owner, post string, categories 
 		},
 	}
 
-	result := db.Histories.FindOneAndUpdate(context.Background(), filter, update)
 	var history db.History
-	err := result.Decode(&history)
+	err := db.Histories.FindOneAndUpdate(context.Background(), filter, update).Decode(&history)
 	return history, err
 }
 
 func DeleteFileFromHistory(U_ID primitive.ObjectID, post, file string) (db.History, error) {
 	filter := bson.M{
-		"U_ID": U_ID.String(),
+		"U_ID": U_ID.Hex(),
 		"urls": file,
 		"post": post,
 	}
