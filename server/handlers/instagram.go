@@ -2,14 +2,20 @@ package handlers
 
 import (
 	"context"
+	"fmt"
 	"html/template"
 	"log"
 	"net/http"
+	"net/url"
+	"path"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/AppleGamer22/rake/server/db"
+	"github.com/AppleGamer22/rake/shared"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func InstagramPage(writer http.ResponseWriter, request *http.Request) {
@@ -33,8 +39,44 @@ func InstagramPage(writer http.ResponseWriter, request *http.Request) {
 			"type": db.Instagram,
 		}
 		if err := db.Histories.FindOne(context.Background(), filter).Decode(&history); err != nil {
-			// http.Error(writer, err.Error(), http.StatusInternalServerError)
-			log.Println(err)
+			instagram := shared.NewInstagram(user.FBSR, user.SessionID, user.AppID)
+			URLs, username, err := instagram.Post(post)
+
+			if err != nil {
+				http.Error(writer, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			localURLs := make([]string, 0, len(URLs))
+			for _, urlString := range URLs {
+				URL, err := url.Parse(urlString)
+				if err != nil {
+					log.Println(err)
+					continue
+				}
+				fileName := fmt.Sprintf("%s_%s", post, path.Base(URL.Path))
+
+				if err := StorageHandler.Save(db.Instagram, username, fileName, urlString); err != nil {
+					log.Println(err)
+					continue
+				}
+				localURLs = append(localURLs, fmt.Sprintf("storage/instagram/%s/%s", username, fileName))
+			}
+
+			history = db.History{
+				ID:    primitive.NewObjectID().Hex(),
+				U_ID:  user.ID.Hex(),
+				URLs:  localURLs,
+				Type:  db.Instagram,
+				Owner: username,
+				Post:  post,
+				Date:  time.Now(),
+			}
+
+			if _, err := db.Histories.InsertOne(context.Background(), history); err != nil {
+				http.Error(writer, err.Error(), http.StatusInternalServerError)
+				return
+			}
 		}
 	}
 

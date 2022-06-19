@@ -158,7 +158,7 @@ func editHistory(U_ID primitive.ObjectID, media, owner, post string, categories 
 	}
 
 	var history db.History
-	err := db.Histories.FindOneAndUpdate(context.Background(), filter, update).Decode(&history)
+	err := db.Histories.FindOneAndUpdate(context.Background(), filter, update, db.UpdateOptions).Decode(&history)
 	return history, err
 }
 
@@ -176,7 +176,7 @@ func deleteFileFromHistory(U_ID primitive.ObjectID, owner, media, post, file str
 	}
 
 	var history db.History
-	if err := db.Histories.FindOneAndUpdate(context.Background(), filter, update).Decode(&history); err != nil {
+	if err := db.Histories.FindOneAndUpdate(context.Background(), filter, update, db.UpdateOptions).Decode(&history); err != nil {
 		return db.History{}, err
 	}
 
@@ -185,6 +185,7 @@ func deleteFileFromHistory(U_ID primitive.ObjectID, owner, media, post, file str
 	}
 
 	if len(history.URLs) == 0 {
+		delete(filter, "urls")
 		result, err := db.Histories.DeleteOne(context.Background(), filter)
 		if err != nil {
 			return db.History{}, err

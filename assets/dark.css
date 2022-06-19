@@ -3,6 +3,7 @@
 	.navbar,
 	.navbar-brand,
 	.form-control,
+	.form-control:disabled,
 	.form-control:focus,
 	.accordion,
 	.accordion-header,
@@ -35,5 +36,9 @@
 		--bs-accordion-color: var(--bs-light);
 		background-color: var(--bs-dark);
 		color: var(--bs-light);
+	}
+
+	.form-control:disabled {
+		color: var(--bs-gray);
 	}
 }
