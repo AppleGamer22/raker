@@ -6,6 +6,8 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"net/url"
+	"path/filepath"
 	"sort"
 
 	"github.com/AppleGamer22/rake/server/db"
@@ -42,7 +44,7 @@ func History(writer http.ResponseWriter, request *http.Request) {
 	media := request.Form.Get("media")
 	owner := request.Form.Get("owner")
 	post := request.Form.Get("post")
-	file := request.URL.Query().Get("remove")
+	file := request.Form.Get("remove")
 
 	categories := make([]string, 0, len(user.Categories))
 	for _, category := range user.Categories {
@@ -59,7 +61,7 @@ func History(writer http.ResponseWriter, request *http.Request) {
 
 	switch request.Method {
 	case http.MethodGet:
-		histories, err := FilterHistories(user.ID, media, owner, post, categories)
+		histories, err := filterHistories(user.ID, media, owner, post, categories)
 		if err != nil {
 			http.Error(writer, err.Error(), http.StatusBadRequest)
 			log.Println(err)
@@ -71,12 +73,14 @@ func History(writer http.ResponseWriter, request *http.Request) {
 	case http.MethodPost:
 		switch request.Form.Get("method") {
 		case http.MethodPatch:
-			_, err := EditHistory(user.ID, media, owner, post, categories)
+			_, err := editHistory(user.ID, media, owner, post, categories)
 			if err != nil {
 				http.Error(writer, err.Error(), http.StatusBadRequest)
 				log.Println(err)
 				return
 			}
+
+			http.Redirect(writer, request, request.Referer(), http.StatusTemporaryRedirect)
 		case http.MethodDelete:
 			if file == "" {
 				http.Error(writer, "file URL must be valid", http.StatusBadRequest)
@@ -84,23 +88,32 @@ func History(writer http.ResponseWriter, request *http.Request) {
 				return
 			}
 
-			_, err := DeleteFileFromHistory(user.ID, post, file)
+			history, err := deleteFileFromHistory(user.ID, owner, media, post, file)
 			if err != nil {
 				http.Error(writer, err.Error(), http.StatusBadRequest)
 				log.Println(err)
 				return
 			}
+
+			redirectURL := request.Referer()
+			if len(history.URLs) == 0 {
+				URL, _ := url.Parse(redirectURL)
+				query := URL.Query()
+				query.Del("post")
+				URL.RawQuery = query.Encode()
+				redirectURL = URL.String()
+			}
+			http.Redirect(writer, request, redirectURL, http.StatusTemporaryRedirect)
 		default:
 			http.Error(writer, "request method is not recognized", http.StatusBadRequest)
 			return
 		}
-		http.Redirect(writer, request, request.Referer(), http.StatusTemporaryRedirect)
 	default:
 		http.Error(writer, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 	}
 }
 
-func FilterHistories(U_ID primitive.ObjectID, media, owner, post string, categories []string) ([]db.History, error) {
+func filterHistories(U_ID primitive.ObjectID, media, owner, post string, categories []string) ([]db.History, error) {
 	if !db.ValidMediaType(media) && media != "all" {
 		return []db.History{}, errors.New("media must be valid")
 	}
@@ -130,7 +143,7 @@ func FilterHistories(U_ID primitive.ObjectID, media, owner, post string, categor
 	return histories, err
 }
 
-func EditHistory(U_ID primitive.ObjectID, media, owner, post string, categories []string) (db.History, error) {
+func editHistory(U_ID primitive.ObjectID, media, owner, post string, categories []string) (db.History, error) {
 	filter := bson.M{
 		"U_ID":  U_ID.Hex(),
 		"type":  media,
@@ -149,7 +162,7 @@ func EditHistory(U_ID primitive.ObjectID, media, owner, post string, categories 
 	return history, err
 }
 
-func DeleteFileFromHistory(U_ID primitive.ObjectID, post, file string) (db.History, error) {
+func deleteFileFromHistory(U_ID primitive.ObjectID, owner, media, post, file string) (db.History, error) {
 	filter := bson.M{
 		"U_ID": U_ID.Hex(),
 		"urls": file,
@@ -162,9 +175,12 @@ func DeleteFileFromHistory(U_ID primitive.ObjectID, post, file string) (db.Histo
 		},
 	}
 
-	result := db.Histories.FindOneAndUpdate(context.Background(), filter, update)
 	var history db.History
-	if err := result.Decode(&history); err != nil {
+	if err := db.Histories.FindOneAndUpdate(context.Background(), filter, update).Decode(&history); err != nil {
+		return db.History{}, err
+	}
+
+	if err := StorageHandler.Delete(media, owner, filepath.Base(file)); err != nil {
 		return db.History{}, err
 	}
 
