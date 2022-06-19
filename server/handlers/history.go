@@ -42,7 +42,8 @@ func History(writer http.ResponseWriter, request *http.Request) {
 	media := request.Form.Get("media")
 	owner := request.Form.Get("owner")
 	post := request.Form.Get("post")
-	file := request.URL.Query().Get("delete")
+	file := request.URL.Query().Get("remove")
+
 	categories := make([]string, 0, len(user.Categories))
 	for _, category := range user.Categories {
 		if request.Form.Get(category) == category {

@@ -2,11 +2,7 @@
 <html lang="en">
 
 	<head>
-		{{if .Post}}
-			<title>Rake Instagram ({{.Post}})</title>
-		{{else}}
-			<title>Rake Instagram</title>
-		{{end}}
+		<title>rake/instagram/{{.Post}}</title>
 		<meta charset="utf-8">
 		<meta name="author" content="AppleGamer22">
 		<meta name="viewport"
@@ -25,10 +21,18 @@
 		<link rel="icon" type="image/x-icon" href="/assets/icons/favicon.ico">
 		<!-- <link rel="manifest" href="/manifest.json"> -->
 		<link href="/assets/theme.css" rel="stylesheet">
-		<script defer src="/assets/bootstrap.bundle.min.js"></script>
 		<link rel="stylesheet" href="/assets/dark.css">
+		<script defer src="/assets/bootstrap.bundle.min.js"></script>
+		<style>
+			h1, h2, h3, h4, h5, h6, label, p {
+				word-wrap: break-word;
+			}
+			img, video {
+				max-height: auto;
+				max-width: 100%;
+			}
+		</style>
 	</head>
-
 	<body>
 		<header>
 			<nav class="navbar navbar-expand-lg">
@@ -106,28 +110,29 @@
 				</div>
 			</div>
 			{{end}}
-			<div class="accordion" id="accordion">
-				{{range $i, $v := .URLs}}
-				<div class="accordion-item">
-					<h2 class="accordion-header" id="heading{{$i}}">
-						<button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{$i}}">
-							{{$v}}
-						</button>
-					</h2>
-					<div id="collapse{{$i}}" class="accordion-collapse collapse" data-bs-parent="#accordion">
-						<div class="accordion-body">
-							{{if or (hasSuffix $v ".jpg") (hasSuffix $v ".webp")}}
-								<img class="img-fluid" src="/api/{{.}}">
-							{{else if or (hasSuffix $v ".mp4") (hasSuffix $v ".webm")}}
-								<video src="/api/{{.}}" muted controls loop></video>
-							{{else}}
-								<a href="/api/{{.}}">{{.}}</a>
-							{{end}}
-						</div>
+			{{range $i, $v := .URLs}}
+			<ul class="list-group">
+				<li class="list-group-item">
+					<h6>{{base $v}}</h6>
+					<form action="/api/history?media={{$.Type}}&post={{$.Post}}&owner={{$.Owner}}" method="post">
+						<input type="hidden" name="method" value="DELETE">
+						<input type="hidden" name="remove" value="{{$v}}">
+						<button type="button" class="btn btn-secondary" data-bs-toggle="collapse" data-bs-target="#collapse{{$i}}">Show/Hide</button>
+						<button type="submit" class="btn btn-danger">Delete</button>
+					</form>
+					<div class="collapse" id="collapse{{$i}}">
+						<br>
+						{{if or (hasSuffix $v ".jpg") (hasSuffix $v ".webp")}}
+							<img src="/api/{{.}}">
+						{{else if or (hasSuffix $v ".mp4") (hasSuffix $v ".webm")}}
+							<video src="/api/{{.}}" muted controls loop></video>
+						{{else}}
+							<a href="/api/{{.}}">{{.}}</a>
+						{{end}}
 					</div>
-				</div>
-				{{end}}
-			</div>
+				</li>
+			</ul>
+			{{end}}
 		</main>
 		<noscript>Please enable JavaScript to continue using this application.</noscript>
 	</body>

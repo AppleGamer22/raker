@@ -41,6 +41,7 @@ func InstagramPage(writer http.ResponseWriter, request *http.Request) {
 	funcs := template.FuncMap{
 		"hasSuffix": strings.HasSuffix,
 		"join":      strings.Join,
+		"base":      filepath.Base,
 	}
 	tmpl, err := template.New("instagram.html").Funcs(funcs).ParseFiles(filepath.Join("templates", "instagram.html"))
 	if err != nil {
