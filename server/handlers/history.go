@@ -6,6 +6,7 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"sort"
 
 	"github.com/AppleGamer22/rake/server/db"
 	"go.mongodb.org/mongo-driver/bson"
@@ -48,6 +49,7 @@ func History(writer http.ResponseWriter, request *http.Request) {
 			categories = append(categories, category)
 		}
 	}
+	sort.Strings(categories)
 
 	if media == "" || owner == "" || post == "" {
 		http.Error(writer, "media type, owner & post must be valid", http.StatusBadRequest)
