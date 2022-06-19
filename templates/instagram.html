@@ -37,7 +37,10 @@
 		<header>
 			<nav class="navbar navbar-expand-lg">
 				<div class="container-fluid">
-					<a class="navbar-brand">Rake</a>
+					<a class="navbar-brand">
+						<img src="/assets/icons/logo.svg" width="30" height="24" class="d-inline-block align-text-top">
+						<!-- Rake -->
+					</a>
 					<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
 						<span class="navbar-toggler-icon"></span>
 					</button>
@@ -71,10 +74,12 @@
 		</header>
 		<main>
 			<form method="get">
-				<div class="mb-3">
-					<label class="form-label">owner</label>
-					<input type="text" value="{{.Owner}}" class="form-control" disabled>
-				</div>
+				{{if .Owner}}
+					<div class="mb-3">
+						<label class="form-label">owner</label>
+						<input type="text" value="{{.Owner}}" class="form-control" disabled>
+					</div>
+				{{end}}
 				<div class="mb-3">
 					<label for="post" class="form-label">post ID</label>
 					<input type="text" value="{{.Post}}" class="form-control" id="post" name="post" placeholder="https://instagram.com/p/ID">
@@ -82,62 +87,62 @@
 				<button type="submit" class="btn btn-primary">Submit</button>
 			</form>
 			{{if gt (len .URLs) 0}}
-			<div class="card">
-				<div class="card-body">
-				{{.Date}}
+				<div class="card">
+					<div class="card-body">
+					{{.Date}}
+					</div>
 				</div>
-			</div>
-			<div class="accordion" id="accordion_categories">
-				<div class="accordion-item">
-					<h2 class="accordion-header" id="heading_categories">
-						<button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapse_categories">
-							Categories:&nbsp;<b>{{join .Categories ", "}}</b>
-						</button>
-					</h2>
-					<div id="collapse_categories" class="accordion-collapse collapse" data-bs-parent="#accordion_categories">
-						<div class="accordion-body">
-							<form action="/api/history?media={{.Type}}&post={{.Post}}&owner={{.Owner}}" method="post">
-								{{range $category, $checked := .AvailableCategories}}
-									{{if $checked}}
-										<input type="checkbox" id="{{$category}}" name="{{$category}}" value="{{$category}}" checked>
-									{{else}}
-										<input type="checkbox" id="{{$category}}" name="{{$category}}" value="{{$category}}">
+				<div class="accordion" id="accordion_categories">
+					<div class="accordion-item">
+						<h2 class="accordion-header" id="heading_categories">
+							<button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapse_categories">
+								Categories:&nbsp;<b>{{join .Categories ", "}}</b>
+							</button>
+						</h2>
+						<div id="collapse_categories" class="accordion-collapse collapse" data-bs-parent="#accordion_categories">
+							<div class="accordion-body">
+								<form action="/api/history?media={{.Type}}&post={{.Post}}&owner={{.Owner}}" method="post">
+									{{range $category, $checked := .AvailableCategories}}
+										{{if $checked}}
+											<input type="checkbox" id="{{$category}}" name="{{$category}}" value="{{$category}}" checked>
+										{{else}}
+											<input type="checkbox" id="{{$category}}" name="{{$category}}" value="{{$category}}">
+										{{end}}
+										<label for="{{$category}}">{{$category}}</label>
+										<br>
 									{{end}}
-									<label for="{{$category}}">{{$category}}</label>
-									<br>
-								{{end}}
-								<input type="hidden" name="method" value="PATCH">
-								<button type="submit" class="btn btn-secondary">Submit</button>
-							</form>
+									<input type="hidden" name="method" value="PATCH">
+									<button type="submit" class="btn btn-secondary">Submit</button>
+								</form>
+							</div>
 						</div>
 					</div>
 				</div>
-			</div>
 			{{end}}
 			{{range $i, $v := .URLs}}
-			<ul class="list-group">
-				<li class="list-group-item">
-					<h6>
-						<a href="/api/{{.}}" target="_blank" rel="noopener noreferrer">{{base $v}}</a>
-					</h6>
-					<form action="/api/history?media={{$.Type}}&post={{$.Post}}&owner={{$.Owner}}" method="post">
-						<input type="hidden" name="method" value="DELETE">
-						<input type="hidden" name="remove" value="{{$v}}">
-						<button type="button" class="btn btn-secondary" data-bs-toggle="collapse" data-bs-target="#collapse{{$i}}">Show/Hide</button>
-						<button type="submit" class="btn btn-danger">Delete</button>
-					</form>
-					<div class="collapse" id="collapse{{$i}}">
-						<br>
-						{{if or (hasSuffix $v ".jpg") (hasSuffix $v ".webp")}}
-							<img src="/api/{{.}}">
-						{{else if or (hasSuffix $v ".mp4") (hasSuffix $v ".webm")}}
-							<video src="/api/{{.}}" muted controls loop></video>
-						{{else}}
-							<a href="/api/{{.}}">{{.}}</a>
-						{{end}}
-					</div>
-				</li>
-			</ul>
+				<ul class="list-group">
+					<li class="list-group-item">
+						<h6>
+							<a href="/api/{{.}}" target="_blank" rel="noopener noreferrer">{{base $v}}</a>
+						</h6>
+						<form action="/api/history?media={{$.Type}}&post={{$.Post}}&owner={{$.Owner}}" method="post">
+							<input type="hidden" name="method" value="DELETE">
+							<input type="hidden" name="remove" value="{{$v}}">
+							<button type="button" class="btn btn-secondary" data-bs-toggle="collapse" data-bs-target="#collapse{{$i}}">Show/Hide</button>
+							<button type="submit" class="btn btn-danger">Delete</button>
+						</form>
+						<div class="collapse" id="collapse{{$i}}">
+							<br>
+							{{if or (hasSuffix $v ".jpg") (hasSuffix $v ".webp")}}
+								<img src="/api/{{.}}">
+							{{else if or (hasSuffix $v ".mp4") (hasSuffix $v ".webm")}}
+								<video src="/api/{{.}}" muted controls loop></video>
+							{{else}}
+								<a href="/api/{{.}}">{{.}}</a>
+							{{end}}
+						</div>
+					</li>
+				</ul>
 			{{end}}
 		</main>
 		<noscript>Please enable JavaScript to continue using this application.</noscript>
