@@ -35,7 +35,6 @@ func InstagramPage(writer http.ResponseWriter, request *http.Request) {
 		if err := db.Histories.FindOne(context.Background(), filter).Decode(&history); err != nil {
 			// http.Error(writer, err.Error(), http.StatusInternalServerError)
 			log.Println(err)
-			return
 		}
 	}
 

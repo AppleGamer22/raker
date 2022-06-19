@@ -2,7 +2,11 @@
 <html lang="en">
 
 	<head>
-		<title>Rake Instagram</title>
+		{{if .Post}}
+			<title>Rake Instagram ({{.Post}})</title>
+		{{else}}
+			<title>Rake Instagram</title>
+		{{end}}
 		<meta charset="utf-8">
 		<meta name="author" content="AppleGamer22">
 		<meta name="viewport"
@@ -84,7 +88,7 @@
 					</h2>
 					<div id="collapse_categories" class="accordion-collapse collapse" data-bs-parent="#accordion_categories">
 						<div class="accordion-body">
-							<form action="/api/history?media={{.Type}}&post={{.Post}}&owner={{.Owner}}&method=PATCH" method="post">
+							<form action="/api/history?media={{.Type}}&post={{.Post}}&owner={{.Owner}}" method="post">
 								{{range $category, $checked := .AvailableCategories}}
 									{{if $checked}}
 										<input type="checkbox" id="{{$category}}" name="{{$category}}" value="{{$category}}" checked>
