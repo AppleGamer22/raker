@@ -10,6 +10,7 @@ import (
 
 	"github.com/AppleGamer22/rake/server/cleaner"
 	"github.com/AppleGamer22/rake/server/db"
+	"github.com/AppleGamer22/rake/shared"
 )
 
 type storageHandler struct {
@@ -67,7 +68,12 @@ func (handler *storageHandler) Save(media, owner, fileName, URL string) error {
 		}
 	}
 
-	response, err := http.Get(URL)
+	request, err := http.NewRequest(http.MethodGet, URL, nil)
+	if err != nil {
+		return err
+	}
+	request.Header.Add("user-agent", shared.UserAgent)
+	response, err := http.DefaultClient.Do(request)
 	if err != nil {
 		return err
 	}
