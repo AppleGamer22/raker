@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"sort"
 
+	"github.com/AppleGamer22/rake/server/cleaner"
 	"github.com/AppleGamer22/rake/server/db"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -41,14 +42,14 @@ func History(writer http.ResponseWriter, request *http.Request) {
 		http.Error(writer, "failed to read request form", http.StatusBadRequest)
 		return
 	}
-	media := request.Form.Get("media")
-	owner := request.Form.Get("owner")
-	post := request.Form.Get("post")
-	file := request.Form.Get("remove")
+	media := cleaner.Line(request.Form.Get("media"))
+	owner := cleaner.Line(request.Form.Get("owner"))
+	post := cleaner.Line(request.Form.Get("post"))
+	file := cleaner.Line(request.Form.Get("remove"))
 
 	categories := make([]string, 0, len(user.Categories))
 	for _, category := range user.Categories {
-		if request.Form.Get(category) == category {
+		if cleaner.Line(request.Form.Get(category)) == category {
 			categories = append(categories, category)
 		}
 	}
@@ -71,7 +72,7 @@ func History(writer http.ResponseWriter, request *http.Request) {
 		writer.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(writer).Encode(histories)
 	case http.MethodPost:
-		switch request.Form.Get("method") {
+		switch cleaner.Line(request.Form.Get("method")) {
 		case http.MethodPatch:
 			_, err := editHistory(user.ID, media, owner, post, categories)
 			if err != nil {

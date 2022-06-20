@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/AppleGamer22/rake/server/cleaner"
 	"github.com/AppleGamer22/rake/server/db"
 	"github.com/AppleGamer22/rake/shared"
 	"go.mongodb.org/mongo-driver/bson"
@@ -32,7 +33,7 @@ func InstagramPage(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	var history db.History
-	post := request.Form.Get("post")
+	post := cleaner.Line(request.Form.Get("post"))
 	if post != "" {
 		filter := bson.M{
 			"post": post,

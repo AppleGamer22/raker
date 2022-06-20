@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/AppleGamer22/rake/server/authenticator"
+	"github.com/AppleGamer22/rake/server/cleaner"
 	"github.com/AppleGamer22/rake/server/db"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -20,13 +21,13 @@ func InstagramSignUp(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	username := request.Form.Get("username")
+	username := cleaner.Line(request.Form.Get("username"))
 	if username == "" {
 		http.Error(writer, "username must be provided", http.StatusBadRequest)
 		return
 	}
 
-	password := request.Form.Get("password")
+	password := cleaner.Line(request.Form.Get("password"))
 	if password == "" {
 		http.Error(writer, "password must be provided", http.StatusBadRequest)
 		return

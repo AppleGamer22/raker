@@ -7,10 +7,9 @@ import (
 	"net/http"
 	"os"
 	"path"
-	"regexp"
-	"runtime"
 	"strings"
 
+	"github.com/AppleGamer22/rake/server/cleaner"
 	"github.com/AppleGamer22/rake/server/db"
 )
 
@@ -33,13 +32,7 @@ func NewStorageHandler(root string, directories bool) storageHandler {
 
 func (handler storageHandler) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 	mediaPath := path.Join(handler.root, request.URL.Path)
-
-	if runtime.GOOS == "windows" {
-		mediaPath = strings.ReplaceAll(mediaPath, `..\`, "")
-		mediaPath = regexp.MustCompile(`[A-Z]:`).ReplaceAllString(mediaPath, "")
-	} else {
-		mediaPath = strings.ReplaceAll(mediaPath, "../", "")
-	}
+	mediaPath = cleaner.Path(mediaPath)
 
 	info, err := os.Stat(mediaPath)
 	switch request.Method {
@@ -58,8 +51,7 @@ func (handler storageHandler) ServeHTTP(writer http.ResponseWriter, request *htt
 			handler.fileServer.ServeHTTP(writer, request)
 		} else {
 			if err != nil {
-				escapedURL := strings.Replace(request.URL.Path, "\n", "", -1)
-				escapedURL = strings.Replace(escapedURL, "\r", "", -1)
+				escapedURL := cleaner.Line(request.URL.Path)
 				log.Println(err, escapedURL)
 			}
 			http.Error(writer, http.StatusText(http.StatusNotFound), http.StatusNotFound)
