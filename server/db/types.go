@@ -43,6 +43,8 @@ type History struct {
 type HistoryDisplay struct {
 	History
 	AvailableCategories map[string]bool
+	Error               error
+	Version             string
 }
 
 func ValidMediaType(media string) bool {
