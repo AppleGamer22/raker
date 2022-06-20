@@ -3,13 +3,10 @@ package handlers
 import (
 	"context"
 	"fmt"
-	"html/template"
 	"log"
 	"net/http"
 	"net/url"
 	"path"
-	"path/filepath"
-	"strings"
 	"time"
 
 	"github.com/AppleGamer22/rake/server/cleaner"
@@ -32,7 +29,9 @@ func InstagramPage(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	var history db.History
+	history := db.History{
+		Type: db.Instagram,
+	}
 	post := cleaner.Line(request.Form.Get("post"))
 	if post != "" {
 		filter := bson.M{
@@ -44,7 +43,7 @@ func InstagramPage(writer http.ResponseWriter, request *http.Request) {
 			URLs, username, err := instagram.Post(post)
 
 			if err != nil {
-				http.Error(writer, err.Error(), http.StatusInternalServerError)
+				historyDisplay(user, history, err, writer)
 				return
 			}
 
@@ -75,47 +74,11 @@ func InstagramPage(writer http.ResponseWriter, request *http.Request) {
 			}
 
 			if _, err := db.Histories.InsertOne(context.Background(), history); err != nil {
-				http.Error(writer, err.Error(), http.StatusInternalServerError)
+				historyDisplay(user, history, err, writer)
 				return
 			}
 		}
 	}
 
-	funcs := template.FuncMap{
-		"hasSuffix": strings.HasSuffix,
-		"join":      strings.Join,
-		"base":      filepath.Base,
-	}
-	tmpl, err := template.New("instagram.html").Funcs(funcs).ParseFiles(filepath.Join("templates", "instagram.html"))
-	if err != nil {
-		http.Error(writer, err.Error(), http.StatusInternalServerError)
-		log.Println(err)
-		return
-	}
-
-	historyDisplay := db.HistoryDisplay{
-		History: history,
-		AvailableCategories: func() map[string]bool {
-			result := make(map[string]bool)
-			for _, category := range user.Categories {
-				result[category] = true
-			}
-			for _, category := range history.Categories {
-				if _, ok := result[category]; ok {
-					result[category] = false
-				}
-			}
-			for category, c := range result {
-				result[category] = !c
-			}
-			return result
-		}(),
-	}
-
-	writer.Header().Set("Content-Type", "text/html")
-	if err := tmpl.Execute(writer, historyDisplay); err != nil {
-		http.Error(writer, err.Error(), http.StatusInternalServerError)
-		log.Println(err)
-		return
-	}
+	historyDisplay(user, history, nil, writer)
 }

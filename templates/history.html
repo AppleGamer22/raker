@@ -39,7 +39,7 @@
 				<div class="container-fluid">
 					<a class="navbar-brand">
 						<img src="/assets/icons/logo.svg" width="30" height="24" class="d-inline-block align-text-top">
-						<!-- Rake -->
+						<span class="badge bg-secondary">{{.Version}}</span>
 					</a>
 					<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
 						<span class="navbar-toggler-icon"></span>
@@ -74,18 +74,61 @@
 		</header>
 		<main>
 			<form method="get">
-				{{if .Owner}}
+				{{if eq .Type "instagram"}}
+					{{if .Owner}}
+						<div class="mb-3">
+							<label class="form-label">owner</label>
+							<input type="text" value="{{.Owner}}" class="form-control" disabled>
+						</div>
+					{{end}}
 					<div class="mb-3">
-						<label class="form-label">owner</label>
-						<input type="text" value="{{.Owner}}" class="form-control" disabled>
+						<label for="post" class="form-label">post ID</label>
+						<input type="text" value="{{.Post}}" class="form-control" id="post" name="post" placeholder="https://instagram.com/p/ID">
 					</div>
 				{{end}}
-				<div class="mb-3">
-					<label for="post" class="form-label">post ID</label>
-					<input type="text" value="{{.Post}}" class="form-control" id="post" name="post" placeholder="https://instagram.com/p/ID">
-				</div>
+				{{if eq .Type "highlight"}}
+					{{if .Owner}}
+						<div class="mb-3">
+							<label class="form-label">owner</label>
+							<input type="text" value="{{.Owner}}" class="form-control" disabled>
+						</div>
+					{{end}}
+					<div class="mb-3">
+						<label class="form-label">highlight ID</label>
+						<input type="text" value="{{.Owner}}" class="form-control" id="highlight" name="highlight" placeholder="https://instagram.com/stories/highlights/ID">
+					</div>
+				{{end}}
+				{{if eq .Type "story"}}
+					<div class="mb-3">
+						<label for="owner" class="form-label">owner</label>
+						<input type="text" value="{{.Owner}}" class="form-control" id="owner" name="owner" placeholder="https://www.instagram.com/stories/OWNER">
+					</div>
+				{{end}}
+				{{if eq .Type "tiktok"}}
+					<div class="mb-3">
+						<label for="owner" class="form-label">owner</label>
+						<input type="text" value="{{.Owner}}" class="form-control" id="owner" name="owner" placeholder="https://tiktok.com/@OWNER/video/id">
+					</div>
+					<div class="mb-3">
+						<label for="post" class="form-label">post ID</label>
+						<input type="text" value="{{.Post}}" class="form-control" id="post" name="post" placeholder="https://tiktok.com/@owner/video/ID">
+					</div>
+				{{end}}
+				{{if eq .Type "vsco"}}
+					<div class="mb-3">
+						<label for="owner" class="form-label">owner</label>
+						<input type="text" value="{{.Owner}}" class="form-control" id="owner" name="owner" placeholder="https://vsco.co/OWNER/media/id">
+					</div>
+					<div class="mb-3">
+						<label for="post" class="form-label">post ID</label>
+						<input type="text" value="{{.Post}}" class="form-control" id="post" name="post" placeholder="https://vsco.co/owner/media/ID">
+					</div>
+				{{end}}
 				<button type="submit" class="btn btn-primary">Submit</button>
 			</form>
+			{{if .Error}}
+				<h3 class="text-danger">{{.Error}}</h3>
+			{{end}}
 			{{if gt (len .URLs) 0}}
 				<div class="card">
 					<div class="card-body">

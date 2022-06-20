@@ -4,14 +4,17 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"html/template"
 	"log"
 	"net/http"
 	"net/url"
 	"path/filepath"
 	"sort"
+	"strings"
 
 	"github.com/AppleGamer22/rake/server/cleaner"
 	"github.com/AppleGamer22/rake/server/db"
+	"github.com/AppleGamer22/rake/shared"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -198,6 +201,47 @@ func deleteFileFromHistory(U_ID primitive.ObjectID, owner, media, post, file str
 	}
 
 	return history, nil
+}
+
+func historyDisplay(user db.User, history db.History, serverError error, writer http.ResponseWriter) {
+	funcs := template.FuncMap{
+		"hasSuffix": strings.HasSuffix,
+		"join":      strings.Join,
+		"base":      filepath.Base,
+	}
+	tmpl, err := template.New("history.html").Funcs(funcs).ParseFiles(filepath.Join("templates", "history.html"))
+	if err != nil {
+		http.Error(writer, err.Error(), http.StatusInternalServerError)
+		log.Println(err)
+		return
+	}
+	historyDisplay := db.HistoryDisplay{
+		History: history,
+		Error:   serverError,
+		Version: shared.Version,
+		AvailableCategories: func() map[string]bool {
+			result := make(map[string]bool)
+			for _, category := range user.Categories {
+				result[category] = true
+			}
+			for _, category := range history.Categories {
+				if _, ok := result[category]; ok {
+					result[category] = false
+				}
+			}
+			for category, c := range result {
+				result[category] = !c
+			}
+			return result
+		}(),
+	}
+
+	writer.Header().Set("Content-Type", "text/html")
+	if err := tmpl.Execute(writer, historyDisplay); err != nil {
+		http.Error(writer, err.Error(), http.StatusInternalServerError)
+		log.Println(err)
+		return
+	}
 }
 
 func HistoryPage(writer http.ResponseWriter, request *http.Request) {
