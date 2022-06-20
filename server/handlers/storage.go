@@ -48,7 +48,9 @@ func (handler storageHandler) ServeHTTP(writer http.ResponseWriter, request *htt
 			handler.fileServer.ServeHTTP(writer, request)
 		} else {
 			if err != nil {
-				log.Println(err, request.URL.Path)
+				escapedURL := strings.Replace(request.URL.Path, "\n", "", -1)
+				escapedURL = strings.Replace(escapedURL, "\r", "", -1)
+				log.Println(err, escapedURL)
 			}
 			http.Error(writer, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		}
