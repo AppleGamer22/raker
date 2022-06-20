@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"os"
 	"path"
-	"strings"
 
 	"github.com/AppleGamer22/rake/server/cleaner"
 	"github.com/AppleGamer22/rake/server/db"
@@ -35,27 +34,14 @@ func (handler storageHandler) ServeHTTP(writer http.ResponseWriter, request *htt
 	mediaPath = cleaner.Path(mediaPath)
 
 	info, err := os.Stat(mediaPath)
-	switch request.Method {
-	case http.MethodDelete:
-		pathComponents := strings.Split(request.URL.Path, "/")
-		if len(pathComponents) != 3 {
-			http.Error(writer, "invalid path", http.StatusBadRequest)
-			return
+	if handler.directories || (err == nil && !info.IsDir()) {
+		handler.fileServer.ServeHTTP(writer, request)
+	} else {
+		if err != nil {
+			escapedURL := cleaner.Line(request.URL.Path)
+			log.Println(err, escapedURL)
 		}
-		if err := handler.Delete(pathComponents[0], pathComponents[1], pathComponents[2]); err != nil {
-			http.Error(writer, err.Error(), http.StatusBadRequest)
-		}
-	case http.MethodPatch:
-	default:
-		if handler.directories || (err == nil && !info.IsDir()) {
-			handler.fileServer.ServeHTTP(writer, request)
-		} else {
-			if err != nil {
-				escapedURL := cleaner.Line(request.URL.Path)
-				log.Println(err, escapedURL)
-			}
-			http.Error(writer, http.StatusText(http.StatusNotFound), http.StatusNotFound)
-		}
+		http.Error(writer, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 	}
 }
 
@@ -66,6 +52,7 @@ func (handler *storageHandler) Save(media, owner, fileName, URL string) error {
 
 	filePath := path.Join(media, owner, fileName)
 	mediaPath := path.Join(handler.root, filePath)
+	mediaPath = cleaner.Path(mediaPath)
 
 	_, err := os.Stat(mediaPath)
 	if err == nil {
@@ -103,6 +90,7 @@ func (handler *storageHandler) Delete(media, owner, fileName string) error {
 
 	filePath := path.Join(media, owner, fileName)
 	mediaPath := path.Join(handler.root, filePath)
+	mediaPath = cleaner.Path(mediaPath)
 
 	_, err := os.Stat(mediaPath)
 	if err != nil {
