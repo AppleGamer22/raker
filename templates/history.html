@@ -132,7 +132,7 @@
 			{{if gt (len .URLs) 0}}
 				<div class="card">
 					<div class="card-body">
-					{{.Date}}
+					{{.Date.Local}}
 					</div>
 				</div>
 				<div class="accordion" id="accordion_categories">
@@ -177,9 +177,9 @@
 						<div class="collapse" id="collapse{{$i}}">
 							<br>
 							{{if or (hasSuffix $v ".jpg") (hasSuffix $v ".webp")}}
-								<img src="/api/{{.}}">
+								<img src="/api/{{.}}" loading="lazy">
 							{{else if or (hasSuffix $v ".mp4") (hasSuffix $v ".webm")}}
-								<video src="/api/{{.}}" muted controls loop></video>
+								<video src="/api/{{.}}" preload="metadata" muted controls loop></video>
 							{{else}}
 								<a href="/api/{{.}}">{{.}}</a>
 							{{end}}
