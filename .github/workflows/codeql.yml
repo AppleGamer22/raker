@@ -1,18 +1,16 @@
 name: CodeQL
 on:
+  pull_request:
+    types:
+      - opened
+      - closed
+      - reopened
   workflow_dispatch:
     inputs: {}
 jobs:
   analyze:
-    strategy:
-        fail-fast: false
-        matrix:
-          os:
-            - ubuntu-latest
-            - macos-latest
-            - windows-latest
     name: Analyze
-    runs-on: ${{matrix.os}}
+    runs-on: ubuntu-latest
     permissions:
       actions: read
       contents: read
@@ -29,6 +27,6 @@ jobs:
       with:
         languages: go
     - name: Build
-      run: go build -race ./server
+      run: make server
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v2
