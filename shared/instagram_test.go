@@ -1,6 +1,8 @@
 package shared_test
 
 import (
+	"errors"
+	"log"
 	"net/url"
 	"regexp"
 	"testing"
@@ -14,11 +16,17 @@ var filePathRegularExpression = regexp.MustCompile(`\.(jpg)|(webp)|(mp4)|(webm)`
 var instagramDomainRegularExpression = regexp.MustCompile(`(cdninstagram\.com)|(fbcdn\.net)`)
 
 func init() {
+	viper.SetEnvPrefix("rake")
+	viper.AutomaticEnv()
 	viper.SetConfigName(".rake")
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath("..")
 	if err := viper.ReadInConfig(); err != nil {
-		panic(err)
+		log.Println(err)
+	}
+	terminate := viper.GetString("fbsr") == "" || viper.GetString("session") == "" || viper.GetString("app") == ""
+	if terminate {
+		panic(errors.New("fbsr, seesion ID and app ID must be provided"))
 	}
 }
 

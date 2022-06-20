@@ -25,3 +25,7 @@ jobs:
           go-version: "1.18.3"
       - name: Test
         run: make test
+        env:
+          RAKE_FBSR: ${{secrets.FBSR}}
+          RAKE_SESSION: ${{secrets.SESSION}}
+          RAKE_APP: ${{secrets.APP}}

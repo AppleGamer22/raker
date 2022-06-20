@@ -1,6 +1,8 @@
 package shared_test
 
 import (
+	"errors"
+	"log"
 	"testing"
 
 	"github.com/AppleGamer22/rake/shared"
@@ -9,11 +11,17 @@ import (
 )
 
 func init() {
+	viper.SetEnvPrefix("rake")
+	viper.AutomaticEnv()
 	viper.SetConfigName(".rake")
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath("..")
 	if err := viper.ReadInConfig(); err != nil {
-		panic(err)
+		log.Println(err)
+	}
+	terminate := viper.GetString("fbsr") == "" || viper.GetString("session") == "" || viper.GetString("app") == ""
+	if terminate {
+		panic(errors.New("fbsr, seesion ID and app ID must be provided"))
 	}
 }
 
