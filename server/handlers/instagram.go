@@ -82,7 +82,6 @@ func InstagramPage(writer http.ResponseWriter, request *http.Request) {
 			if _, err := db.Histories.InsertOne(context.Background(), history); err != nil {
 				log.Println(err)
 				errs = append(errs, err)
-				return
 			}
 		}
 	}

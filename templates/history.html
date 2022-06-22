@@ -39,7 +39,9 @@
 				<div class="container-fluid">
 					<a class="navbar-brand">
 						<img src="/assets/icons/logo.svg" width="30" height="24" class="d-inline-block align-text-top">
-						<span class="badge bg-secondary">{{.Version}}</span>
+						<sup>
+							<span class="badge bg-secondary">{{.Version}}</span>
+						</sup>
 					</a>
 					<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
 						<span class="navbar-toggler-icon"></span>
@@ -49,21 +51,51 @@
 							<li class="nav-item">
 								<a class="nav-link" href="/">Authentication</a>
 							</li>
-							<li class="nav-item">
-								<a class="nav-link disabled" href="/instagram">Instagram Post</a>
-							</li>
-							<li class="nav-item">
-								<a class="nav-link" href="/highlight">Instagram Highlight</a>
-							</li>
-							<li class="nav-item">
-								<a class="nav-link" href="/story">Instagram Story</a>
-							</li>
-							<li class="nav-item">
-								<a class="nav-link" href="/tiktok">TikTok Post</a>
-							</li>
-							<li class="nav-item">
-								<a class="nav-link" href="/vsco">VSCO Post</a>
-							</li>
+							{{if eq .Type "instagram"}}
+								<li class="nav-item">
+									<a class="nav-link disabled" href="/instagram">Instagram Post</a>
+								</li>
+							{{else}}
+								<li class="nav-item">
+									<a class="nav-link" href="/instagram">Instagram Post</a>
+								</li>
+							{{end}}
+							{{if eq .Type "highlight"}}
+								<li class="nav-item">
+									<a class="nav-link disabled" href="/highlight">Instagram Highlight</a>
+								</li>
+							{{else}}
+								<li class="nav-item">
+									<a class="nav-link" href="/highlight">Instagram Highlight</a>
+								</li>
+							{{end}}
+							{{if eq .Type "story"}}
+								<li class="nav-item">
+									<a class="nav-link disabled" href="/story">Instagram Story</a>
+								</li>
+							{{else}}
+								<li class="nav-item">
+									<a class="nav-link" href="/story">Instagram Story</a>
+								</li>
+							{{end}}
+							{{if eq .Type "tiktok"}}
+								<li class="nav-item">
+									<a class="nav-link disabled" href="/tiktok">TikTok Post</a>
+								</li>
+							{{else}}
+								<li class="nav-item">
+									<a class="nav-link" href="/tiktok">TikTok Post</a>
+								</li>
+							{{end}}
+							{{if eq .Type "vsco"}}
+								<li class="nav-item">
+									<a class="nav-link disabled" href="/vsco">VSCO Post</a>
+								</li>
+							{{else}}
+								<li class="nav-item">
+									<a class="nav-link" href="/vsco">VSCO Post</a>
+								</li>
+							{{end}}
 							<li class="nav-item">
 								<a class="nav-link" href="/history">History</a>
 							</li>
@@ -126,8 +158,10 @@
 				{{end}}
 				<button type="submit" class="btn btn-primary">Submit</button>
 			</form>
-			{{if .Error}}
-				<h3 class="text-danger">{{.Error}}</h3>
+			{{range .Errors}}
+				{{if .}}
+					<h3 class="text-danger">{{.}}</h3>
+				{{end}}
 			{{end}}
 			{{if gt (len .URLs) 0}}
 				<div class="card">
