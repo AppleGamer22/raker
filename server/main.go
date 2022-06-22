@@ -59,8 +59,6 @@ func main() {
 	mux.HandleFunc("/api/history", handlers.History)
 	mux.HandleFunc("/api/info", handlers.Information)
 	mux.HandleFunc("/api/story", handlers.Story)
-	mux.HandleFunc("/api/tiktok", handlers.TikTok)
-	mux.HandleFunc("/api/vsco", handlers.VSCO)
 	mux.Handle("/api/storage/", http.StripPrefix("/api/storage", handlers.NewStorageHandler(conf.Storage, conf.Directories)))
 	mux.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir("assets"))))
 
@@ -69,6 +67,7 @@ func main() {
 	mux.HandleFunc("/instagram", handlers.InstagramPage)
 	mux.HandleFunc("/story", handlers.StoryPage)
 	mux.HandleFunc("/tiktok", handlers.TikTokPage)
+	mux.HandleFunc("/vsco", handlers.VSCOPage)
 
 	server := http.Server{
 		Addr:    fmt.Sprintf("localhost:%d", conf.Port),

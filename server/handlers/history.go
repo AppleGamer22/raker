@@ -203,7 +203,7 @@ func deleteFileFromHistory(U_ID primitive.ObjectID, owner, media, post, file str
 	return history, nil
 }
 
-func historyDisplay(user db.User, history db.History, serverError error, writer http.ResponseWriter) {
+func historyDisplay(user db.User, history db.History, serverErrors []error, writer http.ResponseWriter) {
 	funcs := template.FuncMap{
 		"hasSuffix": strings.HasSuffix,
 		"join":      strings.Join,
@@ -217,7 +217,7 @@ func historyDisplay(user db.User, history db.History, serverError error, writer 
 	}
 	historyDisplay := db.HistoryDisplay{
 		History: history,
-		Error:   serverError,
+		Errors:  serverErrors,
 		Version: shared.Version,
 		AvailableCategories: func() map[string]bool {
 			result := make(map[string]bool)

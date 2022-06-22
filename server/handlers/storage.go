@@ -72,7 +72,11 @@ func (handler *storageHandler) Save(media, owner, fileName, URL string) error {
 	if err != nil {
 		return err
 	}
-	request.Header.Add("user-agent", shared.UserAgent)
+
+	if media == db.TikTok {
+		request.Header.Add("Range", "bytes=0-")
+	}
+	request.Header.Add("User-Agent", shared.UserAgent)
 	response, err := http.DefaultClient.Do(request)
 	if err != nil {
 		return err

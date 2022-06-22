@@ -109,7 +109,7 @@ func (instagram *Instagram) Post(post string) (URLs []string, username string, e
 	htmlRequest.AddCookie(&instagram.fbsr)
 	htmlRequest.AddCookie(&instagram.sessionID)
 	htmlRequest.Header.Add("x-ig-app-id", instagram.appID)
-	htmlRequest.Header.Add("user-agent", UserAgent)
+	htmlRequest.Header.Add("User-Agent", UserAgent)
 
 	htmlResponse, err := http.DefaultClient.Do(htmlRequest)
 	if err != nil {
@@ -138,7 +138,7 @@ func (instagram *Instagram) Post(post string) (URLs []string, username string, e
 	jsonRequest.AddCookie(&instagram.fbsr)
 	jsonRequest.AddCookie(&instagram.sessionID)
 	jsonRequest.Header.Add("x-ig-app-id", instagram.appID)
-	jsonRequest.Header.Add("user-agent", UserAgent)
+	jsonRequest.Header.Add("User-Agent", UserAgent)
 
 	jsonResponse, err := http.DefaultClient.Do(jsonRequest)
 	if err != nil {

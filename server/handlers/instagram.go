@@ -32,7 +32,10 @@ func InstagramPage(writer http.ResponseWriter, request *http.Request) {
 	history := db.History{
 		Type: db.Instagram,
 	}
+
 	post := cleaner.Line(request.Form.Get("post"))
+	errs := []error{}
+
 	if post != "" {
 		filter := bson.M{
 			"post": post,
@@ -43,7 +46,8 @@ func InstagramPage(writer http.ResponseWriter, request *http.Request) {
 			URLs, username, err := instagram.Post(post)
 
 			if err != nil {
-				historyDisplay(user, history, err, writer)
+				log.Println(err)
+				historyDisplay(user, history, []error{err}, writer)
 				return
 			}
 
@@ -52,15 +56,17 @@ func InstagramPage(writer http.ResponseWriter, request *http.Request) {
 				URL, err := url.Parse(urlString)
 				if err != nil {
 					log.Println(err)
+					errs = append(errs, err)
 					continue
 				}
 				fileName := fmt.Sprintf("%s_%s", post, path.Base(URL.Path))
 
 				if err := StorageHandler.Save(db.Instagram, username, fileName, urlString); err != nil {
 					log.Println(err)
+					errs = append(errs, err)
 					continue
 				}
-				localURLs = append(localURLs, fmt.Sprintf("storage/instagram/%s/%s", username, fileName))
+				localURLs = append(localURLs, fmt.Sprintf("storage/%s/%s/%s", db.Instagram, username, fileName))
 			}
 
 			history = db.History{
@@ -74,11 +80,12 @@ func InstagramPage(writer http.ResponseWriter, request *http.Request) {
 			}
 
 			if _, err := db.Histories.InsertOne(context.Background(), history); err != nil {
-				historyDisplay(user, history, err, writer)
+				log.Println(err)
+				errs = append(errs, err)
 				return
 			}
 		}
 	}
 
-	historyDisplay(user, history, nil, writer)
+	historyDisplay(user, history, errs, writer)
 }

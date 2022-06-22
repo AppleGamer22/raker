@@ -43,7 +43,7 @@ type History struct {
 type HistoryDisplay struct {
 	History
 	AvailableCategories map[string]bool
-	Error               error
+	Errors              []error
 	Version             string
 }
 
