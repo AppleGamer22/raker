@@ -63,7 +63,7 @@ func VSCOPage(writer http.ResponseWriter, request *http.Request) {
 			history = db.History{
 				ID:    primitive.NewObjectID().Hex(),
 				U_ID:  user.ID.Hex(),
-				URLs:  []string{fmt.Sprintf("storage/%s/%s/%s", db.VSCO, username, fileName)},
+				URLs:  []string{fileName},
 				Type:  db.VSCO,
 				Owner: username,
 				Post:  post,

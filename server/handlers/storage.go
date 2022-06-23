@@ -51,7 +51,7 @@ func (handler *storageHandler) Save(user db.User, media, owner, fileName, URL st
 		return fmt.Errorf("invalid media type: %s", media)
 	}
 
-	filePath := path.Join(media, owner, fileName)
+	filePath := path.Join(user.ID.Hex(), media, owner, fileName)
 	mediaPath := path.Join(handler.root, filePath)
 	mediaPath = cleaner.Path(mediaPath)
 
@@ -102,12 +102,12 @@ func (handler *storageHandler) Save(user db.User, media, owner, fileName, URL st
 	return err
 }
 
-func (handler *storageHandler) Delete(media, owner, fileName string) error {
+func (handler *storageHandler) Delete(user db.User, media, owner, fileName string) error {
 	if !db.ValidMediaType(media) {
 		return fmt.Errorf("invalid media type: %s", media)
 	}
 
-	filePath := path.Join(media, owner, fileName)
+	filePath := path.Join(user.ID.Hex(), media, owner, fileName)
 	mediaPath := path.Join(handler.root, filePath)
 	mediaPath = cleaner.Path(mediaPath)
 

@@ -200,7 +200,7 @@
 				<ul class="list-group">
 					<li class="list-group-item">
 						<h6>
-							<a href="/api/{{.}}" target="_blank" rel="noopener noreferrer">{{base $v}}</a>
+							<a href="/api/storage/{{$.U_ID}}/{{$.Type}}/{{$.Owner}}/{{.}}" target="_blank" rel="noopener noreferrer">{{base $v}}</a>
 						</h6>
 						<form action="/api/history?media={{$.Type}}&post={{$.Post}}&owner={{$.Owner}}" method="post">
 							<input type="hidden" name="method" value="DELETE">
@@ -211,11 +211,11 @@
 						<div class="collapse" id="collapse{{$i}}">
 							<br>
 							{{if or (hasSuffix $v ".jpg") (hasSuffix $v ".webp")}}
-								<img src="/api/{{.}}" loading="lazy">
+								<img src="/api/storage/{{$.U_ID}}/{{$.Type}}/{{$.Owner}}/{{.}}" loading="lazy">
 							{{else if or (hasSuffix $v ".mp4") (hasSuffix $v ".webm")}}
-								<video src="/api/{{.}}" preload="metadata" muted controls loop></video>
+								<video src="/api/storage/{{$.U_ID}}/{{$.Type}}/{{$.Owner}}/{{.}}" preload="metadata" muted controls loop></video>
 							{{else}}
-								<a href="/api/{{.}}">{{.}}</a>
+								<a href="/api/storage/{{$.U_ID}}/{{$.Type}}/{{$.Owner}}/{{.}}">{{.}}</a>
 							{{end}}
 						</div>
 					</li>

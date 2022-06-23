@@ -66,7 +66,7 @@ func InstagramPage(writer http.ResponseWriter, request *http.Request) {
 					errs = append(errs, err)
 					continue
 				}
-				localURLs = append(localURLs, fmt.Sprintf("storage/%s/%s/%s", db.Instagram, username, fileName))
+				localURLs = append(localURLs, fileName)
 			}
 
 			history = db.History{

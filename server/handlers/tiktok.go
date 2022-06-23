@@ -41,7 +41,6 @@ func TikTokPage(writer http.ResponseWriter, request *http.Request) {
 		if err := db.Histories.FindOne(context.Background(), filter).Decode(&history); err != nil {
 			tiktok := shared.NewTikTok(user.TikTok)
 			URL, username, err := tiktok.Post(owner, post)
-			fmt.Println(URL)
 
 			if err != nil {
 				log.Println(err)
@@ -60,7 +59,7 @@ func TikTokPage(writer http.ResponseWriter, request *http.Request) {
 			history = db.History{
 				ID:    primitive.NewObjectID().Hex(),
 				U_ID:  user.ID.Hex(),
-				URLs:  []string{fmt.Sprintf("storage/%s/%s/%s", db.TikTok, username, fileName)},
+				URLs:  []string{fileName},
 				Type:  db.TikTok,
 				Owner: username,
 				Post:  post,

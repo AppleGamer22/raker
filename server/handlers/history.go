@@ -92,7 +92,7 @@ func History(writer http.ResponseWriter, request *http.Request) {
 				return
 			}
 
-			history, err := deleteFileFromHistory(user.ID, owner, media, post, file)
+			history, err := deleteFileFromHistory(user, owner, media, post, file)
 			if err != nil {
 				http.Error(writer, err.Error(), http.StatusBadRequest)
 				log.Println(err)
@@ -166,9 +166,9 @@ func editHistory(U_ID primitive.ObjectID, media, owner, post string, categories 
 	return history, err
 }
 
-func deleteFileFromHistory(U_ID primitive.ObjectID, owner, media, post, file string) (db.History, error) {
+func deleteFileFromHistory(user db.User, owner, media, post, file string) (db.History, error) {
 	filter := bson.M{
-		"U_ID": U_ID.Hex(),
+		"U_ID": user.ID.Hex(),
 		"urls": file,
 		"post": post,
 	}
@@ -184,7 +184,7 @@ func deleteFileFromHistory(U_ID primitive.ObjectID, owner, media, post, file str
 		return db.History{}, err
 	}
 
-	if err := StorageHandler.Delete(media, owner, filepath.Base(file)); err != nil {
+	if err := StorageHandler.Delete(user, media, owner, filepath.Base(file)); err != nil {
 		return db.History{}, err
 	}
 
