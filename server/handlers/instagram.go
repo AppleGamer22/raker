@@ -42,7 +42,7 @@ func InstagramPage(writer http.ResponseWriter, request *http.Request) {
 			"type": db.Instagram,
 		}
 		if err := db.Histories.FindOne(context.Background(), filter).Decode(&history); err != nil {
-			instagram := shared.NewInstagram(user.FBSR, user.SessionID, user.AppID)
+			instagram := shared.NewInstagram(user.Instagram.FBSR, user.Instagram.SessionID, user.Instagram.AppID)
 			URLs, username, err := instagram.Post(post)
 
 			if err != nil {
@@ -61,7 +61,7 @@ func InstagramPage(writer http.ResponseWriter, request *http.Request) {
 				}
 				fileName := fmt.Sprintf("%s_%s", post, path.Base(URL.Path))
 
-				if err := StorageHandler.Save(db.Instagram, username, fileName, urlString); err != nil {
+				if err := StorageHandler.Save(user, db.Instagram, username, fileName, urlString); err != nil {
 					log.Println(err)
 					errs = append(errs, err)
 					continue

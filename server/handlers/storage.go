@@ -46,7 +46,7 @@ func (handler storageHandler) ServeHTTP(writer http.ResponseWriter, request *htt
 	}
 }
 
-func (handler *storageHandler) Save(media, owner, fileName, URL string) error {
+func (handler *storageHandler) Save(user db.User, media, owner, fileName, URL string) error {
 	if !db.ValidMediaType(media) {
 		return fmt.Errorf("invalid media type: %s", media)
 	}
@@ -75,6 +75,15 @@ func (handler *storageHandler) Save(media, owner, fileName, URL string) error {
 
 	if media == db.TikTok {
 		request.Header.Add("Range", "bytes=0-")
+		if user.TikTok != "" {
+			sessionCookie := http.Cookie{
+				Name:     "sessionid",
+				Value:    user.TikTok,
+				Domain:   ".tiktok.com",
+				HttpOnly: true,
+			}
+			request.AddCookie(&sessionCookie)
+		}
 	}
 	request.Header.Add("User-Agent", shared.UserAgent)
 	response, err := http.DefaultClient.Do(request)

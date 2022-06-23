@@ -1,34 +1,16 @@
 package shared_test
 
 import (
-	"errors"
-	"log"
 	"net/url"
 	"regexp"
 	"testing"
 
 	"github.com/AppleGamer22/rake/shared"
-	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 )
 
 var filePathRegularExpression = regexp.MustCompile(`\.(jpg)|(webp)|(mp4)|(webm)`)
 var instagramDomainRegularExpression = regexp.MustCompile(`(cdninstagram\.com)|(fbcdn\.net)`)
-
-func init() {
-	viper.SetEnvPrefix("rake")
-	viper.AutomaticEnv()
-	viper.SetConfigName(".rake")
-	viper.SetConfigType("yaml")
-	viper.AddConfigPath("..")
-	if err := viper.ReadInConfig(); err != nil {
-		log.Println(err)
-	}
-	terminate := viper.GetString("fbsr") == "" || viper.GetString("session") == "" || viper.GetString("app") == ""
-	if terminate {
-		panic(errors.New("fbsr, seesion ID and app ID must be provided"))
-	}
-}
 
 func testInstagramURLs(t *testing.T, URLs []string) {
 	for _, urlString := range URLs {
@@ -41,7 +23,7 @@ func testInstagramURLs(t *testing.T, URLs []string) {
 }
 
 func TestInstagramSingleImage(t *testing.T) {
-	instagram := shared.NewInstagram(viper.GetString("fbsr"), viper.GetString("session"), viper.GetString("app"))
+	instagram := shared.NewInstagram(configuration.Instagram.FBSR, configuration.Instagram.Session, configuration.Instagram.App)
 	URLs, username, err := instagram.Post("CbgDyqkFBdj")
 	assert.NoError(t, err)
 	assert.Equal(t, "wikipedia", username)
@@ -50,7 +32,7 @@ func TestInstagramSingleImage(t *testing.T) {
 }
 
 func TestInstagramSingleVideo(t *testing.T) {
-	instagram := shared.NewInstagram(viper.GetString("fbsr"), viper.GetString("session"), viper.GetString("app"))
+	instagram := shared.NewInstagram(configuration.Instagram.FBSR, configuration.Instagram.Session, configuration.Instagram.App)
 	URLs, username, err := instagram.Post("BKyN0E2AApX")
 	assert.NoError(t, err)
 	assert.Equal(t, "wikipedia", username)
@@ -59,7 +41,7 @@ func TestInstagramSingleVideo(t *testing.T) {
 }
 
 func TestInstagramBundledImages(t *testing.T) {
-	instagram := shared.NewInstagram(viper.GetString("fbsr"), viper.GetString("session"), viper.GetString("app"))
+	instagram := shared.NewInstagram(configuration.Instagram.FBSR, configuration.Instagram.Session, configuration.Instagram.App)
 	URLs, username, err := instagram.Post("CZNJeAil1BC")
 	assert.NoError(t, err)
 	assert.Equal(t, "wikipedia", username)

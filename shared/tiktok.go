@@ -18,14 +18,32 @@ type TikTokPost struct {
 	}
 }
 
-func TikTok(owner, post string) (URL string, username string, err error) {
+type TikTok struct {
+	SessionID string
+}
+
+func NewTikTok(sessionID string) TikTok {
+	return TikTok{sessionID}
+}
+
+func (tiktok *TikTok) Post(owner, post string) (URL string, username string, err error) {
 	postURL := fmt.Sprintf("https://www.tiktok.com/@%s/video/%s", owner, post)
 	request, err := http.NewRequest(http.MethodGet, postURL, nil)
 	if err != nil {
 		return URL, username, err
 	}
 
+	if tiktok.SessionID != "" {
+		sessionCookie := http.Cookie{
+			Name:     "sessionid",
+			Value:    tiktok.SessionID,
+			Domain:   ".tiktok.com",
+			HttpOnly: true,
+		}
+		request.AddCookie(&sessionCookie)
+	}
 	request.Header.Add("User-Agent", UserAgent)
+
 	response, err := http.DefaultClient.Do(request)
 	if err != nil {
 		return URL, username, err

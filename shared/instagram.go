@@ -95,6 +95,7 @@ func NewInstagram(fbsr, sessionID, appID string) Instagram {
 			Domain:   ".instagram.com",
 			Path:     "/",
 			HttpOnly: true,
+			Secure:   true,
 		},
 		appID: appID,
 	}
