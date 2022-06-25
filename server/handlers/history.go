@@ -203,18 +203,16 @@ func deleteFileFromHistory(user db.User, owner, media, post, file string) (db.Hi
 	return history, nil
 }
 
-func historyDisplay(user db.User, history db.History, serverErrors []error, writer http.ResponseWriter) {
-	funcs := template.FuncMap{
+var (
+	funcs = template.FuncMap{
 		"hasSuffix": strings.HasSuffix,
 		"join":      strings.Join,
 		"base":      filepath.Base,
 	}
-	tmpl, err := template.New("history.html").Funcs(funcs).ParseFiles(filepath.Join("templates", "history.html"))
-	if err != nil {
-		http.Error(writer, err.Error(), http.StatusInternalServerError)
-		log.Println(err)
-		return
-	}
+	tmpl = template.Must(template.New("history.html").Funcs(funcs).ParseFiles(filepath.Join("templates", "history.html")))
+)
+
+func historyDisplay(user db.User, history db.History, serverErrors []error, writer http.ResponseWriter) {
 	historyDisplay := db.HistoryDisplay{
 		History: history,
 		Errors:  serverErrors,
