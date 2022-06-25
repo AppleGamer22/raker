@@ -47,7 +47,7 @@ func InstagramPage(writer http.ResponseWriter, request *http.Request) {
 
 			if err != nil {
 				log.Println(err)
-				historyDisplay(user, history, []error{err}, writer)
+				historyHTML(user, history, []error{err}, writer)
 				return
 			}
 
@@ -86,5 +86,5 @@ func InstagramPage(writer http.ResponseWriter, request *http.Request) {
 		}
 	}
 
-	historyDisplay(user, history, errs, writer)
+	historyHTML(user, history, errs, writer)
 }

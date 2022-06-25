@@ -42,21 +42,21 @@ func VSCOPage(writer http.ResponseWriter, request *http.Request) {
 		if err := db.Histories.FindOne(context.Background(), filter).Decode(&history); err != nil {
 			urlString, username, err := shared.VSCO(owner, post)
 			if err != nil {
-				historyDisplay(user, history, []error{err}, writer)
+				historyHTML(user, history, []error{err}, writer)
 				return
 			}
 
 			URL, err := url.Parse(urlString)
 			if err != nil {
 				log.Println(err)
-				historyDisplay(user, history, []error{err}, writer)
+				historyHTML(user, history, []error{err}, writer)
 				return
 			}
 			fileName := fmt.Sprintf("%s_%s", post, path.Base(URL.Path))
 
 			if err := StorageHandler.Save(user, db.VSCO, username, fileName, urlString); err != nil {
 				log.Println(err)
-				historyDisplay(user, history, []error{err}, writer)
+				historyHTML(user, history, []error{err}, writer)
 				return
 			}
 
@@ -71,11 +71,11 @@ func VSCOPage(writer http.ResponseWriter, request *http.Request) {
 			}
 
 			if _, err := db.Histories.InsertOne(context.Background(), history); err != nil {
-				historyDisplay(user, history, []error{err}, writer)
+				historyHTML(user, history, []error{err}, writer)
 				return
 			}
 		}
 	}
 
-	historyDisplay(user, history, nil, writer)
+	historyHTML(user, history, nil, writer)
 }

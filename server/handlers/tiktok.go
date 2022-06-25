@@ -44,7 +44,7 @@ func TikTokPage(writer http.ResponseWriter, request *http.Request) {
 
 			if err != nil {
 				log.Println(err)
-				historyDisplay(user, history, []error{err}, writer)
+				historyHTML(user, history, []error{err}, writer)
 				return
 			}
 
@@ -52,7 +52,7 @@ func TikTokPage(writer http.ResponseWriter, request *http.Request) {
 			if err := StorageHandler.Save(user, db.TikTok, username, fileName, URL); err != nil {
 				log.Println(err)
 				log.Println(err)
-				historyDisplay(user, history, []error{err}, writer)
+				historyHTML(user, history, []error{err}, writer)
 				return
 			}
 
@@ -67,11 +67,11 @@ func TikTokPage(writer http.ResponseWriter, request *http.Request) {
 			}
 
 			if _, err := db.Histories.InsertOne(context.Background(), history); err != nil {
-				historyDisplay(user, history, []error{err}, writer)
+				historyHTML(user, history, []error{err}, writer)
 				return
 			}
 		}
 	}
 
-	historyDisplay(user, history, nil, writer)
+	historyHTML(user, history, nil, writer)
 }

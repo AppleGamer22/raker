@@ -209,33 +209,22 @@ var (
 		"join":      strings.Join,
 		"base":      filepath.Base,
 	}
-	tmpl = template.Must(template.New("history.html").Funcs(funcs).ParseFiles(filepath.Join("templates", "history.html")))
+	templates = template.Must(template.New("").Funcs(funcs).ParseFiles(
+		filepath.Join("templates", "history.html"),
+		filepath.Join("templates", "histories.html"),
+	))
 )
 
-func historyDisplay(user db.User, history db.History, serverErrors []error, writer http.ResponseWriter) {
+func historyHTML(user db.User, history db.History, serverErrors []error, writer http.ResponseWriter) {
 	historyDisplay := db.HistoryDisplay{
-		History: history,
-		Errors:  serverErrors,
-		Version: shared.Version,
-		AvailableCategories: func() map[string]bool {
-			result := make(map[string]bool)
-			for _, category := range user.Categories {
-				result[category] = true
-			}
-			for _, category := range history.Categories {
-				if _, ok := result[category]; ok {
-					result[category] = false
-				}
-			}
-			for category, c := range result {
-				result[category] = !c
-			}
-			return result
-		}(),
+		History:             history,
+		Errors:              serverErrors,
+		Version:             shared.Version,
+		AvailableCategories: user.AvailableTypes(history.Categories),
 	}
 
 	writer.Header().Set("Content-Type", "text/html")
-	if err := tmpl.Execute(writer, historyDisplay); err != nil {
+	if err := templates.ExecuteTemplate(writer, "history.html", historyDisplay); err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
 		log.Println(err)
 		return
@@ -243,5 +232,29 @@ func historyDisplay(user db.User, history db.History, serverErrors []error, writ
 }
 
 func HistoryPage(writer http.ResponseWriter, request *http.Request) {
+	// user, err := Verify(request)
+	// if err != nil {
+	// 	http.Error(writer, "unauthorized", http.StatusUnauthorized)
+	// 	log.Println(err)
+	// 	return
+	// }
 
+	if err := request.ParseForm(); err != nil {
+		http.Error(writer, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	owner := cleaner.Line(request.Form.Get("owner"))
+
+	historiesDisplay := db.HistoriesDisplay{
+		Owner:   owner,
+		Version: shared.Version,
+	}
+
+	writer.Header().Set("Content-Type", "text/html")
+	if err := templates.ExecuteTemplate(writer, "histories.html", historiesDisplay); err != nil {
+		http.Error(writer, err.Error(), http.StatusInternalServerError)
+		log.Println(err)
+		return
+	}
 }

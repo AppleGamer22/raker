@@ -32,6 +32,22 @@ type User struct {
 	Categories []string  `bson:"categories" json:"-"`
 }
 
+func (user *User) AvailableTypes(categories []string) map[string]bool {
+	result := make(map[string]bool)
+	for _, category := range user.Categories {
+		result[category] = true
+	}
+	for _, category := range categories {
+		if _, ok := result[category]; ok {
+			result[category] = false
+		}
+	}
+	for category, c := range result {
+		result[category] = !c
+	}
+	return result
+}
+
 type History struct {
 	ID         string    `bson:"_id" json:"-"`
 	U_ID       string    `bson:"U_ID" json:"-"`
@@ -48,6 +64,15 @@ type HistoryDisplay struct {
 	AvailableCategories map[string]bool
 	Errors              []error
 	Version             string
+}
+
+type HistoriesDisplay struct {
+	Histories  []History
+	Owner      string
+	Medias     []string
+	Categories []string
+	Errors     []error
+	Version    string
 }
 
 func ValidMediaType(media string) bool {
