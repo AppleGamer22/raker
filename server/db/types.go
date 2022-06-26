@@ -43,7 +43,7 @@ func SelectedMediaTypes(mediaTypes []string) map[string]bool {
 	return result
 }
 
-var UpdateOptions = options.FindOneAndUpdate().SetReturnDocument(options.After)
+var UpdateOption = options.FindOneAndUpdate().SetReturnDocument(options.After)
 
 type User struct {
 	ID        primitive.ObjectID `bson:"_id" json:"-"`
@@ -65,13 +65,15 @@ func (user *User) SelectedCategories(categories []string) map[string]bool {
 	for _, category := range user.Categories {
 		result[category] = true
 	}
-	for _, category := range categories {
-		if _, ok := result[category]; ok {
-			result[category] = false
+	if len(categories) > 0 {
+		for _, category := range categories {
+			if _, ok := result[category]; ok {
+				result[category] = false
+			}
 		}
-	}
-	for category, checked := range result {
-		result[category] = !checked
+		for category, checked := range result {
+			result[category] = !checked
+		}
 	}
 	return result
 }
@@ -101,4 +103,6 @@ type HistoriesDisplay struct {
 	Categories map[string]bool
 	Errors     []error
 	Version    string
+	Page       int
+	Pages      int
 }

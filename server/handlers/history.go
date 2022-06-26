@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"path/filepath"
 	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/AppleGamer22/rake/server/cleaner"
@@ -16,6 +17,7 @@ import (
 	"github.com/AppleGamer22/rake/shared"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func History(writer http.ResponseWriter, request *http.Request) {
@@ -92,10 +94,10 @@ func History(writer http.ResponseWriter, request *http.Request) {
 	}
 }
 
-func filterHistories(U_ID primitive.ObjectID, owner string, categories, mediaTypes []string) ([][]db.History, error) {
+func filterHistories(U_ID primitive.ObjectID, owner string, categories, mediaTypes []string, page int) ([][]db.History, int, error) {
 	for _, mediaType := range mediaTypes {
 		if !db.ValidMediaType(mediaType) {
-			return [][]db.History{}, errors.New("media type must be valid")
+			return [][]db.History{}, 0, errors.New("media type must be valid")
 		}
 	}
 
@@ -103,14 +105,12 @@ func filterHistories(U_ID primitive.ObjectID, owner string, categories, mediaTyp
 
 	if len(categories) != 0 {
 		filter["categories"] = bson.M{
-			"$all": categories,
+			"$in": categories,
 		}
 	} else {
 		filter["categories"] = bson.M{
-			"$in": primitive.A{
-				// primitive.Undefined{},
-				primitive.A{},
-			},
+			"$size":   0,
+			"$exists": false,
 		}
 	}
 
@@ -127,9 +127,10 @@ func filterHistories(U_ID primitive.ObjectID, owner string, categories, mediaTyp
 		}}
 	}
 
-	cursor, err := db.Histories.Find(context.Background(), filter)
+	paginationOptions := options.Find().SetSkip(int64((page - 1) * 30)).SetLimit(int64(30))
+	cursor, err := db.Histories.Find(context.Background(), filter, paginationOptions)
 	if err != nil {
-		return [][]db.History{}, err
+		return [][]db.History{}, 0, err
 	}
 	var histories []db.History
 	err = cursor.All(context.Background(), &histories)
@@ -144,7 +145,8 @@ func filterHistories(U_ID primitive.ObjectID, owner string, categories, mediaTyp
 		matrix = append(matrix, row)
 	}
 
-	return matrix, err
+	count, _ := db.Histories.CountDocuments(context.Background(), filter)
+	return matrix, int(count) / 30, err
 }
 
 func editHistory(U_ID primitive.ObjectID, media, owner, post string, categories []string) (db.History, error) {
@@ -162,7 +164,7 @@ func editHistory(U_ID primitive.ObjectID, media, owner, post string, categories 
 	}
 
 	var history db.History
-	err := db.Histories.FindOneAndUpdate(context.Background(), filter, update, db.UpdateOptions).Decode(&history)
+	err := db.Histories.FindOneAndUpdate(context.Background(), filter, update, db.UpdateOption).Decode(&history)
 	return history, err
 }
 
@@ -180,7 +182,7 @@ func deleteFileFromHistory(user db.User, owner, media, post, file string) (db.Hi
 	}
 
 	var history db.History
-	if err := db.Histories.FindOneAndUpdate(context.Background(), filter, update, db.UpdateOptions).Decode(&history); err != nil {
+	if err := db.Histories.FindOneAndUpdate(context.Background(), filter, update, db.UpdateOption).Decode(&history); err != nil {
 		return db.History{}, err
 	}
 
@@ -208,6 +210,9 @@ var (
 		"hasSuffix": strings.HasSuffix,
 		// "join":      strings.Join,
 		"base": filepath.Base,
+		"add": func(a, b int) int {
+			return a + b
+		},
 	}
 	templates = template.Must(template.New("").Funcs(funcs).ParseFiles(
 		filepath.Join("templates", "history.html"),
@@ -245,6 +250,7 @@ func HistoryPage(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	owner := cleaner.Line(request.Form.Get("owner"))
+	page, _ := strconv.Atoi(cleaner.Line(request.Form.Get("page")))
 
 	categories := make([]string, 0, len(user.Categories))
 	for _, category := range user.Categories {
@@ -259,8 +265,11 @@ func HistoryPage(writer http.ResponseWriter, request *http.Request) {
 			mediaTypes = append(mediaTypes, mediaType)
 		}
 	}
+	if len(mediaTypes) == 0 {
+		mediaTypes = db.MediaTypes[:]
+	}
 
-	histories, err := filterHistories(user.ID, owner, categories, mediaTypes)
+	histories, pages, err := filterHistories(user.ID, owner, categories, mediaTypes, page+1)
 	if err != nil {
 		log.Println(err)
 	}
@@ -271,6 +280,8 @@ func HistoryPage(writer http.ResponseWriter, request *http.Request) {
 		Types:      db.SelectedMediaTypes(mediaTypes),
 		Histories:  histories,
 		Errors:     []error{err},
+		Page:       page + 1,
+		Pages:      pages,
 		Version:    shared.Version,
 	}
 

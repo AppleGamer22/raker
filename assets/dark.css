@@ -15,7 +15,10 @@
 	.card,
 	.card-body,
 	.list-group,
-	.list-group-item {
+	.list-group-item,
+	.pagination,
+	.page-item,
+	.page-link {
 		--bs-body-bg: var(--bs-dark);
 		--bs-body-color: var(--bs-light);
 		--bs-navbar-color: rgba(255, 255, 255, 0.55);
@@ -34,8 +37,11 @@
 		--bs-card-cap-bg: var(--bs-body-bg);
 		--bs-list-group-bg: var(--bs-body-bg);
 		--bs-accordion-color: var(--bs-light);
+		--bs-pagination-bg: var(--bs-body-bg);
+		--bs-pagination-disabled-bg: var(--bs-body-bg);
 		background-color: var(--bs-dark);
 		color: var(--bs-light);
+
 	}
 
 	.form-control:disabled {

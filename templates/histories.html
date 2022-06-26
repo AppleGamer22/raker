@@ -155,9 +155,11 @@
 								<br>
 								{{.Date.Local}}
 								<br>
-								Categories: <b>{{range $category, $checked := .Categories}}
-									{{$category}}
-								{{end}}</b>
+								{{if $history.Categories}}
+									Categories: <b>{{range $category := $history.Categories}}
+										{{$category}}
+									{{end}}</b>
+								{{end}}
 								<div id="carousel_{{.Post}}" class="carousel slide" data-bs-interval="false">
 									{{if gt (len .URLs) 1}}
 										<div class="carousel-indicators">
@@ -199,6 +201,27 @@
 					</div>
 				{{end}}
 			</div>
+			<form>
+				<nav>
+					<ul class="pagination">
+						<li class="page-item">
+							<a class="page-link{{if eq .Page 1}} disabled{{end}}">1</a>
+						</li>
+						<li class="page-item">
+							<a class="page-link{{if eq .Page 1}} disabled{{end}}">Previous</a>
+						</li>
+						<li class="page-item disabled">
+							<a class="page-link">{{.Page}}</a>
+						</li>
+						<li class="page-item">
+							<a class="page-link{{if eq .Page .Pages}} disabled{{end}}">Next</a>
+						</li>
+						<li class="page-item">
+							<a class="page-link{{if eq .Page .Pages}} disabled{{end}}">{{.Pages}}</a>
+						</li>
+					</ul>
+				</nav>
+			</form>
 		</main>
 		<noscript>Please enable JavaScript to continue using this application.</noscript>
 	</body>
