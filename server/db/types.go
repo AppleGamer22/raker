@@ -11,9 +11,37 @@ const (
 	Instagram = "instagram"
 	Highlight = "highlight"
 	Story     = "story"
-	VSCO      = "vsco"
 	TikTok    = "tiktok"
+	VSCO      = "vsco"
 )
+
+var MediaTypes = [5]string{Instagram, Highlight, Story, VSCO, TikTok}
+
+func ValidMediaType(media string) bool {
+	return media == Instagram || media == Highlight || media == Story || media == VSCO || media == TikTok
+}
+
+func ValidNetworkType(media string) bool {
+	return media == Instagram || media == VSCO || media == TikTok
+}
+
+func SelectedMediaTypes(mediaTypes []string) map[string]bool {
+	result := make(map[string]bool)
+	result[Instagram] = true
+	result[Highlight] = true
+	result[Story] = true
+	result[VSCO] = true
+	result[TikTok] = true
+	for _, mediaType := range mediaTypes {
+		if _, ok := result[mediaType]; ok && ValidMediaType(mediaType) {
+			result[mediaType] = false
+		}
+	}
+	for mediaType, checked := range result {
+		result[mediaType] = !checked
+	}
+	return result
+}
 
 var UpdateOptions = options.FindOneAndUpdate().SetReturnDocument(options.After)
 
@@ -32,7 +60,7 @@ type User struct {
 	Categories []string  `bson:"categories" json:"-"`
 }
 
-func (user *User) AvailableTypes(categories []string) map[string]bool {
+func (user *User) SelectedCategories(categories []string) map[string]bool {
 	result := make(map[string]bool)
 	for _, category := range user.Categories {
 		result[category] = true
@@ -42,8 +70,8 @@ func (user *User) AvailableTypes(categories []string) map[string]bool {
 			result[category] = false
 		}
 	}
-	for category, c := range result {
-		result[category] = !c
+	for category, checked := range result {
+		result[category] = !checked
 	}
 	return result
 }
@@ -61,24 +89,16 @@ type History struct {
 
 type HistoryDisplay struct {
 	History
-	AvailableCategories map[string]bool
-	Errors              []error
-	Version             string
+	SelectedCategories map[string]bool
+	Errors             []error
+	Version            string
 }
 
 type HistoriesDisplay struct {
 	Histories  []History
 	Owner      string
-	Medias     []string
-	Categories []string
+	Types      map[string]bool
+	Categories map[string]bool
 	Errors     []error
 	Version    string
-}
-
-func ValidMediaType(media string) bool {
-	return media == Instagram || media == Highlight || media == Story || media == VSCO || media == TikTok
-}
-
-func ValidNetworkType(media string) bool {
-	return media == Instagram || media == VSCO || media == TikTok
 }

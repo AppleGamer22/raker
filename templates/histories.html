@@ -32,7 +32,7 @@
 				max-width: 100%;
 			}
 			input#owner {
-				width: calc(100% - 80px);
+				width: calc(100% - 68px - 80px);
 			}
 		</style>
 	</head>
@@ -79,8 +79,67 @@
 		</header>
 		<main>
 			<form>
+				<div class="accordion" id="accordion_search">
+					<div class="accordion-item">
+						<h2 class="accordion-header" id="heading_search">
+							<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse_search">
+								Categories:&nbsp;<b>{{range $category, $checked := .Categories}}
+									{{if $checked}}
+										{{$category}}
+									{{end}}
+								{{end}}</b>
+								&nbsp;
+								Types:&nbsp;<b>{{range $mediaType, $checked := .Types}}
+									{{if $checked}}
+										{{$mediaType}}
+									{{end}}
+								{{end}}</b>
+							</button>
+						</h2>
+						<div id="collapse_search" class="accordion-collapse collapse" data-bs-parent="#accordion_search">
+							<div class="accordion-body">
+								<h4>Categories</h4>
+								{{range $category, $checked := .Categories}}
+									{{if $checked}}
+										<input type="checkbox" id="{{$category}}" name="{{$category}}" value="{{$category}}" checked>
+									{{else}}
+										<input type="checkbox" id="{{$category}}" name="{{$category}}" value="{{$category}}">
+									{{end}}
+									<label for="{{$category}}">{{$category}}</label>
+									<br>
+								{{end}}
+								<h4>Media Types</h4>
+								{{range $mediaType, $checked := .Types}}
+									{{if $checked}}
+										<input type="checkbox" id="{{$mediaType}}" name="{{$mediaType}}" value="{{$mediaType}}" checked>
+									{{else}}
+										<input type="checkbox" id="{{$mediaType}}" name="{{$mediaType}}" value="{{$mediaType}}">
+									{{end}}
+									{{if eq $mediaType "instagram"}}
+										<label for="instagram">Instagram Post</label>
+									{{end}}
+									{{if eq $mediaType "highlight"}}
+										<label for="highlight">Instagram Highlight</label>
+									{{end}}
+									{{if eq $mediaType "story"}}
+										<label for="story">Instagram Story</label>
+									{{end}}
+									{{if eq $mediaType "tiktok"}}
+										<label for="tiktok">TikTok Post</label>
+									{{end}}
+									{{if eq $mediaType "vsco"}}
+										<label for="vsco">VSCO Post</label>
+									{{end}}
+									<br>
+								{{end}}
+							</div>
+						</div>
+					</div>
+				</div>
+				<h4>Owner</h4>
 				<input type="text" value="{{.Owner}}" class="form-control float-start" placeholder="owner" id="owner" name="owner">
-				<button type="submit" class="btn btn-primary">Submit</button>
+				<button type="reset" class="btn btn-warning">Reset</button>
+				<button type="submit" class="btn btn-primary float-end">Submit</button>
 			</form>
 			<div class="container-fluid">
 				<div class="row row-cols-3">

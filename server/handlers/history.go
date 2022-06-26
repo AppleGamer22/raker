@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"html/template"
 	"log"
@@ -20,24 +19,10 @@ import (
 )
 
 func History(writer http.ResponseWriter, request *http.Request) {
-	cookie, err := request.Cookie("jwt")
+	user, err := Verify(request)
 	if err != nil {
-		http.Error(writer, "a JWT must be provided", http.StatusBadRequest)
+		http.Error(writer, "unauthorized", http.StatusUnauthorized)
 		log.Println(err)
-		return
-	}
-
-	payload, err := Authenticator.Parse(cookie.Value)
-	if err != nil {
-		http.Error(writer, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
-		log.Println(err)
-		return
-	}
-
-	result := db.Users.FindOne(context.Background(), bson.M{"_id": payload.U_ID})
-	var user db.User
-	if err := result.Decode(&user); err != nil {
-		http.Error(writer, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -52,7 +37,7 @@ func History(writer http.ResponseWriter, request *http.Request) {
 
 	categories := make([]string, 0, len(user.Categories))
 	for _, category := range user.Categories {
-		if cleaner.Line(request.Form.Get(category)) == category {
+		if cleaner.Line(request.Form.Get(category)) == category && !db.ValidMediaType(category) {
 			categories = append(categories, category)
 		}
 	}
@@ -64,16 +49,6 @@ func History(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	switch request.Method {
-	case http.MethodGet:
-		histories, err := filterHistories(user.ID, media, owner, post, categories)
-		if err != nil {
-			http.Error(writer, err.Error(), http.StatusBadRequest)
-			log.Println(err)
-			return
-		}
-
-		writer.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(writer).Encode(histories)
 	case http.MethodPost:
 		switch cleaner.Line(request.Form.Get("method")) {
 		case http.MethodPatch:
@@ -206,8 +181,8 @@ func deleteFileFromHistory(user db.User, owner, media, post, file string) (db.Hi
 var (
 	funcs = template.FuncMap{
 		"hasSuffix": strings.HasSuffix,
-		"join":      strings.Join,
-		"base":      filepath.Base,
+		// "join":      strings.Join,
+		"base": filepath.Base,
 	}
 	templates = template.Must(template.New("").Funcs(funcs).ParseFiles(
 		filepath.Join("templates", "history.html"),
@@ -217,10 +192,10 @@ var (
 
 func historyHTML(user db.User, history db.History, serverErrors []error, writer http.ResponseWriter) {
 	historyDisplay := db.HistoryDisplay{
-		History:             history,
-		Errors:              serverErrors,
-		Version:             shared.Version,
-		AvailableCategories: user.AvailableTypes(history.Categories),
+		History:            history,
+		Errors:             serverErrors,
+		Version:            shared.Version,
+		SelectedCategories: user.SelectedCategories(history.Categories),
 	}
 
 	writer.Header().Set("Content-Type", "text/html")
@@ -232,12 +207,12 @@ func historyHTML(user db.User, history db.History, serverErrors []error, writer 
 }
 
 func HistoryPage(writer http.ResponseWriter, request *http.Request) {
-	// user, err := Verify(request)
-	// if err != nil {
-	// 	http.Error(writer, "unauthorized", http.StatusUnauthorized)
-	// 	log.Println(err)
-	// 	return
-	// }
+	user, err := Verify(request)
+	if err != nil {
+		http.Error(writer, "unauthorized", http.StatusUnauthorized)
+		log.Println(err)
+		return
+	}
 
 	if err := request.ParseForm(); err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
@@ -246,9 +221,25 @@ func HistoryPage(writer http.ResponseWriter, request *http.Request) {
 
 	owner := cleaner.Line(request.Form.Get("owner"))
 
+	categories := make([]string, 0, len(user.Categories))
+	for _, category := range user.Categories {
+		if cleaner.Line(request.Form.Get(category)) == category && !db.ValidMediaType(category) {
+			categories = append(categories, category)
+		}
+	}
+
+	mediaTypes := make([]string, 0, 5)
+	for _, mediaType := range db.MediaTypes {
+		if cleaner.Line(request.Form.Get(mediaType)) == mediaType && db.ValidMediaType(mediaType) {
+			mediaTypes = append(mediaTypes, mediaType)
+		}
+	}
+
 	historiesDisplay := db.HistoriesDisplay{
-		Owner:   owner,
-		Version: shared.Version,
+		Owner:      owner,
+		Categories: user.SelectedCategories(categories),
+		Types:      db.SelectedMediaTypes(mediaTypes),
+		Version:    shared.Version,
 	}
 
 	writer.Header().Set("Content-Type", "text/html")
