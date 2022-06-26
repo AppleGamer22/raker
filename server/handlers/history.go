@@ -108,9 +108,17 @@ func filterHistories(U_ID primitive.ObjectID, owner string, categories, mediaTyp
 			"$in": categories,
 		}
 	} else {
-		filter["categories"] = bson.M{
-			"$size":   0,
-			"$exists": false,
+		filter["$or"] = bson.A{
+			bson.M{
+				"categories": bson.M{
+					"$size": 0,
+				},
+			},
+			bson.M{
+				"categories": bson.M{
+					"$exists": false,
+				},
+			},
 		}
 	}
 
@@ -127,7 +135,7 @@ func filterHistories(U_ID primitive.ObjectID, owner string, categories, mediaTyp
 		}}
 	}
 
-	paginationOptions := options.Find().SetSkip(int64((page - 1) * 30)).SetLimit(int64(30))
+	paginationOptions := options.Find().SetSkip(int64((page - 1) * 30)).SetLimit(int64(30)).SetSort(bson.M{"post": -1})
 	cursor, err := db.Histories.Find(context.Background(), filter, paginationOptions)
 	if err != nil {
 		return [][]db.History{}, 0, err
@@ -269,7 +277,7 @@ func HistoryPage(writer http.ResponseWriter, request *http.Request) {
 		}
 	}
 	if len(mediaTypes) == 0 {
-		mediaTypes = db.MediaTypes[:]
+		mediaTypes = db.MediaTypes
 	}
 
 	histories, pages, err := filterHistories(user.ID, owner, categories, mediaTypes, page)

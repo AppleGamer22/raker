@@ -27,7 +27,7 @@
 			h1, h2, h3, h4, h5, h6, label, p, a {
 				word-wrap: break-word;
 			}
-			img, video {
+			img, video, .carousel-item, .carousel-inner, .carousel, .slide {
 				height: auto;
 				max-width: 33vw;
 			}
@@ -100,21 +100,13 @@
 							<div class="accordion-body">
 								<h4>Categories</h4>
 								{{range $category, $checked := .Categories}}
-									{{if $checked}}
-										<input type="checkbox" id="{{$category}}" name="{{$category}}" value="{{$category}}" checked>
-									{{else}}
-										<input type="checkbox" id="{{$category}}" name="{{$category}}" value="{{$category}}">
-									{{end}}
+									<input type="checkbox" id="{{$category}}" name="{{$category}}" value="{{$category}}"{{if $checked}} checked{{end}}>
 									<label for="{{$category}}">{{$category}}</label>
 									<br>
 								{{end}}
 								<h4>Media Types</h4>
 								{{range $mediaType, $checked := .Types}}
-									{{if $checked}}
-										<input type="checkbox" id="{{$mediaType}}" name="{{$mediaType}}" value="{{$mediaType}}" checked>
-									{{else}}
-										<input type="checkbox" id="{{$mediaType}}" name="{{$mediaType}}" value="{{$mediaType}}">
-									{{end}}
+									<input type="checkbox" id="{{$mediaType}}" name="{{$mediaType}}" value="{{$mediaType}}"{{if $checked}} checked{{end}}>
 									{{if eq $mediaType "instagram"}}
 										<label for="instagram">Instagram Post</label>
 									{{end}}
@@ -140,25 +132,27 @@
 				<input type="text" value="{{.Owner}}" class="form-control float-start" placeholder="owner" id="owner" name="owner">
 				<button type="reset" class="btn btn-warning">Reset</button>
 				<button type="submit" class="btn btn-primary float-end">Submit</button>
-				<nav>
-					<ul class="pagination">
-						<li class="page-item">
-							<button class="page-link{{if eq .Page 1}} disabled{{end}}" type="submit"  name="page" value="1">1</button>
-						</li>
-						<li class="page-item">
-							<button class="page-link{{if eq .Page 1}} disabled{{end}}" type="submit" name="page" value="{{add .Page -1}}">Previous</button>
-						</li>
-						<li class="page-item disabled">
-							<button class="page-link">{{.Page}}</button>
-						</li>
-						<li class="page-item">
-							<button class="page-link{{if eq .Page .Pages}} disabled{{end}}" type="submit" name="page" value="{{add .Page 1}}">Next</button>
-						</li>
-						<li class="page-item">
-							<button class="page-link{{if eq .Page .Pages}} disabled{{end}}" type="submit" name="page" value="{{.Pages}}">{{.Pages}}</button>
-						</li>
-					</ul>
-				</nav>
+				{{if gt .Pages 1}}
+					<nav>
+						<ul class="pagination">
+							<li class="page-item">
+								<button class="page-link{{if eq .Page 1}} disabled{{end}}" type="submit"  name="page" value="1">1</button>
+							</li>
+							<li class="page-item">
+								<button class="page-link{{if eq .Page 1}} disabled{{end}}" type="submit" name="page" value="{{add .Page -1}}">Previous</button>
+							</li>
+							<li class="page-item disabled">
+								<button class="page-link">{{.Page}}</button>
+							</li>
+							<li class="page-item">
+								<button class="page-link{{if eq .Page .Pages}} disabled{{end}}" type="submit" name="page" value="{{add .Page 1}}">Next</button>
+							</li>
+							<li class="page-item">
+								<button class="page-link{{if eq .Page .Pages}} disabled{{end}}" type="submit" name="page" value="{{.Pages}}">{{.Pages}}</button>
+							</li>
+						</ul>
+					</nav>
+				{{end}}
 			</form>
 			{{range .Errors}}
 				{{if .}}

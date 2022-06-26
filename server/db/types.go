@@ -15,7 +15,7 @@ const (
 	VSCO      = "vsco"
 )
 
-var MediaTypes = [5]string{Instagram, Highlight, Story, VSCO, TikTok}
+var MediaTypes = []string{Instagram, Highlight, Story, VSCO, TikTok}
 
 func ValidMediaType(media string) bool {
 	return media == Instagram || media == Highlight || media == Story || media == VSCO || media == TikTok
@@ -32,13 +32,15 @@ func SelectedMediaTypes(mediaTypes []string) map[string]bool {
 	result[Story] = true
 	result[VSCO] = true
 	result[TikTok] = true
-	for _, mediaType := range mediaTypes {
-		if _, ok := result[mediaType]; ok && ValidMediaType(mediaType) {
-			result[mediaType] = false
+	if len(mediaTypes) > 0 {
+		for _, mediaType := range mediaTypes {
+			if _, ok := result[mediaType]; ok && ValidMediaType(mediaType) {
+				result[mediaType] = false
+			}
 		}
-	}
-	for mediaType, checked := range result {
-		result[mediaType] = !checked
+		for mediaType, checked := range result {
+			result[mediaType] = !checked
+		}
 	}
 	return result
 }
