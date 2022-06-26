@@ -95,7 +95,7 @@ type HistoryDisplay struct {
 }
 
 type HistoriesDisplay struct {
-	Histories  []History
+	Histories  [][]History
 	Owner      string
 	Types      map[string]bool
 	Categories map[string]bool

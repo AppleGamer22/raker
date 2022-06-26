@@ -28,8 +28,8 @@
 				word-wrap: break-word;
 			}
 			img, video {
-				max-height: auto;
-				max-width: 100%;
+				height: auto;
+				max-width: 33vw;
 			}
 			input#owner {
 				width: calc(100% - 68px - 80px);
@@ -141,13 +141,65 @@
 				<button type="reset" class="btn btn-warning">Reset</button>
 				<button type="submit" class="btn btn-primary float-end">Submit</button>
 			</form>
+			{{range .Errors}}
+				{{if .}}
+					<h3 class="text-danger">{{.}}</h3>
+				{{end}}
+			{{end}}
 			<div class="container-fluid">
-				<div class="row row-cols-3">
-					<div class="col">Column</div>
-				</div>
+				{{range $i, $row := .Histories}}
+					<div class="row">
+						{{range $ii, $history := $row}}
+							<div class="col">
+								<a href="/{{.Type}}?owner={{.Owner}}&post={{.Post}}">/{{.Type}}?owner={{.Owner}}&post={{.Post}}</a>
+								<br>
+								{{.Date.Local}}
+								<br>
+								Categories: <b>{{range $category, $checked := .Categories}}
+									{{$category}}
+								{{end}}</b>
+								<div id="carousel_{{.Post}}" class="carousel slide" data-bs-interval="false">
+									{{if gt (len .URLs) 1}}
+										<div class="carousel-indicators">
+											{{range $iii, $url := .URLs}}
+												{{if eq $iii 0}}
+													<button type="button" data-bs-target="#carousel_{{$history.Post}}" data-bs-slide-to="{{$iii}}" class="active"></button>
+												{{else}}
+													<button type="button" data-bs-target="#carousel_{{$history.Post}}" data-bs-slide-to="{{$iii}}"></button>
+												{{end}}
+											{{end}}
+										</div>
+									{{end}}
+									<div class="carousel-inner">
+										{{range $iii, $url := .URLs}}
+											<div class="carousel-item{{if eq $iii 0}} active{{end}}">
+												{{if or (hasSuffix . ".jpg") (hasSuffix . ".webp")}}
+													<img class="d-block w-100" src="/api/storage/{{$history.U_ID}}/{{$history.Type}}/{{$history.Owner}}/{{$url}}" loading="lazy">
+												{{else if or (hasSuffix . ".mp4") (hasSuffix . ".webm")}}
+													<video class="d-block w-100" src="/api/storage/{{$history.U_ID}}/{{$history.Type}}/{{$history.Owner}}/{{$url}}" preload="metadata" muted controls loop></video>
+												{{else}}
+													<a href="/api/storage/{{$history.U_ID}}/{{$history.Type}}/{{$history.Owner}}/{{$url}}">{{$url}}</a>
+												{{end}}
+											</div>
+										{{end}}
+									</div>
+									{{if gt (len .URLs) 1}}
+										<button class="carousel-control-prev" type="button" data-bs-target="#carousel_{{.Post}}" data-bs-slide="prev">
+											<span class="carousel-control-prev-icon"></span>
+											<span class="visually-hidden">Previous</span>
+										</button>
+										<button class="carousel-control-next" type="button" data-bs-target="#carousel_{{.Post}}" data-bs-slide="next">
+											<span class="carousel-control-next-icon"></span>
+											<span class="visually-hidden">Next</span>
+										</button>
+									{{end}}
+								</div>
+							</div>
+						{{end}}
+					</div>
+				{{end}}
 			</div>
 		</main>
 		<noscript>Please enable JavaScript to continue using this application.</noscript>
 	</body>
-
 </html>

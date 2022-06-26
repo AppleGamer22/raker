@@ -92,20 +92,35 @@ func History(writer http.ResponseWriter, request *http.Request) {
 	}
 }
 
-func filterHistories(U_ID primitive.ObjectID, media, owner, post string, categories []string) ([]db.History, error) {
-	if !db.ValidMediaType(media) && media != "all" {
-		return []db.History{}, errors.New("media must be valid")
+func filterHistories(U_ID primitive.ObjectID, owner string, categories, mediaTypes []string) ([][]db.History, error) {
+	for _, mediaType := range mediaTypes {
+		if !db.ValidMediaType(mediaType) {
+			return [][]db.History{}, errors.New("media type must be valid")
+		}
 	}
 
 	filter := bson.M{"U_ID": U_ID.Hex()}
 
 	if len(categories) != 0 {
-		filter["categories"] = categories
+		filter["categories"] = bson.M{
+			"$all": categories,
+		}
 	} else {
-		filter["categories"] = bson.M{"$in": primitive.A{primitive.Undefined{}, primitive.A{}}}
+		filter["categories"] = bson.M{
+			"$in": primitive.A{
+				// primitive.Undefined{},
+				primitive.A{},
+			},
+		}
 	}
 
-	if owner != "all" {
+	if len(mediaTypes) > 0 {
+		filter["type"] = bson.M{
+			"$in": mediaTypes,
+		}
+	}
+
+	if owner != "" {
 		filter["owner"] = bson.M{"$regex": primitive.Regex{
 			Pattern: owner,
 			Options: "i",
@@ -114,12 +129,22 @@ func filterHistories(U_ID primitive.ObjectID, media, owner, post string, categor
 
 	cursor, err := db.Histories.Find(context.Background(), filter)
 	if err != nil {
-		return []db.History{}, err
+		return [][]db.History{}, err
 	}
-
 	var histories []db.History
 	err = cursor.All(context.Background(), &histories)
-	return histories, err
+
+	matrix := [][]db.History{}
+	for i := len(histories) - 1; i > -1; i -= 3 {
+		row := []db.History{}
+		for j := 0; j < 3 && i-j > -1; j++ {
+			row = append(row, histories[i-j])
+			histories = histories[:i-j]
+		}
+		matrix = append(matrix, row)
+	}
+
+	return matrix, err
 }
 
 func editHistory(U_ID primitive.ObjectID, media, owner, post string, categories []string) (db.History, error) {
@@ -235,10 +260,17 @@ func HistoryPage(writer http.ResponseWriter, request *http.Request) {
 		}
 	}
 
+	histories, err := filterHistories(user.ID, owner, categories, mediaTypes)
+	if err != nil {
+		log.Println(err)
+	}
+
 	historiesDisplay := db.HistoriesDisplay{
 		Owner:      owner,
 		Categories: user.SelectedCategories(categories),
 		Types:      db.SelectedMediaTypes(mediaTypes),
+		Histories:  histories,
+		Errors:     []error{err},
 		Version:    shared.Version,
 	}
 
