@@ -250,7 +250,10 @@ func HistoryPage(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	owner := cleaner.Line(request.Form.Get("owner"))
-	page, _ := strconv.Atoi(cleaner.Line(request.Form.Get("page")))
+	page, err := strconv.Atoi(cleaner.Line(request.Form.Get("page")))
+	if err != nil {
+		page = 1
+	}
 
 	categories := make([]string, 0, len(user.Categories))
 	for _, category := range user.Categories {
@@ -269,7 +272,7 @@ func HistoryPage(writer http.ResponseWriter, request *http.Request) {
 		mediaTypes = db.MediaTypes[:]
 	}
 
-	histories, pages, err := filterHistories(user.ID, owner, categories, mediaTypes, page+1)
+	histories, pages, err := filterHistories(user.ID, owner, categories, mediaTypes, page)
 	if err != nil {
 		log.Println(err)
 	}
@@ -280,7 +283,7 @@ func HistoryPage(writer http.ResponseWriter, request *http.Request) {
 		Types:      db.SelectedMediaTypes(mediaTypes),
 		Histories:  histories,
 		Errors:     []error{err},
-		Page:       page + 1,
+		Page:       page,
 		Pages:      pages,
 		Version:    shared.Version,
 	}

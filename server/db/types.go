@@ -65,15 +65,13 @@ func (user *User) SelectedCategories(categories []string) map[string]bool {
 	for _, category := range user.Categories {
 		result[category] = true
 	}
-	if len(categories) > 0 {
-		for _, category := range categories {
-			if _, ok := result[category]; ok {
-				result[category] = false
-			}
+	for _, category := range categories {
+		if _, ok := result[category]; ok {
+			result[category] = false
 		}
-		for category, checked := range result {
-			result[category] = !checked
-		}
+	}
+	for category, checked := range result {
+		result[category] = !checked
 	}
 	return result
 }
