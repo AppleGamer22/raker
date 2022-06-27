@@ -3,6 +3,7 @@ package db
 import (
 	"time"
 
+	"github.com/AppleGamer22/rake/server/authenticator"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -60,6 +61,32 @@ type User struct {
 	Joined     time.Time `bson:"joined" json:"-"`
 	Network    string    `bson:"network" json:"-"`
 	Categories []string  `bson:"categories" json:"-"`
+}
+
+func (user *User) OpenInstagram(password string) (fbsr, sessionID, appID string, err error) {
+	if err := authenticator.Compare(user.Hash, password); err != nil {
+		return "", "", "", err
+	}
+	fbsr, err = authenticator.Decrypt(password, user.Instagram.FBSR)
+	if err != nil {
+		return "", "", "", err
+	}
+	sessionID, err = authenticator.Decrypt(password, user.Instagram.SessionID)
+	if err != nil {
+		return "", "", "", err
+	}
+	appID, err = authenticator.Decrypt(password, user.Instagram.AppID)
+	if err != nil {
+		return "", "", "", err
+	}
+	return fbsr, sessionID, appID, nil
+}
+
+func (user *User) OpenTikTok(password string) (string, error) {
+	if err := authenticator.Compare(user.Hash, password); err != nil {
+		return "", err
+	}
+	return authenticator.Decrypt(password, user.TikTok)
 }
 
 func (user *User) SelectedCategories(categories []string) map[string]bool {
