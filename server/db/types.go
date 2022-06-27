@@ -101,8 +101,8 @@ type HistoriesDisplay struct {
 	Owner      string
 	Types      map[string]bool
 	Categories map[string]bool
-	Errors     []error
 	Version    string
 	Page       int
 	Pages      int
+	Error      error
 }

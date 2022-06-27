@@ -135,7 +135,17 @@ func filterHistories(U_ID primitive.ObjectID, owner string, categories, mediaTyp
 		}}
 	}
 
-	paginationOptions := options.Find().SetSkip(int64((page - 1) * 30)).SetLimit(int64(30)).SetSort(bson.M{"post": -1})
+	count, err := db.Histories.CountDocuments(context.Background(), filter)
+	if err != nil {
+		return [][]db.History{}, 0, err
+	}
+
+	pages := int(count) / 30
+	if page > pages {
+		page = pages
+	}
+
+	paginationOptions := options.Find().SetSkip(int64((page - 1) * 30)).SetLimit(int64(30)).SetSort(bson.M{"date": -1})
 	cursor, err := db.Histories.Find(context.Background(), filter, paginationOptions)
 	if err != nil {
 		return [][]db.History{}, 0, err
@@ -153,8 +163,7 @@ func filterHistories(U_ID primitive.ObjectID, owner string, categories, mediaTyp
 		matrix = append(matrix, row)
 	}
 
-	count, _ := db.Histories.CountDocuments(context.Background(), filter)
-	return matrix, int(count) / 30, err
+	return matrix, pages, err
 }
 
 func editHistory(U_ID primitive.ObjectID, media, owner, post string, categories []string) (db.History, error) {
@@ -285,15 +294,19 @@ func HistoryPage(writer http.ResponseWriter, request *http.Request) {
 		log.Println(err)
 	}
 
+	if page > pages {
+		page = pages
+	}
+
 	historiesDisplay := db.HistoriesDisplay{
 		Owner:      owner,
 		Categories: user.SelectedCategories(categories),
 		Types:      db.SelectedMediaTypes(mediaTypes),
 		Histories:  histories,
-		Errors:     []error{err},
 		Page:       page,
 		Pages:      pages,
 		Version:    shared.Version,
+		Error:      err,
 	}
 
 	writer.Header().Set("Content-Type", "text/html")

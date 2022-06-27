@@ -154,17 +154,15 @@
 					</nav>
 				{{end}}
 			</form>
-			{{range .Errors}}
-				{{if .}}
-					<h3 class="text-danger">{{.}}</h3>
-				{{end}}
+			{{if .Error}}
+				<h3 class="text-danger">{{.Error}}</h3>
 			{{end}}
 			<div class="container-fluid">
 				{{range $i, $row := .Histories}}
 					<div class="row">
 						{{range $ii, $history := $row}}
 							<div class="col">
-								<a href="/{{.Type}}?owner={{.Owner}}&post={{.Post}}">/{{.Type}}?owner={{.Owner}}&post={{.Post}}</a>
+								<a href="/{{.Type}}?owner={{.Owner}}&post={{.Post}}">{{.Type}}/{{.Owner}}/{{.Post}}</a>
 								<br>
 								{{.Date.Local}}
 								<br>
