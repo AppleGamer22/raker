@@ -6,6 +6,7 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"net/url"
 	"path/filepath"
 	"sort"
 	"strconv"
@@ -52,7 +53,7 @@ func History(writer http.ResponseWriter, request *http.Request) {
 	switch request.Method {
 	case http.MethodPost:
 		switch cleaner.Line(request.Form.Get("method")) {
-		case http.MethodPut:
+		case http.MethodPatch:
 			_, err := editHistory(user.ID, media, owner, post, categories)
 			if err != nil {
 				http.Error(writer, err.Error(), http.StatusBadRequest)
@@ -60,6 +61,7 @@ func History(writer http.ResponseWriter, request *http.Request) {
 				return
 			}
 
+			http.Redirect(writer, request, request.Referer(), http.StatusTemporaryRedirect)
 		case http.MethodDelete:
 			if file == "" {
 				http.Error(writer, "file URL must be valid", http.StatusBadRequest)
@@ -67,18 +69,26 @@ func History(writer http.ResponseWriter, request *http.Request) {
 				return
 			}
 
-			_, err := deleteFileFromHistory(user, owner, media, post, file)
+			history, err := deleteFileFromHistory(user, owner, media, post, file)
 			if err != nil {
 				http.Error(writer, err.Error(), http.StatusBadRequest)
 				log.Println(err)
 				return
 			}
+
+			redirectURL := request.Referer()
+			if len(history.URLs) == 0 {
+				URL, _ := url.Parse(redirectURL)
+				query := URL.Query()
+				query.Del("post")
+				URL.RawQuery = query.Encode()
+				redirectURL = URL.String()
+			}
+			http.Redirect(writer, request, redirectURL, http.StatusTemporaryRedirect)
 		default:
 			http.Error(writer, "request method is not recognized", http.StatusBadRequest)
 			return
 		}
-
-		http.Redirect(writer, request, request.Referer(), http.StatusTemporaryRedirect)
 	default:
 		http.Error(writer, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 	}
