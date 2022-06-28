@@ -141,7 +141,9 @@ func filterHistories(U_ID primitive.ObjectID, owner string, categories, mediaTyp
 	}
 
 	pages := int(count) / 30
-	if page > pages {
+	if pages == 0 {
+		page = 1
+	} else if page > pages {
 		page = pages
 	}
 
