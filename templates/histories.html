@@ -162,7 +162,11 @@
 					<div class="row">
 						{{range $ii, $history := $row}}
 							<div class="col">
-								<a href="/{{.Type}}?owner={{.Owner}}&post={{.Post}}">{{.Type}}/{{.Owner}}/{{.Post}}</a>
+								<a href="/history?{{$.Query .Type}}">{{.Type}}</a>
+								/
+								<a href="/history?{{$.Query .Owner}}">{{.Owner}}</a>
+								/
+								<a href="/{{.Type}}?owner={{.Owner}}&post={{.Post}}">{{.Post}}</a>
 								<br>
 								{{.Date.Local}}
 								<br>

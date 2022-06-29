@@ -1,6 +1,8 @@
 package db
 
 import (
+	"html/template"
+	"net/url"
 	"time"
 
 	"github.com/AppleGamer22/rake/server/authenticator"
@@ -132,4 +134,24 @@ type HistoriesDisplay struct {
 	Page       int
 	Pages      int
 	Error      error
+}
+
+func (historiesDisplay HistoriesDisplay) Query(value string) template.URL {
+	query := url.Values{}
+	if !ValidMediaType(value) {
+		query.Set("owner", value)
+		for mediaType := range historiesDisplay.Types {
+			query.Set(mediaType, mediaType)
+		}
+	} else {
+		query.Set(value, value)
+	}
+	for category := range historiesDisplay.Categories {
+		query.Set(category, category)
+	}
+	queryString, err := url.QueryUnescape(query.Encode())
+	if err != nil {
+		return template.URL(query.Encode())
+	}
+	return template.URL(queryString)
 }
