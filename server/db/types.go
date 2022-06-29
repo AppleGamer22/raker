@@ -18,7 +18,7 @@ const (
 	VSCO      = "vsco"
 )
 
-var MediaTypes = []string{Instagram, Highlight, Story, VSCO, TikTok}
+var MediaTypes = []string{Highlight, Instagram, Story, TikTok, VSCO}
 
 func ValidMediaType(media string) bool {
 	return media == Instagram || media == Highlight || media == Story || media == VSCO || media == TikTok
@@ -146,12 +146,10 @@ func (historiesDisplay HistoriesDisplay) Query(value string) template.URL {
 	} else {
 		query.Set(value, value)
 	}
-	for category := range historiesDisplay.Categories {
-		query.Set(category, category)
+	for category, checked := range historiesDisplay.Categories {
+		if checked {
+			query.Set(category, category)
+		}
 	}
-	queryString, err := url.QueryUnescape(query.Encode())
-	if err != nil {
-		return template.URL(query.Encode())
-	}
-	return template.URL(queryString)
+	return template.URL(query.Encode())
 }

@@ -94,18 +94,29 @@ func History(writer http.ResponseWriter, request *http.Request) {
 	}
 }
 
-func filterHistories(U_ID primitive.ObjectID, owner string, categories, mediaTypes []string, page int) ([][]db.History, int, error) {
+func filterHistories(user db.User, owner string, categories, mediaTypes []string, page int) ([][]db.History, int, error) {
 	for _, mediaType := range mediaTypes {
 		if !db.ValidMediaType(mediaType) {
 			return [][]db.History{}, 0, errors.New("media type must be valid")
 		}
 	}
 
-	filter := bson.M{"U_ID": U_ID.Hex()}
+	filter := bson.M{"U_ID": user.ID.Hex()}
 
 	if len(categories) != 0 {
-		filter["categories"] = bson.M{
-			"$in": categories,
+		equal := len(categories) == len(user.Categories)
+		if equal {
+			for i := 0; i < len(categories); i++ {
+				if categories[i] != user.Categories[i] {
+					equal = false
+					break
+				}
+			}
+		}
+		if !equal {
+			filter["categories"] = bson.M{
+				"$in": categories,
+			}
 		}
 	} else {
 		filter["$or"] = bson.A{
@@ -291,7 +302,7 @@ func HistoryPage(writer http.ResponseWriter, request *http.Request) {
 		mediaTypes = db.MediaTypes
 	}
 
-	histories, pages, err := filterHistories(user.ID, owner, categories, mediaTypes, page)
+	histories, pages, err := filterHistories(user, owner, categories, mediaTypes, page)
 	if err != nil {
 		log.Println(err)
 	}

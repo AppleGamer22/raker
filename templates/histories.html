@@ -2,7 +2,7 @@
 <html lang="en">
 
 	<head>
-		<title>rake/history</title>
+		<title>rake/history/{{.Page}}</title>
 		<meta charset="utf-8">
 		<meta name="author" content="AppleGamer22">
 		<meta name="viewport" content="viewport-fit=cover, width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0">
@@ -162,11 +162,11 @@
 					<div class="row">
 						{{range $ii, $history := $row}}
 							<div class="col">
-								<a href="/history?{{$.Query .Type}}">{{.Type}}</a>
+								<a href="/history?{{$.Query .Type}}" target="_blank">{{.Type}}</a>
 								/
-								<a href="/history?{{$.Query .Owner}}">{{.Owner}}</a>
+								<a href="/history?{{$.Query .Owner}}" target="_blank">{{.Owner}}</a>
 								/
-								<a href="/{{.Type}}?owner={{.Owner}}&post={{.Post}}">{{.Post}}</a>
+								<a href="/{{.Type}}?owner={{.Owner}}&post={{.Post}}" target="_blank">{{.Post}}</a>
 								<br>
 								{{.Date.Local}}
 								<br>
