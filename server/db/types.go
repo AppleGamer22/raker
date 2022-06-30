@@ -130,6 +130,7 @@ type HistoriesDisplay struct {
 	Owner      string
 	Types      map[string]bool
 	Categories map[string]bool
+	Exclusive  bool
 	Version    string
 	Page       int
 	Pages      int
@@ -145,6 +146,9 @@ func (historiesDisplay HistoriesDisplay) Query(value string) template.URL {
 		}
 	} else {
 		query.Set(value, value)
+	}
+	if historiesDisplay.Exclusive {
+		query.Set("exclusive", "exclusive")
 	}
 	for category, checked := range historiesDisplay.Categories {
 		if checked {
