@@ -57,6 +57,7 @@ type User struct {
 	Instagram struct {
 		FBSR      string `bson:"fbsr" json:"-"`
 		SessionID string `bson:"session_id" json:"-"`
+		UserID    string `bson:"user_id" json:"-"`
 		AppID     string `bson:"app_id" json:"-"`
 	} `bson:"instagram" json:"-"`
 	TikTok     string    `bson:"tiktok" json:"-"`

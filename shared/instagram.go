@@ -75,21 +75,22 @@ type InstagramReels struct {
 }
 
 type Instagram struct {
-	fbsr      http.Cookie
-	sessionID http.Cookie
-	appID     string
+	fbsrCookie    http.Cookie
+	sessionCookie http.Cookie
+	userCookie    http.Cookie
+	appID         string
 }
 
-func NewInstagram(fbsr, sessionID, appID string) Instagram {
+func NewInstagram(fbsr, sessionID, userID, appID string) Instagram {
 	return Instagram{
-		fbsr: http.Cookie{
+		fbsrCookie: http.Cookie{
 			Name:     "fbsr_124024574287414",
 			Value:    fbsr,
 			Domain:   ".instagram.com",
 			Path:     "/",
 			SameSite: http.SameSiteNoneMode,
 		},
-		sessionID: http.Cookie{
+		sessionCookie: http.Cookie{
 			Name:     "sessionid",
 			Value:    sessionID,
 			Domain:   ".instagram.com",
@@ -97,7 +98,14 @@ func NewInstagram(fbsr, sessionID, appID string) Instagram {
 			HttpOnly: true,
 			Secure:   true,
 		},
-		appID: appID,
+		userCookie: http.Cookie{
+			Name:   "ds_user_id",
+			Value:  userID,
+			Domain: ".instagram.com",
+			Path:   "/",
+			Secure: true,
+		},
+		appID: "936619743392459",
 	}
 }
 
@@ -107,11 +115,13 @@ func (instagram *Instagram) Post(post string) (URLs []string, username string, e
 	if err != nil {
 		return URLs, username, err
 	}
-	htmlRequest.AddCookie(&instagram.fbsr)
-	htmlRequest.AddCookie(&instagram.sessionID)
+	htmlRequest.AddCookie(&instagram.fbsrCookie)
+	htmlRequest.AddCookie(&instagram.sessionCookie)
+	htmlRequest.AddCookie(&instagram.userCookie)
 	htmlRequest.Header.Add("x-ig-app-id", instagram.appID)
 	htmlRequest.Header.Add("User-Agent", UserAgent)
 	htmlRequest.Header.Add("referer", "https://www.instagram.com/")
+	htmlRequest.Header.Add("sec-fetch-mode", "navigate")
 
 	htmlResponse, err := http.DefaultClient.Do(htmlRequest)
 	if err != nil {
@@ -138,8 +148,9 @@ func (instagram *Instagram) Post(post string) (URLs []string, username string, e
 		return URLs, username, err
 	}
 
-	jsonRequest.AddCookie(&instagram.fbsr)
-	jsonRequest.AddCookie(&instagram.sessionID)
+	jsonRequest.AddCookie(&instagram.fbsrCookie)
+	jsonRequest.AddCookie(&instagram.sessionCookie)
+	jsonRequest.AddCookie(&instagram.userCookie)
 	jsonRequest.Header.Add("x-ig-app-id", instagram.appID)
 	jsonRequest.Header.Add("User-Agent", UserAgent)
 	jsonRequest.Header.Add("referer", "https://www.instagram.com/")

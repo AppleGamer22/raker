@@ -8,7 +8,7 @@ import (
 )
 
 func testHighlight(t *testing.T) {
-	instagram := shared.NewInstagram(configuration.Instagram.FBSR, configuration.Instagram.Session, configuration.Instagram.App)
+	instagram := shared.NewInstagram(configuration.Instagram.FBSR, configuration.Instagram.Session, configuration.Instagram.User, configuration.Instagram.App)
 	URLs, username, err := instagram.Reels("17898619759829276", true)
 	assert.NoError(t, err)
 	assert.Equal(t, "wikipedia", username)
@@ -17,7 +17,7 @@ func testHighlight(t *testing.T) {
 }
 
 func testStory(t *testing.T) {
-	instagram := shared.NewInstagram(configuration.Instagram.FBSR, configuration.Instagram.Session, configuration.Instagram.App)
+	instagram := shared.NewInstagram(configuration.Instagram.FBSR, configuration.Instagram.Session, configuration.Instagram.User, configuration.Instagram.App)
 	URLs, username, err := instagram.Reels("f1", false)
 	assert.NoError(t, err)
 	assert.Equal(t, "f1", username)

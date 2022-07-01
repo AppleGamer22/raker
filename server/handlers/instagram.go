@@ -42,7 +42,7 @@ func InstagramPage(writer http.ResponseWriter, request *http.Request) {
 			"type": db.Instagram,
 		}
 		if err := db.Histories.FindOne(context.Background(), filter).Decode(&history); err != nil {
-			instagram := shared.NewInstagram(user.Instagram.FBSR, user.Instagram.SessionID, user.Instagram.AppID)
+			instagram := shared.NewInstagram(user.Instagram.FBSR, user.Instagram.SessionID, user.Instagram.UserID, user.Instagram.AppID)
 			URLs, username, err := instagram.Post(post)
 
 			if err != nil {

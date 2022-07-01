@@ -7,6 +7,7 @@ import (
 type Configuration struct {
 	Instagram struct {
 		Session string
+		User    string
 		FBSR    string
 		App     string
 	}
