@@ -111,6 +111,7 @@ func (instagram *Instagram) Post(post string) (URLs []string, username string, e
 	htmlRequest.AddCookie(&instagram.sessionID)
 	htmlRequest.Header.Add("x-ig-app-id", instagram.appID)
 	htmlRequest.Header.Add("User-Agent", UserAgent)
+	htmlRequest.Header.Add("referer", "https://www.instagram.com/")
 
 	htmlResponse, err := http.DefaultClient.Do(htmlRequest)
 	if err != nil {
@@ -122,14 +123,15 @@ func (instagram *Instagram) Post(post string) (URLs []string, username string, e
 	if err != nil {
 		return URLs, username, err
 	}
-	re := regexp.MustCompile(`media\?id=([0-9]+)`)
+	re := regexp.MustCompile(`\"media_id\":\"([0-9]+)\"`)
 	mediaIDMatch := re.FindString(string(htmlBody))
 	if mediaIDMatch == "" {
 		fmt.Println(string(htmlBody))
 		return URLs, username, errors.New("could not find media ID")
 	}
 
-	mediaID := mediaIDMatch[len(`media?id=`):]
+	mediaID := mediaIDMatch[len(`"media_id":"`) : len(mediaIDMatch)-1]
+	fmt.Println(mediaID)
 	jsonURL := fmt.Sprintf("https://i.instagram.com/api/v1/media/%s/info/", mediaID)
 	jsonRequest, err := http.NewRequest(http.MethodGet, jsonURL, nil)
 	if err != nil {
@@ -140,6 +142,7 @@ func (instagram *Instagram) Post(post string) (URLs []string, username string, e
 	jsonRequest.AddCookie(&instagram.sessionID)
 	jsonRequest.Header.Add("x-ig-app-id", instagram.appID)
 	jsonRequest.Header.Add("User-Agent", UserAgent)
+	jsonRequest.Header.Add("referer", "https://www.instagram.com/")
 
 	jsonResponse, err := http.DefaultClient.Do(jsonRequest)
 	if err != nil {
