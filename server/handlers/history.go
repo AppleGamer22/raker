@@ -5,6 +5,7 @@ import (
 	"errors"
 	"html/template"
 	"log"
+	"math"
 	"net/http"
 	"net/url"
 	"path/filepath"
@@ -156,7 +157,7 @@ func filterHistories(user db.User, owner string, categories, mediaTypes []string
 		return [][]db.History{}, 0, 0, 0, err
 	}
 
-	pages := int(count) / 30
+	pages := int(math.Ceil(float64(count) / 30.0))
 	if pages == 0 {
 		page = 1
 		pages = 1
