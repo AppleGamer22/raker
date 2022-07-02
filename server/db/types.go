@@ -135,6 +135,7 @@ type HistoriesDisplay struct {
 	Version    string
 	Page       int
 	Pages      int
+	Count      int
 	Error      error
 }
 

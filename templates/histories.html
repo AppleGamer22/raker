@@ -135,6 +135,11 @@
 				<input type="text" value="{{.Owner}}" class="form-control float-start" placeholder="owner" id="owner" name="owner">
 				<button type="reset" class="btn btn-warning">Reset</button>
 				<button type="submit" class="btn btn-primary float-end">Submit</button>
+				{{if gt .Count 0}}
+					<ul class="list-group">
+						<li class="list-group-item">{{.Count}} results</li>
+					</ul>
+				{{end}}
 				{{if gt .Pages 1}}
 					<nav>
 						<ul class="pagination">
