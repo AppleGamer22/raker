@@ -165,21 +165,26 @@ func filterHistories(user db.User, owner string, categories, mediaTypes []string
 		page = pages
 	}
 
-	paginationOptions := options.Find().SetSkip(int64((page - 1) * 30)).SetLimit(int64(30)).SetSort(bson.M{"date": -1})
+	paginationOptions := options.Find().SetSkip(int64((page - 1) * 30)).SetLimit(int64(30)).SetSort(bson.D{{Key: "date", Value: -1}})
 	cursor, err := db.Histories.Find(context.Background(), filter, paginationOptions)
 	if err != nil {
 		return [][]db.History{}, 0, 0, 0, err
 	}
-	var histories []db.History
-	err = cursor.All(context.Background(), &histories)
 
 	matrix := [][]db.History{}
-	for i := len(histories) - 1; i > -1; i -= 3 {
-		row := []db.History{}
-		for j := 0; j < 3 && i-j > -1; j++ {
-			row = append(row, histories[i-j])
-			histories = histories[:i-j]
+	row := make([]db.History, 0, 3)
+	for cursor.Next(context.Background()) {
+		if len(row) == 3 {
+			matrix = append(matrix, row)
+			row = make([]db.History, 0, 3)
 		}
+		var history db.History
+		if err = cursor.Decode(&history); err != nil {
+			break
+		}
+		row = append(row, history)
+	}
+	if len(row) > 0 {
 		matrix = append(matrix, row)
 	}
 
