@@ -27,10 +27,22 @@
 			h1, h2, h3, h4, h5, h6, label, p, a {
 				word-wrap: break-word;
 			}
-			img, video, .carousel-item, .carousel-inner, .carousel, .slide {
+			
+			img, video, .carousel-item, .carousel-inner, .carousel, .slide, .col {
 				height: auto;
 				max-width: 33vw;
 			}
+
+			@media (max-width: 400px) {
+				span.date {
+					display: none;
+				}
+
+				a, b, span {
+					font-size: 0.8rem;
+				}
+			}
+
 			input#owner {
 				width: calc(100% - 80px);
 			}
@@ -171,15 +183,17 @@
 						{{range $ii, $history := $row}}
 							<div class="col">
 								<a href="/history?{{$.Query .Type}}" target="_blank">{{.Type}}</a>
-								/
+								<span>/</span>
 								<a href="/history?{{$.Query .Owner}}" target="_blank">{{.Owner}}</a>
-								/
+								<span>/</span>
 								<a href="/{{.Type}}?owner={{.Owner}}&post={{.Post}}" target="_blank">{{.Post}}</a>
-								<br>
-								{{.Date.Local}}
-								<br>
+								<span class="date">
+									<br>
+									{{.Date.Local}}
+									<br>
+								</span>
 								{{if $history.Categories}}
-									Categories: <b>{{range $category := $history.Categories}}
+									<span>Categories:</span>&nbsp;<b>{{range $category := $history.Categories}}
 										{{$category}}
 									{{end}}</b>
 								{{end}}
