@@ -32,7 +32,7 @@
 				max-width: 33vw;
 			}
 			input#owner {
-				width: calc(100% - 68px - 80px);
+				width: calc(100% - 80px);
 			}
 		</style>
 	</head>
@@ -133,9 +133,9 @@
 				</div>
 				<h4>Owner</h4>
 				<input type="text" value="{{.Owner}}" class="form-control float-start" placeholder="owner" id="owner" name="owner">
-				<button type="reset" class="btn btn-warning">Reset</button>
 				<button type="submit" class="btn btn-primary float-end">Submit</button>
 				{{if gt .Count 0}}
+					<br><br>
 					<ul class="list-group">
 						<li class="list-group-item">{{.Count}} results</li>
 					</ul>
