@@ -126,6 +126,15 @@ type HistoryDisplay struct {
 	Version            string
 }
 
+func (historyDisplay HistoryDisplay) HistoryQuery() template.URL {
+	query := url.Values{}
+	query.Set("page", "1")
+	for category := range historyDisplay.SelectedCategories {
+		query.Set(category, category)
+	}
+	return template.URL(query.Encode())
+}
+
 type HistoriesDisplay struct {
 	Histories  [][]History
 	Owner      string
