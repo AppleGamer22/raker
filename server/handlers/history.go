@@ -114,11 +114,11 @@ func filterHistories(user db.User, owner string, categories, mediaTypes []string
 				}
 			}
 		}
-		if !equal {
-			if exclusive {
-				sort.Strings(categories)
-				filter["categories"] = categories
-			} else {
+		if exclusive {
+			sort.Strings(categories)
+			filter["categories"] = categories
+		} else {
+			if !equal {
 				filter["categories"] = bson.M{
 					"$in": categories,
 				}
