@@ -27,7 +27,7 @@ func (instagram *Instagram) Reels(id string, highlight bool) (URLs []string, use
 	request.AddCookie(&instagram.fbsrCookie)
 	request.AddCookie(&instagram.sessionCookie)
 	request.AddCookie(&instagram.userCookie)
-	request.Header.Add("x-ig-app-id", instagram.appID)
+	request.Header.Add("x-ig-app-id", "936619743392459")
 	request.Header.Add("User-Agent", UserAgent)
 
 	response, err := http.DefaultClient.Do(request)
@@ -62,7 +62,7 @@ func (instagram *Instagram) userID(username string) (string, error) {
 	request.AddCookie(&instagram.fbsrCookie)
 	request.AddCookie(&instagram.sessionCookie)
 	request.AddCookie(&instagram.userCookie)
-	request.Header.Add("x-ig-app-id", instagram.appID)
+	request.Header.Add("x-ig-app-id", "936619743392459")
 	request.Header.Add("User-Agent", UserAgent)
 
 	response, err := http.DefaultClient.Do(request)

@@ -78,7 +78,6 @@ type Instagram struct {
 	fbsrCookie    http.Cookie
 	sessionCookie http.Cookie
 	userCookie    http.Cookie
-	appID         string
 }
 
 func NewInstagram(fbsr, sessionID, userID string) Instagram {
@@ -118,7 +117,7 @@ func (instagram *Instagram) Post(post string) (URLs []string, username string, e
 	htmlRequest.AddCookie(&instagram.sessionCookie)
 	htmlRequest.AddCookie(&instagram.userCookie)
 	htmlRequest.Header.Add("x-ig-app-id", "936619743392459")
-	htmlRequest.Header.Add("User-Agent", UserAgent)
+	htmlRequest.Header.Add("user-agent", UserAgent)
 	htmlRequest.Header.Add("referer", "https://www.instagram.com/")
 	htmlRequest.Header.Add("sec-fetch-mode", "navigate")
 
@@ -140,7 +139,7 @@ func (instagram *Instagram) Post(post string) (URLs []string, username string, e
 	}
 
 	mediaID := mediaIDMatch[len(`"media_id":"`) : len(mediaIDMatch)-1]
-	fmt.Println(mediaID)
+	// fmt.Println(mediaID)
 	jsonURL := fmt.Sprintf("https://i.instagram.com/api/v1/media/%s/info/", mediaID)
 	jsonRequest, err := http.NewRequest(http.MethodGet, jsonURL, nil)
 	if err != nil {
@@ -150,7 +149,7 @@ func (instagram *Instagram) Post(post string) (URLs []string, username string, e
 	jsonRequest.AddCookie(&instagram.fbsrCookie)
 	jsonRequest.AddCookie(&instagram.sessionCookie)
 	jsonRequest.AddCookie(&instagram.userCookie)
-	jsonRequest.Header.Add("x-ig-app-id", instagram.appID)
+	jsonRequest.Header.Add("x-ig-app-id", "936619743392459")
 	jsonRequest.Header.Add("User-Agent", UserAgent)
 	jsonRequest.Header.Add("referer", "https://www.instagram.com/")
 
