@@ -11,8 +11,9 @@ type Authenticator struct {
 
 type Payload struct {
 	jwt.RegisteredClaims
-	Username string             `json:"username"`
-	U_ID     primitive.ObjectID `json:"U_ID"`
+	Username string `json:"username"`
+	// Password string             `json:"password"`
+	U_ID primitive.ObjectID `json:"U_ID"`
 }
 
 func New(secret string) Authenticator {

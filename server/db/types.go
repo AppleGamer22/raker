@@ -58,7 +58,7 @@ type User struct {
 		FBSR      string `bson:"fbsr" json:"-"`
 		SessionID string `bson:"session_id" json:"-"`
 		UserID    string `bson:"user_id" json:"-"`
-		AppID     string `bson:"app_id" json:"-"`
+		// AppID     string `bson:"app_id" json:"-"`
 	} `bson:"instagram" json:"-"`
 	TikTok     string    `bson:"tiktok" json:"-"`
 	Joined     time.Time `bson:"joined" json:"-"`
@@ -66,7 +66,7 @@ type User struct {
 	Categories []string  `bson:"categories" json:"-"`
 }
 
-func (user *User) OpenInstagram(password string) (fbsr, sessionID, appID string, err error) {
+func (user *User) OpenInstagram(password string) (fbsr, sessionID, userID string, err error) {
 	if err := authenticator.Compare(user.Hash, password); err != nil {
 		return "", "", "", err
 	}
@@ -78,11 +78,11 @@ func (user *User) OpenInstagram(password string) (fbsr, sessionID, appID string,
 	if err != nil {
 		return "", "", "", err
 	}
-	appID, err = authenticator.Decrypt(password, user.Instagram.AppID)
+	userID, err = authenticator.Decrypt(password, user.Instagram.UserID)
 	if err != nil {
 		return "", "", "", err
 	}
-	return fbsr, sessionID, appID, nil
+	return fbsr, sessionID, userID, nil
 }
 
 func (user *User) OpenTikTok(password string) (string, error) {
