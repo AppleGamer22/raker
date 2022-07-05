@@ -66,6 +66,13 @@ type User struct {
 	Categories []string  `bson:"categories" json:"-"`
 }
 
+type UserCategoryDisplay struct {
+	Username     string
+	Categories   []string
+	HistoryQuery template.URL
+	Version      string
+}
+
 func (user *User) OpenInstagram(password string) (fbsr, sessionID, userID string, err error) {
 	if err := authenticator.Compare(user.Hash, password); err != nil {
 		return "", "", "", err

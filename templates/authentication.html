@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+
+	<head>
+		<title>rake/authentication/{{.Username}}</title>
+		<meta charset="utf-8">
+		<meta name="author" content="AppleGamer22">
+		<meta name="viewport" content="viewport-fit=cover, width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0">
+		<meta name="color-scheme" content="dark light">
+		<meta name="format-detection" content="telephone=no">
+		<meta name="msapplication-tap-highlight" content="no">
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-status-bar-style" content="white">
+		<meta name="theme-color" content="#0cd1e8">
+		<meta name="twitter:title" content="Rake Instagram">
+		<meta name="og:title" content="Rake Instagram">
+		<meta name="og:site_name" content="Rake Instagram">
+		<meta name="og:type" content="website">
+		<meta http-equiv="Content-Type" content="text/html">
+		<link rel="apple-touch-icon" href="/assets/icons/icon-ios-192x192.png">
+		<link rel="icon" type="image/x-icon" href="/assets/icons/favicon.ico">
+		<!-- <link rel="manifest" href="/manifest.json"> -->
+		<link href="/assets/theme.css" rel="stylesheet">
+		<link rel="stylesheet" href="/assets/dark.css">
+		<script defer src="/assets/bootstrap.bundle.min.js"></script>
+		<!-- <style>
+			h1, h2, h3, h4, h5, h6, label, p, a {
+				word-wrap: break-word;
+			}
+			img, video {
+				height: auto;
+				max-width: 100%;
+			}
+		</style> -->
+	</head>
+	<body>
+		<header>
+			<nav class="navbar navbar-expand-lg">
+				<div class="container-fluid">
+					<a class="navbar-brand">
+						<img src="/assets/icons/logo.svg" width="30" height="24" class="d-inline-block align-text-top">
+						<sup>
+							<span class="badge bg-secondary">{{.Version}}</span>
+						</sup>
+					</a>
+					<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+						<span class="navbar-toggler-icon"></span>
+					</button>
+					<div class="collapse navbar-collapse" id="navbarNav">
+						<ul class="navbar-nav">
+							<li class="nav-item">
+								<a class="nav-link disabled" href="/">Authentication</a>
+							</li>
+							{{if .Username}}
+								<li class="nav-item">
+									<a class="nav-link" href="/instagram">Instagram Post</a>
+								</li>
+								<li class="nav-item">
+									<a class="nav-link" href="/highlight">Instagram Highlight</a>
+								</li>
+								<li class="nav-item">
+									<a class="nav-link" href="/story">Instagram Story</a>
+								</li>
+								<li class="nav-item">
+									<a class="nav-link" href="/tiktok">TikTok Post</a>
+								</li>
+								<li class="nav-item">
+									<a class="nav-link" href="/vsco">VSCO Post</a>
+								</li>
+								<li class="nav-item">
+									<a class="nav-link" href="/history?{{.HistoryQuery}}">History</a>
+								</li>
+							{{else}}
+								<li class="nav-item ">
+									<a class="nav-link disabled" href="/instagram">Instagram Post</a>
+								</li>
+								<li class="nav-item">
+									<a class="nav-link disabled" href="/highlight">Instagram Highlight</a>
+								</li>
+								<li class="nav-item">
+									<a class="nav-link disabled" href="/story">Instagram Story</a>
+								</li>
+								<li class="nav-item">
+									<a class="nav-link disabled" href="/tiktok">TikTok Post</a>
+								</li>
+								<li class="nav-item">
+									<a class="nav-link disabled" href="/vsco">VSCO Post</a>
+								</li>
+								<li class="nav-item">
+									<a class="nav-link disabled" href="/history">History</a>
+								</li>
+							{{end}}
+						</ul>
+					</div>
+				</div>
+			</nav>
+		</header>
+		<main>
+			{{if .Username}}
+				<h4>Categories</h4>
+				<div class="container">
+					{{range .Categories}}
+						<form class="row">
+							<div class="col-auto">
+								<label for="{{.}}" class="form-label">{{.}}</label>
+							</div>
+							<div class="col">
+								<input type="text" class="form-control" id="{{.}}" name="{{.}}" value="{{.}}" placeholder="category name">
+							</div>
+							<div class="col-auto">
+								<button type="submit" class="btn btn-warning">Save</button>
+								<form method="post">
+									<input type="hidden" name="{{.}}" value="delete">
+									<button type="submit" class="btn btn-danger">Delete</button>
+								</form>
+							</div>
+						</form>
+						<br>
+					{{end}}
+					<form class="row">
+						<div class="col-auto">
+							<label for="new" class="form-label">New Category</label>
+						</div>
+						<div class="col">
+							<input type="text" class="form-control" id="new" name="new" placeholder="new category name">
+						</div>
+						<div class="col-auto">
+							<button type="submit" class="btn btn-warning">Save</button>
+						</div>
+					</form>
+				</div>
+				<h4>Update</h4>
+				<form method="post" action="/api/auth/update/instagram">
+					<div class="mb-3">
+						<label for="fbsr" class="form-label">FBSR</label>
+						<input type="text" class="form-control" id="fbsr" name="fbsr" placeholder="FBSR cookie value">
+					</div>
+					<div class="mb-3">
+						<label for="session" class="form-label">session ID</label>
+						<input type="text" class="form-control" id="session" name="session" placeholder="session ID cookie value">
+					</div>
+					<div class="mb-3">
+						<label for="user" class="form-label">user ID</label>
+						<input type="text" class="form-control" id="user" name="user" placeholder="user ID cookie value">
+					</div>
+					<!-- <input type="hidden" name="type" value="update"> -->
+					<button type="submit" class="btn btn-primary">Update</button>
+				</form>
+				<form action="/api/auth/sign_out/instagram">
+					<!-- <input type="hidden" name="type" value="sign-out"> -->
+					<button type="submit" class="btn btn-danger">Sign-out</button>
+				</form>
+			{{else}}
+				<h4>Sign-up</h4>
+				<form method="post" action="/api/auth/sign_up/instagram">
+					<div class="mb-3">
+						<label for="username1" class="form-label">username</label>
+						<input type="text" class="form-control" id="username1" name="username" placeholder="social network username">
+					</div>
+					<div class="mb-3">
+						<label for="password" class="form-label">password</label>
+						<input type="password" class="form-control" id="password" name="password" placeholder="a unique password">
+					</div>
+					<div class="mb-3">
+						<label for="fbsr" class="form-label">FBSR</label>
+						<input type="text" class="form-control" id="fbsr" name="fbsr" placeholder="FBSR cookie value">
+					</div>
+					<div class="mb-3">
+						<label for="session" class="form-label">session ID</label>
+						<input type="text" class="form-control" id="session" name="session" placeholder="session ID cookie value">
+					</div>
+					<div class="mb-3">
+						<label for="user" class="form-label">user ID</label>
+						<input type="text" class="form-control" id="user" name="user" placeholder="user ID cookie value">
+					</div>
+					<!-- <input type="hidden" name="type" value="sign-up"> -->
+					<button type="submit" class="btn btn-primary">Sign-up</button>
+				</form>
+				<h4>Sign-in</h4>
+				<form action="/api/auth/sign_in/instagram">
+					<div class="mb-3">
+						<label for="username2" class="form-label">username</label>
+						<input type="text" class="form-control" id="username2" name="username" placeholder="social network username">
+					</div>
+					<div class="mb-3">
+						<label for="password" class="form-label">password</label>
+						<input type="password" class="form-control" id="password" name="password" placeholder="a unique password">
+					</div>
+					<!-- <input type="hidden" name="type" value="sign-in"> -->
+					<button type="submit" class="btn btn-primary">Sign-in</button>
+				</form>
+			{{end}}
+		</main>
+		<noscript>Please enable JavaScript to continue using this application.</noscript>
+	</body>
+
+</html>

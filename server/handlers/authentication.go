@@ -2,13 +2,16 @@ package handlers
 
 import (
 	"context"
+	"html/template"
 	"log"
 	"net/http"
+	"net/url"
 	"time"
 
 	"github.com/AppleGamer22/rake/server/authenticator"
 	"github.com/AppleGamer22/rake/server/cleaner"
 	"github.com/AppleGamer22/rake/server/db"
+	"github.com/AppleGamer22/rake/shared"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -141,6 +144,8 @@ func InstagramSignIn(writer http.ResponseWriter, request *http.Request) {
 		Secure:   true,
 		HttpOnly: true,
 	})
+
+	http.Redirect(writer, request, request.Referer(), http.StatusTemporaryRedirect)
 }
 
 func Verify(request *http.Request) (db.User, error) {
@@ -175,5 +180,26 @@ func InstagramSignOut(writer http.ResponseWriter, request *http.Request) {
 }
 
 func AuthenticationPage(writer http.ResponseWriter, request *http.Request) {
+	user, _ := Verify(request)
 
+	categoryDisplay := db.UserCategoryDisplay{
+		Username:   user.Username,
+		Categories: user.Categories,
+		HistoryQuery: func() template.URL {
+			query := url.Values{}
+			query.Set("page", "1")
+			for _, category := range user.Categories {
+				query.Set(category, category)
+			}
+			return template.URL(query.Encode())
+		}(),
+		Version: shared.Version,
+	}
+
+	writer.Header().Set("Content-Type", "text/html")
+	if err := templates.ExecuteTemplate(writer, "authentication.html", categoryDisplay); err != nil {
+		http.Error(writer, err.Error(), http.StatusInternalServerError)
+		log.Println(err)
+		return
+	}
 }

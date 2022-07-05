@@ -3,7 +3,6 @@ package handlers
 import (
 	"context"
 	"errors"
-	"html/template"
 	"log"
 	"math"
 	"net/http"
@@ -11,7 +10,6 @@ import (
 	"path/filepath"
 	"sort"
 	"strconv"
-	"strings"
 
 	"github.com/AppleGamer22/rake/server/cleaner"
 	"github.com/AppleGamer22/rake/server/db"
@@ -246,21 +244,6 @@ func deleteFileFromHistory(user db.User, owner, media, post, file string) (db.Hi
 
 	return history, nil
 }
-
-var (
-	funcs = template.FuncMap{
-		"hasSuffix": strings.HasSuffix,
-		// "join":      strings.Join,
-		"base": filepath.Base,
-		"add": func(a, b int) int {
-			return a + b
-		},
-	}
-	templates = template.Must(template.New("").Funcs(funcs).ParseFiles(
-		filepath.Join("templates", "history.html"),
-		filepath.Join("templates", "histories.html"),
-	))
-)
 
 func historyHTML(user db.User, history db.History, serverErrors []error, writer http.ResponseWriter) {
 	historyDisplay := db.HistoryDisplay{
