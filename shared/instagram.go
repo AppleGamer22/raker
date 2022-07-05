@@ -81,7 +81,7 @@ type Instagram struct {
 	appID         string
 }
 
-func NewInstagram(fbsr, sessionID, userID, appID string) Instagram {
+func NewInstagram(fbsr, sessionID, userID string) Instagram {
 	return Instagram{
 		fbsrCookie: http.Cookie{
 			Name:     "fbsr_124024574287414",
@@ -105,7 +105,6 @@ func NewInstagram(fbsr, sessionID, userID, appID string) Instagram {
 			Path:   "/",
 			Secure: true,
 		},
-		appID: "936619743392459",
 	}
 }
 
@@ -118,7 +117,7 @@ func (instagram *Instagram) Post(post string) (URLs []string, username string, e
 	htmlRequest.AddCookie(&instagram.fbsrCookie)
 	htmlRequest.AddCookie(&instagram.sessionCookie)
 	htmlRequest.AddCookie(&instagram.userCookie)
-	htmlRequest.Header.Add("x-ig-app-id", instagram.appID)
+	htmlRequest.Header.Add("x-ig-app-id", "936619743392459")
 	htmlRequest.Header.Add("User-Agent", UserAgent)
 	htmlRequest.Header.Add("referer", "https://www.instagram.com/")
 	htmlRequest.Header.Add("sec-fetch-mode", "navigate")
