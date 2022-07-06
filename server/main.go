@@ -56,6 +56,7 @@ func main() {
 
 	mux.HandleFunc("/api/auth/sign_up/instagram", handlers.InstagramSignUp)
 	mux.HandleFunc("/api/auth/sign_in/instagram", handlers.InstagramSignIn)
+	mux.HandleFunc("/api/auth/update/instagram", handlers.InstagramUpdateCredentials)
 	mux.HandleFunc("/api/auth/sign_out/instagram", handlers.InstagramSignOut)
 	mux.HandleFunc("/api/history", handlers.History)
 	mux.HandleFunc("/api/info", handlers.Information)

@@ -37,19 +37,19 @@ func InstagramSignUp(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	fbsr := cleaner.Line(request.Form.Get("fbsr"))
-	if password == "" {
+	if fbsr == "" {
 		http.Error(writer, "FBSR must be provided", http.StatusBadRequest)
 		return
 	}
 
 	sessionID := cleaner.Line(request.Form.Get("session"))
-	if password == "" {
+	if sessionID == "" {
 		http.Error(writer, "session ID must be provided", http.StatusBadRequest)
 		return
 	}
 
 	userID := cleaner.Line(request.Form.Get("user"))
-	if password == "" {
+	if userID == "" {
 		http.Error(writer, "user ID must be provided", http.StatusBadRequest)
 		return
 	}
@@ -57,10 +57,11 @@ func InstagramSignUp(writer http.ResponseWriter, request *http.Request) {
 	count, err := db.Users.CountDocuments(context.Background(), bson.M{"username": username})
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
-		log.Println(err)
+		log.Println(err, username)
 		return
 	} else if count != 0 {
 		http.Error(writer, "username already exists", http.StatusConflict)
+		log.Println("username already exists", username)
 		return
 	}
 
@@ -90,7 +91,7 @@ func InstagramSignUp(writer http.ResponseWriter, request *http.Request) {
 	_, err = db.Users.InsertOne(context.Background(), user)
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
-		log.Println()
+		log.Println(err.Error())
 		return
 	}
 
@@ -131,7 +132,7 @@ func InstagramSignIn(writer http.ResponseWriter, request *http.Request) {
 	webToken, err := Authenticator.Sign(authenticator.Payload{Username: user.Username, U_ID: user.ID})
 	if err != nil {
 		http.Error(writer, "sign-in failed", http.StatusUnauthorized)
-		log.Println(err)
+		log.Println(err, user.ID.Hex())
 		return
 	}
 
@@ -164,11 +165,65 @@ func Verify(request *http.Request) (db.User, error) {
 	return user, err
 }
 
+func InstagramUpdateCredentials(writer http.ResponseWriter, request *http.Request) {
+	user, err := Verify(request)
+	if err != nil {
+		http.Error(writer, "credential update failed", http.StatusUnauthorized)
+		log.Println(err, user.ID.Hex())
+		return
+	}
+
+	if err := request.ParseForm(); err != nil {
+		http.Error(writer, "failed to read request form", http.StatusBadRequest)
+		return
+	}
+
+	fbsr := cleaner.Line(request.Form.Get("fbsr"))
+	if fbsr == "" {
+		fbsr = user.Instagram.FBSR
+	}
+
+	sessionID := cleaner.Line(request.Form.Get("session"))
+	if sessionID == "" {
+		sessionID = user.Instagram.SessionID
+	}
+
+	userID := cleaner.Line(request.Form.Get("user"))
+	if userID == "" {
+		userID = user.Instagram.UserID
+	}
+
+	filter := bson.M{
+		"_id":      user.ID,
+		"username": user.Username,
+	}
+
+	update := bson.M{
+		"$set": bson.M{
+			"instagram.fbsr":       fbsr,
+			"instagram.session_id": sessionID,
+			"instagram.user_id":    userID,
+		},
+	}
+
+	result, err := db.Users.UpdateOne(context.Background(), filter, update)
+	if err != nil {
+		http.Error(writer, err.Error(), http.StatusInternalServerError)
+		log.Println(err, user.ID.Hex())
+		return
+	} else if result.MatchedCount == 0 || result.ModifiedCount == 0 {
+		http.Error(writer, "the user was not found/modified", http.StatusNotFound)
+		log.Println("the user was not found/modified", user.ID.Hex())
+	}
+
+	http.Redirect(writer, request, request.Referer(), http.StatusTemporaryRedirect)
+}
+
 func InstagramSignOut(writer http.ResponseWriter, request *http.Request) {
-	_, err := Verify(request)
+	user, err := Verify(request)
 	if err != nil {
 		http.Error(writer, "sign-out failed", http.StatusUnauthorized)
-		log.Println(err)
+		log.Println(err, user.ID.Hex())
 		return
 	}
 
@@ -177,6 +232,8 @@ func InstagramSignOut(writer http.ResponseWriter, request *http.Request) {
 		Value:  "",
 		MaxAge: -1,
 	})
+
+	http.Redirect(writer, request, request.Referer(), http.StatusTemporaryRedirect)
 }
 
 func AuthenticationPage(writer http.ResponseWriter, request *http.Request) {
