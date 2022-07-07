@@ -21,7 +21,11 @@ func init() {
 	viper.AutomaticEnv()
 	viper.SetConfigName(".rake")
 	viper.SetConfigType("yaml")
-	viper.AddConfigPath(".")
+	home, err := os.UserHomeDir()
+	if err != nil {
+		panic(err)
+	}
+	viper.AddConfigPath(home)
 }
 
 func main() {
