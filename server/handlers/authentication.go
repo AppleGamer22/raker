@@ -178,6 +178,18 @@ func InstagramUpdateCredentials(writer http.ResponseWriter, request *http.Reques
 		return
 	}
 
+	password := cleaner.Line(request.Form.Get("password"))
+	if password == "" {
+		password = user.Hash
+	} else {
+		password, err = authenticator.Hash(password)
+		if err != nil {
+			http.Error(writer, err.Error(), http.StatusInternalServerError)
+			log.Println(err, user.ID.Hex())
+			return
+		}
+	}
+
 	fbsr := cleaner.Line(request.Form.Get("fbsr"))
 	if fbsr == "" {
 		fbsr = user.Instagram.FBSR
@@ -200,6 +212,7 @@ func InstagramUpdateCredentials(writer http.ResponseWriter, request *http.Reques
 
 	update := bson.M{
 		"$set": bson.M{
+			"hash":                 password,
 			"instagram.fbsr":       fbsr,
 			"instagram.session_id": sessionID,
 			"instagram.user_id":    userID,

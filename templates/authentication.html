@@ -132,6 +132,10 @@
 				<h4>Update</h4>
 				<form method="post" action="/api/auth/update/instagram">
 					<div class="mb-3">
+						<label for="password" class="form-label">new password</label>
+						<input type="password" class="form-control" id="password" name="password" placeholder="a unique password">
+					</div>
+					<div class="mb-3">
 						<label for="fbsr" class="form-label">FBSR</label>
 						<input type="text" class="form-control" id="fbsr" name="fbsr" placeholder="FBSR cookie value">
 					</div>
@@ -146,6 +150,7 @@
 					<!-- <input type="hidden" name="type" value="update"> -->
 					<button type="submit" class="btn btn-primary">Update</button>
 				</form>
+				<br>
 				<form action="/api/auth/sign_out/instagram">
 					<!-- <input type="hidden" name="type" value="sign-out"> -->
 					<button type="submit" class="btn btn-danger">Sign-out</button>
@@ -158,8 +163,8 @@
 						<input type="text" class="form-control" id="username1" name="username" placeholder="social network username">
 					</div>
 					<div class="mb-3">
-						<label for="password" class="form-label">password</label>
-						<input type="password" class="form-control" id="password" name="password" placeholder="a unique password">
+						<label for="password1" class="form-label">password</label>
+						<input type="password" class="form-control" id="password1" name="password" placeholder="a unique password">
 					</div>
 					<div class="mb-3">
 						<label for="fbsr" class="form-label">FBSR</label>
@@ -177,14 +182,14 @@
 					<button type="submit" class="btn btn-primary">Sign-up</button>
 				</form>
 				<h4>Sign-in</h4>
-				<form action="/api/auth/sign_in/instagram">
+				<form method="post" action="/api/auth/sign_in/instagram">
 					<div class="mb-3">
 						<label for="username2" class="form-label">username</label>
 						<input type="text" class="form-control" id="username2" name="username" placeholder="social network username">
 					</div>
 					<div class="mb-3">
-						<label for="password" class="form-label">password</label>
-						<input type="password" class="form-control" id="password" name="password" placeholder="a unique password">
+						<label for="password2" class="form-label">password</label>
+						<input type="password" class="form-control" id="password2" name="password" placeholder="a unique password">
 					</div>
 					<!-- <input type="hidden" name="type" value="sign-in"> -->
 					<button type="submit" class="btn btn-primary">Sign-in</button>
