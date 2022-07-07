@@ -76,13 +76,16 @@ func History(writer http.ResponseWriter, request *http.Request) {
 			}
 
 			redirectURL := request.Referer()
+			URL, _ := url.Parse(redirectURL)
+			query := URL.Query()
 			if len(history.URLs) == 0 {
-				URL, _ := url.Parse(redirectURL)
-				query := URL.Query()
 				query.Del("post")
-				URL.RawQuery = query.Encode()
-				redirectURL = URL.String()
+				query.Del("owner")
+			} else if history.Type == db.Story && !query.Has("post") {
+				query.Set("post", history.Post)
 			}
+			URL.RawQuery = query.Encode()
+			redirectURL = URL.String()
 			http.Redirect(writer, request, redirectURL, http.StatusTemporaryRedirect)
 		default:
 			http.Error(writer, "request method is not recognized", http.StatusBadRequest)

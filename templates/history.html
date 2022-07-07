@@ -131,6 +131,12 @@
 					</div>
 				{{end}}
 				{{if eq .Type "story"}}
+					{{if .Post}}
+						<div class="mb-3">
+							<label for="id" class="form-label">history ID</label>
+							<input type="text" value="{{.Post}}" class="form-control" id="id" name="post" disabled>
+						</div>
+					{{end}}
 					<div class="mb-3">
 						<label for="owner" class="form-label">owner</label>
 						<input type="text" value="{{.Owner}}" class="form-control" id="owner" name="owner" placeholder="https://www.instagram.com/stories/OWNER">

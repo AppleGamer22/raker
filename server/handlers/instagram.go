@@ -69,19 +69,21 @@ func InstagramPage(writer http.ResponseWriter, request *http.Request) {
 				localURLs = append(localURLs, fileName)
 			}
 
-			history = db.History{
-				ID:    primitive.NewObjectID().Hex(),
-				U_ID:  user.ID.Hex(),
-				URLs:  localURLs,
-				Type:  db.Instagram,
-				Owner: username,
-				Post:  post,
-				Date:  time.Now(),
-			}
+			if len(localURLs) > 0 {
+				history = db.History{
+					ID:    primitive.NewObjectID().Hex(),
+					U_ID:  user.ID.Hex(),
+					URLs:  localURLs,
+					Type:  db.Instagram,
+					Owner: username,
+					Post:  post,
+					Date:  time.Now(),
+				}
 
-			if _, err := db.Histories.InsertOne(context.Background(), history); err != nil {
-				log.Println(err)
-				errs = append(errs, err)
+				if _, err := db.Histories.InsertOne(context.Background(), history); err != nil {
+					log.Println(err)
+					errs = append(errs, err)
+				}
 			}
 		}
 	}
