@@ -1,0 +1,9 @@
+.github
+.vscode
+database
+docker-compose.yml
+.rake.yml
+.goreleaser.yml
+Makfile
+CODE_OF_CONDUCT.md
+CONTRIBUTING.md
