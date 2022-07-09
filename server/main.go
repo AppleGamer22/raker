@@ -68,7 +68,7 @@ func main() {
 	mux.HandleFunc("/vsco", handlers.VSCOPage)
 
 	server := http.Server{
-		Addr:    fmt.Sprintf("localhost:%d", conf.Port),
+		Addr:    fmt.Sprintf(":%d", conf.Port),
 		Handler: handlers.Log(mux),
 	}
 
