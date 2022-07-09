@@ -66,6 +66,7 @@ func main() {
 	mux.HandleFunc("/", handlers.AuthenticationPage)
 	mux.HandleFunc("/history", handlers.HistoryPage)
 	mux.HandleFunc("/instagram", handlers.InstagramPage)
+	mux.HandleFunc("/highlight", handlers.HighlightPage)
 	mux.HandleFunc("/story", handlers.StoryPage)
 	mux.HandleFunc("/tiktok", handlers.TikTokPage)
 	mux.HandleFunc("/vsco", handlers.VSCOPage)
