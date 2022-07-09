@@ -18,17 +18,11 @@ import (
 	"github.com/spf13/viper"
 )
 
-func init() {
-	viper.SetEnvPrefix("rake")
-	viper.AutomaticEnv()
-	viper.SetConfigName(".rake")
-	viper.SetConfigType("yaml")
-	viper.AddConfigPath(".")
-}
-
 func main() {
-	if err := viper.ReadInConfig(); err != nil {
-		log.Println(err)
+	if err1 := viper.ReadInConfig(); err1 != nil {
+		if _, err := os.Stat("/.dockerenv"); err != nil {
+			log.Println(err1)
+		}
 	}
 
 	if err := viper.Unmarshal(&conf); err != nil {
@@ -39,7 +33,6 @@ func main() {
 		log.Fatal("A JWT secret must be set via a config file or an environment variable")
 	}
 	handlers.Authenticator = authenticator.New(conf.Secret)
-
 	client, err := db.Connect(conf.URI, conf.Database)
 	if err != nil {
 		log.Fatal(err)
