@@ -141,6 +141,8 @@ dockers:
       - "--label=org.opencontainers.image.title={{ .ProjectName }}"
       - "--label=org.opencontainers.image.revision={{ .FullCommit }}"
       - "--label=org.opencontainers.image.version={{ .Version }}"
+      - "--build-arg VERSION={{ .Version }}"
+      - "--build-arg HASH={{ .FullCommit }}"
 aurs:
   - homepage: https://github.com/AppleGamer22/rake
     description: A social media scraper with less JavaScript than my previous one.
