@@ -115,7 +115,7 @@
 					{{end}}
 					<div class="mb-3">
 						<label for="post" class="form-label">post ID</label>
-						<input type="text" value="{{.Post}}" class="form-control" id="post" name="post" placeholder="https://instagram.com/p/ID">
+						<input type="text" value="{{.Post}}" class="form-control" id="post" name="post" placeholder="https://instagram.com/p/ID" spellcheck="false">
 					</div>
 				{{end}}
 				{{if eq .Type "highlight"}}
@@ -127,7 +127,7 @@
 					{{end}}
 					<div class="mb-3">
 						<label for="post" class="form-label">highlight ID</label>
-						<input type="text" value="{{.Post}}" class="form-control" id="post" name="post" placeholder="https://instagram.com/stories/highlights/ID">
+						<input type="text" value="{{.Post}}" class="form-control" id="post" name="post" placeholder="https://instagram.com/stories/highlights/ID" spellcheck="false">
 					</div>
 				{{end}}
 				{{if eq .Type "story"}}
@@ -139,27 +139,27 @@
 					{{end}}
 					<div class="mb-3">
 						<label for="owner" class="form-label">owner</label>
-						<input type="text" value="{{.Owner}}" class="form-control" id="owner" name="owner" placeholder="https://www.instagram.com/stories/OWNER">
+						<input type="text" value="{{.Owner}}" class="form-control" id="owner" name="owner" placeholder="https://www.instagram.com/stories/OWNER" spellcheck="false">
 					</div>
 				{{end}}
 				{{if eq .Type "tiktok"}}
 					<div class="mb-3">
 						<label for="owner" class="form-label">owner</label>
-						<input type="text" value="{{.Owner}}" class="form-control" id="owner" name="owner" placeholder="https://tiktok.com/@OWNER/video/id">
+						<input type="text" value="{{.Owner}}" class="form-control" id="owner" name="owner" placeholder="https://tiktok.com/@OWNER/video/id" spellcheck="false">
 					</div>
 					<div class="mb-3">
 						<label for="post" class="form-label">post ID</label>
-						<input type="text" value="{{.Post}}" class="form-control" id="post" name="post" placeholder="https://tiktok.com/@owner/video/ID">
+						<input type="text" value="{{.Post}}" class="form-control" id="post" name="post" placeholder="https://tiktok.com/@owner/video/ID" spellcheck="false">
 					</div>
 				{{end}}
 				{{if eq .Type "vsco"}}
 					<div class="mb-3">
 						<label for="owner" class="form-label">owner</label>
-						<input type="text" value="{{.Owner}}" class="form-control" id="owner" name="owner" placeholder="https://vsco.co/OWNER/media/id">
+						<input type="text" value="{{.Owner}}" class="form-control" id="owner" name="owner" placeholder="https://vsco.co/OWNER/media/id" spellcheck="false">
 					</div>
 					<div class="mb-3">
 						<label for="post" class="form-label">post ID</label>
-						<input type="text" value="{{.Post}}" class="form-control" id="post" name="post" placeholder="https://vsco.co/owner/media/ID">
+						<input type="text" value="{{.Post}}" class="form-control" id="post" name="post" placeholder="https://vsco.co/owner/media/ID" spellcheck="false">
 					</div>
 				{{end}}
 				<button type="submit" class="btn btn-primary">Submit</button>
