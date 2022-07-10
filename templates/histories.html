@@ -189,7 +189,7 @@
 								<a href="/{{.Type}}?owner={{.Owner}}&post={{.Post}}" target="_blank">{{.Post}}</a>
 								<span class="date">
 									<br>
-									{{.Date.Local}}
+									{{date .Date}}
 									<br>
 								</span>
 								{{if $history.Categories}}
