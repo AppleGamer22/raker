@@ -101,7 +101,7 @@
 				<h4>Categories</h4>
 				<div class="container">
 					{{range .Categories}}
-						<form class="row">
+						<form method="post" action="/api/categories" class="row">
 							<div class="col-auto">
 								<label for="{{.}}" class="form-label">{{.}}</label>
 							</div>
@@ -110,8 +110,8 @@
 							</div>
 							<div class="col-auto">
 								<button type="submit" class="btn btn-warning">Save</button>
-								<form method="post">
-									<input type="hidden" name="{{.}}" value="delete">
+								<form method="post" action="/api/categories">
+									<input type="hidden" name="{{.}}" value="DELETE">
 									<button type="submit" class="btn btn-danger">Delete</button>
 								</form>
 							</div>

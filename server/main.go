@@ -54,6 +54,7 @@ func main() {
 	mux.HandleFunc("/api/auth/sign_in/instagram", handlers.InstagramSignIn)
 	mux.HandleFunc("/api/auth/update/instagram", handlers.InstagramUpdateCredentials)
 	mux.HandleFunc("/api/auth/sign_out/instagram", handlers.InstagramSignOut)
+	mux.HandleFunc("/api/categories", handlers.Categories)
 	mux.HandleFunc("/api/history", handlers.History)
 	mux.HandleFunc("/api/info", handlers.Information)
 	mux.Handle("/api/storage/", http.StripPrefix("/api/storage", handlers.NewStorageHandler(configuration.Storage, configuration.Directories)))
