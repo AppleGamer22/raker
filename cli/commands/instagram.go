@@ -15,7 +15,7 @@ import (
 )
 
 var instagramCommand = cobra.Command{
-	Use:     "instagram",
+	Use:     "instagram POST",
 	Short:   "scrape instagram",
 	Long:    "scrape instagram",
 	Aliases: []string{"ig"},

@@ -15,7 +15,7 @@ import (
 )
 
 var tiktokCommand = cobra.Command{
-	Use:     "tiktok",
+	Use:     "tiktok USERNAME POST",
 	Short:   "scrape tiktok",
 	Long:    "scrape tiktok",
 	Aliases: []string{"tt"},

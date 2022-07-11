@@ -15,7 +15,7 @@ import (
 )
 
 var highlightCommand = cobra.Command{
-	Use:   "highlight",
+	Use:   "highlight ID",
 	Short: "scrape highlight",
 	Long:  "scrape highlight",
 	PreRunE: func(cmd *cobra.Command, args []string) error {

@@ -15,7 +15,7 @@ import (
 )
 
 var storyCommand = cobra.Command{
-	Use:   "story",
+	Use:   "story USERNAME",
 	Short: "scrape story",
 	Long:  "scrape story",
 	PreRunE: func(cmd *cobra.Command, args []string) error {

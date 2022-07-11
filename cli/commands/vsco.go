@@ -14,7 +14,7 @@ import (
 )
 
 var vscoCommand = cobra.Command{
-	Use:   "vsco",
+	Use:   "vsco USERNAME POST",
 	Short: "scrape vsco",
 	Long:  "scrape vsco",
 	Args: func(_ *cobra.Command, args []string) error {
