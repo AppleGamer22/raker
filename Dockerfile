@@ -14,7 +14,7 @@ ENV GOOS=$TARGETOS
 ENV GOARCH=$TARGETARCH
 RUN go build -ldflags="-X '$PACKAGE/shared.Version=$VERSION' -X '$PACKAGE/shared.Hash=$HASH'" -o rake ./server
 
-FROM --platform=$BUILDPLATFORM alpine:3.16 AS server
+FROM --platform=$BUILDPLATFORM alpine:3.16.0 AS server
 WORKDIR /rake
 COPY --from=build /rake/rake .
 COPY templates templates
