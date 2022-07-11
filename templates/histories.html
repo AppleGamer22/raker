@@ -17,7 +17,7 @@
 		<meta name="og:site_name" content="Rake Instagram">
 		<meta name="og:type" content="website">
 		<meta http-equiv="Content-Type" content="text/html">
-		<meta http-equiv="Content-Security-Policy" content="default-src 'self'">
+		<!-- <meta http-equiv="Content-Security-Policy" content="default-src 'self' data:"> -->
 		<link rel="apple-touch-icon" href="/assets/icons/icon-ios-192x192.png">
 		<link rel="icon" type="image/x-icon" href="/assets/icons/favicon.ico">
 		<!-- <link rel="manifest" href="/manifest.json"> -->
@@ -35,17 +35,13 @@
 			}
 
 			@media (max-width: 400px) {
-				span.date {
+				span.date/*, span.categories*/ {
 					display: none;
 				}
 
 				a, b, span {
 					font-size: 0.8rem;
 				}
-			}
-
-			input#owner {
-				width: calc(100% - 80px);
 			}
 		</style>
 	</head>
@@ -54,7 +50,7 @@
 			<nav class="navbar navbar-expand-lg">
 				<div class="container-fluid">
 					<a class="navbar-brand">
-						<img src="/assets/icons/logo.svg" width="30" height="24" class="d-inline-block align-text-top">
+						<img src="/assets/icons/logo.svg" width="30px" height="24px" class="d-inline-block align-text-top">
 						<sup>
 							<span class="badge bg-secondary">{{.Version}}</span>
 						</sup>
@@ -145,8 +141,8 @@
 					</div>
 				</div>
 				<h4>Owner</h4>
-				<input type="text" value="{{.Owner}}" class="form-control float-start" placeholder="owner" id="owner" name="owner" spellcheck="false">
-				<button type="submit" class="btn btn-primary float-end">Submit</button>
+				<input type="text" value="{{.Owner}}" class="form-control" placeholder="owner" id="owner" name="owner" spellcheck="false">
+				<button type="submit" class="btn btn-primary w-100">Submit</button>
 				{{if gt .Count 0}}
 					<br><br>
 					<ul class="list-group">
@@ -193,11 +189,13 @@
 									{{date .Date}}
 									<br>
 								</span>
-								{{if $history.Categories}}
-									<span>Categories:</span>&nbsp;<b>{{range $category := $history.Categories}}
-										{{$category}}
-									{{end}}</b>
-								{{end}}
+								<span class="categories">
+									{{if $history.Categories}}
+										<span>Categories:</span>&nbsp;<b>{{range $category := $history.Categories}}
+											{{$category}}
+										{{end}}</b>
+									{{end}}
+								</span>
 								<div id="carousel_{{.Post}}" class="carousel slide" data-bs-interval="false">
 									{{if gt (len .URLs) 1}}
 										<div class="carousel-indicators">
