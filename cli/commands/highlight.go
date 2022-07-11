@@ -14,25 +14,24 @@ import (
 	"github.com/spf13/viper"
 )
 
-var instagramCommand = cobra.Command{
-	Use:     "instagram",
-	Short:   "scrape instagram",
-	Long:    "scrape instagram",
-	Aliases: []string{"ig"},
+var highlightCommand = cobra.Command{
+	Use:   "highlight",
+	Short: "scrape highlight",
+	Long:  "scrape highlight",
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		return viper.Unmarshal(&conf.Configuration)
 	},
 	Args: func(_ *cobra.Command, args []string) error {
 		if len(args) != 1 {
-			return errors.New("instagram expects a post ID as the first argument")
+			return errors.New("highlight expects a username as the first argument")
 		}
 		return nil
 	},
 	RunE: func(_ *cobra.Command, args []string) error {
 		errs := []error{}
-		post := args[0]
+		highlightID := args[0]
 		instagram := shared.NewInstagram(conf.Configuration.FBSR, conf.Configuration.Session, conf.Configuration.User)
-		URLs, username, err := instagram.Post(post)
+		URLs, username, err := instagram.Reels(highlightID, true)
 		if err != nil {
 			return err
 		}
@@ -43,8 +42,8 @@ var instagramCommand = cobra.Command{
 				errs = append(errs, err)
 				continue
 			}
-			fileName := fmt.Sprintf("%s_%s_%s_%s", types.Instagram, username, post, path.Base(URL.Path))
-			if err = conf.Save(types.Instagram, fileName, urlString); err != nil {
+			fileName := fmt.Sprintf("%s_%s_%s_%s", types.Highlight, username, highlightID, path.Base(URL.Path))
+			if err = conf.Save(types.Highlight, fileName, urlString); err != nil {
 				errs = append(errs, err)
 				continue
 			}
@@ -58,5 +57,5 @@ var instagramCommand = cobra.Command{
 }
 
 func init() {
-	RootCommand.AddCommand(&instagramCommand)
+	RootCommand.AddCommand(&highlightCommand)
 }
