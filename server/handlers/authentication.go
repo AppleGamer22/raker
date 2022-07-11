@@ -266,7 +266,6 @@ func AuthenticationPage(writer http.ResponseWriter, request *http.Request) {
 		Version: shared.Version,
 	}
 
-	writer.Header().Set("Content-Type", "text/html")
 	if err := templates.ExecuteTemplate(writer, "authentication.html", categoryDisplay); err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
 		log.Println(err)

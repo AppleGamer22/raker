@@ -256,7 +256,6 @@ func historyHTML(user db.User, history db.History, serverErrors []error, writer 
 		SelectedCategories: user.SelectedCategories(history.Categories),
 	}
 
-	writer.Header().Set("Content-Type", "text/html")
 	if err := templates.ExecuteTemplate(writer, "history.html", historyDisplay); err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
 		log.Println(err)
@@ -319,7 +318,6 @@ func HistoryPage(writer http.ResponseWriter, request *http.Request) {
 		Error:      err,
 	}
 
-	writer.Header().Set("Content-Type", "text/html")
 	if err := templates.ExecuteTemplate(writer, "histories.html", historiesDisplay); err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
 		log.Println(err)
