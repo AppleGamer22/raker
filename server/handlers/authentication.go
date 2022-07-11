@@ -12,6 +12,7 @@ import (
 	"github.com/AppleGamer22/rake/server/cleaner"
 	"github.com/AppleGamer22/rake/server/db"
 	"github.com/AppleGamer22/rake/shared"
+	"github.com/AppleGamer22/rake/shared/types"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -86,7 +87,7 @@ func InstagramSignUp(writer http.ResponseWriter, request *http.Request) {
 			UserID:    userID,
 		},
 		Joined:  time.Now(),
-		Network: db.Instagram,
+		Network: types.Instagram,
 	}
 	_, err = db.Users.InsertOne(context.Background(), user)
 	if err != nil {

@@ -12,6 +12,7 @@ import (
 	"github.com/AppleGamer22/rake/server/cleaner"
 	"github.com/AppleGamer22/rake/server/db"
 	"github.com/AppleGamer22/rake/shared"
+	"github.com/AppleGamer22/rake/shared/types"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -30,7 +31,7 @@ func InstagramPage(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	history := db.History{
-		Type: db.Instagram,
+		Type: types.Instagram,
 	}
 
 	post := cleaner.Line(request.Form.Get("post"))
@@ -39,7 +40,7 @@ func InstagramPage(writer http.ResponseWriter, request *http.Request) {
 	if post != "" {
 		filter := bson.M{
 			"post": post,
-			"type": db.Instagram,
+			"type": types.Instagram,
 		}
 		if err := db.Histories.FindOne(context.Background(), filter).Decode(&history); err != nil {
 			instagram := shared.NewInstagram(user.Instagram.FBSR, user.Instagram.SessionID, user.Instagram.UserID)
@@ -61,7 +62,7 @@ func InstagramPage(writer http.ResponseWriter, request *http.Request) {
 				}
 				fileName := fmt.Sprintf("%s_%s", post, path.Base(URL.Path))
 
-				if err := StorageHandler.Save(user, db.Instagram, username, fileName, urlString); err != nil {
+				if err := StorageHandler.Save(user, types.Instagram, username, fileName, urlString); err != nil {
 					log.Println(err)
 					errs = append(errs, err)
 					continue
@@ -74,7 +75,7 @@ func InstagramPage(writer http.ResponseWriter, request *http.Request) {
 					ID:    primitive.NewObjectID().Hex(),
 					U_ID:  user.ID.Hex(),
 					URLs:  localURLs,
-					Type:  db.Instagram,
+					Type:  types.Instagram,
 					Owner: username,
 					Post:  post,
 					Date:  time.Now(),

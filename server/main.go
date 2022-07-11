@@ -25,28 +25,28 @@ func main() {
 		}
 	}
 
-	if err := viper.Unmarshal(&conf); err != nil {
+	if err := viper.Unmarshal(&configuration); err != nil {
 		log.Fatal(err)
 	}
 
-	if conf.Secret == "" && !viper.IsSet("secret") {
+	if configuration.Secret == "" && !viper.IsSet("secret") {
 		log.Fatal("A JWT secret must be set via a config file or an environment variable")
 	}
-	handlers.Authenticator = authenticator.New(conf.Secret)
-	client, err := db.Connect(conf.URI, conf.Database)
+	handlers.Authenticator = authenticator.New(configuration.Secret)
+	client, err := db.Connect(configuration.URI, configuration.Database)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer client.Disconnect(context.Background())
 
 	log.Printf("rake %s %s (%s/%s)\n", shared.Version, shared.Hash, runtime.GOOS, runtime.GOARCH)
-	log.Printf("Storage path: %s\n", conf.Storage)
-	if conf.Directories {
+	log.Printf("Storage path: %s\n", configuration.Storage)
+	if configuration.Directories {
 		log.Println("allowing directory listing")
 	}
-	log.Printf("MongoDB database URI: %s", conf.URI)
-	log.Printf("MongoDB database: %s", conf.Database)
-	log.Printf("Server is listening at http://localhost:%d\n", conf.Port)
+	log.Printf("MongoDB database URI: %s", configuration.URI)
+	log.Printf("MongoDB database: %s", configuration.Database)
+	log.Printf("Server is listening at http://localhost:%d\n", configuration.Port)
 
 	mux := http.NewServeMux()
 
@@ -56,7 +56,7 @@ func main() {
 	mux.HandleFunc("/api/auth/sign_out/instagram", handlers.InstagramSignOut)
 	mux.HandleFunc("/api/history", handlers.History)
 	mux.HandleFunc("/api/info", handlers.Information)
-	mux.Handle("/api/storage/", http.StripPrefix("/api/storage", handlers.NewStorageHandler(conf.Storage, conf.Directories)))
+	mux.Handle("/api/storage/", http.StripPrefix("/api/storage", handlers.NewStorageHandler(configuration.Storage, configuration.Directories)))
 	mux.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir("assets"))))
 
 	mux.HandleFunc("/", handlers.AuthenticationPage)
@@ -68,7 +68,7 @@ func main() {
 	mux.HandleFunc("/vsco", handlers.VSCOPage)
 
 	server := http.Server{
-		Addr:    fmt.Sprintf(":%d", conf.Port),
+		Addr:    fmt.Sprintf(":%d", configuration.Port),
 		Handler: handlers.Log(mux),
 	}
 

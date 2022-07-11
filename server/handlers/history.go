@@ -14,6 +14,7 @@ import (
 	"github.com/AppleGamer22/rake/server/cleaner"
 	"github.com/AppleGamer22/rake/server/db"
 	"github.com/AppleGamer22/rake/shared"
+	"github.com/AppleGamer22/rake/shared/types"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -38,7 +39,7 @@ func History(writer http.ResponseWriter, request *http.Request) {
 
 	categories := make([]string, 0, len(user.Categories))
 	for _, category := range user.Categories {
-		if cleaner.Line(request.Form.Get(category)) == category && !db.ValidMediaType(category) {
+		if cleaner.Line(request.Form.Get(category)) == category && !types.ValidMediaType(category) {
 			categories = append(categories, category)
 		}
 	}
@@ -81,7 +82,7 @@ func History(writer http.ResponseWriter, request *http.Request) {
 			if len(history.URLs) == 0 {
 				query.Del("post")
 				query.Del("owner")
-			} else if history.Type == db.Story && !query.Has("post") {
+			} else if history.Type == types.Story && !query.Has("post") {
 				query.Set("post", history.Post)
 			}
 			URL.RawQuery = query.Encode()
@@ -98,7 +99,7 @@ func History(writer http.ResponseWriter, request *http.Request) {
 
 func filterHistories(user db.User, owner string, categories, mediaTypes []string, page int, exclusive bool) ([][]db.History, int, int, int, error) {
 	for _, mediaType := range mediaTypes {
-		if !db.ValidMediaType(mediaType) {
+		if !types.ValidMediaType(mediaType) {
 			return [][]db.History{}, 0, 0, 0, errors.New("media type must be valid")
 		}
 	}
@@ -284,19 +285,19 @@ func HistoryPage(writer http.ResponseWriter, request *http.Request) {
 
 	categories := make([]string, 0, len(user.Categories))
 	for _, category := range user.Categories {
-		if cleaner.Line(request.Form.Get(category)) == category && !db.ValidMediaType(category) {
+		if cleaner.Line(request.Form.Get(category)) == category && !types.ValidMediaType(category) {
 			categories = append(categories, category)
 		}
 	}
 
 	mediaTypes := make([]string, 0, 5)
-	for _, mediaType := range db.MediaTypes {
-		if cleaner.Line(request.Form.Get(mediaType)) == mediaType && db.ValidMediaType(mediaType) {
+	for _, mediaType := range types.MediaTypes {
+		if cleaner.Line(request.Form.Get(mediaType)) == mediaType && types.ValidMediaType(mediaType) {
 			mediaTypes = append(mediaTypes, mediaType)
 		}
 	}
 	if len(mediaTypes) == 0 {
-		mediaTypes = db.MediaTypes
+		mediaTypes = types.MediaTypes
 	}
 
 	exclusive := cleaner.Line(request.Form.Get("exclusive")) == "exclusive"

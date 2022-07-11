@@ -10,6 +10,7 @@ import (
 	"github.com/AppleGamer22/rake/server/cleaner"
 	"github.com/AppleGamer22/rake/server/db"
 	"github.com/AppleGamer22/rake/shared"
+	"github.com/AppleGamer22/rake/shared/types"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -29,14 +30,14 @@ func TikTokPage(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	history := db.History{
-		Type: db.TikTok,
+		Type: types.TikTok,
 	}
 	owner := cleaner.Line(request.Form.Get("owner"))
 	post := cleaner.Line(request.Form.Get("post"))
 	if post != "" {
 		filter := bson.M{
 			"post": post,
-			"type": db.TikTok,
+			"type": types.TikTok,
 		}
 		if err := db.Histories.FindOne(context.Background(), filter).Decode(&history); err != nil {
 			tiktok := shared.NewTikTok(user.TikTok)
@@ -49,7 +50,7 @@ func TikTokPage(writer http.ResponseWriter, request *http.Request) {
 			}
 
 			fileName := fmt.Sprintf("%s.mp4", post)
-			if err := StorageHandler.Save(user, db.TikTok, username, fileName, URL); err != nil {
+			if err := StorageHandler.Save(user, types.TikTok, username, fileName, URL); err != nil {
 				log.Println(err)
 				log.Println(err)
 				historyHTML(user, history, []error{err}, writer)
@@ -60,7 +61,7 @@ func TikTokPage(writer http.ResponseWriter, request *http.Request) {
 				ID:    primitive.NewObjectID().Hex(),
 				U_ID:  user.ID.Hex(),
 				URLs:  []string{fileName},
-				Type:  db.TikTok,
+				Type:  types.TikTok,
 				Owner: username,
 				Post:  post,
 				Date:  time.Now(),

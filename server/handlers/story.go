@@ -11,6 +11,7 @@ import (
 	"github.com/AppleGamer22/rake/server/cleaner"
 	"github.com/AppleGamer22/rake/server/db"
 	"github.com/AppleGamer22/rake/shared"
+	"github.com/AppleGamer22/rake/shared/types"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -29,7 +30,7 @@ func StoryPage(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	history := db.History{
-		Type: db.Story,
+		Type: types.Story,
 	}
 
 	historyID := cleaner.Line(request.Form.Get("post"))
@@ -40,7 +41,7 @@ func StoryPage(writer http.ResponseWriter, request *http.Request) {
 		filter := bson.M{
 			"post":  historyID,
 			"owner": owner,
-			"type":  db.Story,
+			"type":  types.Story,
 		}
 
 		if err := db.Histories.FindOne(context.Background(), filter).Decode(&history); err == nil {
@@ -61,7 +62,7 @@ func StoryPage(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	filter := bson.M{
-		"type":  db.Story,
+		"type":  types.Story,
 		"owner": username,
 	}
 	localURLs := make([]string, 0, len(URLs))
@@ -79,7 +80,7 @@ func StoryPage(writer http.ResponseWriter, request *http.Request) {
 			continue
 		}
 
-		if err := StorageHandler.Save(user, db.Story, username, fileName, urlString); err != nil {
+		if err := StorageHandler.Save(user, types.Story, username, fileName, urlString); err != nil {
 			log.Println(err)
 			errs = append(errs, err)
 			continue
@@ -94,7 +95,7 @@ func StoryPage(writer http.ResponseWriter, request *http.Request) {
 			ID:    historyID,
 			U_ID:  user.ID.Hex(),
 			URLs:  localURLs,
-			Type:  db.Story,
+			Type:  types.Story,
 			Owner: username,
 			Post:  historyID,
 			Date:  time.Now(),

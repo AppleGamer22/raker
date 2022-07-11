@@ -6,38 +6,21 @@ import (
 	"time"
 
 	"github.com/AppleGamer22/rake/server/authenticator"
+	"github.com/AppleGamer22/rake/shared/types"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-const (
-	Instagram = "instagram"
-	Highlight = "highlight"
-	Story     = "story"
-	TikTok    = "tiktok"
-	VSCO      = "vsco"
-)
-
-var MediaTypes = []string{Highlight, Instagram, Story, TikTok, VSCO}
-
-func ValidMediaType(media string) bool {
-	return media == Instagram || media == Highlight || media == Story || media == VSCO || media == TikTok
-}
-
-func ValidNetworkType(media string) bool {
-	return media == Instagram || media == VSCO || media == TikTok
-}
-
 func SelectedMediaTypes(mediaTypes []string) map[string]bool {
 	result := make(map[string]bool)
-	result[Instagram] = true
-	result[Highlight] = true
-	result[Story] = true
-	result[VSCO] = true
-	result[TikTok] = true
+	result[types.Instagram] = true
+	result[types.Highlight] = true
+	result[types.Story] = true
+	result[types.VSCO] = true
+	result[types.TikTok] = true
 	if len(mediaTypes) > 0 {
 		for _, mediaType := range mediaTypes {
-			if _, ok := result[mediaType]; ok && ValidMediaType(mediaType) {
+			if _, ok := result[mediaType]; ok && types.ValidMediaType(mediaType) {
 				result[mediaType] = false
 			}
 		}
@@ -157,7 +140,7 @@ type HistoriesDisplay struct {
 
 func (historiesDisplay HistoriesDisplay) Query(value string) template.URL {
 	query := url.Values{}
-	if !ValidMediaType(value) {
+	if !types.ValidMediaType(value) {
 		query.Set("owner", value)
 		for mediaType := range historiesDisplay.Types {
 			query.Set(mediaType, mediaType)

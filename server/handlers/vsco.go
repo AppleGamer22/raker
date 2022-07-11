@@ -12,6 +12,7 @@ import (
 	"github.com/AppleGamer22/rake/server/cleaner"
 	"github.com/AppleGamer22/rake/server/db"
 	"github.com/AppleGamer22/rake/shared"
+	"github.com/AppleGamer22/rake/shared/types"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -30,14 +31,14 @@ func VSCOPage(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	history := db.History{
-		Type: db.VSCO,
+		Type: types.VSCO,
 	}
 	owner := cleaner.Line(request.Form.Get("owner"))
 	post := cleaner.Line(request.Form.Get("post"))
 	if post != "" {
 		filter := bson.M{
 			"post": post,
-			"type": db.VSCO,
+			"type": types.VSCO,
 		}
 		if err := db.Histories.FindOne(context.Background(), filter).Decode(&history); err != nil {
 			urlString, username, err := shared.VSCO(owner, post)
@@ -54,7 +55,7 @@ func VSCOPage(writer http.ResponseWriter, request *http.Request) {
 			}
 			fileName := fmt.Sprintf("%s_%s", post, path.Base(URL.Path))
 
-			if err := StorageHandler.Save(user, db.VSCO, username, fileName, urlString); err != nil {
+			if err := StorageHandler.Save(user, types.VSCO, username, fileName, urlString); err != nil {
 				log.Println(err)
 				historyHTML(user, history, []error{err}, writer)
 				return
@@ -64,7 +65,7 @@ func VSCOPage(writer http.ResponseWriter, request *http.Request) {
 				ID:    primitive.NewObjectID().Hex(),
 				U_ID:  user.ID.Hex(),
 				URLs:  []string{fileName},
-				Type:  db.VSCO,
+				Type:  types.VSCO,
 				Owner: username,
 				Post:  post,
 				Date:  time.Now(),

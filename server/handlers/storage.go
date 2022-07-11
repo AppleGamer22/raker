@@ -11,6 +11,7 @@ import (
 	"github.com/AppleGamer22/rake/server/cleaner"
 	"github.com/AppleGamer22/rake/server/db"
 	"github.com/AppleGamer22/rake/shared"
+	"github.com/AppleGamer22/rake/shared/types"
 )
 
 type storageHandler struct {
@@ -47,7 +48,7 @@ func (handler storageHandler) ServeHTTP(writer http.ResponseWriter, request *htt
 }
 
 func (handler *storageHandler) Save(user db.User, media, owner, fileName, URL string) error {
-	if !db.ValidMediaType(media) {
+	if !types.ValidMediaType(media) {
 		return fmt.Errorf("invalid media type: %s", media)
 	}
 
@@ -73,7 +74,7 @@ func (handler *storageHandler) Save(user db.User, media, owner, fileName, URL st
 		return err
 	}
 
-	if media == db.TikTok {
+	if media == types.TikTok {
 		request.Header.Add("Range", "bytes=0-")
 		if user.TikTok != "" {
 			sessionCookie := http.Cookie{
@@ -103,7 +104,7 @@ func (handler *storageHandler) Save(user db.User, media, owner, fileName, URL st
 }
 
 func (handler *storageHandler) Delete(user db.User, media, owner, fileName string) error {
-	if !db.ValidMediaType(media) {
+	if !types.ValidMediaType(media) {
 		return fmt.Errorf("invalid media type: %s", media)
 	}
 

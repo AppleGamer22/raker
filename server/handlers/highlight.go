@@ -12,6 +12,7 @@ import (
 	"github.com/AppleGamer22/rake/server/cleaner"
 	"github.com/AppleGamer22/rake/server/db"
 	"github.com/AppleGamer22/rake/shared"
+	"github.com/AppleGamer22/rake/shared/types"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -30,7 +31,7 @@ func HighlightPage(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	history := db.History{
-		Type: db.Highlight,
+		Type: types.Highlight,
 	}
 
 	highlightID := cleaner.Line(request.Form.Get("post"))
@@ -39,7 +40,7 @@ func HighlightPage(writer http.ResponseWriter, request *http.Request) {
 	if highlightID != "" {
 		filter := bson.M{
 			"post": highlightID,
-			"type": db.Highlight,
+			"type": types.Highlight,
 		}
 
 		if err := db.Histories.FindOne(context.Background(), filter).Decode(&history); err != nil {
@@ -61,7 +62,7 @@ func HighlightPage(writer http.ResponseWriter, request *http.Request) {
 				}
 				fileName := fmt.Sprintf("%s_%s", highlightID, path.Base(URL.Path))
 
-				if err := StorageHandler.Save(user, db.Highlight, username, fileName, urlString); err != nil {
+				if err := StorageHandler.Save(user, types.Highlight, username, fileName, urlString); err != nil {
 					log.Println(err)
 					errs = append(errs, err)
 					continue
@@ -74,7 +75,7 @@ func HighlightPage(writer http.ResponseWriter, request *http.Request) {
 					ID:    primitive.NewObjectID().Hex(),
 					U_ID:  user.ID.Hex(),
 					URLs:  localURLs,
-					Type:  db.Highlight,
+					Type:  types.Highlight,
 					Owner: username,
 					Post:  highlightID,
 					Date:  time.Now(),

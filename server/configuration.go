@@ -2,7 +2,7 @@ package main
 
 import "github.com/spf13/viper"
 
-type config struct {
+type Configuration struct {
 	Secret      string
 	URI         string
 	Database    string
@@ -11,7 +11,7 @@ type config struct {
 	Port        uint
 }
 
-var conf = config{
+var configuration = Configuration{
 	URI:         "mongodb://localhost:27017",
 	Database:    "rake",
 	Storage:     ".",
