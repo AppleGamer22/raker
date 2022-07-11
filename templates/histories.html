@@ -48,6 +48,11 @@
 				padding-right: calc(var(--bs-gutter-x) * 0.1);
 				padding-left: calc(var(--bs-gutter-x) * 0.1);
 			}
+
+			ul.pagination {
+				display: flex;
+				justify-content: center;
+			}
 		</style>
 	</head>
 	<body>
@@ -175,73 +180,95 @@
 						</ul>
 					</nav>
 				{{end}}
-			</form>
-			{{if .Error}}
-				<h3 class="text-danger">{{.Error}}</h3>
-			{{end}}
-			<div class="container-fluid">
-				{{range $i, $row := .Histories}}
-					<div class="row">
-						{{range $ii, $history := $row}}
-							<div class="col">
-								<a href="/history?{{$.Query .Type}}" target="_blank">{{.Type}}</a>
-								<span>/</span>
-								<a href="/history?{{$.Query .Owner}}" target="_blank">{{.Owner}}</a>
-								<span>/</span>
-								<a href="/{{.Type}}?owner={{.Owner}}&post={{.Post}}" target="_blank">{{.Post}}</a>
-								<span class="date">
-									<br>
-									{{date .Date}}
-									<br>
-								</span>
-								<span class="categories">
-									{{if $history.Categories}}
-										<span>Categories:</span>&nbsp;<b>{{range $category := $history.Categories}}
-											{{$category}}
-										{{end}}</b>
-									{{end}}
-								</span>
-								<div id="carousel_{{.Post}}" class="carousel slide" data-bs-interval="false">
-									{{if gt (len .URLs) 1}}
-										<div class="carousel-indicators">
-											{{range $iii, $url := .URLs}}
-												{{if eq $iii 0}}
-													<button type="button" data-bs-target="#carousel_{{$history.Post}}" data-bs-slide-to="{{$iii}}" class="active"></button>
-												{{else}}
-													<button type="button" data-bs-target="#carousel_{{$history.Post}}" data-bs-slide-to="{{$iii}}"></button>
-												{{end}}
-											{{end}}
-										</div>
-									{{end}}
-									<div class="carousel-inner">
-										{{range $iii, $url := .URLs}}
-											<div class="carousel-item{{if eq $iii 0}} active{{end}}">
-												{{if or (hasSuffix . ".jpg") (hasSuffix . ".webp")}}
-													<img class="d-block w-100" src="/api/storage/{{$history.U_ID}}/{{$history.Type}}/{{$history.Owner}}/{{$url}}" loading="lazy">
-												{{else if or (hasSuffix . ".mp4") (hasSuffix . ".webm")}}
-													<video class="d-block w-100" src="/api/storage/{{$history.U_ID}}/{{$history.Type}}/{{$history.Owner}}/{{$url}}" preload="metadata" muted controls loop></video>
-												{{else}}
-													<a href="/api/storage/{{$history.U_ID}}/{{$history.Type}}/{{$history.Owner}}/{{$url}}">{{$url}}</a>
+				{{if .Error}}
+					<h3 class="text-danger">{{.Error}}</h3>
+				{{end}}
+				<div class="container-fluid">
+					{{range $i, $row := .Histories}}
+						<div class="row">
+							{{range $ii, $history := $row}}
+								<div class="col">
+									<a href="/history?{{$.Query .Type}}" target="_blank">{{.Type}}</a>
+									<span>/</span>
+									<a href="/history?{{$.Query .Owner}}" target="_blank">{{.Owner}}</a>
+									<span>/</span>
+									<a href="/{{.Type}}?owner={{.Owner}}&post={{.Post}}" target="_blank">{{.Post}}</a>
+									<span class="date">
+										<br>
+										{{date .Date}}
+										<br>
+									</span>
+									<span class="categories">
+										{{if $history.Categories}}
+											<span>Categories:</span>&nbsp;<b>{{range $category := $history.Categories}}
+												{{$category}}
+											{{end}}</b>
+										{{end}}
+									</span>
+									<div id="carousel_{{.Post}}" class="carousel slide" data-bs-interval="false">
+										{{if gt (len .URLs) 1}}
+											<div class="carousel-indicators">
+												{{range $iii, $url := .URLs}}
+													{{if eq $iii 0}}
+														<button type="button" data-bs-target="#carousel_{{$history.Post}}" data-bs-slide-to="{{$iii}}" class="active"></button>
+													{{else}}
+														<button type="button" data-bs-target="#carousel_{{$history.Post}}" data-bs-slide-to="{{$iii}}"></button>
+													{{end}}
 												{{end}}
 											</div>
 										{{end}}
+										<div class="carousel-inner">
+											{{range $iii, $url := .URLs}}
+												<div class="carousel-item{{if eq $iii 0}} active{{end}}">
+													{{if or (hasSuffix . ".jpg") (hasSuffix . ".webp")}}
+														<img class="d-block w-100" src="/api/storage/{{$history.U_ID}}/{{$history.Type}}/{{$history.Owner}}/{{$url}}" loading="lazy">
+													{{else if or (hasSuffix . ".mp4") (hasSuffix . ".webm")}}
+														<video class="d-block w-100" src="/api/storage/{{$history.U_ID}}/{{$history.Type}}/{{$history.Owner}}/{{$url}}" preload="metadata" muted controls loop></video>
+													{{else}}
+														<a href="/api/storage/{{$history.U_ID}}/{{$history.Type}}/{{$history.Owner}}/{{$url}}">{{$url}}</a>
+													{{end}}
+												</div>
+											{{end}}
+										</div>
+										{{if gt (len .URLs) 1}}
+											<button class="carousel-control-prev" type="button" data-bs-target="#carousel_{{.Post}}" data-bs-slide="prev">
+												<span class="carousel-control-prev-icon"></span>
+												<span class="visually-hidden">Previous</span>
+											</button>
+											<button class="carousel-control-next" type="button" data-bs-target="#carousel_{{.Post}}" data-bs-slide="next">
+												<span class="carousel-control-next-icon"></span>
+												<span class="visually-hidden">Next</span>
+											</button>
+										{{end}}
 									</div>
-									{{if gt (len .URLs) 1}}
-										<button class="carousel-control-prev" type="button" data-bs-target="#carousel_{{.Post}}" data-bs-slide="prev">
-											<span class="carousel-control-prev-icon"></span>
-											<span class="visually-hidden">Previous</span>
-										</button>
-										<button class="carousel-control-next" type="button" data-bs-target="#carousel_{{.Post}}" data-bs-slide="next">
-											<span class="carousel-control-next-icon"></span>
-											<span class="visually-hidden">Next</span>
-										</button>
-									{{end}}
 								</div>
-							</div>
-						{{end}}
-					</div>
+							{{end}}
+						</div>
+					{{end}}
+				</div>
+				{{if gt .Pages 1}}
+					<br>
+					<nav>
+						<ul class="pagination text-center">
+							<li class="page-item">
+								<button class="page-link{{if eq .Page 1}} disabled{{end}}" type="submit"  name="page" value="1">1</button>
+							</li>
+							<li class="page-item">
+								<button class="page-link{{if eq .Page 1}} disabled{{end}}" type="submit" name="page" value="{{add .Page -1}}">Previous</button>
+							</li>
+							<li class="page-item disabled">
+								<button class="page-link">{{.Page}}</button>
+							</li>
+							<li class="page-item">
+								<button class="page-link{{if eq .Page .Pages}} disabled{{end}}" type="submit" name="page" value="{{add .Page 1}}">Next</button>
+							</li>
+							<li class="page-item">
+								<button class="page-link{{if eq .Page .Pages}} disabled{{end}}" type="submit" name="page" value="{{.Pages}}">{{.Pages}}</button>
+							</li>
+						</ul>
+					</nav>
 				{{end}}
-			</div>
+			</form>
 		</main>
 		<noscript>Please enable JavaScript to continue using this application.</noscript>
 	</body>
