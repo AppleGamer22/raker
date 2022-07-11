@@ -3,7 +3,6 @@ WORKDIR /rake
 COPY go.* .
 COPY server server
 COPY shared shared
-COPY vendor vendor
 ARG PACKAGE="github.com/AppleGamer22/rake"
 ARG VERSION="development"
 ARG HASH="development"
