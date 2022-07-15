@@ -60,6 +60,7 @@ func main() {
 	mux.Handle("/api/storage/", http.StripPrefix("/api/storage", handlers.NewStorageHandler(configuration.Storage, configuration.Directories)))
 	mux.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir("assets"))))
 	mux.Handle("/favicon.ico", http.RedirectHandler("/assets/icons/favicon.ico", http.StatusTemporaryRedirect))
+	mux.Handle("/robots.txt", http.RedirectHandler("/assets/robots.txt", http.StatusTemporaryRedirect))
 
 	mux.HandleFunc("/", handlers.AuthenticationPage)
 	mux.HandleFunc("/history", handlers.HistoryPage)
