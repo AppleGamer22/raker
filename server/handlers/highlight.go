@@ -61,13 +61,13 @@ func HighlightPage(writer http.ResponseWriter, request *http.Request) {
 					continue
 				}
 				fileName := fmt.Sprintf("%s_%s", highlightID, path.Base(URL.Path))
-
-				if err := StorageHandler.Save(user, types.Highlight, username, fileName, urlString); err != nil {
-					log.Println(err)
-					errs = append(errs, err)
-					continue
-				}
 				localURLs = append(localURLs, fileName)
+			}
+
+			localURLs, saveErrors := StorageHandler.SaveBundle(user, types.Highlight, username, localURLs, URLs)
+			errs = append(errs, saveErrors...)
+			for _, err := range saveErrors {
+				log.Println(err)
 			}
 
 			if len(localURLs) > 0 {

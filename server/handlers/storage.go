@@ -1,12 +1,14 @@
 package handlers
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"os"
 	"path"
+	"sync"
 
 	"github.com/AppleGamer22/rake/server/cleaner"
 	"github.com/AppleGamer22/rake/server/db"
@@ -101,6 +103,39 @@ func (handler *storageHandler) Save(user db.User, media, owner, fileName, URL st
 
 	_, err = io.Copy(file, response.Body)
 	return err
+}
+
+func (handler *storageHandler) SaveBundle(user db.User, media, owner string, fileNames, URLs []string) ([]string, []error) {
+	if len(URLs) != len(fileNames) {
+		return []string{}, []error{errors.New("unequal length URLs & file names slices")}
+	}
+
+	count := len(URLs)
+	var wg sync.WaitGroup
+	wg.Add(count)
+	var mutex sync.Mutex
+	errs := make([]error, 0, count)
+	sucessfulFileNames := make([]string, 0, count)
+
+	for i := 0; i < count; i++ {
+		URL := URLs[i]
+		fileName := fileNames[i]
+		go func() {
+			if err := handler.Save(user, media, owner, fileName, URL); err != nil {
+				mutex.Lock()
+				errs = append(errs, err)
+				mutex.Unlock()
+			} else {
+				mutex.Lock()
+				sucessfulFileNames = append(sucessfulFileNames, fileName)
+				mutex.Unlock()
+			}
+			wg.Done()
+		}()
+	}
+
+	wg.Wait()
+	return sucessfulFileNames, errs
 }
 
 func (handler *storageHandler) Delete(user db.User, media, owner, fileName string) error {
