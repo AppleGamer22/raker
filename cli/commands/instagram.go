@@ -29,29 +29,31 @@ var instagramCommand = cobra.Command{
 		return nil
 	},
 	RunE: func(_ *cobra.Command, args []string) error {
-		errs := []error{}
 		post := args[0]
 		instagram := shared.NewInstagram(conf.Configuration.FBSR, conf.Configuration.Session, conf.Configuration.User)
 		URLs, username, err := instagram.Post(post)
 		if err != nil {
 			return err
 		}
+
 		log.Printf("found %d files\n", len(URLs))
+		fileNames := make([]string, 0, len(URLs))
+
 		for _, urlString := range URLs {
-			URL, err := url.Parse(urlString)
-			if err != nil {
-				errs = append(errs, err)
+			URL, parsingError := url.Parse(urlString)
+			if parsingError != nil {
+				err = fmt.Errorf("%v\n%v", err, parsingError)
 				continue
 			}
+
 			fileName := fmt.Sprintf("%s_%s_%s_%s", types.Instagram, username, post, path.Base(URL.Path))
-			if err = conf.Save(types.Instagram, fileName, urlString); err != nil {
-				errs = append(errs, err)
-				continue
-			}
-			log.Printf("saved %s to file %s at the current directory\n", urlString, fileName)
+			fileNames = append(fileNames, fileName)
 		}
-		for _, err2 := range errs {
-			err = fmt.Errorf("%v\n%v", err, err2)
+
+		if errs := conf.SaveBundle(types.Instagram, fileNames, URLs); len(errs) != 0 {
+			for _, saveError := range errs {
+				err = fmt.Errorf("%v\n%v", err, saveError)
+			}
 		}
 		return err
 	},

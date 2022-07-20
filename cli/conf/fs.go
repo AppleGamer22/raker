@@ -1,10 +1,13 @@
 package conf
 
 import (
+	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
+	"sync"
 
 	"github.com/AppleGamer22/rake/shared"
 	"github.com/AppleGamer22/rake/shared/types"
@@ -50,4 +53,34 @@ func Save(media, fileName, URL string) error {
 
 	_, err = io.Copy(file, response.Body)
 	return err
+}
+
+func SaveBundle(media string, fileNames, URLs []string) []error {
+	if len(URLs) != len(fileNames) {
+		return []error{errors.New("unequal length URLs & file names slices")}
+	}
+
+	count := len(URLs)
+	var wg sync.WaitGroup
+	wg.Add(count)
+	var mutex sync.Mutex
+	errs := make([]error, 0, count)
+
+	for i := 0; i < count; i++ {
+		URL := URLs[i]
+		fileName := fileNames[i]
+		go func() {
+			if err := Save(media, fileName, URL); err != nil {
+				mutex.Lock()
+				errs = append(errs, err)
+				mutex.Unlock()
+			} else {
+				log.Printf("saved %s at the current directory\n", fileName)
+			}
+			wg.Done()
+		}()
+	}
+
+	wg.Wait()
+	return errs
 }
