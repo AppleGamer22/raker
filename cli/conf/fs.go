@@ -51,8 +51,12 @@ func Save(media, fileName, URL string) error {
 	}
 	defer file.Close()
 
-	_, err = io.Copy(file, response.Body)
-	return err
+	if _, err = io.Copy(file, response.Body); err != nil {
+		return err
+	}
+
+	log.Printf("saved %s at the current directory\n", fileName)
+	return nil
 }
 
 func SaveBundle(media string, fileNames, URLs []string) []error {
@@ -74,8 +78,6 @@ func SaveBundle(media string, fileNames, URLs []string) []error {
 				mutex.Lock()
 				errs = append(errs, err)
 				mutex.Unlock()
-			} else {
-				log.Printf("saved %s at the current directory\n", fileName)
 			}
 			wg.Done()
 		}()

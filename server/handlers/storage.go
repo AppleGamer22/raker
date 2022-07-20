@@ -101,7 +101,11 @@ func (handler *storageHandler) Save(user db.User, media, owner, fileName, URL st
 	}
 	defer file.Close()
 
-	_, err = io.Copy(file, response.Body)
+	if _, err := io.Copy(file, response.Body); err != nil {
+		return err
+	}
+
+	log.Println("saved", filePath)
 	return err
 }
 
@@ -155,6 +159,7 @@ func (handler *storageHandler) Delete(user db.User, media, owner, fileName strin
 	if err := os.Remove(mediaPath); err != nil {
 		return err
 	}
+	log.Println("deleted", filePath)
 
 	directoryName := path.Dir(mediaPath)
 	files, err := os.ReadDir(directoryName)
@@ -166,6 +171,7 @@ func (handler *storageHandler) Delete(user db.User, media, owner, fileName strin
 		if err := os.Remove(directoryName); err != nil {
 			return err
 		}
+		log.Println("deleted", filePath)
 	}
 
 	return nil
