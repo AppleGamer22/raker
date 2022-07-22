@@ -17,6 +17,7 @@ import (
 	"github.com/AppleGamer22/rake/shared/types"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
@@ -225,12 +226,24 @@ func deleteFileFromHistory(user db.User, owner, media, post, file string) (db.Hi
 		},
 	}
 
-	var history db.History
-	if err := db.Histories.FindOneAndUpdate(context.Background(), filter, update, db.UpdateOption).Decode(&history); err != nil {
+	session, err := db.Client.StartSession()
+	if err != nil {
 		return db.History{}, err
 	}
+	defer session.EndSession(context.Background())
 
-	if err := StorageHandler.Delete(user, media, owner, filepath.Base(file)); err != nil {
+	var history db.History
+
+	_, err = session.WithTransaction(context.Background(), func(ctx mongo.SessionContext) (interface{}, error) {
+
+		if err := db.Histories.FindOneAndUpdate(ctx, filter, update, db.UpdateOption).Decode(&history); err != nil {
+			return nil, err
+		}
+
+		err := StorageHandler.Delete(user, media, owner, filepath.Base(file))
+		return nil, err
+	}, db.TransactionOptions)
+	if err != nil {
 		return db.History{}, err
 	}
 

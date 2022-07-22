@@ -9,6 +9,8 @@ import (
 	"github.com/AppleGamer22/rake/shared/types"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/mongo/readconcern"
+	"go.mongodb.org/mongo-driver/mongo/writeconcern"
 )
 
 func SelectedMediaTypes(mediaTypes []string) map[string]bool {
@@ -31,7 +33,12 @@ func SelectedMediaTypes(mediaTypes []string) map[string]bool {
 	return result
 }
 
-var UpdateOption = options.FindOneAndUpdate().SetReturnDocument(options.After)
+var (
+	UpdateOption       = options.FindOneAndUpdate().SetReturnDocument(options.After)
+	writeConcern       = writeconcern.New(writeconcern.WMajority())
+	readConcern        = readconcern.Snapshot()
+	TransactionOptions = options.Transaction().SetWriteConcern(writeConcern).SetReadConcern(readConcern)
+)
 
 type User struct {
 	ID        primitive.ObjectID `bson:"_id" json:"-"`

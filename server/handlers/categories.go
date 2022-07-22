@@ -10,8 +10,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"go.mongodb.org/mongo-driver/mongo/readconcern"
-	"go.mongodb.org/mongo-driver/mongo/writeconcern"
 )
 
 func Categories(writer http.ResponseWriter, request *http.Request) {
@@ -79,9 +77,6 @@ func Categories(writer http.ResponseWriter, request *http.Request) {
 		bulkOptions := options.BulkWriteOptions{}
 		bulkOptions.SetOrdered(true)
 
-		writeConcern := writeconcern.New(writeconcern.WMajority())
-		readConcern := readconcern.Snapshot()
-		transactionOptions := options.Transaction().SetWriteConcern(writeConcern).SetReadConcern(readConcern)
 		session, err := db.Client.StartSession()
 		if err != nil {
 			log.Println(err, category, editedCategory)
@@ -98,7 +93,7 @@ func Categories(writer http.ResponseWriter, request *http.Request) {
 			_, err := db.Histories.BulkWrite(ctx, operations, &bulkOptions)
 
 			return nil, err
-		}, transactionOptions)
+		}, db.TransactionOptions)
 
 		if err != nil {
 			log.Println(err, category, editedCategory)
