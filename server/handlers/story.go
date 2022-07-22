@@ -65,6 +65,7 @@ func StoryPage(writer http.ResponseWriter, request *http.Request) {
 		"type":  types.Story,
 		"owner": username,
 	}
+	newURLs := make([]string, 0, len(URLs))
 	localURLs := make([]string, 0, len(URLs))
 	for _, urlString := range URLs {
 		URL, err := url.Parse(urlString)
@@ -81,8 +82,10 @@ func StoryPage(writer http.ResponseWriter, request *http.Request) {
 		}
 
 		localURLs = append(localURLs, fileName)
+		newURLs = append(newURLs, urlString)
 	}
 
+	URLs = newURLs
 	localURLs, saveErrors := StorageHandler.SaveBundle(user, types.Story, username, localURLs, URLs)
 	errs = append(errs, saveErrors...)
 	for _, err := range saveErrors {
