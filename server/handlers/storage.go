@@ -119,26 +119,30 @@ func (handler *storageHandler) SaveBundle(user db.User, media, owner string, fil
 	wg.Add(count)
 	var mutex sync.Mutex
 	errs := make([]error, 0, count)
-	sucessfulFileNames := make([]string, 0, count)
 
 	for i := 0; i < count; i++ {
 		URL := URLs[i]
 		fileName := fileNames[i]
-		go func() {
+		go func(fileName, URL string, i int) {
 			if err := handler.Save(user, media, owner, fileName, URL); err != nil {
 				mutex.Lock()
 				errs = append(errs, err)
-				mutex.Unlock()
-			} else {
-				mutex.Lock()
-				sucessfulFileNames = append(sucessfulFileNames, fileName)
+				fileNames[i] = ""
 				mutex.Unlock()
 			}
 			wg.Done()
-		}()
+		}(fileName, URL, i)
 	}
 
 	wg.Wait()
+
+	sucessfulFileNames := make([]string, 0, count)
+	for _, fileName := range fileNames {
+		if fileName != "" {
+			sucessfulFileNames = append(sucessfulFileNames, fileName)
+		}
+	}
+
 	return sucessfulFileNames, errs
 }
 
