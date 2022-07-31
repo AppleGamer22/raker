@@ -2,28 +2,26 @@ package authenticator_test
 
 import (
 	"testing"
+	"time"
 
 	"github.com/AppleGamer22/rake/server/authenticator"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-var testAuthenticator = authenticator.New("secret")
-
-var expectedPayload = authenticator.Payload{
-	Username: "rake",
-	U_ID: func() primitive.ObjectID {
-		_id, _ := primitive.ObjectIDFromHex("6294257e01948be67fe71b94")
-		return _id
-	}(),
-}
+var (
+	testAuthenticator = authenticator.New("secret")
+	expectedUsername  = uuid.NewString()
+	expectedUserID    = primitive.NewObjectID()
+)
 
 func TestJWT(t *testing.T) {
-	webToken, err := testAuthenticator.Sign(expectedPayload)
+	webToken, expiry, err := testAuthenticator.Sign(expectedUserID, expectedUsername)
 	assert.NoError(t, err)
-	payload, err := testAuthenticator.Parse(webToken)
+	assert.Less(t, expiry, time.Now().AddDate(1, 0, 0))
+	U_ID, username, err := testAuthenticator.Parse(webToken)
 	assert.NoError(t, err)
-	assert.Equal(t, expectedPayload.Username, payload.Username)
-	assert.Equal(t, expectedPayload.U_ID, payload.U_ID)
-	assert.Equal(t, expectedPayload, payload)
+	assert.Equal(t, expectedUsername, username)
+	assert.Equal(t, expectedUserID, U_ID)
 }

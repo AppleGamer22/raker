@@ -130,7 +130,7 @@ func InstagramSignIn(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	webToken, err := Authenticator.Sign(authenticator.Payload{Username: user.Username, U_ID: user.ID})
+	webToken, expiry, err := Authenticator.Sign(user.ID, user.Username)
 	if err != nil {
 		http.Error(writer, "sign-in failed", http.StatusUnauthorized)
 		log.Println(err, user.ID.Hex())
@@ -142,7 +142,7 @@ func InstagramSignIn(writer http.ResponseWriter, request *http.Request) {
 		Value:    webToken,
 		Path:     "/",
 		Domain:   request.Host,
-		Expires:  time.Now().AddDate(1, 0, 0),
+		Expires:  expiry,
 		Secure:   true,
 		HttpOnly: true,
 	})
@@ -156,13 +156,17 @@ func Verify(request *http.Request) (db.User, error) {
 		return db.User{}, err
 	}
 
-	payload, err := Authenticator.Parse(jwtCookie.Value)
+	U_ID, username, err := Authenticator.Parse(jwtCookie.Value)
 	if err != nil {
 		return db.User{}, err
 	}
 
+	filter := bson.M{
+		"_id":      U_ID,
+		"username": username,
+	}
 	var user db.User
-	err = db.Users.FindOne(context.Background(), bson.M{"_id": payload.U_ID}).Decode(&user)
+	err = db.Users.FindOne(context.Background(), filter).Decode(&user)
 	return user, err
 }
 
