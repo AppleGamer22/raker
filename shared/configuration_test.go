@@ -9,7 +9,6 @@ type Configuration struct {
 		Session string
 		User    string
 		FBSR    string
-		App     string
 	}
 	TikTok string
 }
@@ -17,6 +16,12 @@ type Configuration struct {
 var configuration Configuration
 
 func init() {
+	// https://stackoverflow.com/a/65747120/7148921
+	viper.AutomaticEnv()
+	viper.BindEnv("instagram.session", "SESSION")
+	viper.BindEnv("instagram.user", "USER")
+	viper.BindEnv("instagram.fbsr", "FBSR")
+	viper.BindEnv("TIKTOK")
 	viper.SetConfigName(".rake")
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath("..")

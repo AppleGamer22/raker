@@ -26,6 +26,7 @@ jobs:
       - name: Test
         run: make test
         env:
-          RAKE_FBSR: ${{secrets.FBSR}}
-          RAKE_SESSION: ${{secrets.SESSION}}
-          RAKE_APP: ${{secrets.APP}}
+          SESSION: ${{secrets.SESSION}}
+          FBSR: ${{secrets.FBSR}}
+          USER: ${{secrets.USER}}
+          TIKTOK: ${{secrets.TIKTOK}}
