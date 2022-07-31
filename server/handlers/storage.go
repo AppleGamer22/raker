@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"strings"
 	"sync"
 
 	"github.com/AppleGamer22/rake/server/cleaner"
@@ -39,6 +40,12 @@ func (handler storageHandler) ServeHTTP(writer http.ResponseWriter, request *htt
 
 	info, err := os.Stat(mediaPath)
 	if handler.directories || (err == nil && !info.IsDir()) {
+		user, err := Verify(request)
+		if err != nil || !strings.HasPrefix(request.URL.Path, "/"+user.ID.Hex()) {
+			log.Println(err)
+			http.Error(writer, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+			return
+		}
 		handler.fileServer.ServeHTTP(writer, request)
 	} else {
 		if err != nil {
