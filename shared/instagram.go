@@ -107,15 +107,19 @@ func NewInstagram(fbsr, sessionID, userID string) Instagram {
 	}
 }
 
-func (instagram *Instagram) Post(post string) (URLs []string, username string, err error) {
+func (instagram *Instagram) Post(post string, incognito bool) (URLs []string, username string, err error) {
 	htmlURL := fmt.Sprintf("https://www.instagram.com/p/%s", post)
 	htmlRequest, err := http.NewRequest(http.MethodGet, htmlURL, nil)
 	if err != nil {
 		return URLs, username, err
 	}
-	htmlRequest.AddCookie(&instagram.fbsrCookie)
-	htmlRequest.AddCookie(&instagram.sessionCookie)
-	htmlRequest.AddCookie(&instagram.userCookie)
+
+	if !incognito {
+		htmlRequest.AddCookie(&instagram.fbsrCookie)
+		htmlRequest.AddCookie(&instagram.sessionCookie)
+		htmlRequest.AddCookie(&instagram.userCookie)
+	}
+
 	htmlRequest.Header.Add("x-ig-app-id", "936619743392459")
 	htmlRequest.Header.Add("user-agent", UserAgent)
 	htmlRequest.Header.Add("referer", "https://www.instagram.com/")
@@ -146,9 +150,12 @@ func (instagram *Instagram) Post(post string) (URLs []string, username string, e
 		return URLs, username, err
 	}
 
-	jsonRequest.AddCookie(&instagram.fbsrCookie)
-	jsonRequest.AddCookie(&instagram.sessionCookie)
-	jsonRequest.AddCookie(&instagram.userCookie)
+	if !incognito {
+		jsonRequest.AddCookie(&instagram.fbsrCookie)
+		jsonRequest.AddCookie(&instagram.sessionCookie)
+		jsonRequest.AddCookie(&instagram.userCookie)
+	}
+
 	jsonRequest.Header.Add("x-ig-app-id", "936619743392459")
 	jsonRequest.Header.Add("User-Agent", UserAgent)
 	jsonRequest.Header.Add("referer", "https://www.instagram.com/")

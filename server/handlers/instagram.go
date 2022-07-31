@@ -35,6 +35,7 @@ func InstagramPage(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	post := cleaner.Line(request.Form.Get("post"))
+	incognito := cleaner.Line(request.Form.Get("incognito")) == "incognito"
 	errs := []error{}
 
 	if post != "" {
@@ -44,7 +45,7 @@ func InstagramPage(writer http.ResponseWriter, request *http.Request) {
 		}
 		if err := db.Histories.FindOne(context.Background(), filter).Decode(&history); err != nil {
 			instagram := shared.NewInstagram(user.Instagram.FBSR, user.Instagram.SessionID, user.Instagram.UserID)
-			URLs, username, err := instagram.Post(post)
+			URLs, username, err := instagram.Post(post, incognito)
 
 			if err != nil {
 				log.Println(err)

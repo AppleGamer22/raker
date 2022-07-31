@@ -117,34 +117,35 @@
 						</h2>
 						<div id="collapse_search" class="accordion-collapse collapse" data-bs-parent="#accordion_search">
 							<div class="accordion-body">
-								<input type="checkbox" id="exclusive" name="exclusive" value="exclusive"{{if .Exclusive}} checked{{end}}>
-								<label for="exclusive">Exclusive</label>
+								<input class="form-check-input" type="checkbox" id="exclusive" name="exclusive" value="exclusive"{{if .Exclusive}} checked{{end}}>
+								<label class="form-check-label" for="exclusive">Exclusive</label>
 								<br>
 								<h4>Categories</h4>
 								{{range $category, $checked := .Categories}}
-									<input type="checkbox" id="{{$category}}" name="{{$category}}" value="{{$category}}"{{if $checked}} checked{{end}}>
-									<label for="{{$category}}">{{$category}}</label>
+									<input class="form-check-input" type="checkbox" id="{{$category}}" name="{{$category}}" value="{{$category}}"{{if $checked}} checked{{end}}>
+									<label class="form-check-label" for="{{$category}}">{{$category}}</label>
 									<br>
 								{{end}}
 								<h4>Media Types</h4>
 								{{range $mediaType, $checked := .Types}}
-									<input type="checkbox" id="{{$mediaType}}" name="{{$mediaType}}" value="{{$mediaType}}"{{if $checked}} checked{{end}}>
-									{{if eq $mediaType "instagram"}}
-										<label for="instagram">Instagram Post</label>
-									{{end}}
-									{{if eq $mediaType "highlight"}}
-										<label for="highlight">Instagram Highlight</label>
-									{{end}}
-									{{if eq $mediaType "story"}}
-										<label for="story">Instagram Story</label>
-									{{end}}
-									{{if eq $mediaType "tiktok"}}
-										<label for="tiktok">TikTok Post</label>
-									{{end}}
-									{{if eq $mediaType "vsco"}}
-										<label for="vsco">VSCO Post</label>
-									{{end}}
-									<br>
+									<div class="form-check">
+										<input type="checkbox" class="form-check-input" id="{{$mediaType}}" name="{{$mediaType}}" value="{{$mediaType}}"{{if $checked}} checked{{end}}>
+										{{if eq $mediaType "instagram"}}
+											<label class="form-check-label" for="instagram">Instagram Post</label>
+										{{end}}
+										{{if eq $mediaType "highlight"}}
+											<label class="form-check-label" for="highlight">Instagram Highlight</label>
+										{{end}}
+										{{if eq $mediaType "story"}}
+											<label class="form-check-label" for="story">Instagram Story</label>
+										{{end}}
+										{{if eq $mediaType "tiktok"}}
+											<label class="form-check-label" for="tiktok">TikTok Post</label>
+										{{end}}
+										{{if eq $mediaType "vsco"}}
+											<label class="form-check-label" for="vsco">VSCO Post</label>
+										{{end}}
+									</div>
 								{{end}}
 							</div>
 						</div>

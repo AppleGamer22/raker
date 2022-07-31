@@ -34,6 +34,8 @@ func TikTokPage(writer http.ResponseWriter, request *http.Request) {
 	}
 	owner := cleaner.Line(request.Form.Get("owner"))
 	post := cleaner.Line(request.Form.Get("post"))
+	incognito := cleaner.Line(request.Form.Get("incognito")) == "incognito"
+
 	if post != "" {
 		filter := bson.M{
 			"post": post,
@@ -41,7 +43,7 @@ func TikTokPage(writer http.ResponseWriter, request *http.Request) {
 		}
 		if err := db.Histories.FindOne(context.Background(), filter).Decode(&history); err != nil {
 			tiktok := shared.NewTikTok(user.TikTok)
-			URL, username, err := tiktok.Post(owner, post)
+			URL, username, err := tiktok.Post(owner, post, incognito)
 
 			if err != nil {
 				log.Println(err)

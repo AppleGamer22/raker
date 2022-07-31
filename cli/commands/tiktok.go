@@ -19,8 +19,11 @@ var tiktokCommand = cobra.Command{
 	Short:   "scrape tiktok",
 	Long:    "scrape tiktok",
 	Aliases: []string{"tt"},
-	PreRun: func(cmd *cobra.Command, args []string) {
-		viper.Unmarshal(&conf.Configuration)
+	PreRunE: func(cmd *cobra.Command, args []string) error {
+		if !incognito {
+			return viper.Unmarshal(&conf.Configuration)
+		}
+		return nil
 	},
 	Args: func(_ *cobra.Command, args []string) error {
 		if len(args) != 2 {
@@ -32,7 +35,7 @@ var tiktokCommand = cobra.Command{
 		username := args[0]
 		post := args[1]
 		tiktok := shared.NewTikTok(conf.Configuration.TikTok)
-		urlString, username, err := tiktok.Post(username, post)
+		urlString, username, err := tiktok.Post(username, post, incognito)
 		if err != nil {
 			return err
 		}
@@ -51,5 +54,6 @@ var tiktokCommand = cobra.Command{
 }
 
 func init() {
+	tiktokCommand.Flags().BoolVarP(&incognito, "incognito", "i", false, "without authentication")
 	RootCommand.AddCommand(&tiktokCommand)
 }

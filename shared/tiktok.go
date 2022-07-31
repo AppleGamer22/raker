@@ -26,14 +26,14 @@ func NewTikTok(sessionID string) TikTok {
 	return TikTok{sessionID}
 }
 
-func (tiktok *TikTok) Post(owner, post string) (URL string, username string, err error) {
+func (tiktok *TikTok) Post(owner, post string, incognito bool) (URL string, username string, err error) {
 	postURL := fmt.Sprintf("https://www.tiktok.com/@%s/video/%s", owner, post)
 	request, err := http.NewRequest(http.MethodGet, postURL, nil)
 	if err != nil {
 		return URL, username, err
 	}
 
-	if tiktok.SessionID != "" {
+	if !incognito {
 		sessionCookie := http.Cookie{
 			Name:     "sessionid",
 			Value:    tiktok.SessionID,

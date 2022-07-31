@@ -20,7 +20,10 @@ var instagramCommand = cobra.Command{
 	Long:    "scrape instagram",
 	Aliases: []string{"ig"},
 	PreRunE: func(cmd *cobra.Command, args []string) error {
-		return viper.Unmarshal(&conf.Configuration)
+		if !incognito {
+			return viper.Unmarshal(&conf.Configuration)
+		}
+		return nil
 	},
 	Args: func(_ *cobra.Command, args []string) error {
 		if len(args) != 1 {
@@ -31,7 +34,7 @@ var instagramCommand = cobra.Command{
 	RunE: func(_ *cobra.Command, args []string) error {
 		post := args[0]
 		instagram := shared.NewInstagram(conf.Configuration.FBSR, conf.Configuration.Session, conf.Configuration.User)
-		URLs, username, err := instagram.Post(post)
+		URLs, username, err := instagram.Post(post, incognito)
 		if err != nil {
 			return err
 		}
@@ -60,5 +63,6 @@ var instagramCommand = cobra.Command{
 }
 
 func init() {
+	instagramCommand.Flags().BoolVarP(&incognito, "incognito", "i", false, "without authentication")
 	RootCommand.AddCommand(&instagramCommand)
 }
