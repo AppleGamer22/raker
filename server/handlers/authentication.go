@@ -20,6 +20,11 @@ import (
 var Authenticator authenticator.Authenticator
 
 func InstagramSignUp(writer http.ResponseWriter, request *http.Request) {
+	if request.Method != http.MethodPost {
+		http.Redirect(writer, request, "/", http.StatusTemporaryRedirect)
+		return
+	}
+
 	if err := request.ParseForm(); err != nil {
 		http.Error(writer, "failed to read request form", http.StatusBadRequest)
 		return
@@ -100,6 +105,11 @@ func InstagramSignUp(writer http.ResponseWriter, request *http.Request) {
 }
 
 func InstagramSignIn(writer http.ResponseWriter, request *http.Request) {
+	if request.Method != http.MethodPost {
+		http.Redirect(writer, request, "/", http.StatusTemporaryRedirect)
+		return
+	}
+
 	if err := request.ParseForm(); err != nil {
 		http.Error(writer, "failed to read request form", http.StatusBadRequest)
 		return
@@ -171,6 +181,11 @@ func Verify(request *http.Request) (db.User, error) {
 }
 
 func InstagramUpdateCredentials(writer http.ResponseWriter, request *http.Request) {
+	if request.Method != http.MethodPost {
+		http.Redirect(writer, request, "/", http.StatusTemporaryRedirect)
+		return
+	}
+
 	user, err := Verify(request)
 	if err != nil {
 		http.Error(writer, "credential update failed", http.StatusUnauthorized)
@@ -238,6 +253,11 @@ func InstagramUpdateCredentials(writer http.ResponseWriter, request *http.Reques
 }
 
 func InstagramSignOut(writer http.ResponseWriter, request *http.Request) {
+	if request.Method != http.MethodPost {
+		http.Redirect(writer, request, "/", http.StatusTemporaryRedirect)
+		return
+	}
+
 	user, err := Verify(request)
 	if err != nil {
 		http.Error(writer, "sign-out failed", http.StatusUnauthorized)
