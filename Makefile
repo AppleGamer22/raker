@@ -23,13 +23,8 @@ completion:
 	go run ./cli completion powershell > rake.ps1
 
 manual:
-	if [[ "$$OSTYPE" == "linux-gnu"* ]]; then \
-		sed -i "s/vVERSION/$(VERSION)/" rake.1; \
-		sed -i "s/DATE/$$(date -Idate)/" rake.1; \
-	elif [[ "$$OSTYPE" == "darwin"* ]]; then \
-		sed -I '' "s/vVERSION/$(VERSION)/" rake.1; \
-		sed -I '' "s/DATE/$$(date -Idate)/" rake.1; \
-	fi
+	go run ./utils/replace rake.1 -b "vVERSION" -a "$(VERSION)"
+	go run ./utils/replace rake.1 -b "DATE" -a "$(shell go run ./utils/date)"
 
 clean:
 	rm -rf rake rakeserver bin dist rake.bash rake.fish rake.zsh rake.ps1
