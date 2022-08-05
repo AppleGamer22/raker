@@ -205,9 +205,10 @@
 							<div class="accordion-body">
 								<form action="/api/history?media={{.Type}}&post={{.Post}}&owner={{.Owner}}" method="post">
 									{{range $category, $checked := .SelectedCategories}}
-										<input type="checkbox" id="{{$category}}" name="{{$category}}" value="{{$category}}"{{if $checked}} checked{{end}}>
-										<label for="{{$category}}">{{$category}}</label>
-										<br>
+										<div class="form-check">
+											<input class="form-check-input" type="checkbox" id="{{$category}}" name="{{$category}}" value="{{$category}}"{{if $checked}} checked{{end}}>
+											<label class="form-check-label" for="{{$category}}">{{$category}}</label>
+										</div>
 									{{end}}
 									<input type="hidden" name="method" value="PATCH">
 									<button type="submit" class="btn btn-warning">Save</button>
