@@ -4,10 +4,11 @@ go 1.18
 
 require (
 	github.com/golang-jwt/jwt/v4 v4.4.2
+	github.com/google/uuid v1.3.0
 	github.com/spf13/cobra v1.5.0
 	github.com/spf13/viper v1.12.0
 	github.com/stretchr/testify v1.8.0
-	go.mongodb.org/mongo-driver v1.10.0
+	go.mongodb.org/mongo-driver v1.10.1
 	golang.org/x/crypto v0.0.0-20220722155217-630584e8d5aa
 )
 
@@ -15,7 +16,6 @@ require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fsnotify/fsnotify v1.5.4 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
-	github.com/google/uuid v1.3.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/klauspost/compress v1.15.9 // indirect
