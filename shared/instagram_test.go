@@ -5,7 +5,7 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/AppleGamer22/rake/shared"
+	"github.com/AppleGamer22/raker/shared"
 	"github.com/stretchr/testify/assert"
 )
 

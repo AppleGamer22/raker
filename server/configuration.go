@@ -13,14 +13,14 @@ type Configuration struct {
 
 var configuration = Configuration{
 	URI:         "mongodb://localhost:27017",
-	Database:    "rake",
+	Database:    "raker",
 	Storage:     ".",
 	Directories: false,
 	Port:        4100,
 }
 
 func init() {
-	// viper.SetEnvPrefix("rake")
+	// viper.SetEnvPrefix("raker")
 	viper.AutomaticEnv()
 	viper.BindEnv("SECRET")
 	viper.BindEnv("URI")
@@ -28,7 +28,7 @@ func init() {
 	viper.BindEnv("STORAGE")
 	viper.BindEnv("DIRECTORIES")
 	viper.BindEnv("PORT")
-	viper.SetConfigName(".rake")
+	viper.SetConfigName(".raker")
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath(".")
 }

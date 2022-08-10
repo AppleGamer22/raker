@@ -22,7 +22,7 @@ func init() {
 	viper.BindEnv("SESSION")
 	viper.BindEnv("USER")
 	viper.BindEnv("TIKTOK")
-	viper.SetConfigName(".rake")
+	viper.SetConfigName(".raker")
 	viper.SetConfigType("yaml")
 
 	directory, err := os.UserHomeDir()

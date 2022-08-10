@@ -3,7 +3,7 @@ package authenticator_test
 import (
 	"testing"
 
-	"github.com/AppleGamer22/rake/server/authenticator"
+	"github.com/AppleGamer22/raker/server/authenticator"
 	"github.com/stretchr/testify/assert"
 )
 

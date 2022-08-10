@@ -4,7 +4,7 @@ message: "If you use this software, please cite it as below."
 authors:
   - family-names: Bornstein
     given-names: Omri
-title: rake
+title: raker
 version: 1.0.0
 date-released: 2022-05-08
-url: https://github.com/AppleGamer22/rake
+url: https://github.com/AppleGamer22/raker

@@ -1,4 +1,4 @@
-module github.com/AppleGamer22/rake
+module github.com/AppleGamer22/raker
 
 go 1.18
 

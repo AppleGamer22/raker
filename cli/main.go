@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/AppleGamer22/rake/cli/commands"
+	"github.com/AppleGamer22/raker/cli/commands"
 )
 
 func main() {

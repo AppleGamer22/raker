@@ -1,18 +1,18 @@
 *.csv
 *.exe
-# rake
-# rake.bash
-# rake.fish
-# rake.zsh
-# rake.ps1
+# raker
+# raker.bash
+# raker.fish
+# raker.zsh
+# raker.ps1
 bin
 vendor
 .vagrant
 **/.DS_Store
 dist/
 **/*.env
-**/*.rake*
-**/*rake*
+**/*.raker*
+**/*raker*
 **/users**
 **/database**
 **/docker-compose.yml

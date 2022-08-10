@@ -11,10 +11,10 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/AppleGamer22/rake/server/cleaner"
-	"github.com/AppleGamer22/rake/server/db"
-	"github.com/AppleGamer22/rake/shared"
-	"github.com/AppleGamer22/rake/shared/types"
+	"github.com/AppleGamer22/raker/server/cleaner"
+	"github.com/AppleGamer22/raker/server/db"
+	"github.com/AppleGamer22/raker/shared"
+	"github.com/AppleGamer22/raker/shared/types"
 )
 
 type storageHandler struct {

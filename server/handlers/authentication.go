@@ -8,11 +8,11 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/AppleGamer22/rake/server/authenticator"
-	"github.com/AppleGamer22/rake/server/cleaner"
-	"github.com/AppleGamer22/rake/server/db"
-	"github.com/AppleGamer22/rake/shared"
-	"github.com/AppleGamer22/rake/shared/types"
+	"github.com/AppleGamer22/raker/server/authenticator"
+	"github.com/AppleGamer22/raker/server/cleaner"
+	"github.com/AppleGamer22/raker/server/db"
+	"github.com/AppleGamer22/raker/shared"
+	"github.com/AppleGamer22/raker/shared/types"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )

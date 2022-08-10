@@ -7,9 +7,9 @@ import (
 	"net/url"
 	"path"
 
-	"github.com/AppleGamer22/rake/cli/conf"
-	"github.com/AppleGamer22/rake/shared"
-	"github.com/AppleGamer22/rake/shared/types"
+	"github.com/AppleGamer22/raker/cli/conf"
+	"github.com/AppleGamer22/raker/shared"
+	"github.com/AppleGamer22/raker/shared/types"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )

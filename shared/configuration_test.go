@@ -22,7 +22,7 @@ func init() {
 	viper.BindEnv("instagram.user", "USER")
 	viper.BindEnv("instagram.fbsr", "FBSR")
 	viper.BindEnv("TIKTOK")
-	viper.SetConfigName(".rake")
+	viper.SetConfigName(".raker")
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath("..")
 	if err := viper.ReadInConfig(); err != nil {

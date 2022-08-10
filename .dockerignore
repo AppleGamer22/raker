@@ -3,7 +3,7 @@
 .vscode
 database
 docker-compose.yml
-.rake.yml
+.raker.yml
 .goreleaser.yml
 Makfile
 CODE_OF_CONDUCT.md

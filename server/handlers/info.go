@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/AppleGamer22/rake/shared"
+	"github.com/AppleGamer22/raker/shared"
 )
 
 type version struct {
@@ -17,7 +17,7 @@ type version struct {
 func Information(writer http.ResponseWriter, request *http.Request) {
 	switch request.URL.Query().Get("about") {
 	case "":
-		jsonPayload := version{"rake", shared.Version, shared.Hash}
+		jsonPayload := version{"raker", shared.Version, shared.Hash}
 		writer.Header().Set("Content-Type", "application/json")
 		if err := json.NewEncoder(writer).Encode(jsonPayload); err != nil {
 			http.Error(writer, err.Error(), http.StatusInternalServerError)

@@ -9,8 +9,8 @@ import (
 	"os"
 	"sync"
 
-	"github.com/AppleGamer22/rake/shared"
-	"github.com/AppleGamer22/rake/shared/types"
+	"github.com/AppleGamer22/raker/shared"
+	"github.com/AppleGamer22/raker/shared/types"
 )
 
 func Save(media, fileName, URL string) error {
