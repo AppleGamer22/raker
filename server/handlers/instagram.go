@@ -46,9 +46,9 @@ func InstagramPage(writer http.ResponseWriter, request *http.Request) {
 		if err := db.Histories.FindOne(context.Background(), filter).Decode(&history); err != nil {
 			instagram := shared.NewInstagram(user.Instagram.FBSR, user.Instagram.SessionID, user.Instagram.UserID)
 			URLs, username, err := instagram.Post(post, incognito)
-
 			if err != nil {
 				log.Println(err)
+				writer.WriteHeader(http.StatusBadRequest)
 				historyHTML(user, history, []error{err}, writer)
 				return
 			}
@@ -58,6 +58,7 @@ func InstagramPage(writer http.ResponseWriter, request *http.Request) {
 				URL, err := url.Parse(urlString)
 				if err != nil {
 					log.Println(err)
+					writer.WriteHeader(http.StatusBadRequest)
 					errs = append(errs, err)
 					continue
 				}
@@ -69,6 +70,7 @@ func InstagramPage(writer http.ResponseWriter, request *http.Request) {
 			errs = append(errs, saveErrors...)
 			for _, err := range saveErrors {
 				log.Println(err)
+				writer.WriteHeader(http.StatusInternalServerError)
 			}
 
 			if len(localURLs) > 0 {
@@ -84,6 +86,7 @@ func InstagramPage(writer http.ResponseWriter, request *http.Request) {
 
 				if _, err := db.Histories.InsertOne(context.Background(), history); err != nil {
 					log.Println(err)
+					writer.WriteHeader(http.StatusInternalServerError)
 					errs = append(errs, err)
 				}
 			}

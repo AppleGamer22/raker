@@ -57,6 +57,7 @@ func StoryPage(writer http.ResponseWriter, request *http.Request) {
 	URLs, username, err := instagram.Reels(owner, false)
 	if err != nil {
 		log.Println(err)
+		writer.WriteHeader(http.StatusBadRequest)
 		historyHTML(user, history, []error{err}, writer)
 		return
 	}
@@ -71,6 +72,7 @@ func StoryPage(writer http.ResponseWriter, request *http.Request) {
 		URL, err := url.Parse(urlString)
 		if err != nil {
 			log.Println(err)
+			writer.WriteHeader(http.StatusBadRequest)
 			errs = append(errs, err)
 			continue
 		}
@@ -90,6 +92,7 @@ func StoryPage(writer http.ResponseWriter, request *http.Request) {
 	errs = append(errs, saveErrors...)
 	for _, err := range saveErrors {
 		log.Println(err)
+		writer.WriteHeader(http.StatusInternalServerError)
 	}
 
 	if len(localURLs) > 0 {
@@ -106,6 +109,7 @@ func StoryPage(writer http.ResponseWriter, request *http.Request) {
 
 		if _, err := db.Histories.InsertOne(context.Background(), history); err != nil {
 			log.Println(err)
+			writer.WriteHeader(http.StatusInternalServerError)
 			errs = append(errs, err)
 		}
 	}

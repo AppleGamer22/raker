@@ -43,6 +43,8 @@ func VSCOPage(writer http.ResponseWriter, request *http.Request) {
 		if err := db.Histories.FindOne(context.Background(), filter).Decode(&history); err != nil {
 			urlString, username, err := shared.VSCO(owner, post)
 			if err != nil {
+				log.Println(err)
+				writer.WriteHeader(http.StatusBadRequest)
 				historyHTML(user, history, []error{err}, writer)
 				return
 			}
@@ -50,6 +52,7 @@ func VSCOPage(writer http.ResponseWriter, request *http.Request) {
 			URL, err := url.Parse(urlString)
 			if err != nil {
 				log.Println(err)
+				writer.WriteHeader(http.StatusBadRequest)
 				historyHTML(user, history, []error{err}, writer)
 				return
 			}
@@ -57,6 +60,7 @@ func VSCOPage(writer http.ResponseWriter, request *http.Request) {
 
 			if err := StorageHandler.Save(user, types.VSCO, username, fileName, urlString); err != nil {
 				log.Println(err)
+				writer.WriteHeader(http.StatusInternalServerError)
 				historyHTML(user, history, []error{err}, writer)
 				return
 			}
@@ -72,6 +76,8 @@ func VSCOPage(writer http.ResponseWriter, request *http.Request) {
 			}
 
 			if _, err := db.Histories.InsertOne(context.Background(), history); err != nil {
+				log.Println(err)
+				writer.WriteHeader(http.StatusInternalServerError)
 				historyHTML(user, history, []error{err}, writer)
 				return
 			}
