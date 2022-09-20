@@ -35,8 +35,7 @@ func Log(handler http.Handler) http.Handler {
 		statusWriter := newStatusLogWriter(writer)
 		handler.ServeHTTP(statusWriter, request)
 		switch statusWriter.Status / 100 {
-		case 4:
-		case 5:
+		case 4, 5:
 			log.Println(colorRed, statusWriter.Status, colorReset, request.Method, request.RequestURI, request.RemoteAddr)
 		default:
 			log.Println(colorGreen, statusWriter.Status, colorReset, request.Method, request.RequestURI, request.RemoteAddr)
