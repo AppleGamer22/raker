@@ -1,5 +1,6 @@
 *_test.go
 .github
+.gitattributes
 .vscode
 database
 docker-compose.yml
