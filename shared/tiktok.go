@@ -22,6 +22,8 @@ type TikTok struct {
 	SessionID string
 }
 
+var tiktok_regexp = regexp.MustCompile(`<script id=\"SIGI_STATE\" type=\"application/json\">(.*?)</script>`)
+
 func NewTikTok(sessionID string) TikTok {
 	return TikTok{sessionID}
 }
@@ -55,8 +57,7 @@ func (tiktok *TikTok) Post(owner, post string, incognito bool) (URL string, user
 		return URL, username, err
 	}
 
-	re := regexp.MustCompile(`<script id=\"SIGI_STATE\" type=\"application/json\">(.*?)</script>`)
-	script := re.FindString(string(body))
+	script := tiktok_regexp.FindString(string(body))
 	if script == "" {
 		return URL, username, errors.New("could not find JSON")
 	}

@@ -21,6 +21,8 @@ type VSCOPost struct {
 	} `json:"medias"`
 }
 
+var vsco_regexp = regexp.MustCompile(`<script>window\.__PRELOADED_STATE__ =(.*?)</script>`)
+
 func VSCO(owner, post string) (URL string, username string, err error) {
 	postURL := fmt.Sprintf("https://vsco.co/%s/media/%s", owner, post)
 	response, err := http.Get(postURL)
@@ -34,8 +36,7 @@ func VSCO(owner, post string) (URL string, username string, err error) {
 		return URL, username, err
 	}
 
-	re := regexp.MustCompile(`<script>window\.__PRELOADED_STATE__ =(.*?)</script>`)
-	script := re.FindString(string(body))
+	script := vsco_regexp.FindString(string(body))
 	if script == "" {
 		return URL, username, errors.New("could not find JSON")
 	}

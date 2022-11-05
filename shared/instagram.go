@@ -80,6 +80,8 @@ type Instagram struct {
 	userCookie    http.Cookie
 }
 
+var instagram_regexp = regexp.MustCompile(`\"media_id\":\"?([0-9]+)\"?`)
+
 func NewInstagram(fbsr, sessionID, userID string) Instagram {
 	return Instagram{
 		fbsrCookie: http.Cookie{
@@ -135,8 +137,8 @@ func (instagram *Instagram) Post(post string, incognito bool) (URLs []string, us
 	if err != nil {
 		return URLs, username, err
 	}
-	re := regexp.MustCompile(`\"media_id\":\"?([0-9]+)\"?`)
-	mediaIDMatch := re.FindString(string(htmlBody))
+
+	mediaIDMatch := instagram_regexp.FindString(string(htmlBody))
 	if mediaIDMatch == "" {
 		fmt.Println(string(htmlBody))
 		return URLs, username, errors.New("could not find media ID")
