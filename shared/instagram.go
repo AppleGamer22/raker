@@ -135,15 +135,21 @@ func (instagram *Instagram) Post(post string, incognito bool) (URLs []string, us
 	if err != nil {
 		return URLs, username, err
 	}
-	re := regexp.MustCompile(`\"media_id\":\"([0-9]+)\"`)
+	re := regexp.MustCompile(`\"media_id\":\"?([0-9]+)\"?`)
 	mediaIDMatch := re.FindString(string(htmlBody))
 	if mediaIDMatch == "" {
 		fmt.Println(string(htmlBody))
 		return URLs, username, errors.New("could not find media ID")
 	}
 
-	mediaID := mediaIDMatch[len(`"media_id":"`) : len(mediaIDMatch)-1]
-	// fmt.Println(mediaID)
+	mediaID := func() string {
+		if mediaIDMatch[len(mediaIDMatch)-1] != '"' {
+			return mediaIDMatch[len(`"media_id":`):]
+		} else {
+			return mediaIDMatch[len(`"media_id":"`) : len(mediaIDMatch)-1]
+		}
+	}()
+
 	jsonURL := fmt.Sprintf("https://i.instagram.com/api/v1/media/%s/info/", mediaID)
 	jsonRequest, err := http.NewRequest(http.MethodGet, jsonURL, nil)
 	if err != nil {
