@@ -134,9 +134,7 @@ func filterHistories(user db.User, owner string, categories, mediaTypes []string
 				},
 			},
 			bson.M{
-				"categories": bson.M{
-					"$exists": false,
-				},
+				"categories": nil,
 			},
 		}
 	}
@@ -167,11 +165,16 @@ func filterHistories(user db.User, owner string, categories, mediaTypes []string
 		page = pages
 	}
 
-	paginationOptions := options.Find().SetSkip(int64((page - 1) * 30)).SetLimit(int64(30)).SetSort(bson.D{{Key: "date", Value: -1}})
+	paginationOptions := options.Find()
+	paginationOptions.SetSkip(int64((page - 1) * 30))
+	paginationOptions.SetLimit(int64(30))
+	paginationOptions.SetSort(bson.D{{Key: "date", Value: -1}})
+
 	cursor, err := db.Histories.Find(context.Background(), filter, paginationOptions)
 	if err != nil {
 		return [][]db.History{}, 0, 0, 0, err
 	}
+	defer cursor.Close(context.Background())
 
 	matrix := [][]db.History{}
 	row := make([]db.History, 0, 3)
