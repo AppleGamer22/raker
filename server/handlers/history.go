@@ -134,6 +134,11 @@ func filterHistories(user db.User, owner string, categories, mediaTypes []string
 				},
 			},
 			bson.M{
+				"categories": bson.M{
+					"$exists": false,
+				},
+			},
+			bson.M{
 				"categories": nil,
 			},
 		}
