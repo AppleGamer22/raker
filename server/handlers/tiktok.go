@@ -42,7 +42,7 @@ func TikTokPage(writer http.ResponseWriter, request *http.Request) {
 			"type": types.TikTok,
 		}
 		if err := db.Histories.FindOne(context.Background(), filter).Decode(&history); err != nil {
-			tiktok := shared.NewTikTok(user.TikTok.SessionID, user.TikTok.ChainToken)
+			tiktok := shared.NewTikTok(user.TikTok.SessionID, user.TikTok.SessionIDGuard, user.TikTok.ChainToken)
 			URL, username, err := tiktok.Post(owner, post, incognito)
 			if err != nil {
 				log.Println(err)

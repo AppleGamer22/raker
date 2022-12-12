@@ -102,6 +102,13 @@ func (handler *storageHandler) Save(user db.User, media, owner, fileName, URL st
 				Secure:   true,
 			}
 			request.AddCookie(&chainCookie)
+			sessionGuardCookie := http.Cookie{
+				Name:     "sid_guard",
+				Value:    user.TikTok.SessionIDGuard,
+				Domain:   ".tiktok.com",
+				HttpOnly: true,
+			}
+			request.AddCookie(&sessionGuardCookie)
 		}
 	}
 

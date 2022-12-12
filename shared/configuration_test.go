@@ -15,6 +15,7 @@ func init() {
 	viper.BindEnv("instagram.fbsr", "FBSR")
 	viper.BindEnv("tiktok.session", "SESSION_TT")
 	viper.BindEnv("tiktok.chain", "TIKTOK_CT")
+	viper.BindEnv("tiktok.guard", "GUARD")
 	viper.SetConfigName(".raker")
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath("..")
