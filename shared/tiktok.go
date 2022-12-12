@@ -44,6 +44,14 @@ func (tiktok *TikTok) Post(owner, post string, incognito bool) (URL string, user
 			HttpOnly: true,
 		}
 		request.AddCookie(&sessionCookie)
+		chainCookie := http.Cookie{
+			Name:     "tt_chain_token",
+			Value:    tiktok.ChainToken,
+			Domain:   ".tiktok.com",
+			HttpOnly: true,
+			Secure:   true,
+		}
+		request.AddCookie(&chainCookie)
 	}
 	request.Header.Add("User-Agent", UserAgent)
 

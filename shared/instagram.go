@@ -140,7 +140,6 @@ func (instagram *Instagram) Post(post string, incognito bool) (URLs []string, us
 
 	mediaIDMatch := instagram_regexp.FindString(string(htmlBody))
 	if mediaIDMatch == "" {
-		fmt.Println(string(htmlBody))
 		return URLs, username, errors.New("could not find media ID")
 	}
 

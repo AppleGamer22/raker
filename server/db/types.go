@@ -51,7 +51,7 @@ type User struct {
 	TikTok struct {
 		SessionID  string `bson:"session_id" json:"-"`
 		ChainToken string `bson:"chain_token" json:"-"`
-	}
+	} `bson:"tiktok" json:"-"`
 	Joined     time.Time `bson:"joined" json:"-"`
 	Network    string    `bson:"network" json:"-"`
 	Categories []string  `bson:"categories" json:"-"`

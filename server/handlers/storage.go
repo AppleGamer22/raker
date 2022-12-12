@@ -87,11 +87,11 @@ func (handler *storageHandler) Save(user db.User, media, owner, fileName, URL st
 		request.Header.Add("Range", "bytes=0-")
 		if user.TikTok.SessionID != "" {
 			sessionCookie := http.Cookie{
-				Name:     "sessionid_ss",
+				Name:     "sessionid",
 				Value:    user.TikTok.SessionID,
 				Domain:   ".tiktok.com",
 				HttpOnly: true,
-				Secure:   true,
+				// Secure:   true,
 			}
 			request.AddCookie(&sessionCookie)
 			chainCookie := http.Cookie{
@@ -104,8 +104,6 @@ func (handler *storageHandler) Save(user db.User, media, owner, fileName, URL st
 			request.AddCookie(&chainCookie)
 		}
 	}
-
-	fmt.Println(URL)
 
 	request.Header.Add("User-Agent", shared.UserAgent)
 	response, err := http.DefaultClient.Do(request)
