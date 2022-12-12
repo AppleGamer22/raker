@@ -19,7 +19,7 @@ var highlightCommand = cobra.Command{
 	Short: "scrape highlight",
 	Long:  "scrape highlight",
 	PreRunE: func(cmd *cobra.Command, args []string) error {
-		return viper.Unmarshal(&conf.Configuration)
+		return viper.Unmarshal(&conf.Config)
 	},
 	Args: func(_ *cobra.Command, args []string) error {
 		if len(args) != 1 {
@@ -29,7 +29,7 @@ var highlightCommand = cobra.Command{
 	},
 	RunE: func(_ *cobra.Command, args []string) error {
 		highlightID := args[0]
-		instagram := shared.NewInstagram(conf.Configuration.FBSR, conf.Configuration.Session, conf.Configuration.User)
+		instagram := shared.NewInstagram(conf.Config.Instagram.FBSR, conf.Config.Instagram.Session, conf.Config.Instagram.User)
 		URLs, username, err := instagram.Reels(highlightID, true)
 		if err != nil {
 			return err

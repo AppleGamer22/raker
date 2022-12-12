@@ -21,7 +21,7 @@ var instagramCommand = cobra.Command{
 	Aliases: []string{"ig"},
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if !incognito {
-			return viper.Unmarshal(&conf.Configuration)
+			return viper.Unmarshal(&conf.Config)
 		}
 		return nil
 	},
@@ -33,7 +33,7 @@ var instagramCommand = cobra.Command{
 	},
 	RunE: func(_ *cobra.Command, args []string) error {
 		post := args[0]
-		instagram := shared.NewInstagram(conf.Configuration.FBSR, conf.Configuration.Session, conf.Configuration.User)
+		instagram := shared.NewInstagram(conf.Config.Instagram.FBSR, conf.Config.Instagram.Session, conf.Config.Instagram.User)
 		URLs, username, err := instagram.Post(post, incognito)
 		if err != nil {
 			return err

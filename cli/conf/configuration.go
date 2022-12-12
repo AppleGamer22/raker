@@ -7,21 +7,27 @@ import (
 	"github.com/spf13/viper"
 )
 
-type configuration struct {
-	Session string
-	FBSR    string
-	User    string
-	TikTok  string
+type Configuration struct {
+	Instagram struct {
+		Session string
+		User    string
+		FBSR    string
+	}
+	TikTok struct {
+		Session string
+		Chain   string
+	}
 }
 
-var Configuration configuration
+var Config Configuration
 
 func init() {
 	viper.AutomaticEnv()
-	viper.BindEnv("FBSR")
-	viper.BindEnv("SESSION")
-	viper.BindEnv("USER")
-	viper.BindEnv("TIKTOK")
+	viper.BindEnv("instagram.session", "SESSION_IG")
+	viper.BindEnv("instagram.user", "USER")
+	viper.BindEnv("instagram.fbsr", "FBSR")
+	viper.BindEnv("tiktok.session", "SESSION_TT")
+	viper.BindEnv("tiktok.chain", "TIKTOK_CT")
 	viper.SetConfigName(".raker")
 	viper.SetConfigType("yaml")
 

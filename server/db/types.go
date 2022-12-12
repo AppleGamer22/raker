@@ -48,7 +48,10 @@ type User struct {
 		UserID    string `bson:"user_id" json:"-"`
 		// AppID     string `bson:"app_id" json:"-"`
 	} `bson:"instagram" json:"-"`
-	TikTok     string    `bson:"tiktok" json:"-"`
+	TikTok struct {
+		SessionID  string `bson:"session_id" json:"-"`
+		ChainToken string `bson:"chain_token" json:"-"`
+	}
 	Joined     time.Time `bson:"joined" json:"-"`
 	Network    string    `bson:"network" json:"-"`
 	Categories []string  `bson:"categories" json:"-"`
@@ -84,7 +87,7 @@ func (user *User) OpenTikTok(password string) (string, error) {
 	if err := authenticator.Compare(user.Hash, password); err != nil {
 		return "", err
 	}
-	return authenticator.Decrypt(password, user.TikTok)
+	return authenticator.Decrypt(password, user.TikTok.SessionID)
 }
 
 func (user *User) SelectedCategories(categories []string) map[string]bool {

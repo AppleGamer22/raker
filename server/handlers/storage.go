@@ -85,22 +85,39 @@ func (handler *storageHandler) Save(user db.User, media, owner, fileName, URL st
 
 	if media == types.TikTok {
 		request.Header.Add("Range", "bytes=0-")
-		if user.TikTok != "" {
+		if user.TikTok.SessionID != "" {
 			sessionCookie := http.Cookie{
-				Name:     "sessionid",
-				Value:    user.TikTok,
+				Name:     "sessionid_ss",
+				Value:    user.TikTok.SessionID,
 				Domain:   ".tiktok.com",
 				HttpOnly: true,
+				Secure:   true,
 			}
 			request.AddCookie(&sessionCookie)
+			chainCookie := http.Cookie{
+				Name:     "tt_chain_token",
+				Value:    user.TikTok.ChainToken,
+				Domain:   ".tiktok.com",
+				HttpOnly: true,
+				Secure:   true,
+			}
+			request.AddCookie(&chainCookie)
 		}
 	}
+
+	fmt.Println(URL)
+
 	request.Header.Add("User-Agent", shared.UserAgent)
 	response, err := http.DefaultClient.Do(request)
 	if err != nil {
 		return err
 	}
 	defer response.Body.Close()
+
+	statusClass := response.StatusCode / 100
+	if statusClass == 4 || statusClass == 5 {
+		return fmt.Errorf("response of %d instead of media", response.StatusCode)
+	}
 
 	file, err := os.Create(mediaPath)
 	if err != nil {

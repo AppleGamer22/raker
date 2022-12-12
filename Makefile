@@ -17,6 +17,9 @@ test:
 	go clean -testcache
 	go test -v -race -cover ./shared/... ./server/...
 
+debug:
+	stalk watch -c "go run ./server" server/** shared/** templates/*
+
 completion:
 	go run ./cli completion bash > raker.bash
 	go run ./cli completion fish > raker.fish

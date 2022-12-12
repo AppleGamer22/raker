@@ -19,13 +19,14 @@ type TikTokPost struct {
 }
 
 type TikTok struct {
-	SessionID string
+	SessionID  string
+	ChainToken string
 }
 
 var tiktok_regexp = regexp.MustCompile(`<script id=\"SIGI_STATE\" type=\"application/json\">(.*?)</script>`)
 
-func NewTikTok(sessionID string) TikTok {
-	return TikTok{sessionID}
+func NewTikTok(sessionID, chainToken string) TikTok {
+	return TikTok{sessionID, chainToken}
 }
 
 func (tiktok *TikTok) Post(owner, post string, incognito bool) (URL string, username string, err error) {

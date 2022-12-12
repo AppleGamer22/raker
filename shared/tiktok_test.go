@@ -10,12 +10,12 @@ import (
 )
 
 func TestTikTokPublicVideo(t *testing.T) {
-	tiktok := shared.NewTikTok("")
+	tiktok := shared.NewTikTok(configuration.TikTok.Session, configuration.TikTok.Chain)
 	urlString, username, err := tiktok.Post("f1", "7048983181063687430", false)
 	assert.NoError(t, err)
 	assert.Equal(t, "f1", username)
 	URL, err := url.Parse(urlString)
 	assert.NoError(t, err)
 	assert.Equal(t, "https", URL.Scheme)
-	assert.True(t, strings.Contains(URL.Host, "-webapp.tiktok.com"), urlString)
+	assert.True(t, strings.HasSuffix(URL.Host, ".tiktok.com"), urlString)
 }

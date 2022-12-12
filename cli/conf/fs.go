@@ -31,10 +31,11 @@ func Save(media, fileName, URL string) error {
 	if media == types.TikTok {
 		request.Header.Add("Range", "bytes=0-")
 		sessionCookie := http.Cookie{
-			Name:     "sessionid",
-			Value:    Configuration.TikTok,
+			Name:     "sessionid_ss",
+			Value:    Config.TikTok.Session,
 			Domain:   ".tiktok.com",
 			HttpOnly: true,
+			Secure:   true,
 		}
 		request.AddCookie(&sessionCookie)
 	}
