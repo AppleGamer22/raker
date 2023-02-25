@@ -62,6 +62,7 @@ func (tiktok *TikTok) Post(owner, post string, incognito bool) (URL string, user
 		request.AddCookie(&sessionGuardCookie)
 	}
 	request.Header.Add("User-Agent", UserAgent)
+	request.Header.Add("sec-ch-ua", `"Not_A Brand";v="99", "Google Chrome";v="109", "Chromium";v="109"`)
 
 	response, err := http.DefaultClient.Do(request)
 	if err != nil {

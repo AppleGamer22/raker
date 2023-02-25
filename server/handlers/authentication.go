@@ -244,7 +244,7 @@ func InstagramUpdateCredentials(writer http.ResponseWriter, request *http.Reques
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
 		log.Println(err, user.ID.Hex())
 		return
-	} else if result.MatchedCount == 0 || result.ModifiedCount == 0 {
+	} else if result.MatchedCount == 0 {
 		http.Error(writer, "the user was not found/modified", http.StatusNotFound)
 		log.Println("the user was not found/modified", user.ID.Hex())
 	}

@@ -110,6 +110,13 @@ func (handler *storageHandler) Save(user db.User, media, owner, fileName, URL st
 			}
 			request.AddCookie(&sessionGuardCookie)
 		}
+		request.Header.Add("accept", "*/*")
+		request.Header.Add("accept-encoding", "identity;q=1, *;q=0")
+		request.Header.Add("sec-ch-ua", `"Not_A Brand";v="99", "Google Chrome";v="109", "Chromium";v="109"`)
+		request.Header.Add("sec-fetch-dest", "video")
+		request.Header.Add("sec-fetch-mode", "no-cors")
+		request.Header.Add("sec-fetch-site", "same-site")
+		request.Header.Add("cache-control", "no-cache")
 	}
 
 	request.Header.Add("User-Agent", shared.UserAgent)
