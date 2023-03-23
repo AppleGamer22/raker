@@ -1,5 +1,7 @@
 # `raker`
-[![Go Reference](https://pkg.go.dev/badge/github.com/AppleGamer22/raker.svg)](https://pkg.go.dev/github.com/AppleGamer22/raker) [![Test](https://github.com/AppleGamer22/raker/actions/workflows/test.yml/badge.svg)](https://github.com/AppleGamer22/raker/actions/workflows/test.yml) [![CodeQL](https://github.com/AppleGamer22/raker/actions/workflows/codeql.yml/badge.svg)](https://github.com/AppleGamer22/raker/actions/workflows/codeql.yml) [![Release](https://github.com/AppleGamer22/raker/actions/workflows/release.yml/badge.svg)](https://github.com/AppleGamer22/raker/actions/workflows/release.yml) [![Update Documentation](https://github.com/AppleGamer22/raker/actions/workflows/tag.yml/badge.svg)](https://github.com/AppleGamer22/raker/actions/workflows/tag.yml)
+[![Go Reference](https://pkg.go.dev/badge/github.com/AppleGamer22/raker.svg)](https://pkg.go.dev/github.com/AppleGamer22/raker) [![Release](https://github.com/AppleGamer22/raker/actions/workflows/release.yml/badge.svg)](https://github.com/AppleGamer22/raker/actions/workflows/release.yml) [![Update Documentation](https://github.com/AppleGamer22/raker/actions/workflows/tag.yml/badge.svg)](https://github.com/AppleGamer22/raker/actions/workflows/tag.yml)
+
+<!-- [![Test](https://github.com/AppleGamer22/raker/actions/workflows/test.yml/badge.svg)](https://github.com/AppleGamer22/raker/actions/workflows/test.yml) [![CodeQL](https://github.com/AppleGamer22/raker/actions/workflows/codeql.yml/badge.svg)](https://github.com/AppleGamer22/raker/actions/workflows/codeql.yml) -->
 
 ## Description
 `raker` is full-stack and command-line interface for a social media scraper for Instagram, TikTok and VSCO. Both the server and CLI are written in Go, and the web interface is server-side rendered. Both Instagram and TikTok scraping require authentication cookies, which are stored locally wither on the server's MongoDB instance after provided, or on a file system accesible by the CLI.
@@ -36,7 +38,7 @@ services:
     ports:
       - 4100:4100
     volumes:
-      - /mnt/storage:/raker/storage
+      - ./storage:/raker/storage
     depends_on:
       - database
   database:
@@ -49,35 +51,4 @@ services:
         - ./database/:/data/db
       ports:
         - 27017:27017
-```
-
-### CLI
-#### Arch Linux Distributions
-* [`yay`](https://github.com/Jguer/yay):
-```bash
-yay -S cocainate-bin
-```
-* [`paru`](https://github.com/morganamilo/paru):
-```bash
-paru -S cocainate-bin
-```
-
-#### macOS
-* [Homebrew Tap](https://github.com/AppleGamer22/homebrew-tap):
-```bash
-brew install AppleGamer22/tap/cocainate
-```
-
-#### Windows (working progress)
-* [`winget`](https://github.com/microsoft/winget-cli):
-```bash
-winget install AppleGamer22.cocainate
-```
-#### Other
-* `go`:
-	* Does not ship with:
-		* a manual page
-		* pre-built shell completion scripts
-```
-go install github.com/AppleGamer22/cocainate
 ```
