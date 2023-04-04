@@ -3,13 +3,13 @@ package commands
 import (
 	"errors"
 	"fmt"
-	"log"
 	"net/url"
 	"path"
 
 	"github.com/AppleGamer22/raker/cli/conf"
 	"github.com/AppleGamer22/raker/shared"
 	"github.com/AppleGamer22/raker/shared/types"
+	"github.com/charmbracelet/log"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -39,7 +39,7 @@ var tiktokCommand = cobra.Command{
 		if err != nil {
 			return err
 		}
-		log.Println("found 1 file")
+		log.Debug("found 1 file")
 		URL, err := url.Parse(urlString)
 		if err != nil {
 			return err
@@ -48,7 +48,7 @@ var tiktokCommand = cobra.Command{
 		if err := conf.Save(types.TikTok, fileName, urlString); err != nil {
 			return err
 		}
-		log.Printf("saved %s to file %s at the current directory", urlString, fileName)
+		log.Debugf("saved %s to file %s at the current directory", urlString, fileName)
 		return nil
 	},
 }

@@ -3,7 +3,6 @@ package handlers
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/http"
 	"net/url"
 	"path"
@@ -13,6 +12,7 @@ import (
 	"github.com/AppleGamer22/raker/server/db"
 	"github.com/AppleGamer22/raker/shared"
 	"github.com/AppleGamer22/raker/shared/types"
+	"github.com/charmbracelet/log"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -21,7 +21,7 @@ func VSCOPage(writer http.ResponseWriter, request *http.Request) {
 	user, err := Verify(request)
 	if err != nil {
 		http.Error(writer, "unauthorized", http.StatusUnauthorized)
-		log.Println(err)
+		log.Error(err)
 		return
 	}
 
@@ -43,7 +43,7 @@ func VSCOPage(writer http.ResponseWriter, request *http.Request) {
 		if err := db.Histories.FindOne(context.Background(), filter).Decode(&history); err != nil {
 			urlString, username, err := shared.VSCO(owner, post)
 			if err != nil {
-				log.Println(err)
+				log.Error(err)
 				writer.WriteHeader(http.StatusBadRequest)
 				historyHTML(user, history, []error{err}, writer)
 				return
@@ -51,7 +51,7 @@ func VSCOPage(writer http.ResponseWriter, request *http.Request) {
 
 			URL, err := url.Parse(urlString)
 			if err != nil {
-				log.Println(err)
+				log.Error(err)
 				writer.WriteHeader(http.StatusBadRequest)
 				historyHTML(user, history, []error{err}, writer)
 				return
@@ -59,7 +59,7 @@ func VSCOPage(writer http.ResponseWriter, request *http.Request) {
 			fileName := fmt.Sprintf("%s_%s", post, path.Base(URL.Path))
 
 			if err := StorageHandler.Save(user, types.VSCO, username, fileName, urlString); err != nil {
-				log.Println(err)
+				log.Error(err)
 				writer.WriteHeader(http.StatusInternalServerError)
 				historyHTML(user, history, []error{err}, writer)
 				return
@@ -76,7 +76,7 @@ func VSCOPage(writer http.ResponseWriter, request *http.Request) {
 			}
 
 			if _, err := db.Histories.InsertOne(context.Background(), history); err != nil {
-				log.Println(err)
+				log.Error(err)
 				writer.WriteHeader(http.StatusInternalServerError)
 				historyHTML(user, history, []error{err}, writer)
 				return

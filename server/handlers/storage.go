@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"os"
 	"path"
@@ -15,6 +14,7 @@ import (
 	"github.com/AppleGamer22/raker/server/db"
 	"github.com/AppleGamer22/raker/shared"
 	"github.com/AppleGamer22/raker/shared/types"
+	"github.com/charmbracelet/log"
 )
 
 type storageHandler struct {
@@ -42,7 +42,7 @@ func (handler storageHandler) ServeHTTP(writer http.ResponseWriter, request *htt
 	if handler.directories || (err == nil && !info.IsDir()) {
 		user, err := Verify(request)
 		if err != nil || !strings.HasPrefix(request.URL.Path, "/"+user.ID.Hex()) {
-			log.Println(err)
+			log.Error(err)
 			http.Error(writer, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 			return
 		}
@@ -50,7 +50,7 @@ func (handler storageHandler) ServeHTTP(writer http.ResponseWriter, request *htt
 	} else {
 		if err != nil {
 			escapedURL := cleaner.Line(request.URL.Path)
-			log.Println(err, escapedURL)
+			log.Error(err, escapedURL)
 		}
 		http.Error(writer, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 	}
@@ -141,7 +141,7 @@ func (handler *storageHandler) Save(user db.User, media, owner, fileName, URL st
 		return err
 	}
 
-	log.Println("saved", filePath)
+	log.Info("saved", filePath)
 	return err
 }
 
@@ -199,7 +199,7 @@ func (handler *storageHandler) Delete(user db.User, media, owner, fileName strin
 	if err := os.Remove(mediaPath); err != nil {
 		return err
 	}
-	log.Println("deleted", filePath)
+	log.Warn("deleted", filePath)
 
 	directoryName := path.Dir(mediaPath)
 	files, err := os.ReadDir(directoryName)
@@ -211,7 +211,7 @@ func (handler *storageHandler) Delete(user db.User, media, owner, fileName strin
 		if err := os.Remove(directoryName); err != nil {
 			return err
 		}
-		log.Println("deleted", filePath)
+		log.Error("deleted", filePath)
 	}
 
 	return nil

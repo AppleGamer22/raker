@@ -3,7 +3,6 @@ package handlers
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/http"
 	"time"
 
@@ -11,6 +10,7 @@ import (
 	"github.com/AppleGamer22/raker/server/db"
 	"github.com/AppleGamer22/raker/shared"
 	"github.com/AppleGamer22/raker/shared/types"
+	"github.com/charmbracelet/log"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -19,12 +19,12 @@ func TikTokPage(writer http.ResponseWriter, request *http.Request) {
 	user, err := Verify(request)
 	if err != nil {
 		http.Error(writer, "unauthorized", http.StatusUnauthorized)
-		log.Println(err)
+		log.Error(err)
 		return
 	}
 
 	if err := request.ParseForm(); err != nil {
-		log.Println(err)
+		log.Error(err)
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -45,7 +45,7 @@ func TikTokPage(writer http.ResponseWriter, request *http.Request) {
 			tiktok := shared.NewTikTok(user.TikTok.SessionID, user.TikTok.SessionIDGuard, user.TikTok.ChainToken)
 			URL, username, err := tiktok.Post(owner, post, incognito)
 			if err != nil {
-				log.Println(err)
+				log.Error(err)
 				writer.WriteHeader(http.StatusBadRequest)
 				historyHTML(user, history, []error{err}, writer)
 				return
@@ -53,7 +53,7 @@ func TikTokPage(writer http.ResponseWriter, request *http.Request) {
 
 			fileName := fmt.Sprintf("%s.mp4", post)
 			if err := StorageHandler.Save(user, types.TikTok, username, fileName, URL); err != nil {
-				log.Println(err)
+				log.Error(err)
 				writer.WriteHeader(http.StatusInternalServerError)
 				historyHTML(user, history, []error{err}, writer)
 				return
@@ -70,7 +70,7 @@ func TikTokPage(writer http.ResponseWriter, request *http.Request) {
 			}
 
 			if _, err := db.Histories.InsertOne(context.Background(), history); err != nil {
-				log.Println(err)
+				log.Error(err)
 				writer.WriteHeader(http.StatusInternalServerError)
 				historyHTML(user, history, []error{err}, writer)
 				return

@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -15,13 +14,14 @@ import (
 	"github.com/AppleGamer22/raker/server/db"
 	"github.com/AppleGamer22/raker/server/handlers"
 	"github.com/AppleGamer22/raker/shared"
+	"github.com/charmbracelet/log"
 	"github.com/spf13/viper"
 )
 
 func main() {
 	if err1 := viper.ReadInConfig(); err1 != nil {
 		if _, err := os.Stat("/.dockerenv"); err != nil {
-			log.Println(err1)
+			log.Error(err1)
 		}
 	}
 
@@ -39,14 +39,14 @@ func main() {
 	}
 	defer client.Disconnect(context.Background())
 
-	log.Printf("raker %s %s (%s/%s)\n", shared.Version, shared.Hash, runtime.GOOS, runtime.GOARCH)
-	log.Printf("Storage path: %s\n", configuration.Storage)
+	log.Infof("raker %s %s (%s/%s)", shared.Version, shared.Hash, runtime.GOOS, runtime.GOARCH)
+	log.Infof("Storage path: %s", configuration.Storage)
 	if configuration.Directories {
-		log.Println("allowing directory listing")
+		log.Info("allowing directory listing")
 	}
-	log.Printf("MongoDB database URI: %s", configuration.URI)
-	log.Printf("MongoDB database: %s", configuration.Database)
-	log.Printf("Server is listening at http://localhost:%d\n", configuration.Port)
+	log.Infof("MongoDB database URI: %s", configuration.URI)
+	log.Infof("MongoDB database: %s", configuration.Database)
+	log.Infof("Server is listening at http://localhost:%d", configuration.Port)
 
 	mux := http.NewServeMux()
 
@@ -80,15 +80,15 @@ func main() {
 
 	go func() {
 		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			log.Println(err)
+			log.Error(err)
 			signals <- os.Interrupt
 		}
 	}()
 
 	<-signals
 	fmt.Print("\r")
-	log.Println("shutting down server...")
+	log.Warn("shutting down server...")
 	if err := server.Shutdown(context.Background()); err != nil {
-		log.Println(err)
+		log.Warn(err)
 	}
 }

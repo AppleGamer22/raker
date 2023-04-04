@@ -4,13 +4,13 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"os"
 	"sync"
 
 	"github.com/AppleGamer22/raker/shared"
 	"github.com/AppleGamer22/raker/shared/types"
+	"github.com/charmbracelet/log"
 )
 
 func Save(media, fileName, URL string) error {
@@ -56,7 +56,7 @@ func Save(media, fileName, URL string) error {
 		return err
 	}
 
-	log.Printf("saved %s at the current directory\n", fileName)
+	log.Debugf("saved %s at the current directory", fileName)
 	return nil
 }
 

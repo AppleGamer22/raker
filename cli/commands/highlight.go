@@ -3,13 +3,13 @@ package commands
 import (
 	"errors"
 	"fmt"
-	"log"
 	"net/url"
 	"path"
 
 	"github.com/AppleGamer22/raker/cli/conf"
 	"github.com/AppleGamer22/raker/shared"
 	"github.com/AppleGamer22/raker/shared/types"
+	"github.com/charmbracelet/log"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -35,7 +35,7 @@ var highlightCommand = cobra.Command{
 			return err
 		}
 
-		log.Printf("found %d files\n", len(URLs))
+		log.Debugf("found %d files", len(URLs))
 		fileNames := make([]string, 0, len(URLs))
 
 		for _, urlString := range URLs {

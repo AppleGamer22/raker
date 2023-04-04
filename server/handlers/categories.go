@@ -2,11 +2,11 @@ package handlers
 
 import (
 	"context"
-	"log"
 	"net/http"
 
 	"github.com/AppleGamer22/raker/server/cleaner"
 	"github.com/AppleGamer22/raker/server/db"
+	"github.com/charmbracelet/log"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -16,7 +16,7 @@ func Categories(writer http.ResponseWriter, request *http.Request) {
 	user, err := Verify(request)
 	if err != nil {
 		http.Error(writer, "unauthorized", http.StatusUnauthorized)
-		log.Println(err, user.ID.Hex())
+		log.Error(err, user.ID.Hex())
 		return
 	}
 
@@ -78,13 +78,13 @@ func Categories(writer http.ResponseWriter, request *http.Request) {
 		bulkOptions.SetOrdered(true)
 
 		if _, err := db.Histories.BulkWrite(context.Background(), operations, &bulkOptions); err != nil {
-			log.Println(err, category, editedCategory)
+			log.Error(err, category, editedCategory)
 			http.Error(writer, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		if _, err := db.Users.BulkWrite(context.Background(), operations, &bulkOptions); err != nil {
-			log.Println(err, category, editedCategory)
+			log.Error(err, category, editedCategory)
 			http.Error(writer, err.Error(), http.StatusInternalServerError)
 			return
 		}

@@ -3,7 +3,6 @@ package handlers
 import (
 	"context"
 	"html/template"
-	"log"
 	"net/http"
 	"net/url"
 	"time"
@@ -13,6 +12,7 @@ import (
 	"github.com/AppleGamer22/raker/server/db"
 	"github.com/AppleGamer22/raker/shared"
 	"github.com/AppleGamer22/raker/shared/types"
+	"github.com/charmbracelet/log"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -63,11 +63,11 @@ func InstagramSignUp(writer http.ResponseWriter, request *http.Request) {
 	count, err := db.Users.CountDocuments(context.Background(), bson.M{"username": username})
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
-		log.Println(err, username)
+		log.Error(err, username)
 		return
 	} else if count != 0 {
 		http.Error(writer, "username already exists", http.StatusConflict)
-		log.Println("username already exists", username)
+		log.Error("username already exists", username)
 		return
 	}
 
@@ -97,7 +97,7 @@ func InstagramSignUp(writer http.ResponseWriter, request *http.Request) {
 	_, err = db.Users.InsertOne(context.Background(), user)
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
-		log.Println(err.Error())
+		log.Error(err.Error())
 		return
 	}
 
@@ -130,20 +130,20 @@ func InstagramSignIn(writer http.ResponseWriter, request *http.Request) {
 	var user db.User
 	if err := db.Users.FindOne(context.Background(), bson.M{"username": username}).Decode(&user); err != nil {
 		http.Error(writer, "incorrect credentials", http.StatusUnauthorized)
-		log.Println(err)
+		log.Error(err)
 		return
 	}
 
 	if err := authenticator.Compare(user.Hash, password); err != nil {
 		http.Error(writer, "incorrect credentials", http.StatusUnauthorized)
-		log.Println(err)
+		log.Error(err)
 		return
 	}
 
 	webToken, expiry, err := Authenticator.Sign(user.ID, user.Username)
 	if err != nil {
 		http.Error(writer, "sign-in failed", http.StatusUnauthorized)
-		log.Println(err, user.ID.Hex())
+		log.Error(err, user.ID.Hex())
 		return
 	}
 
@@ -189,7 +189,7 @@ func InstagramUpdateCredentials(writer http.ResponseWriter, request *http.Reques
 	user, err := Verify(request)
 	if err != nil {
 		http.Error(writer, "credential update failed", http.StatusUnauthorized)
-		log.Println(err, user.ID.Hex())
+		log.Error(err, user.ID.Hex())
 		return
 	}
 
@@ -205,7 +205,7 @@ func InstagramUpdateCredentials(writer http.ResponseWriter, request *http.Reques
 		password, err = authenticator.Hash(password)
 		if err != nil {
 			http.Error(writer, err.Error(), http.StatusInternalServerError)
-			log.Println(err, user.ID.Hex())
+			log.Error(err, user.ID.Hex())
 			return
 		}
 	}
@@ -242,11 +242,11 @@ func InstagramUpdateCredentials(writer http.ResponseWriter, request *http.Reques
 	result, err := db.Users.UpdateOne(context.Background(), filter, update)
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
-		log.Println(err, user.ID.Hex())
+		log.Error(err, user.ID.Hex())
 		return
 	} else if result.MatchedCount == 0 {
 		http.Error(writer, "the user was not found/modified", http.StatusNotFound)
-		log.Println("the user was not found/modified", user.ID.Hex())
+		log.Error("the user was not found/modified", user.ID.Hex())
 	}
 
 	http.Redirect(writer, request, request.Referer(), http.StatusTemporaryRedirect)
@@ -261,7 +261,7 @@ func InstagramSignOut(writer http.ResponseWriter, request *http.Request) {
 	user, err := Verify(request)
 	if err != nil {
 		http.Error(writer, "sign-out failed", http.StatusUnauthorized)
-		log.Println(err, user.ID.Hex())
+		log.Error(err, user.ID.Hex())
 		return
 	}
 
@@ -293,7 +293,7 @@ func AuthenticationPage(writer http.ResponseWriter, request *http.Request) {
 
 	if err := templates.ExecuteTemplate(writer, "authentication.html", categoryDisplay); err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
-		log.Println(err)
+		log.Error(err)
 		return
 	}
 }

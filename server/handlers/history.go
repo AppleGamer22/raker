@@ -3,7 +3,6 @@ package handlers
 import (
 	"context"
 	"errors"
-	"log"
 	"math"
 	"net/http"
 	"net/url"
@@ -15,6 +14,7 @@ import (
 	"github.com/AppleGamer22/raker/server/db"
 	"github.com/AppleGamer22/raker/shared"
 	"github.com/AppleGamer22/raker/shared/types"
+	"github.com/charmbracelet/log"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -24,7 +24,7 @@ func History(writer http.ResponseWriter, request *http.Request) {
 	user, err := Verify(request)
 	if err != nil {
 		http.Error(writer, "unauthorized", http.StatusUnauthorized)
-		log.Println(err)
+		log.Error(err)
 		return
 	}
 
@@ -57,7 +57,7 @@ func History(writer http.ResponseWriter, request *http.Request) {
 			_, err := editHistory(user.ID, media, owner, post, categories)
 			if err != nil {
 				http.Error(writer, err.Error(), http.StatusBadRequest)
-				log.Println(err)
+				log.Error(err)
 				return
 			}
 
@@ -65,14 +65,14 @@ func History(writer http.ResponseWriter, request *http.Request) {
 		case http.MethodDelete:
 			if file == "" {
 				http.Error(writer, "file URL must be valid", http.StatusBadRequest)
-				log.Println(err)
+				log.Error(err)
 				return
 			}
 
 			history, err := deleteFileFromHistory(user, owner, media, post, file)
 			if err != nil {
 				http.Error(writer, err.Error(), http.StatusBadRequest)
-				log.Println(err)
+				log.Error(err)
 				return
 			}
 
@@ -268,7 +268,7 @@ func historyHTML(user db.User, history db.History, serverErrors []error, writer 
 
 	if err := templates.ExecuteTemplate(writer, "history.html", historyDisplay); err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
-		log.Println(err)
+		log.Error(err)
 		return
 	}
 }
@@ -277,7 +277,7 @@ func HistoryPage(writer http.ResponseWriter, request *http.Request) {
 	user, err := Verify(request)
 	if err != nil {
 		http.Error(writer, "unauthorized", http.StatusUnauthorized)
-		log.Println(err)
+		log.Error(err)
 		return
 	}
 
@@ -312,7 +312,7 @@ func HistoryPage(writer http.ResponseWriter, request *http.Request) {
 	exclusive := cleaner.Line(request.Form.Get("exclusive")) == "exclusive"
 	histories, page, pages, count, err := filterHistories(user, owner, categories, mediaTypes, page, exclusive)
 	if err != nil {
-		log.Println(err)
+		log.Error(err)
 	}
 
 	historiesDisplay := db.HistoriesDisplay{
@@ -330,7 +330,7 @@ func HistoryPage(writer http.ResponseWriter, request *http.Request) {
 
 	if err := templates.ExecuteTemplate(writer, "histories.html", historiesDisplay); err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
-		log.Println(err)
+		log.Error(err)
 		return
 	}
 }

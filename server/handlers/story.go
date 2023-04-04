@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"context"
-	"log"
 	"net/http"
 	"net/url"
 	"path"
@@ -12,6 +11,7 @@ import (
 	"github.com/AppleGamer22/raker/server/db"
 	"github.com/AppleGamer22/raker/shared"
 	"github.com/AppleGamer22/raker/shared/types"
+	"github.com/charmbracelet/log"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -20,7 +20,7 @@ func StoryPage(writer http.ResponseWriter, request *http.Request) {
 	user, err := Verify(request)
 	if err != nil {
 		http.Error(writer, "unauthorized", http.StatusUnauthorized)
-		log.Println(err)
+		log.Error(err)
 		return
 	}
 
@@ -56,7 +56,7 @@ func StoryPage(writer http.ResponseWriter, request *http.Request) {
 	instagram := shared.NewInstagram(user.Instagram.FBSR, user.Instagram.SessionID, user.Instagram.UserID)
 	URLs, username, err := instagram.Reels(owner, false)
 	if err != nil {
-		log.Println(err)
+		log.Error(err)
 		writer.WriteHeader(http.StatusBadRequest)
 		historyHTML(user, history, []error{err}, writer)
 		return
@@ -71,7 +71,7 @@ func StoryPage(writer http.ResponseWriter, request *http.Request) {
 	for _, urlString := range URLs {
 		URL, err := url.Parse(urlString)
 		if err != nil {
-			log.Println(err)
+			log.Error(err)
 			writer.WriteHeader(http.StatusBadRequest)
 			errs = append(errs, err)
 			continue
@@ -91,7 +91,7 @@ func StoryPage(writer http.ResponseWriter, request *http.Request) {
 	localURLs, saveErrors := StorageHandler.SaveBundle(user, types.Story, username, localURLs, URLs)
 	errs = append(errs, saveErrors...)
 	for _, err := range saveErrors {
-		log.Println(err)
+		log.Error(err)
 		writer.WriteHeader(http.StatusInternalServerError)
 	}
 
@@ -108,7 +108,7 @@ func StoryPage(writer http.ResponseWriter, request *http.Request) {
 		}
 
 		if _, err := db.Histories.InsertOne(context.Background(), history); err != nil {
-			log.Println(err)
+			log.Error(err)
 			writer.WriteHeader(http.StatusInternalServerError)
 			errs = append(errs, err)
 		}

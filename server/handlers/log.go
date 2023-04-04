@@ -1,14 +1,9 @@
 package handlers
 
 import (
-	"log"
 	"net/http"
-)
 
-const (
-	colorReset = "\033[0m"
-	colorRed   = "\033[31m"
-	colorGreen = "\033[32m"
+	"github.com/charmbracelet/log"
 )
 
 // StatusWriter type adds a Status property to Go's http.ResponseWriter type.
@@ -36,9 +31,9 @@ func Log(handler http.Handler) http.Handler {
 		handler.ServeHTTP(statusWriter, request)
 		switch statusWriter.Status / 100 {
 		case 4, 5:
-			log.Println(colorRed, statusWriter.Status, colorReset, request.Method, request.RequestURI, request.RemoteAddr)
+			log.Error(statusWriter.Status, request.Method, request.RequestURI, request.RemoteAddr)
 		default:
-			log.Println(colorGreen, statusWriter.Status, colorReset, request.Method, request.RequestURI, request.RemoteAddr)
+			log.Info(statusWriter.Status, request.Method, request.RequestURI, request.RemoteAddr)
 		}
 	})
 }
