@@ -31,9 +31,9 @@ func Log(handler http.Handler) http.Handler {
 		handler.ServeHTTP(statusWriter, request)
 		switch statusWriter.Status / 100 {
 		case 4, 5:
-			log.Error(statusWriter.Status, request.Method, request.RequestURI, request.RemoteAddr)
+			log.Errorf("%d %s %s %s", statusWriter.Status, request.Method, request.RequestURI, request.RemoteAddr)
 		default:
-			log.Info(statusWriter.Status, request.Method, request.RequestURI, request.RemoteAddr)
+			log.Infof("%d %s %s %s", statusWriter.Status, request.Method, request.RequestURI, request.RemoteAddr)
 		}
 	})
 }

@@ -16,7 +16,7 @@ func Categories(writer http.ResponseWriter, request *http.Request) {
 	user, err := Verify(request)
 	if err != nil {
 		http.Error(writer, "unauthorized", http.StatusUnauthorized)
-		log.Error(err, user.ID.Hex())
+		log.Error(err, "ID", user.ID.Hex())
 		return
 	}
 
@@ -78,13 +78,13 @@ func Categories(writer http.ResponseWriter, request *http.Request) {
 		bulkOptions.SetOrdered(true)
 
 		if _, err := db.Histories.BulkWrite(context.Background(), operations, &bulkOptions); err != nil {
-			log.Error(err, category, editedCategory)
+			log.Error(err, "category", category, "edited", editedCategory)
 			http.Error(writer, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		if _, err := db.Users.BulkWrite(context.Background(), operations, &bulkOptions); err != nil {
-			log.Error(err, category, editedCategory)
+			log.Error(err, "category", category, "edited", editedCategory)
 			http.Error(writer, err.Error(), http.StatusInternalServerError)
 			return
 		}

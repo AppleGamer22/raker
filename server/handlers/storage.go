@@ -50,7 +50,7 @@ func (handler storageHandler) ServeHTTP(writer http.ResponseWriter, request *htt
 	} else {
 		if err != nil {
 			escapedURL := cleaner.Line(request.URL.Path)
-			log.Error(err, escapedURL)
+			log.Error(err, "URL", escapedURL)
 		}
 		http.Error(writer, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 	}
@@ -141,7 +141,7 @@ func (handler *storageHandler) Save(user db.User, media, owner, fileName, URL st
 		return err
 	}
 
-	log.Info("saved", filePath)
+	log.Infof("saved %s", filePath)
 	return err
 }
 
@@ -199,7 +199,7 @@ func (handler *storageHandler) Delete(user db.User, media, owner, fileName strin
 	if err := os.Remove(mediaPath); err != nil {
 		return err
 	}
-	log.Warn("deleted", filePath)
+	log.Warnf("deleted %s", filePath)
 
 	directoryName := path.Dir(mediaPath)
 	files, err := os.ReadDir(directoryName)
@@ -211,7 +211,7 @@ func (handler *storageHandler) Delete(user db.User, media, owner, fileName strin
 		if err := os.Remove(directoryName); err != nil {
 			return err
 		}
-		log.Error("deleted", filePath)
+		log.Warnf("deleted %s", directoryName)
 	}
 
 	return nil

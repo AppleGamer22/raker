@@ -44,7 +44,7 @@ func init() {
 	for _, userAgent := range data.Data {
 		if strings.Contains(strings.ToLower(userAgent.UserAgent), osName) {
 			UserAgent = userAgent.UserAgent
-			log.Info("using user agent", UserAgent)
+			log.Infof("using user agent %s", UserAgent)
 			return
 		}
 	}
