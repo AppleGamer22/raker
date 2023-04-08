@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"runtime"
 	"strings"
+	"time"
 
 	"github.com/charmbracelet/log"
 )
@@ -20,6 +21,12 @@ type userAgentData struct {
 	Data []struct {
 		UserAgent string `json:"ua"`
 	} `json:"data"`
+}
+
+func init() {
+	log.SetReportCaller(true)
+	log.SetTimeFormat(time.RFC3339)
+	log.SetLevel(log.DebugLevel)
 }
 
 func init() {

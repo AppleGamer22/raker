@@ -141,7 +141,7 @@ func (handler *storageHandler) Save(user db.User, media, owner, fileName, URL st
 		return err
 	}
 
-	log.Infof("saved %s", filePath)
+	log.Debugf("saved %s", filePath)
 	return err
 }
 
