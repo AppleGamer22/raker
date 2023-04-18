@@ -73,6 +73,9 @@ func main() {
 	server := http.Server{
 		Addr:    fmt.Sprintf(":%d", configuration.Port),
 		Handler: handlers.Log(mux),
+		ErrorLog: log.Default().StandardLog(log.StandardLogOptions{
+			ForceLevel: log.ErrorLevel,
+		}),
 	}
 
 	signals := make(chan os.Signal, 2)
