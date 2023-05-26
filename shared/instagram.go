@@ -47,14 +47,16 @@ func (item *InstagramItem) URLs() []string {
 		for _, media := range item.CarouselMedia {
 			if len(media.VideoVersions) > 0 {
 				output = append(output, media.VideoVersions[0].URL)
-			} else if len(media.ImageVersions2.Candidates) > 0 {
+			}
+			if len(media.ImageVersions2.Candidates) > 0 {
 				output = append(output, media.ImageVersions2.Candidates[0].URL)
 			}
 		}
 	} else {
 		if len(item.VideoVersions) > 0 {
 			output = append(output, item.VideoVersions[0].URL)
-		} else if len(item.ImageVersions2.Candidates) > 0 {
+		}
+		if len(item.ImageVersions2.Candidates) > 0 {
 			output = append(output, item.ImageVersions2.Candidates[0].URL)
 		}
 	}
