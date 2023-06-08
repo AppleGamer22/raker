@@ -3,6 +3,13 @@
 
 <!-- [![Test](https://github.com/AppleGamer22/raker/actions/workflows/test.yml/badge.svg)](https://github.com/AppleGamer22/raker/actions/workflows/test.yml) [![CodeQL](https://github.com/AppleGamer22/raker/actions/workflows/codeql.yml/badge.svg)](https://github.com/AppleGamer22/raker/actions/workflows/codeql.yml) -->
 
+![](assets/icons/raker.svg)
+
+## `raker`'s Logo References
+* The Raker [Gopher](https://go.dev/blog/gopher) is based on an original work by [Renee French](https://reneefrench.blogspot.com/).
+	* Ueda, T. (2016, July 27). Gopher Vector Graphics. GitHub. <https://github.com/golang-samples/gopher-vector>
+* Google. (2022, February 4). Google Chrome Icon. Google. <https://www.google.com/chrome/whats-new/m100>
+
 ## Description
 `raker` is full-stack and command-line interface for a social media scraper for Instagram, TikTok and VSCO. Both the server and CLI are written in Go, and the web interface is server-side rendered. Both Instagram and TikTok scraping require authentication cookies, which are stored locally wither on the server's MongoDB instance after provided, or on a file system accesible by the CLI.
 
