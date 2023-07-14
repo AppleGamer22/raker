@@ -38,8 +38,8 @@ builds:
 archives:
   - id: unix
     builds:
-    - linux
-    - mac
+      - linux
+      - mac
     name_template: >-
       {{- .ProjectName}}_
       {{- .Version}}_
@@ -148,6 +148,25 @@ dockers:
       - "--label=org.opencontainers.image.version={{.Version}}"
       - "--build-arg VERSION={{.Version}}"
       - "--build-arg HASH={{.FullCommit}}"
+nix:
+  - homepage: https://github.com/AppleGamer22/raker
+    description: A social media scraper with less JavaScript than my previous one.
+    license: GPL3
+    repository:
+      owner: AppleGamer22
+      name: nur
+      token: "{{.Env.TAP_GITHUB_TOKEN}}"
+    commit_author:
+      name: Omri Bornstein
+      email: omribor@gmail.com
+    ids:
+      - unix
+    install: |
+      mkdir -p $out/bin
+      cp -vr ./{{.ProjectName}} $out/bin/{{.ProjectName}}
+      installManPage ./{{.ProjectName}}.1
+    post_install: |
+      installShellCompletion ./{{.ProjectName}}.*sh
 aurs:
   - homepage: https://github.com/AppleGamer22/raker
     description: A social media scraper with less JavaScript than my previous one.
@@ -170,7 +189,7 @@ aurs:
       name: Omri Bornstein
       email: omribor@gmail.com
 brews:
-  - tap:
+  - repository:
       owner: AppleGamer22
       name: homebrew-tap
       token: "{{.Env.TAP_GITHUB_TOKEN}}"
