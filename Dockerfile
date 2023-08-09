@@ -1,4 +1,4 @@
-FROM --platform=$BUILDPLATFORM golang:1.20.6-alpine AS build
+FROM --platform=$BUILDPLATFORM golang:1.21.0-alpine AS build
 WORKDIR /raker
 COPY go.* .
 COPY server server
