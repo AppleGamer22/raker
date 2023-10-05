@@ -3,7 +3,7 @@ module github.com/AppleGamer22/raker
 go 1.18
 
 require (
-	github.com/charmbracelet/log v0.2.4
+	github.com/charmbracelet/log v0.2.5
 	github.com/golang-jwt/jwt/v5 v5.0.0
 	github.com/google/uuid v1.3.1
 	github.com/spf13/cobra v1.7.0
