@@ -72,7 +72,7 @@ func main() {
 
 	server := http.Server{
 		Addr:    fmt.Sprintf(":%d", configuration.Port),
-		Handler: handlers.Log(mux),
+		Handler: handlers.NewLoggerMiddleware(mux),
 		ErrorLog: log.Default().StandardLog(log.StandardLogOptions{
 			ForceLevel: log.ErrorLevel,
 		}),
