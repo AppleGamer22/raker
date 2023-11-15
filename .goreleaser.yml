@@ -1,5 +1,6 @@
 # yaml-language-server: $schema=https://goreleaser.com/static/schema.json
 project_name: raker
+version: 1
 before:
   hooks:
     - make completion manual
@@ -82,6 +83,8 @@ nfpms:
     contents:
       - src: raker.1
         dst: /usr/share/man/man1/raker.1
+        file_info:
+          mode: 0644
       - src: raker.bash
         dst: /usr/share/bash-completion/completions/raker
       - src: raker.fish

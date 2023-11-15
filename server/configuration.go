@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"os"
@@ -10,8 +11,13 @@ import (
 	"github.com/AppleGamer22/raker/server/handlers"
 	"github.com/charmbracelet/log"
 	"github.com/spf13/viper"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
+
+type contextKey int
+
+const authenticatedUserKey contextKey = 0
 
 type Configuration struct {
 	Secret      string
@@ -29,6 +35,39 @@ type RakerServer struct {
 	Histories     *mongo.Collection
 	Authenticator authenticator.Authenticator
 	HTTPServer    http.Server
+}
+
+func (rs *RakerServer) Verify(handler http.Handler) http.Handler {
+	return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+		jwtCookie, err := request.Cookie("jwt")
+		if err != nil {
+			http.Error(writer, "credential update failed", http.StatusUnauthorized)
+			log.Error(err)
+			return
+		}
+
+		U_ID, username, err := rs.Authenticator.Parse(jwtCookie.Value)
+		if err != nil {
+			http.Error(writer, "credential update failed", http.StatusUnauthorized)
+			log.Error(err)
+			return
+		}
+
+		filter := bson.M{
+			"_id":      U_ID,
+			"username": username,
+		}
+		var user db.User
+		if err := rs.Users.FindOne(context.Background(), filter).Decode(&user); err != nil {
+			http.Error(writer, "credential update failed", http.StatusUnauthorized)
+			log.Error(err)
+			return
+		}
+		// https://drstearns.github.io/tutorials/gomiddleware/#secmiddlewareandrequestscopedvalues
+		ctxWithUser := context.WithValue(request.Context(), authenticatedUserKey, user)
+		requestWithUser := request.WithContext(ctxWithUser)
+		handler.ServeHTTP(writer, requestWithUser)
+	})
 }
 
 func NewRakerServer() (*RakerServer, error) {
