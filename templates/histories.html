@@ -221,7 +221,7 @@
 										<div class="carousel-inner">
 											{{range $iii, $url := .URLs}}
 												<div class="carousel-item{{if eq $iii 0}} active{{end}}">
-													{{if or (hasSuffix . ".jpg") (hasSuffix . ".webp")}}
+													{{if or (or (hasSuffix . ".jpg") (hasSuffix . ".webp")) (hasSuffix . ".heic")}}
 														<img class="d-block w-100" src="/api/storage/{{$history.U_ID}}/{{$history.Type}}/{{$history.Owner}}/{{$url}}" loading="lazy">
 													{{else if or (hasSuffix . ".mp4") (hasSuffix . ".webm")}}
 														<video class="d-block w-100" src="/api/storage/{{$history.U_ID}}/{{$history.Type}}/{{$history.Owner}}/{{$url}}" preload="metadata" muted controls loop></video>
