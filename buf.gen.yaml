@@ -1,17 +1,20 @@
 # yaml-language-server: $schema=https://json.schemastore.org/buf.gen.json
 version: v1
 plugins:
-  - plugin: go
+  # - plugin: go
+  - plugin: buf.build/protocolbuffers/go
     out: gen/go
     opt: paths=source_relative
-  - name: go-grpc
+  # - name: go-grpc
+  - plugin: buf.build/grpc/go
     out: gen/go
-    opt:
-      - paths=source_relative
-  - name: grpc-gateway
+    opt: paths=source_relative
+  # - name: grpc-gateway
+  - plugin: buf.build/grpc-ecosystem/gateway
     out: gen/go
     opt:
       - paths=source_relative
       - generate_unbound_methods=true
   # - name: openapiv2
-  #   out: gen/openapiv2
+  - plugin: buf.build/grpc-ecosystem/openapiv2
+    out: gen/openapiv2
