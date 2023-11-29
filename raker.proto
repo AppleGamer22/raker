@@ -1,9 +1,0 @@
-syntax = "proto3";
-
-package raker;
-
-import "google/api/annotations.proto";
-import "google/protobuf/timestamp.proto";
-import "google/protobuf/empty.proto";
-
-option go_package = "github.com/AppleGamer22/raker/proto";

@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+package raker.v1;
+
+// import "google/api/annotations.proto";
+// import "google/protobuf/empty.proto";
+// import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/AppleGamer22/raker/proto";
+
+enum MediaType {
+  MEDIA_TYPE_UNSPECIFIED = 0;
+  MEDIA_TYPE_INSTAGRAM = 1;
+  MEDIA_TYPE_HIGHLIGHT = 2;
+  MEDIA_TYPE_STORY = 3;
+  MEDIA_TYPE_TIKTOK = 4;
+  MEDIA_TYPE_VSCO = 5;
+}
+
+message AuthenticationRequest {
+  string username = 1;
+  string password = 2;
+  optional string fbsr = 3;
+  optional string session_id = 4;
+  optional string user_id = 5;
+}
+
+message EditCategoryRequest {
+  string category = 1;
+  optional string old_category = 2;
+}
+
+message ScrapeRequest {
+  string post = 1;
+  optional string owner = 2;
+}
+
+message HistoryRequest {
+  string owner = 1;
+  bool exclusive = 2;
+  repeated string categories = 3;
+  repeated MediaType types = 4;
+}

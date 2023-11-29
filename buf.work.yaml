@@ -1,4 +1,4 @@
 # yaml-language-server: $schema=https://json.schemastore.org/buf.work.json
 version: v1
 directories:
-  - .
+  - proto
