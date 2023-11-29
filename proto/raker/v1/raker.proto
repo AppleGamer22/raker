@@ -2,19 +2,20 @@ syntax = "proto3";
 
 package raker.v1;
 
-// import "google/api/annotations.proto";
+import "google/api/annotations.proto";
+import "google/api/httpbody.proto";
 // import "google/protobuf/empty.proto";
 // import "google/protobuf/timestamp.proto";
 
 option go_package = "github.com/AppleGamer22/raker/proto";
 
 enum MediaType {
-  MEDIA_TYPE_UNSPECIFIED = 0;
-  MEDIA_TYPE_INSTAGRAM = 1;
-  MEDIA_TYPE_HIGHLIGHT = 2;
-  MEDIA_TYPE_STORY = 3;
-  MEDIA_TYPE_TIKTOK = 4;
-  MEDIA_TYPE_VSCO = 5;
+  UNSPECIFIED = 0;
+  INSTAGRAM = 1;
+  HIGHLIGHT = 2;
+  STORY = 3;
+  TIKTOK = 4;
+  VSCO = 5;
 }
 
 message AuthenticationRequest {
@@ -35,9 +36,42 @@ message ScrapeRequest {
   optional string owner = 2;
 }
 
+message AddRemoveCategoriesRequest {
+  repeated string categories = 1;
+}
+
+message RemoveFileRequest {
+  MediaType type = 1;
+  string owner = 2;
+  string post = 3;
+  string path = 4;
+}
+
 message HistoryRequest {
   string owner = 1;
   bool exclusive = 2;
   repeated string categories = 3;
   repeated MediaType types = 4;
+}
+
+service RakerServer {
+  rpc SignUpInstagram(AuthenticationRequest) returns (google.api.HttpBody) {
+    option (google.api.http) = {patch: "/api/auth/sign_up/instagram"};
+  }
+
+  rpc SignInInstagram(AuthenticationRequest) returns (google.api.HttpBody) {
+    option (google.api.http) = {patch: "/api/auth/sign_in/instagram"};
+  }
+
+  rpc EditCategory(EditCategoryRequest) returns (google.api.HttpBody) {
+    option (google.api.http) = {patch: "/api/categories"};
+  }
+
+  rpc AddRemoveCategories(AddRemoveCategoriesRequest) returns (google.api.HttpBody) {
+    option (google.api.http) = {patch: "/api/history"};
+  }
+
+  rpc RemoveFile(RemoveFileRequest) returns (google.api.HttpBody) {
+    option (google.api.http) = {delete: "/api/history"};
+  }
 }
