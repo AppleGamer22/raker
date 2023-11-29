@@ -22,9 +22,9 @@ func (lm *LoggerMiddleware) ServeHTTP(writer http.ResponseWriter, request *http.
 	duration := time.Since(startTime).Round(time.Microsecond)
 	switch statusWriter.Status / 100 {
 	case 4, 5:
-		log.Errorf("%d %v %s %s %s", statusWriter.Status, duration, request.Method, request.RequestURI, request.RemoteAddr)
+		log.Errorf("%d %v %s %s %s", statusWriter.Status, duration, request.Method, request.URL.Path, request.RemoteAddr)
 	default:
-		log.Infof("%d %v %s %s %s", statusWriter.Status, duration, request.Method, request.RequestURI, request.RemoteAddr)
+		log.Infof("%d %v %s %s %s", statusWriter.Status, duration, request.Method, request.URL.Path, request.RemoteAddr)
 	}
 }
 
