@@ -35,7 +35,7 @@ var tiktokCommand = cobra.Command{
 		username := args[0]
 		post := args[1]
 		tiktok := shared.NewTikTok(conf.Config.TikTok.Session, conf.Config.TikTok.Guard, conf.Config.TikTok.Chain)
-		urlString, username, err := tiktok.Post(username, post, incognito)
+		urlString, username, _, err := tiktok.Post(username, post, incognito)
 		if err != nil {
 			return err
 		}

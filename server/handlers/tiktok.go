@@ -43,7 +43,7 @@ func TikTokPage(writer http.ResponseWriter, request *http.Request) {
 		}
 		if err := db.Histories.FindOne(context.Background(), filter).Decode(&history); err != nil {
 			tiktok := shared.NewTikTok(user.TikTok.SessionID, user.TikTok.SessionIDGuard, user.TikTok.ChainToken)
-			URL, username, err := tiktok.Post(owner, post, incognito)
+			URL, username, cookies, err := tiktok.Post(owner, post, incognito)
 			if err != nil {
 				log.Error(err)
 				writer.WriteHeader(http.StatusBadRequest)
@@ -52,7 +52,7 @@ func TikTokPage(writer http.ResponseWriter, request *http.Request) {
 			}
 
 			fileName := fmt.Sprintf("%s.mp4", post)
-			if err := StorageHandler.Save(user, types.TikTok, username, fileName, URL); err != nil {
+			if err := StorageHandler.Save(user, types.TikTok, username, fileName, URL, cookies); err != nil {
 				log.Error(err)
 				writer.WriteHeader(http.StatusInternalServerError)
 				historyHTML(user, history, []error{err}, writer)

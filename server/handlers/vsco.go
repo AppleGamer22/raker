@@ -58,7 +58,7 @@ func VSCOPage(writer http.ResponseWriter, request *http.Request) {
 			}
 			fileName := fmt.Sprintf("%s_%s", post, path.Base(URL.Path))
 
-			if err := StorageHandler.Save(user, types.VSCO, username, fileName, urlString); err != nil {
+			if err := StorageHandler.Save(user, types.VSCO, username, fileName, urlString, []*http.Cookie{}); err != nil {
 				log.Error(err)
 				writer.WriteHeader(http.StatusInternalServerError)
 				historyHTML(user, history, []error{err}, writer)

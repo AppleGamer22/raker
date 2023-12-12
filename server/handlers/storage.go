@@ -56,7 +56,7 @@ func (handler storageHandler) ServeHTTP(writer http.ResponseWriter, request *htt
 	}
 }
 
-func (handler *storageHandler) Save(user db.User, media, owner, fileName, URL string) error {
+func (handler *storageHandler) Save(user db.User, media, owner, fileName, URL string, cookies []*http.Cookie) error {
 	if !types.ValidMediaType(media) {
 		return fmt.Errorf("invalid media type: %s", media)
 	}
@@ -86,38 +86,10 @@ func (handler *storageHandler) Save(user db.User, media, owner, fileName, URL st
 	switch media {
 	case types.TikTok:
 		request.Header.Add("Range", "bytes=0-")
-		if user.TikTok.SessionID != "" {
-			sessionCookie := http.Cookie{
-				Name:     "sessionid",
-				Value:    user.TikTok.SessionID,
-				Domain:   ".tiktok.com",
-				HttpOnly: true,
-				// Secure:   true,
-			}
-			request.AddCookie(&sessionCookie)
-			chainCookie := http.Cookie{
-				Name:     "tt_chain_token",
-				Value:    user.TikTok.ChainToken,
-				Domain:   ".tiktok.com",
-				HttpOnly: true,
-				Secure:   true,
-			}
-			request.AddCookie(&chainCookie)
-			sessionGuardCookie := http.Cookie{
-				Name:     "sid_guard",
-				Value:    user.TikTok.SessionIDGuard,
-				Domain:   ".tiktok.com",
-				HttpOnly: true,
-			}
-			request.AddCookie(&sessionGuardCookie)
+		for _, cookie := range cookies {
+			request.AddCookie(cookie)
 		}
-		request.Header.Add("accept", "*/*")
-		request.Header.Add("accept-encoding", "identity;q=1, *;q=0")
-		request.Header.Add("sec-ch-ua", `"Not_A Brand";v="99", "Google Chrome";v="109", "Chromium";v="109"`)
-		request.Header.Add("sec-fetch-dest", "video")
-		request.Header.Add("sec-fetch-mode", "no-cors")
-		request.Header.Add("sec-fetch-site", "same-site")
-		request.Header.Add("cache-control", "no-cache")
+		request.Header.Add("referer", "https://www.tiktok.com/")
 	case types.VSCO:
 		request.Header.Add("referer", "https://vsco.co/")
 	}
@@ -163,7 +135,7 @@ func (handler *storageHandler) SaveBundle(user db.User, media, owner string, fil
 		URL := URLs[i]
 		fileName := fileNames[i]
 		go func(fileName, URL string, i int) {
-			if err := handler.Save(user, media, owner, fileName, URL); err != nil {
+			if err := handler.Save(user, media, owner, fileName, URL, []*http.Cookie{}); err != nil {
 				mutex.Lock()
 				errs = append(errs, err)
 				fileNames[i] = ""
