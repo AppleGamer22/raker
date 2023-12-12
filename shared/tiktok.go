@@ -104,6 +104,9 @@ func (tiktok *TikTok) Post(owner, post string, incognito bool) ([]string, string
 	username := tiktokPost.DefaultScop.VideoDetail.ItemInfo.ItemStruct.Author.UniqueID
 	URL := tiktokPost.DefaultScop.VideoDetail.ItemInfo.ItemStruct.Video.PlayAddress
 	if URL == "" {
+		if len(tiktokPost.DefaultScop.VideoDetail.ItemInfo.ItemStruct.ImagePost.Images) == 0 {
+			return []string{}, "", []*http.Cookie{}, errors.New("Post not available from incognito mode")
+		}
 		URLs := make([]string, 0, len(tiktokPost.DefaultScop.VideoDetail.ItemInfo.ItemStruct.ImagePost.Images))
 		for _, image := range tiktokPost.DefaultScop.VideoDetail.ItemInfo.ItemStruct.ImagePost.Images {
 			URLs = append(URLs, image.ImageURL.URLs[0])
