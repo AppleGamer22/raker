@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"net/url"
+	"path"
 	"time"
 
 	"github.com/AppleGamer22/raker/server/cleaner"
@@ -43,7 +45,7 @@ func TikTokPage(writer http.ResponseWriter, request *http.Request) {
 		}
 		if err := db.Histories.FindOne(context.Background(), filter).Decode(&history); err != nil {
 			tiktok := shared.NewTikTok(user.TikTok.SessionID, user.TikTok.SessionIDGuard, user.TikTok.ChainToken)
-			URL, username, cookies, err := tiktok.Post(owner, post, incognito)
+			URLs, username, cookies, err := tiktok.Post(owner, post, incognito)
 			if err != nil {
 				log.Error(err)
 				writer.WriteHeader(http.StatusBadRequest)
@@ -51,30 +53,50 @@ func TikTokPage(writer http.ResponseWriter, request *http.Request) {
 				return
 			}
 
-			fileName := fmt.Sprintf("%s.mp4", post)
-			if err := StorageHandler.Save(user, types.TikTok, username, fileName, URL, cookies); err != nil {
-				log.Error(err)
-				writer.WriteHeader(http.StatusInternalServerError)
-				historyHTML(user, history, []error{err}, writer)
-				return
+			localURLs := make([]string, 0, len(URLs))
+			errs := make([]error, 0, len(URLs))
+			for _, urlString := range URLs {
+				URL, err := url.Parse(urlString)
+				if err != nil {
+					log.Error(err)
+					writer.WriteHeader(http.StatusBadRequest)
+					errs = append(errs, err)
+					continue
+				}
+				if URL.Query().Get("mime_type") == "video_mp4" {
+					localURLs = append(localURLs, fmt.Sprintf("%s.mp4", post))
+					break
+				}
+				fileName := fmt.Sprintf("%s_%s", post, path.Base(URL.Path))
+				localURLs = append(localURLs, fileName)
 			}
 
-			history = db.History{
-				ID:    primitive.NewObjectID().Hex(),
-				U_ID:  user.ID.Hex(),
-				URLs:  []string{fileName},
-				Type:  types.TikTok,
-				Owner: username,
-				Post:  post,
-				Date:  time.Now(),
-			}
-
-			if _, err := db.Histories.InsertOne(context.Background(), history); err != nil {
+			localURLs, saveErrors := StorageHandler.SaveBundle(user, types.TikTok, username, localURLs, URLs, cookies)
+			errs = append(errs, saveErrors...)
+			for _, err := range saveErrors {
 				log.Error(err)
 				writer.WriteHeader(http.StatusInternalServerError)
-				historyHTML(user, history, []error{err}, writer)
-				return
 			}
+
+			if len(localURLs) > 0 {
+				history = db.History{
+					ID:    primitive.NewObjectID().Hex(),
+					U_ID:  user.ID.Hex(),
+					URLs:  localURLs,
+					Type:  types.TikTok,
+					Owner: username,
+					Post:  post,
+					Date:  time.Now(),
+				}
+
+				if _, err := db.Histories.InsertOne(context.Background(), history); err != nil {
+					log.Error(err)
+					writer.WriteHeader(http.StatusInternalServerError)
+					historyHTML(user, history, []error{err}, writer)
+					return
+				}
+			}
+
 		}
 	}
 

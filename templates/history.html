@@ -232,9 +232,9 @@
 						</form>
 						<div class="collapse" id="collapse{{$i}}">
 							<br>
-							{{if or (or (hasSuffix $v ".jpg") (hasSuffix $v ".webp")) (hasSuffix $v ".heic")}}
+							{{if (isImagePath $v)}}
 								<img src="/api/storage/{{$.U_ID}}/{{$.Type}}/{{$.Owner}}/{{.}}" loading="lazy">
-							{{else if or (hasSuffix $v ".mp4") (hasSuffix $v ".webm")}}
+							{{else if (isVideoPath $v)}}
 								<video src="/api/storage/{{$.U_ID}}/{{$.Type}}/{{$.Owner}}/{{.}}" preload="metadata" muted controls loop></video>
 							{{else}}
 								<a href="/api/storage/{{$.U_ID}}/{{$.Type}}/{{$.Owner}}/{{.}}">{{.}}</a>

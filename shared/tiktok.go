@@ -17,6 +17,13 @@ type TikTokPost struct {
 					Author struct {
 						UniqueID string `json:"uniqueId"`
 					} `json:"author"`
+					ImagePost struct {
+						Images []struct {
+							ImageURL struct {
+								URLs [1]string `json:"urlList"`
+							} `json:"imageURL"`
+						} `json:"images"`
+					} `json:"imagePost"`
 					Video struct {
 						PlayAddress string `json:"playAddr"`
 					} `json:"video"`
@@ -38,11 +45,11 @@ func NewTikTok(sessionID, sessionIDGuard, chainToken string) TikTok {
 	return TikTok{sessionID, sessionIDGuard, chainToken}
 }
 
-func (tiktok *TikTok) Post(owner, post string, incognito bool) (string, string, []*http.Cookie, error) {
+func (tiktok *TikTok) Post(owner, post string, incognito bool) ([]string, string, []*http.Cookie, error) {
 	postURL := fmt.Sprintf("https://www.tiktok.com/@%s/video/%s", owner, post)
 	request, err := http.NewRequest(http.MethodGet, postURL, nil)
 	if err != nil {
-		return "", "", []*http.Cookie{}, err
+		return []string{}, "", []*http.Cookie{}, err
 	}
 
 	// if !incognito {
@@ -74,28 +81,35 @@ func (tiktok *TikTok) Post(owner, post string, incognito bool) (string, string, 
 
 	response, err := http.DefaultClient.Do(request)
 	if err != nil {
-		return "", "", []*http.Cookie{}, err
+		return []string{}, "", []*http.Cookie{}, err
 	}
 	defer response.Body.Close()
 
 	body, err := io.ReadAll(response.Body)
 	if err != nil {
-		return "", "", []*http.Cookie{}, err
+		return []string{}, "", []*http.Cookie{}, err
 	}
 
 	script := tiktok_regexp.FindString(string(body))
 	if script == "" {
-		return "", "", []*http.Cookie{}, errors.New("could not find JSON")
+		return []string{}, "", []*http.Cookie{}, errors.New("could not find JSON")
 	}
 
 	jsonText := script[len(`<script id="__UNIVERSAL_DATA_FOR_REHYDRATION__" type="application/json">`) : len(script)-len("</script>")]
 	var tiktokPost TikTokPost
 	if err := json.Unmarshal([]byte(jsonText), &tiktokPost); err != nil {
-		return "", "", []*http.Cookie{}, err
+		return []string{}, "", []*http.Cookie{}, err
 	}
 
 	username := tiktokPost.DefaultScop.VideoDetail.ItemInfo.ItemStruct.Author.UniqueID
 	URL := tiktokPost.DefaultScop.VideoDetail.ItemInfo.ItemStruct.Video.PlayAddress
+	if URL == "" {
+		URLs := make([]string, 0, len(tiktokPost.DefaultScop.VideoDetail.ItemInfo.ItemStruct.ImagePost.Images))
+		for _, image := range tiktokPost.DefaultScop.VideoDetail.ItemInfo.ItemStruct.ImagePost.Images {
+			URLs = append(URLs, image.ImageURL.URLs[0])
+		}
+		return URLs, username, response.Cookies(), err
+	}
 
-	return URL, username, response.Cookies(), err
+	return []string{URL}, username, response.Cookies(), err
 }

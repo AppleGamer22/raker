@@ -11,11 +11,13 @@ import (
 
 func TestTikTokPublicVideo(t *testing.T) {
 	tiktok := shared.NewTikTok(configuration.TikTok.Session, configuration.TikTok.Guard, configuration.TikTok.Chain)
-	urlString, username, _, err := tiktok.Post("f1", "7048983181063687430", false)
+	URLs, username, _, err := tiktok.Post("f1", "7048983181063687430", false)
 	assert.NoError(t, err)
 	assert.Equal(t, "f1", username)
-	URL, err := url.Parse(urlString)
-	assert.NoError(t, err)
-	assert.Equal(t, "https", URL.Scheme)
-	assert.True(t, strings.HasSuffix(URL.Host, ".tiktok.com"), urlString)
+	for _, urlString := range URLs {
+		URL, err := url.Parse(urlString)
+		assert.NoError(t, err)
+		assert.Equal(t, "https", URL.Scheme)
+		assert.True(t, strings.HasSuffix(URL.Host, ".tiktok.com"), urlString)
+	}
 }

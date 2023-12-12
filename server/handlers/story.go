@@ -88,7 +88,7 @@ func StoryPage(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	URLs = newURLs
-	localURLs, saveErrors := StorageHandler.SaveBundle(user, types.Story, username, localURLs, URLs)
+	localURLs, saveErrors := StorageHandler.SaveBundle(user, types.Story, username, localURLs, URLs, []*http.Cookie{})
 	errs = append(errs, saveErrors...)
 	for _, err := range saveErrors {
 		log.Error(err)

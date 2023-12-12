@@ -120,7 +120,7 @@ func (handler *storageHandler) Save(user db.User, media, owner, fileName, URL st
 	return err
 }
 
-func (handler *storageHandler) SaveBundle(user db.User, media, owner string, fileNames, URLs []string) ([]string, []error) {
+func (handler *storageHandler) SaveBundle(user db.User, media, owner string, fileNames, URLs []string, cookies []*http.Cookie) ([]string, []error) {
 	if len(URLs) != len(fileNames) {
 		return []string{}, []error{errors.New("unequal length URLs & file names slices")}
 	}
@@ -135,7 +135,7 @@ func (handler *storageHandler) SaveBundle(user db.User, media, owner string, fil
 		URL := URLs[i]
 		fileName := fileNames[i]
 		go func(fileName, URL string, i int) {
-			if err := handler.Save(user, media, owner, fileName, URL, []*http.Cookie{}); err != nil {
+			if err := handler.Save(user, media, owner, fileName, URL, cookies); err != nil {
 				mutex.Lock()
 				errs = append(errs, err)
 				fileNames[i] = ""
