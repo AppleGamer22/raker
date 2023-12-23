@@ -35,21 +35,35 @@ var tiktokCommand = cobra.Command{
 		username := args[0]
 		post := args[1]
 		tiktok := shared.NewTikTok(conf.Config.TikTok.Session, conf.Config.TikTok.Guard, conf.Config.TikTok.Chain)
-		urlString, username, _, err := tiktok.Post(username, post, incognito)
+		URLs, username, _, err := tiktok.Post(username, post, incognito)
 		if err != nil {
 			return err
 		}
-		log.Debug("found 1 file")
-		URL, err := url.Parse(urlString)
-		if err != nil {
-			return err
+		log.Debug("found %d files", len(URLs))
+		fileNames := make([]string, 0, len(URLs))
+
+		for _, urlString := range URLs {
+			URL, parsingError := url.Parse(urlString)
+			if parsingError != nil {
+				err = fmt.Errorf("%v\n%v", err, parsingError)
+				continue
+			}
+
+			if URL.Query().Get("mime_type") == "video_mp4" {
+				fileNames = append(fileNames, fmt.Sprintf("%s.mp4", post))
+				break
+			}
+
+			fileName := fmt.Sprintf("%s_%s_%s_%s", types.TikTok, username, post, path.Base(URL.Path))
+			fileNames = append(fileNames, fileName)
 		}
-		fileName := fmt.Sprintf("%s_%s_%s_%s", types.TikTok, username, post, path.Base(URL.Path))
-		if err := conf.Save(types.TikTok, fileName, urlString); err != nil {
-			return err
+
+		if errs := conf.SaveBundle(types.TikTok, fileNames, URLs); len(errs) != 0 {
+			for _, saveError := range errs {
+				err = fmt.Errorf("%v\n%v", err, saveError)
+			}
 		}
-		log.Debugf("saved %s to file %s at the current directory", urlString, fileName)
-		return nil
+		return err
 	},
 }
 
