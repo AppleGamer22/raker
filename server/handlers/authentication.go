@@ -172,7 +172,14 @@ func Verify(request *http.Request) (db.User, error) {
 	}
 
 	filter := bson.M{
-		"_id":      U_ID,
+		"$or": bson.A{
+			bson.M{
+				"_id": U_ID,
+			},
+			bson.M{
+				"_id": U_ID.Hex(),
+			},
+		},
 		"username": username,
 	}
 	var user db.User
