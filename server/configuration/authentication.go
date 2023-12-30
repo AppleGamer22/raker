@@ -1,4 +1,4 @@
-package server
+package configuration
 
 import (
 	"context"
@@ -16,8 +16,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
-
-var Authenticator authenticator.Authenticator
 
 func (server *RakerServer) InstagramSignUp(writer http.ResponseWriter, request *http.Request) {
 	if request.Method != http.MethodPost {
@@ -140,7 +138,7 @@ func (server *RakerServer) InstagramSignIn(writer http.ResponseWriter, request *
 		return
 	}
 
-	webToken, expiry, err := Authenticator.Sign(user.ID, user.Username)
+	webToken, expiry, err := server.Authenticator.Sign(user.ID, user.Username)
 	if err != nil {
 		http.Error(writer, "sign-in failed", http.StatusUnauthorized)
 		log.Error(err, "ID", user.ID.Hex())

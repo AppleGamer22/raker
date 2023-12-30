@@ -1,4 +1,4 @@
-package server
+package configuration
 
 import (
 	"context"
@@ -17,7 +17,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func (server *RakerServer) HighlightPage(writer http.ResponseWriter, request *http.Request) {
+func (server *RakerServer) InstagramPage(writer http.ResponseWriter, request *http.Request) {
 	user := request.Context().Value(authenticatedUserKey).(*db.User)
 
 	if err := request.ParseForm(); err != nil {
@@ -26,21 +26,21 @@ func (server *RakerServer) HighlightPage(writer http.ResponseWriter, request *ht
 	}
 
 	history := db.History{
-		Type: types.Highlight,
+		Type: types.Instagram,
 	}
 
-	highlightID := cleaner.Line(request.Form.Get("post"))
+	post := cleaner.Line(request.Form.Get("post"))
+	incognito := cleaner.Line(request.Form.Get("incognito")) == "incognito"
 	errs := []error{}
 
-	if highlightID != "" {
+	if post != "" {
 		filter := bson.M{
-			"post": highlightID,
-			"type": types.Highlight,
+			"post": post,
+			"type": types.Instagram,
 		}
-
 		if err := server.Histories.FindOne(context.Background(), filter).Decode(&history); err != nil {
 			instagram := shared.NewInstagram(user.Instagram.FBSR, user.Instagram.SessionID, user.Instagram.UserID)
-			URLs, username, err := instagram.Reels(highlightID, true)
+			URLs, username, err := instagram.Post(post, incognito)
 			if err != nil {
 				log.Error(err)
 				writer.WriteHeader(http.StatusBadRequest)
@@ -57,11 +57,11 @@ func (server *RakerServer) HighlightPage(writer http.ResponseWriter, request *ht
 					errs = append(errs, err)
 					continue
 				}
-				fileName := fmt.Sprintf("%s_%s", highlightID, path.Base(URL.Path))
+				fileName := fmt.Sprintf("%s_%s", post, path.Base(URL.Path))
 				localURLs = append(localURLs, fileName)
 			}
 
-			localURLs, saveErrors := StorageHandler.SaveBundle(*user, types.Highlight, username, localURLs, URLs, []*http.Cookie{})
+			localURLs, saveErrors := StorageHandler.SaveBundle(*user, types.Instagram, username, localURLs, URLs, []*http.Cookie{})
 			errs = append(errs, saveErrors...)
 			for _, err := range saveErrors {
 				log.Error(err)
@@ -73,9 +73,9 @@ func (server *RakerServer) HighlightPage(writer http.ResponseWriter, request *ht
 					ID:    primitive.NewObjectID().Hex(),
 					U_ID:  user.ID.Hex(),
 					URLs:  localURLs,
-					Type:  types.Highlight,
+					Type:  types.Instagram,
 					Owner: username,
-					Post:  highlightID,
+					Post:  post,
 					Date:  time.Now(),
 				}
 

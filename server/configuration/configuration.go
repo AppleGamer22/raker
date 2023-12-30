@@ -1,4 +1,4 @@
-package server
+package configuration
 
 import (
 	"fmt"
@@ -67,7 +67,7 @@ func NewRakerServer() (*RakerServer, error) {
 		log.Fatal(err)
 	}
 	rakerServer.DBClient = dbClient
-	// remember to defer client.Close()
+	// remember to defer client.Disconnet
 	rakerServer.Histories = database.Collection("histories")
 	rakerServer.Users = database.Collection("users")
 

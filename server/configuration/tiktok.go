@@ -1,4 +1,4 @@
-package server
+package configuration
 
 import (
 	"context"
@@ -17,30 +17,30 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func (server *RakerServer) InstagramPage(writer http.ResponseWriter, request *http.Request) {
+func (server *RakerServer) TikTokPage(writer http.ResponseWriter, request *http.Request) {
 	user := request.Context().Value(authenticatedUserKey).(*db.User)
 
 	if err := request.ParseForm(); err != nil {
+		log.Error(err)
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	history := db.History{
-		Type: types.Instagram,
+		Type: types.TikTok,
 	}
-
+	owner := cleaner.Line(request.Form.Get("owner"))
 	post := cleaner.Line(request.Form.Get("post"))
 	incognito := cleaner.Line(request.Form.Get("incognito")) == "incognito"
-	errs := []error{}
 
 	if post != "" {
 		filter := bson.M{
 			"post": post,
-			"type": types.Instagram,
+			"type": types.TikTok,
 		}
 		if err := server.Histories.FindOne(context.Background(), filter).Decode(&history); err != nil {
-			instagram := shared.NewInstagram(user.Instagram.FBSR, user.Instagram.SessionID, user.Instagram.UserID)
-			URLs, username, err := instagram.Post(post, incognito)
+			tiktok := shared.NewTikTok(user.TikTok.SessionID, user.TikTok.SessionIDGuard, user.TikTok.ChainToken)
+			URLs, username, cookies, err := tiktok.Post(owner, post, incognito)
 			if err != nil {
 				log.Error(err)
 				writer.WriteHeader(http.StatusBadRequest)
@@ -49,6 +49,7 @@ func (server *RakerServer) InstagramPage(writer http.ResponseWriter, request *ht
 			}
 
 			localURLs := make([]string, 0, len(URLs))
+			errs := make([]error, 0, len(URLs))
 			for _, urlString := range URLs {
 				URL, err := url.Parse(urlString)
 				if err != nil {
@@ -57,11 +58,15 @@ func (server *RakerServer) InstagramPage(writer http.ResponseWriter, request *ht
 					errs = append(errs, err)
 					continue
 				}
+				if URL.Query().Get("mime_type") == "video_mp4" {
+					localURLs = append(localURLs, fmt.Sprintf("%s.mp4", post))
+					break
+				}
 				fileName := fmt.Sprintf("%s_%s", post, path.Base(URL.Path))
 				localURLs = append(localURLs, fileName)
 			}
 
-			localURLs, saveErrors := StorageHandler.SaveBundle(*user, types.Instagram, username, localURLs, URLs, []*http.Cookie{})
+			localURLs, saveErrors := StorageHandler.SaveBundle(*user, types.TikTok, username, localURLs, URLs, cookies)
 			errs = append(errs, saveErrors...)
 			for _, err := range saveErrors {
 				log.Error(err)
@@ -73,7 +78,7 @@ func (server *RakerServer) InstagramPage(writer http.ResponseWriter, request *ht
 					ID:    primitive.NewObjectID().Hex(),
 					U_ID:  user.ID.Hex(),
 					URLs:  localURLs,
-					Type:  types.Instagram,
+					Type:  types.TikTok,
 					Owner: username,
 					Post:  post,
 					Date:  time.Now(),
@@ -82,11 +87,13 @@ func (server *RakerServer) InstagramPage(writer http.ResponseWriter, request *ht
 				if _, err := server.Histories.InsertOne(context.Background(), history); err != nil {
 					log.Error(err)
 					writer.WriteHeader(http.StatusInternalServerError)
-					errs = append(errs, err)
+					historyHTML(*user, history, []error{err}, writer)
+					return
 				}
 			}
+
 		}
 	}
 
-	historyHTML(*user, history, errs, writer)
+	historyHTML(*user, history, nil, writer)
 }
