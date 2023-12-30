@@ -75,10 +75,10 @@ func NewRakerServer() (*RakerServer, error) {
 
 	mux.HandleFunc("/api/auth/sign_up/instagram", rakerServer.InstagramSignUp)
 	mux.HandleFunc("/api/auth/sign_in/instagram", rakerServer.InstagramSignIn)
-	mux.HandleFunc("/api/auth/update/instagram", rakerServer.InstagramUpdateCredentials)
-	mux.HandleFunc("/api/auth/sign_out/instagram", rakerServer.InstagramSignOut)
-	mux.HandleFunc("/api/categories", rakerServer.Categories)
-	mux.HandleFunc("/api/history", rakerServer.History)
+	mux.Handle("/api/auth/update/instagram", rakerServer.Verify(http.HandlerFunc(rakerServer.InstagramUpdateCredentials)))
+	mux.Handle("/api/auth/sign_out/instagram", rakerServer.Verify(http.HandlerFunc(rakerServer.InstagramSignOut)))
+	mux.Handle("/api/categories", rakerServer.Verify(http.HandlerFunc(rakerServer.Categories)))
+	mux.Handle("/api/history", rakerServer.Verify(http.HandlerFunc(rakerServer.History)))
 	// mux.HandleFunc("/api/info", rakerServer.Information)
 	mux.Handle("/api/storage/", http.StripPrefix("/api/storage", rakerServer.Verify(NewStorageHandler(configuration.Storage, configuration.Directories))))
 	mux.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir("assets"))))
@@ -86,12 +86,12 @@ func NewRakerServer() (*RakerServer, error) {
 	mux.Handle("/robots.txt", http.RedirectHandler("/assets/robots.txt", http.StatusPermanentRedirect))
 
 	mux.HandleFunc("/", rakerServer.AuthenticationPage)
-	mux.HandleFunc("/history", rakerServer.HistoryPage)
-	mux.HandleFunc("/instagram", rakerServer.InstagramPage)
-	mux.HandleFunc("/highlight", rakerServer.HighlightPage)
-	mux.HandleFunc("/story", rakerServer.StoryPage)
-	mux.HandleFunc("/tiktok", rakerServer.TikTokPage)
-	mux.HandleFunc("/vsco", rakerServer.VSCOPage)
+	mux.Handle("/history", rakerServer.Verify(http.HandlerFunc(rakerServer.HistoryPage)))
+	mux.Handle("/instagram", rakerServer.Verify(http.HandlerFunc(rakerServer.InstagramPage)))
+	mux.Handle("/highlight", rakerServer.Verify(http.HandlerFunc(rakerServer.HighlightPage)))
+	mux.Handle("/story", rakerServer.Verify(http.HandlerFunc(rakerServer.StoryPage)))
+	mux.Handle("/tiktok", rakerServer.Verify(http.HandlerFunc(rakerServer.TikTokPage)))
+	mux.Handle("/vsco", rakerServer.Verify(http.HandlerFunc(rakerServer.VSCOPage)))
 
 	rakerServer.HTTPServer = http.Server{
 		Addr:    fmt.Sprintf(":%d", configuration.Port),
