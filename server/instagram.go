@@ -1,4 +1,4 @@
-package handlers
+package server
 
 import (
 	"context"
@@ -17,44 +17,38 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func TikTokPage(writer http.ResponseWriter, request *http.Request) {
-	user, err := Verify(request)
-	if err != nil {
-		http.Error(writer, "unauthorized", http.StatusUnauthorized)
-		log.Error(err)
-		return
-	}
+func (server *RakerServer) InstagramPage(writer http.ResponseWriter, request *http.Request) {
+	user := request.Context().Value(authenticatedUserKey).(*db.User)
 
 	if err := request.ParseForm(); err != nil {
-		log.Error(err)
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	history := db.History{
-		Type: types.TikTok,
+		Type: types.Instagram,
 	}
-	owner := cleaner.Line(request.Form.Get("owner"))
+
 	post := cleaner.Line(request.Form.Get("post"))
 	incognito := cleaner.Line(request.Form.Get("incognito")) == "incognito"
+	errs := []error{}
 
 	if post != "" {
 		filter := bson.M{
 			"post": post,
-			"type": types.TikTok,
+			"type": types.Instagram,
 		}
-		if err := db.Histories.FindOne(context.Background(), filter).Decode(&history); err != nil {
-			tiktok := shared.NewTikTok(user.TikTok.SessionID, user.TikTok.SessionIDGuard, user.TikTok.ChainToken)
-			URLs, username, cookies, err := tiktok.Post(owner, post, incognito)
+		if err := server.Histories.FindOne(context.Background(), filter).Decode(&history); err != nil {
+			instagram := shared.NewInstagram(user.Instagram.FBSR, user.Instagram.SessionID, user.Instagram.UserID)
+			URLs, username, err := instagram.Post(post, incognito)
 			if err != nil {
 				log.Error(err)
 				writer.WriteHeader(http.StatusBadRequest)
-				historyHTML(user, history, []error{err}, writer)
+				historyHTML(*user, history, []error{err}, writer)
 				return
 			}
 
 			localURLs := make([]string, 0, len(URLs))
-			errs := make([]error, 0, len(URLs))
 			for _, urlString := range URLs {
 				URL, err := url.Parse(urlString)
 				if err != nil {
@@ -63,15 +57,11 @@ func TikTokPage(writer http.ResponseWriter, request *http.Request) {
 					errs = append(errs, err)
 					continue
 				}
-				if URL.Query().Get("mime_type") == "video_mp4" {
-					localURLs = append(localURLs, fmt.Sprintf("%s.mp4", post))
-					break
-				}
 				fileName := fmt.Sprintf("%s_%s", post, path.Base(URL.Path))
 				localURLs = append(localURLs, fileName)
 			}
 
-			localURLs, saveErrors := StorageHandler.SaveBundle(user, types.TikTok, username, localURLs, URLs, cookies)
+			localURLs, saveErrors := StorageHandler.SaveBundle(*user, types.Instagram, username, localURLs, URLs, []*http.Cookie{})
 			errs = append(errs, saveErrors...)
 			for _, err := range saveErrors {
 				log.Error(err)
@@ -83,22 +73,20 @@ func TikTokPage(writer http.ResponseWriter, request *http.Request) {
 					ID:    primitive.NewObjectID().Hex(),
 					U_ID:  user.ID.Hex(),
 					URLs:  localURLs,
-					Type:  types.TikTok,
+					Type:  types.Instagram,
 					Owner: username,
 					Post:  post,
 					Date:  time.Now(),
 				}
 
-				if _, err := db.Histories.InsertOne(context.Background(), history); err != nil {
+				if _, err := server.Histories.InsertOne(context.Background(), history); err != nil {
 					log.Error(err)
 					writer.WriteHeader(http.StatusInternalServerError)
-					historyHTML(user, history, []error{err}, writer)
-					return
+					errs = append(errs, err)
 				}
 			}
-
 		}
 	}
 
-	historyHTML(user, history, nil, writer)
+	historyHTML(*user, history, errs, writer)
 }

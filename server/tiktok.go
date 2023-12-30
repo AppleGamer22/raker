@@ -1,4 +1,4 @@
-package handlers
+package server
 
 import (
 	"context"
@@ -17,43 +17,39 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func HighlightPage(writer http.ResponseWriter, request *http.Request) {
-	user, err := Verify(request)
-	if err != nil {
-		http.Error(writer, "unauthorized", http.StatusUnauthorized)
-		log.Error(err)
-		return
-	}
+func (server *RakerServer) TikTokPage(writer http.ResponseWriter, request *http.Request) {
+	user := request.Context().Value(authenticatedUserKey).(*db.User)
 
 	if err := request.ParseForm(); err != nil {
+		log.Error(err)
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	history := db.History{
-		Type: types.Highlight,
+		Type: types.TikTok,
 	}
+	owner := cleaner.Line(request.Form.Get("owner"))
+	post := cleaner.Line(request.Form.Get("post"))
+	incognito := cleaner.Line(request.Form.Get("incognito")) == "incognito"
 
-	highlightID := cleaner.Line(request.Form.Get("post"))
-	errs := []error{}
-
-	if highlightID != "" {
+	if post != "" {
 		filter := bson.M{
-			"post": highlightID,
-			"type": types.Highlight,
+			"post": post,
+			"type": types.TikTok,
 		}
-
-		if err := db.Histories.FindOne(context.Background(), filter).Decode(&history); err != nil {
-			instagram := shared.NewInstagram(user.Instagram.FBSR, user.Instagram.SessionID, user.Instagram.UserID)
-			URLs, username, err := instagram.Reels(highlightID, true)
+		if err := server.Histories.FindOne(context.Background(), filter).Decode(&history); err != nil {
+			tiktok := shared.NewTikTok(user.TikTok.SessionID, user.TikTok.SessionIDGuard, user.TikTok.ChainToken)
+			URLs, username, cookies, err := tiktok.Post(owner, post, incognito)
 			if err != nil {
 				log.Error(err)
 				writer.WriteHeader(http.StatusBadRequest)
-				historyHTML(user, history, []error{err}, writer)
+				historyHTML(*user, history, []error{err}, writer)
 				return
 			}
 
 			localURLs := make([]string, 0, len(URLs))
+			errs := make([]error, 0, len(URLs))
 			for _, urlString := range URLs {
 				URL, err := url.Parse(urlString)
 				if err != nil {
@@ -62,11 +58,15 @@ func HighlightPage(writer http.ResponseWriter, request *http.Request) {
 					errs = append(errs, err)
 					continue
 				}
-				fileName := fmt.Sprintf("%s_%s", highlightID, path.Base(URL.Path))
+				if URL.Query().Get("mime_type") == "video_mp4" {
+					localURLs = append(localURLs, fmt.Sprintf("%s.mp4", post))
+					break
+				}
+				fileName := fmt.Sprintf("%s_%s", post, path.Base(URL.Path))
 				localURLs = append(localURLs, fileName)
 			}
 
-			localURLs, saveErrors := StorageHandler.SaveBundle(user, types.Highlight, username, localURLs, URLs, []*http.Cookie{})
+			localURLs, saveErrors := StorageHandler.SaveBundle(*user, types.TikTok, username, localURLs, URLs, cookies)
 			errs = append(errs, saveErrors...)
 			for _, err := range saveErrors {
 				log.Error(err)
@@ -78,20 +78,22 @@ func HighlightPage(writer http.ResponseWriter, request *http.Request) {
 					ID:    primitive.NewObjectID().Hex(),
 					U_ID:  user.ID.Hex(),
 					URLs:  localURLs,
-					Type:  types.Highlight,
+					Type:  types.TikTok,
 					Owner: username,
-					Post:  highlightID,
+					Post:  post,
 					Date:  time.Now(),
 				}
 
-				if _, err := db.Histories.InsertOne(context.Background(), history); err != nil {
+				if _, err := server.Histories.InsertOne(context.Background(), history); err != nil {
 					log.Error(err)
 					writer.WriteHeader(http.StatusInternalServerError)
-					errs = append(errs, err)
+					historyHTML(*user, history, []error{err}, writer)
+					return
 				}
 			}
+
 		}
 	}
 
-	historyHTML(user, history, errs, writer)
+	historyHTML(*user, history, nil, writer)
 }

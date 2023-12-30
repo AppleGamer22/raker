@@ -1,4 +1,4 @@
-package handlers
+package server
 
 import (
 	"context"
@@ -17,13 +17,8 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func VSCOPage(writer http.ResponseWriter, request *http.Request) {
-	user, err := Verify(request)
-	if err != nil {
-		http.Error(writer, "unauthorized", http.StatusUnauthorized)
-		log.Error(err)
-		return
-	}
+func (server *RakerServer) VSCOPage(writer http.ResponseWriter, request *http.Request) {
+	user := request.Context().Value(authenticatedUserKey).(*db.User)
 
 	if err := request.ParseForm(); err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
@@ -40,12 +35,12 @@ func VSCOPage(writer http.ResponseWriter, request *http.Request) {
 			"post": post,
 			"type": types.VSCO,
 		}
-		if err := db.Histories.FindOne(context.Background(), filter).Decode(&history); err != nil {
+		if err := server.Histories.FindOne(context.Background(), filter).Decode(&history); err != nil {
 			urlString, username, err := shared.VSCO(owner, post)
 			if err != nil {
 				log.Error(err)
 				writer.WriteHeader(http.StatusBadRequest)
-				historyHTML(user, history, []error{err}, writer)
+				historyHTML(*user, history, []error{err}, writer)
 				return
 			}
 
@@ -53,15 +48,15 @@ func VSCOPage(writer http.ResponseWriter, request *http.Request) {
 			if err != nil {
 				log.Error(err)
 				writer.WriteHeader(http.StatusBadRequest)
-				historyHTML(user, history, []error{err}, writer)
+				historyHTML(*user, history, []error{err}, writer)
 				return
 			}
 			fileName := fmt.Sprintf("%s_%s", post, path.Base(URL.Path))
 
-			if err := StorageHandler.Save(user, types.VSCO, username, fileName, urlString, []*http.Cookie{}); err != nil {
+			if err := StorageHandler.Save(*user, types.VSCO, username, fileName, urlString, []*http.Cookie{}); err != nil {
 				log.Error(err)
 				writer.WriteHeader(http.StatusInternalServerError)
-				historyHTML(user, history, []error{err}, writer)
+				historyHTML(*user, history, []error{err}, writer)
 				return
 			}
 
@@ -75,14 +70,14 @@ func VSCOPage(writer http.ResponseWriter, request *http.Request) {
 				Date:  time.Now(),
 			}
 
-			if _, err := db.Histories.InsertOne(context.Background(), history); err != nil {
+			if _, err := server.Histories.InsertOne(context.Background(), history); err != nil {
 				log.Error(err)
 				writer.WriteHeader(http.StatusInternalServerError)
-				historyHTML(user, history, []error{err}, writer)
+				historyHTML(*user, history, []error{err}, writer)
 				return
 			}
 		}
 	}
 
-	historyHTML(user, history, nil, writer)
+	historyHTML(*user, history, nil, writer)
 }

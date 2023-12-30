@@ -1,4 +1,4 @@
-package handlers
+package server
 
 import (
 	"context"
@@ -17,13 +17,8 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func InstagramPage(writer http.ResponseWriter, request *http.Request) {
-	user, err := Verify(request)
-	if err != nil {
-		http.Error(writer, "unauthorized", http.StatusUnauthorized)
-		log.Error(err)
-		return
-	}
+func (server *RakerServer) HighlightPage(writer http.ResponseWriter, request *http.Request) {
+	user := request.Context().Value(authenticatedUserKey).(*db.User)
 
 	if err := request.ParseForm(); err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
@@ -31,25 +26,25 @@ func InstagramPage(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	history := db.History{
-		Type: types.Instagram,
+		Type: types.Highlight,
 	}
 
-	post := cleaner.Line(request.Form.Get("post"))
-	incognito := cleaner.Line(request.Form.Get("incognito")) == "incognito"
+	highlightID := cleaner.Line(request.Form.Get("post"))
 	errs := []error{}
 
-	if post != "" {
+	if highlightID != "" {
 		filter := bson.M{
-			"post": post,
-			"type": types.Instagram,
+			"post": highlightID,
+			"type": types.Highlight,
 		}
-		if err := db.Histories.FindOne(context.Background(), filter).Decode(&history); err != nil {
+
+		if err := server.Histories.FindOne(context.Background(), filter).Decode(&history); err != nil {
 			instagram := shared.NewInstagram(user.Instagram.FBSR, user.Instagram.SessionID, user.Instagram.UserID)
-			URLs, username, err := instagram.Post(post, incognito)
+			URLs, username, err := instagram.Reels(highlightID, true)
 			if err != nil {
 				log.Error(err)
 				writer.WriteHeader(http.StatusBadRequest)
-				historyHTML(user, history, []error{err}, writer)
+				historyHTML(*user, history, []error{err}, writer)
 				return
 			}
 
@@ -62,11 +57,11 @@ func InstagramPage(writer http.ResponseWriter, request *http.Request) {
 					errs = append(errs, err)
 					continue
 				}
-				fileName := fmt.Sprintf("%s_%s", post, path.Base(URL.Path))
+				fileName := fmt.Sprintf("%s_%s", highlightID, path.Base(URL.Path))
 				localURLs = append(localURLs, fileName)
 			}
 
-			localURLs, saveErrors := StorageHandler.SaveBundle(user, types.Instagram, username, localURLs, URLs, []*http.Cookie{})
+			localURLs, saveErrors := StorageHandler.SaveBundle(*user, types.Highlight, username, localURLs, URLs, []*http.Cookie{})
 			errs = append(errs, saveErrors...)
 			for _, err := range saveErrors {
 				log.Error(err)
@@ -78,13 +73,13 @@ func InstagramPage(writer http.ResponseWriter, request *http.Request) {
 					ID:    primitive.NewObjectID().Hex(),
 					U_ID:  user.ID.Hex(),
 					URLs:  localURLs,
-					Type:  types.Instagram,
+					Type:  types.Highlight,
 					Owner: username,
-					Post:  post,
+					Post:  highlightID,
 					Date:  time.Now(),
 				}
 
-				if _, err := db.Histories.InsertOne(context.Background(), history); err != nil {
+				if _, err := server.Histories.InsertOne(context.Background(), history); err != nil {
 					log.Error(err)
 					writer.WriteHeader(http.StatusInternalServerError)
 					errs = append(errs, err)
@@ -93,5 +88,5 @@ func InstagramPage(writer http.ResponseWriter, request *http.Request) {
 		}
 	}
 
-	historyHTML(user, history, errs, writer)
+	historyHTML(*user, history, errs, writer)
 }

@@ -1,4 +1,4 @@
-package handlers
+package server
 
 import (
 	"context"
@@ -20,13 +20,8 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func History(writer http.ResponseWriter, request *http.Request) {
-	user, err := Verify(request)
-	if err != nil {
-		http.Error(writer, "unauthorized", http.StatusUnauthorized)
-		log.Error(err)
-		return
-	}
+func (server *RakerServer) History(writer http.ResponseWriter, request *http.Request) {
+	user := request.Context().Value(authenticatedUserKey).(*db.User)
 
 	if err := request.ParseForm(); err != nil {
 		http.Error(writer, "failed to read request form", http.StatusBadRequest)
@@ -54,7 +49,7 @@ func History(writer http.ResponseWriter, request *http.Request) {
 	case http.MethodPost:
 		switch cleaner.Line(request.Form.Get("method")) {
 		case http.MethodPatch:
-			_, err := editHistory(user.ID, media, owner, post, categories)
+			_, err := server.editHistory(user.ID, media, owner, post, categories)
 			if err != nil {
 				http.Error(writer, err.Error(), http.StatusBadRequest)
 				log.Error(err)
@@ -65,11 +60,10 @@ func History(writer http.ResponseWriter, request *http.Request) {
 		case http.MethodDelete:
 			if file == "" {
 				http.Error(writer, "file URL must be valid", http.StatusBadRequest)
-				log.Error(err)
 				return
 			}
 
-			history, err := deleteFileFromHistory(user, owner, media, post, file)
+			history, err := server.deleteFileFromHistory(*user, owner, media, post, file)
 			if err != nil {
 				http.Error(writer, err.Error(), http.StatusBadRequest)
 				log.Error(err)
@@ -97,7 +91,7 @@ func History(writer http.ResponseWriter, request *http.Request) {
 	}
 }
 
-func filterHistories(user db.User, owner string, categories, mediaTypes []string, page int, exclusive bool) ([][]db.History, int, int, int, error) {
+func (server *RakerServer) filterHistories(user db.User, owner string, categories, mediaTypes []string, page int, exclusive bool) ([][]db.History, int, int, int, error) {
 	for _, mediaType := range mediaTypes {
 		if !types.ValidMediaType(mediaType) {
 			return [][]db.History{}, 0, 0, 0, errors.New("media type must be valid")
@@ -157,7 +151,7 @@ func filterHistories(user db.User, owner string, categories, mediaTypes []string
 		}}
 	}
 
-	count, err := db.Histories.CountDocuments(context.Background(), filter)
+	count, err := server.Histories.CountDocuments(context.Background(), filter)
 	if err != nil {
 		return [][]db.History{}, 0, 0, 0, err
 	}
@@ -175,7 +169,7 @@ func filterHistories(user db.User, owner string, categories, mediaTypes []string
 	paginationOptions.SetLimit(int64(30))
 	paginationOptions.SetSort(bson.D{{Key: "date", Value: -1}})
 
-	cursor, err := db.Histories.Find(context.Background(), filter, paginationOptions)
+	cursor, err := server.Histories.Find(context.Background(), filter, paginationOptions)
 	if err != nil {
 		return [][]db.History{}, 0, 0, 0, err
 	}
@@ -201,7 +195,7 @@ func filterHistories(user db.User, owner string, categories, mediaTypes []string
 	return matrix, page, pages, int(count), err
 }
 
-func editHistory(U_ID primitive.ObjectID, media, owner, post string, categories []string) (db.History, error) {
+func (server *RakerServer) editHistory(U_ID primitive.ObjectID, media, owner, post string, categories []string) (db.History, error) {
 	filter := bson.M{
 		"U_ID":  U_ID.Hex(),
 		"type":  media,
@@ -216,11 +210,11 @@ func editHistory(U_ID primitive.ObjectID, media, owner, post string, categories 
 	}
 
 	var history db.History
-	err := db.Histories.FindOneAndUpdate(context.Background(), filter, update, db.UpdateOption).Decode(&history)
+	err := server.Histories.FindOneAndUpdate(context.Background(), filter, update, db.UpdateOption).Decode(&history)
 	return history, err
 }
 
-func deleteFileFromHistory(user db.User, owner, media, post, file string) (db.History, error) {
+func (server *RakerServer) deleteFileFromHistory(user db.User, owner, media, post, file string) (db.History, error) {
 	filter := bson.M{
 		"U_ID": user.ID.Hex(),
 		"urls": file,
@@ -235,7 +229,7 @@ func deleteFileFromHistory(user db.User, owner, media, post, file string) (db.Hi
 
 	var history db.History
 
-	if err := db.Histories.FindOneAndUpdate(context.Background(), filter, update, db.UpdateOption).Decode(&history); err != nil {
+	if err := server.Histories.FindOneAndUpdate(context.Background(), filter, update, db.UpdateOption).Decode(&history); err != nil {
 		return db.History{}, err
 	}
 
@@ -245,7 +239,7 @@ func deleteFileFromHistory(user db.User, owner, media, post, file string) (db.Hi
 
 	if len(history.URLs) == 0 {
 		delete(filter, "urls")
-		result, err := db.Histories.DeleteOne(context.Background(), filter)
+		result, err := server.Histories.DeleteOne(context.Background(), filter)
 		if err != nil {
 			return db.History{}, err
 		} else if result.DeletedCount == 0 {
@@ -273,13 +267,8 @@ func historyHTML(user db.User, history db.History, serverErrors []error, writer 
 	}
 }
 
-func HistoryPage(writer http.ResponseWriter, request *http.Request) {
-	user, err := Verify(request)
-	if err != nil {
-		http.Error(writer, "unauthorized", http.StatusUnauthorized)
-		log.Error(err)
-		return
-	}
+func (server *RakerServer) HistoryPage(writer http.ResponseWriter, request *http.Request) {
+	user := request.Context().Value(authenticatedUserKey).(*db.User)
 
 	if err := request.ParseForm(); err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
@@ -310,7 +299,7 @@ func HistoryPage(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	exclusive := cleaner.Line(request.Form.Get("exclusive")) == "exclusive"
-	histories, page, pages, count, err := filterHistories(user, owner, categories, mediaTypes, page, exclusive)
+	histories, page, pages, count, err := server.filterHistories(*user, owner, categories, mediaTypes, page, exclusive)
 	if err != nil {
 		log.Error(err)
 	}

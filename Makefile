@@ -1,5 +1,5 @@
 .PHONY: server cli debug test clean completion manual
-SHELL:=/bin/bash
+SHELL:=$(shell which bash)
 PACKAGE:=github.com/AppleGamer22/raker
 VERSION:=$(shell git describe --tags --abbrev=0 || echo '$(PACKAGE)/shared.Version')
 HASH:=$(shell git rev-list -1 HEAD)
@@ -8,7 +8,10 @@ LDFLAGS:=-ldflags="-X '$(PACKAGE)/shared.Version=$(subst v,,$(VERSION))' -X '$(P
 build: server cli
 
 server:
-	go build -race $(LDFLAGS) -o raker-server ./server
+	# go build -race $(LDFLAGS) -o raker-server ./server
+	docker compose up -d database
+	-go run ./server || true
+	docker stop database
 
 cli:
 	go build -race $(LDFLAGS) -o raker ./cli

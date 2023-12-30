@@ -1,4 +1,4 @@
-package handlers
+package server
 
 import (
 	"context"
@@ -12,13 +12,8 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func Categories(writer http.ResponseWriter, request *http.Request) {
-	user, err := Verify(request)
-	if err != nil {
-		http.Error(writer, "unauthorized", http.StatusUnauthorized)
-		log.Error(err, "ID", user.ID.Hex())
-		return
-	}
+func (server *RakerServer) Categories(writer http.ResponseWriter, request *http.Request) {
+	user := request.Context().Value(authenticatedUserKey).(*db.User)
 
 	if err := request.ParseForm(); err != nil {
 		http.Error(writer, "failed to read request form", http.StatusBadRequest)
@@ -77,13 +72,13 @@ func Categories(writer http.ResponseWriter, request *http.Request) {
 		bulkOptions := options.BulkWriteOptions{}
 		bulkOptions.SetOrdered(true)
 
-		if _, err := db.Histories.BulkWrite(context.Background(), operations, &bulkOptions); err != nil {
+		if _, err := server.Histories.BulkWrite(context.Background(), operations, &bulkOptions); err != nil {
 			log.Error(err, "category", category, "edited", editedCategory)
 			http.Error(writer, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		if _, err := db.Users.BulkWrite(context.Background(), operations, &bulkOptions); err != nil {
+		if _, err := server.Users.BulkWrite(context.Background(), operations, &bulkOptions); err != nil {
 			log.Error(err, "category", category, "edited", editedCategory)
 			http.Error(writer, err.Error(), http.StatusInternalServerError)
 			return

@@ -1,4 +1,4 @@
-package handlers
+package server
 
 import (
 	"context"
@@ -16,13 +16,8 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func StoryPage(writer http.ResponseWriter, request *http.Request) {
-	user, err := Verify(request)
-	if err != nil {
-		http.Error(writer, "unauthorized", http.StatusUnauthorized)
-		log.Error(err)
-		return
-	}
+func (server *RakerServer) StoryPage(writer http.ResponseWriter, request *http.Request) {
+	user := request.Context().Value(authenticatedUserKey).(*db.User)
 
 	if err := request.ParseForm(); err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
@@ -44,12 +39,12 @@ func StoryPage(writer http.ResponseWriter, request *http.Request) {
 			"type":  types.Story,
 		}
 
-		if err := db.Histories.FindOne(context.Background(), filter).Decode(&history); err == nil {
-			historyHTML(user, history, []error{}, writer)
+		if err := server.Histories.FindOne(context.Background(), filter).Decode(&history); err == nil {
+			historyHTML(*user, history, []error{}, writer)
 			return
 		}
 	} else if owner == "" {
-		historyHTML(user, history, errs, writer)
+		historyHTML(*user, history, errs, writer)
 		return
 	}
 
@@ -58,7 +53,7 @@ func StoryPage(writer http.ResponseWriter, request *http.Request) {
 	if err != nil {
 		log.Error(err)
 		writer.WriteHeader(http.StatusBadRequest)
-		historyHTML(user, history, []error{err}, writer)
+		historyHTML(*user, history, []error{err}, writer)
 		return
 	}
 
@@ -79,7 +74,7 @@ func StoryPage(writer http.ResponseWriter, request *http.Request) {
 
 		fileName := path.Base(URL.Path)
 		filter["urls"] = fileName
-		if count, err := db.Histories.CountDocuments(context.Background(), filter); err != nil || count > 0 {
+		if count, err := server.Histories.CountDocuments(context.Background(), filter); err != nil || count > 0 {
 			continue
 		}
 
@@ -88,7 +83,7 @@ func StoryPage(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	URLs = newURLs
-	localURLs, saveErrors := StorageHandler.SaveBundle(user, types.Story, username, localURLs, URLs, []*http.Cookie{})
+	localURLs, saveErrors := StorageHandler.SaveBundle(*user, types.Story, username, localURLs, URLs, []*http.Cookie{})
 	errs = append(errs, saveErrors...)
 	for _, err := range saveErrors {
 		log.Error(err)
@@ -107,12 +102,12 @@ func StoryPage(writer http.ResponseWriter, request *http.Request) {
 			Date:  time.Now(),
 		}
 
-		if _, err := db.Histories.InsertOne(context.Background(), history); err != nil {
+		if _, err := server.Histories.InsertOne(context.Background(), history); err != nil {
 			log.Error(err)
 			writer.WriteHeader(http.StatusInternalServerError)
 			errs = append(errs, err)
 		}
 	}
 
-	historyHTML(user, history, errs, writer)
+	historyHTML(*user, history, errs, writer)
 }

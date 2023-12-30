@@ -1,4 +1,4 @@
-package handlers
+package server
 
 import (
 	"context"
@@ -19,7 +19,7 @@ import (
 
 var Authenticator authenticator.Authenticator
 
-func InstagramSignUp(writer http.ResponseWriter, request *http.Request) {
+func (server *RakerServer) InstagramSignUp(writer http.ResponseWriter, request *http.Request) {
 	if request.Method != http.MethodPost {
 		http.Redirect(writer, request, "/", http.StatusTemporaryRedirect)
 		return
@@ -60,7 +60,7 @@ func InstagramSignUp(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	count, err := db.Users.CountDocuments(context.Background(), bson.M{"username": username})
+	count, err := server.Users.CountDocuments(context.Background(), bson.M{"username": username})
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
 		log.Error(err, "username", username)
@@ -94,17 +94,17 @@ func InstagramSignUp(writer http.ResponseWriter, request *http.Request) {
 		Joined:  time.Now(),
 		Network: types.Instagram,
 	}
-	_, err = db.Users.InsertOne(context.Background(), user)
+	_, err = server.Users.InsertOne(context.Background(), user)
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
 		log.Error(err)
 		return
 	}
 
-	InstagramSignIn(writer, request)
+	server.InstagramSignIn(writer, request)
 }
 
-func InstagramSignIn(writer http.ResponseWriter, request *http.Request) {
+func (server *RakerServer) InstagramSignIn(writer http.ResponseWriter, request *http.Request) {
 	if request.Method != http.MethodPost {
 		http.Redirect(writer, request, "/", http.StatusTemporaryRedirect)
 		return
@@ -128,7 +128,7 @@ func InstagramSignIn(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	var user db.User
-	if err := db.Users.FindOne(context.Background(), bson.M{"username": username}).Decode(&user); err != nil {
+	if err := server.Users.FindOne(context.Background(), bson.M{"username": username}).Decode(&user); err != nil {
 		http.Error(writer, "incorrect credentials", http.StatusUnauthorized)
 		log.Error(err)
 		return
@@ -160,47 +160,49 @@ func InstagramSignIn(writer http.ResponseWriter, request *http.Request) {
 	http.Redirect(writer, request, request.Referer(), http.StatusTemporaryRedirect)
 }
 
-func Verify(request *http.Request) (db.User, error) {
-	jwtCookie, err := request.Cookie("jwt")
-	if err != nil {
-		return db.User{}, err
-	}
+func (server *RakerServer) Verify(handler http.Handler) http.Handler {
+	return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+		jwtCookie, err := request.Cookie("jwt")
+		if err != nil {
+			http.Error(writer, "credential update failed", http.StatusUnauthorized)
+			log.Error(err)
+			return
+		}
 
-	U_ID, username, err := Authenticator.Parse(jwtCookie.Value)
-	if err != nil {
-		return db.User{}, err
-	}
+		U_ID, username, err := server.Authenticator.Parse(jwtCookie.Value)
+		if err != nil {
+			http.Error(writer, "credential update failed", http.StatusUnauthorized)
+			log.Error(err)
+			return
+		}
 
-	filter := bson.M{
-		"$or": bson.A{
-			bson.M{
-				"_id": U_ID,
-			},
-			bson.M{
-				"_id": U_ID.Hex(),
-			},
-		},
-		"username": username,
-	}
-	var user db.User
-	err = db.Users.FindOne(context.Background(), filter).Decode(&user)
-	return user, err
+		filter := bson.M{
+			"_id":      U_ID,
+			"username": username,
+		}
+		var user db.User
+		if err := server.Users.FindOne(context.Background(), filter).Decode(&user); err != nil {
+			http.Error(writer, "credential update failed", http.StatusUnauthorized)
+			log.Error(err)
+			return
+		}
+		// https://drstearns.github.io/tutorials/gomiddleware/#secmiddlewareandrequestscopedvalues
+		ctxWithUser := context.WithValue(request.Context(), authenticatedUserKey, user)
+		requestWithUser := request.WithContext(ctxWithUser)
+		handler.ServeHTTP(writer, requestWithUser)
+	})
 }
 
-func InstagramUpdateCredentials(writer http.ResponseWriter, request *http.Request) {
+func (server *RakerServer) InstagramUpdateCredentials(writer http.ResponseWriter, request *http.Request) {
 	if request.Method != http.MethodPost {
 		http.Redirect(writer, request, "/", http.StatusTemporaryRedirect)
 		return
 	}
 
-	user, err := Verify(request)
-	if err != nil {
-		http.Error(writer, "credential update failed", http.StatusUnauthorized)
-		log.Error(err, "ID", user.ID.Hex())
-		return
-	}
+	user := request.Context().Value(authenticatedUserKey).(*db.User)
 
-	if err := request.ParseForm(); err != nil {
+	err := request.ParseForm()
+	if err != nil {
 		http.Error(writer, "failed to read request form", http.StatusBadRequest)
 		return
 	}
@@ -246,7 +248,7 @@ func InstagramUpdateCredentials(writer http.ResponseWriter, request *http.Reques
 		},
 	}
 
-	result, err := db.Users.UpdateOne(context.Background(), filter, update)
+	result, err := server.Users.UpdateOne(context.Background(), filter, update)
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
 		log.Error(err, "ID", user.ID.Hex())
@@ -259,18 +261,13 @@ func InstagramUpdateCredentials(writer http.ResponseWriter, request *http.Reques
 	http.Redirect(writer, request, request.Referer(), http.StatusTemporaryRedirect)
 }
 
-func InstagramSignOut(writer http.ResponseWriter, request *http.Request) {
+func (server *RakerServer) InstagramSignOut(writer http.ResponseWriter, request *http.Request) {
 	if request.Method != http.MethodPost {
 		http.Redirect(writer, request, "/", http.StatusTemporaryRedirect)
 		return
 	}
 
-	user, err := Verify(request)
-	if err != nil {
-		http.Error(writer, "sign-out failed", http.StatusUnauthorized)
-		log.Error(err, "ID", user.ID.Hex())
-		return
-	}
+	// user := request.Context().Value(authenticatedUserKey).(*db.User)
 
 	http.SetCookie(writer, &http.Cookie{
 		Name:   "jwt",
@@ -281,8 +278,8 @@ func InstagramSignOut(writer http.ResponseWriter, request *http.Request) {
 	http.Redirect(writer, request, request.Referer(), http.StatusTemporaryRedirect)
 }
 
-func AuthenticationPage(writer http.ResponseWriter, request *http.Request) {
-	user, _ := Verify(request)
+func (server *RakerServer) AuthenticationPage(writer http.ResponseWriter, request *http.Request) {
+	user := request.Context().Value(authenticatedUserKey).(*db.User)
 
 	categoryDisplay := db.UserCategoryDisplay{
 		Username:   user.Username,

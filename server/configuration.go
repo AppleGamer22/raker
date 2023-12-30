@@ -1,17 +1,15 @@
-package main
+package server
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"os"
 
 	"github.com/AppleGamer22/raker/server/authenticator"
 	"github.com/AppleGamer22/raker/server/db"
-	"github.com/AppleGamer22/raker/server/handlers"
+
 	"github.com/charmbracelet/log"
 	"github.com/spf13/viper"
-	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -35,39 +33,6 @@ type RakerServer struct {
 	Histories     *mongo.Collection
 	Authenticator authenticator.Authenticator
 	HTTPServer    http.Server
-}
-
-func (rs *RakerServer) Verify(handler http.Handler) http.Handler {
-	return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
-		jwtCookie, err := request.Cookie("jwt")
-		if err != nil {
-			http.Error(writer, "credential update failed", http.StatusUnauthorized)
-			log.Error(err)
-			return
-		}
-
-		U_ID, username, err := rs.Authenticator.Parse(jwtCookie.Value)
-		if err != nil {
-			http.Error(writer, "credential update failed", http.StatusUnauthorized)
-			log.Error(err)
-			return
-		}
-
-		filter := bson.M{
-			"_id":      U_ID,
-			"username": username,
-		}
-		var user db.User
-		if err := rs.Users.FindOne(context.Background(), filter).Decode(&user); err != nil {
-			http.Error(writer, "credential update failed", http.StatusUnauthorized)
-			log.Error(err)
-			return
-		}
-		// https://drstearns.github.io/tutorials/gomiddleware/#secmiddlewareandrequestscopedvalues
-		ctxWithUser := context.WithValue(request.Context(), authenticatedUserKey, user)
-		requestWithUser := request.WithContext(ctxWithUser)
-		handler.ServeHTTP(writer, requestWithUser)
-	})
 }
 
 func NewRakerServer() (*RakerServer, error) {
@@ -97,18 +62,40 @@ func NewRakerServer() (*RakerServer, error) {
 
 	rakerServer.Authenticator = authenticator.New(configuration.Secret)
 
-	dbClient, err := db.Connect(configuration.URI, configuration.Database)
+	dbClient, database, err := db.Connect(configuration.URI, configuration.Database)
 	if err != nil {
 		log.Fatal(err)
 	}
-	// remember to defer client.Close()
 	rakerServer.DBClient = dbClient
+	// remember to defer client.Close()
+	rakerServer.Histories = database.Collection("histories")
+	rakerServer.Users = database.Collection("users")
 
 	mux := http.NewServeMux()
 
+	mux.HandleFunc("/api/auth/sign_up/instagram", rakerServer.InstagramSignUp)
+	mux.HandleFunc("/api/auth/sign_in/instagram", rakerServer.InstagramSignIn)
+	mux.HandleFunc("/api/auth/update/instagram", rakerServer.InstagramUpdateCredentials)
+	mux.HandleFunc("/api/auth/sign_out/instagram", rakerServer.InstagramSignOut)
+	mux.HandleFunc("/api/categories", rakerServer.Categories)
+	mux.HandleFunc("/api/history", rakerServer.History)
+	// mux.HandleFunc("/api/info", rakerServer.Information)
+	mux.Handle("/api/storage/", http.StripPrefix("/api/storage", rakerServer.Verify(NewStorageHandler(configuration.Storage, configuration.Directories))))
+	mux.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir("assets"))))
+	mux.Handle("/favicon.ico", http.RedirectHandler("/assets/icons/favicon.ico", http.StatusPermanentRedirect))
+	mux.Handle("/robots.txt", http.RedirectHandler("/assets/robots.txt", http.StatusPermanentRedirect))
+
+	mux.HandleFunc("/", rakerServer.AuthenticationPage)
+	mux.HandleFunc("/history", rakerServer.HistoryPage)
+	mux.HandleFunc("/instagram", rakerServer.InstagramPage)
+	mux.HandleFunc("/highlight", rakerServer.HighlightPage)
+	mux.HandleFunc("/story", rakerServer.StoryPage)
+	mux.HandleFunc("/tiktok", rakerServer.TikTokPage)
+	mux.HandleFunc("/vsco", rakerServer.VSCOPage)
+
 	rakerServer.HTTPServer = http.Server{
 		Addr:    fmt.Sprintf(":%d", configuration.Port),
-		Handler: handlers.NewLoggerMiddleware(mux),
+		Handler: NewLoggerMiddleware(mux),
 		ErrorLog: log.Default().StandardLog(log.StandardLogOptions{
 			ForceLevel: log.ErrorLevel,
 		}),
