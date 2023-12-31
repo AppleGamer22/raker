@@ -56,13 +56,13 @@ func NewRakerServer() (*RakerServer, error) {
 		log.Fatal(err)
 	}
 
-	if configuration.Secret == "" && !viper.IsSet("secret") {
+	if rakerServer.Configuration.Secret == "" && !viper.IsSet("secret") {
 		log.Fatal("A JWT secret must be set via a config file or an environment variable")
 	}
 
-	rakerServer.Authenticator = authenticator.New(configuration.Secret)
+	rakerServer.Authenticator = authenticator.New(rakerServer.Configuration.Secret)
 
-	dbClient, database, err := db.Connect(configuration.URI, configuration.Database)
+	dbClient, database, err := db.Connect(rakerServer.Configuration.URI, rakerServer.Configuration.Database)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -75,26 +75,26 @@ func NewRakerServer() (*RakerServer, error) {
 
 	mux.HandleFunc("/api/auth/sign_up/instagram", rakerServer.InstagramSignUp)
 	mux.HandleFunc("/api/auth/sign_in/instagram", rakerServer.InstagramSignIn)
-	mux.Handle("/api/auth/update/instagram", rakerServer.Verify(http.HandlerFunc(rakerServer.InstagramUpdateCredentials)))
-	mux.Handle("/api/auth/sign_out/instagram", rakerServer.Verify(http.HandlerFunc(rakerServer.InstagramSignOut)))
-	mux.Handle("/api/categories", rakerServer.Verify(http.HandlerFunc(rakerServer.Categories)))
-	mux.Handle("/api/history", rakerServer.Verify(http.HandlerFunc(rakerServer.History)))
+	mux.Handle("/api/auth/update/instagram", rakerServer.Verify(true, http.HandlerFunc(rakerServer.InstagramUpdateCredentials)))
+	mux.Handle("/api/auth/sign_out/instagram", rakerServer.Verify(true, http.HandlerFunc(rakerServer.InstagramSignOut)))
+	mux.Handle("/api/categories", rakerServer.Verify(true, http.HandlerFunc(rakerServer.Categories)))
+	mux.Handle("/api/history", rakerServer.Verify(true, http.HandlerFunc(rakerServer.History)))
 	// mux.HandleFunc("/api/info", rakerServer.Information)
-	mux.Handle("/api/storage/", http.StripPrefix("/api/storage", rakerServer.Verify(NewStorageHandler(configuration.Storage, configuration.Directories))))
+	mux.Handle("/api/storage/", http.StripPrefix("/api/storage", rakerServer.Verify(true, NewStorageHandler(rakerServer.Configuration.Storage, rakerServer.Configuration.Directories))))
 	mux.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir("assets"))))
 	mux.Handle("/favicon.ico", http.RedirectHandler("/assets/icons/favicon.ico", http.StatusPermanentRedirect))
 	mux.Handle("/robots.txt", http.RedirectHandler("/assets/robots.txt", http.StatusPermanentRedirect))
 
-	mux.HandleFunc("/", rakerServer.AuthenticationPage)
-	mux.Handle("/history", rakerServer.Verify(http.HandlerFunc(rakerServer.HistoryPage)))
-	mux.Handle("/instagram", rakerServer.Verify(http.HandlerFunc(rakerServer.InstagramPage)))
-	mux.Handle("/highlight", rakerServer.Verify(http.HandlerFunc(rakerServer.HighlightPage)))
-	mux.Handle("/story", rakerServer.Verify(http.HandlerFunc(rakerServer.StoryPage)))
-	mux.Handle("/tiktok", rakerServer.Verify(http.HandlerFunc(rakerServer.TikTokPage)))
-	mux.Handle("/vsco", rakerServer.Verify(http.HandlerFunc(rakerServer.VSCOPage)))
+	mux.Handle("/", rakerServer.Verify(false, http.HandlerFunc(rakerServer.AuthenticationPage)))
+	mux.Handle("/history", rakerServer.Verify(true, http.HandlerFunc(rakerServer.HistoryPage)))
+	mux.Handle("/instagram", rakerServer.Verify(true, http.HandlerFunc(rakerServer.InstagramPage)))
+	mux.Handle("/highlight", rakerServer.Verify(true, http.HandlerFunc(rakerServer.HighlightPage)))
+	mux.Handle("/story", rakerServer.Verify(true, http.HandlerFunc(rakerServer.StoryPage)))
+	mux.Handle("/tiktok", rakerServer.Verify(true, http.HandlerFunc(rakerServer.TikTokPage)))
+	mux.Handle("/vsco", rakerServer.Verify(true, http.HandlerFunc(rakerServer.VSCOPage)))
 
 	rakerServer.HTTPServer = http.Server{
-		Addr:    fmt.Sprintf(":%d", configuration.Port),
+		Addr:    fmt.Sprintf(":%d", rakerServer.Configuration.Port),
 		Handler: NewLoggerMiddleware(mux),
 		ErrorLog: log.Default().StandardLog(log.StandardLogOptions{
 			ForceLevel: log.ErrorLevel,
@@ -102,14 +102,6 @@ func NewRakerServer() (*RakerServer, error) {
 	}
 
 	return &rakerServer, nil
-}
-
-var configuration = Configuration{
-	URI:         "mongodb://localhost:27017",
-	Database:    "raker",
-	Storage:     ".",
-	Directories: false,
-	Port:        4100,
 }
 
 func init() {

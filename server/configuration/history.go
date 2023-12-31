@@ -21,7 +21,7 @@ import (
 )
 
 func (server *RakerServer) History(writer http.ResponseWriter, request *http.Request) {
-	user := request.Context().Value(authenticatedUserKey).(*db.User)
+	user := request.Context().Value(authenticatedUserKey).(db.User)
 
 	if err := request.ParseForm(); err != nil {
 		http.Error(writer, "failed to read request form", http.StatusBadRequest)
@@ -63,7 +63,7 @@ func (server *RakerServer) History(writer http.ResponseWriter, request *http.Req
 				return
 			}
 
-			history, err := server.deleteFileFromHistory(*user, owner, media, post, file)
+			history, err := server.deleteFileFromHistory(user, owner, media, post, file)
 			if err != nil {
 				http.Error(writer, err.Error(), http.StatusBadRequest)
 				log.Error(err)
@@ -268,7 +268,7 @@ func historyHTML(user db.User, history db.History, serverErrors []error, writer 
 }
 
 func (server *RakerServer) HistoryPage(writer http.ResponseWriter, request *http.Request) {
-	user := request.Context().Value(authenticatedUserKey).(*db.User)
+	user := request.Context().Value(authenticatedUserKey).(db.User)
 
 	if err := request.ParseForm(); err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
@@ -299,7 +299,7 @@ func (server *RakerServer) HistoryPage(writer http.ResponseWriter, request *http
 	}
 
 	exclusive := cleaner.Line(request.Form.Get("exclusive")) == "exclusive"
-	histories, page, pages, count, err := server.filterHistories(*user, owner, categories, mediaTypes, page, exclusive)
+	histories, page, pages, count, err := server.filterHistories(user, owner, categories, mediaTypes, page, exclusive)
 	if err != nil {
 		log.Error(err)
 	}

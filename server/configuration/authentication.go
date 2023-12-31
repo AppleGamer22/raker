@@ -158,31 +158,35 @@ func (server *RakerServer) InstagramSignIn(writer http.ResponseWriter, request *
 	http.Redirect(writer, request, request.Referer(), http.StatusTemporaryRedirect)
 }
 
-func (server *RakerServer) Verify(handler http.Handler) http.Handler {
+func (server *RakerServer) getUserFromCookie(request *http.Request) (db.User, error) {
+	jwtCookie, err := request.Cookie("jwt")
+	if err != nil {
+		return db.User{}, err
+	}
+
+	U_ID, username, err := server.Authenticator.Parse(jwtCookie.Value)
+	if err != nil {
+		return db.User{}, err
+	}
+
+	filter := bson.M{
+		"_id":      U_ID,
+		"username": username,
+	}
+	var user db.User
+	err = server.Users.FindOne(context.Background(), filter).Decode(&user)
+	return user, err
+}
+
+func (server *RakerServer) Verify(strict bool, handler http.Handler) http.Handler {
 	return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
-		jwtCookie, err := request.Cookie("jwt")
+		user, err := server.getUserFromCookie(request)
 		if err != nil {
-			http.Error(writer, "credential update failed", http.StatusUnauthorized)
 			log.Error(err)
-			return
-		}
-
-		U_ID, username, err := server.Authenticator.Parse(jwtCookie.Value)
-		if err != nil {
-			http.Error(writer, "credential update failed", http.StatusUnauthorized)
-			log.Error(err)
-			return
-		}
-
-		filter := bson.M{
-			"_id":      U_ID,
-			"username": username,
-		}
-		var user db.User
-		if err := server.Users.FindOne(context.Background(), filter).Decode(&user); err != nil {
-			http.Error(writer, "credential update failed", http.StatusUnauthorized)
-			log.Error(err)
-			return
+			if strict {
+				http.Error(writer, "credential update failed", http.StatusUnauthorized)
+				return
+			}
 		}
 		// https://drstearns.github.io/tutorials/gomiddleware/#secmiddlewareandrequestscopedvalues
 		ctxWithUser := context.WithValue(request.Context(), authenticatedUserKey, user)
@@ -197,7 +201,7 @@ func (server *RakerServer) InstagramUpdateCredentials(writer http.ResponseWriter
 		return
 	}
 
-	user := request.Context().Value(authenticatedUserKey).(*db.User)
+	user := request.Context().Value(authenticatedUserKey).(db.User)
 
 	err := request.ParseForm()
 	if err != nil {
@@ -265,7 +269,7 @@ func (server *RakerServer) InstagramSignOut(writer http.ResponseWriter, request 
 		return
 	}
 
-	// user := request.Context().Value(authenticatedUserKey).(*db.User)
+	// user := request.Context().Value(authenticatedUserKey).(db.User)
 
 	http.SetCookie(writer, &http.Cookie{
 		Name:   "jwt",
@@ -277,7 +281,7 @@ func (server *RakerServer) InstagramSignOut(writer http.ResponseWriter, request 
 }
 
 func (server *RakerServer) AuthenticationPage(writer http.ResponseWriter, request *http.Request) {
-	user := request.Context().Value(authenticatedUserKey).(*db.User)
+	user := request.Context().Value(authenticatedUserKey).(db.User)
 
 	categoryDisplay := db.UserCategoryDisplay{
 		Username:   user.Username,

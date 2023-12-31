@@ -17,7 +17,7 @@ import (
 )
 
 func (server *RakerServer) StoryPage(writer http.ResponseWriter, request *http.Request) {
-	user := request.Context().Value(authenticatedUserKey).(*db.User)
+	user := request.Context().Value(authenticatedUserKey).(db.User)
 
 	if err := request.ParseForm(); err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
@@ -40,11 +40,11 @@ func (server *RakerServer) StoryPage(writer http.ResponseWriter, request *http.R
 		}
 
 		if err := server.Histories.FindOne(context.Background(), filter).Decode(&history); err == nil {
-			historyHTML(*user, history, []error{}, writer)
+			historyHTML(user, history, []error{}, writer)
 			return
 		}
 	} else if owner == "" {
-		historyHTML(*user, history, errs, writer)
+		historyHTML(user, history, errs, writer)
 		return
 	}
 
@@ -53,7 +53,7 @@ func (server *RakerServer) StoryPage(writer http.ResponseWriter, request *http.R
 	if err != nil {
 		log.Error(err)
 		writer.WriteHeader(http.StatusBadRequest)
-		historyHTML(*user, history, []error{err}, writer)
+		historyHTML(user, history, []error{err}, writer)
 		return
 	}
 
@@ -83,7 +83,7 @@ func (server *RakerServer) StoryPage(writer http.ResponseWriter, request *http.R
 	}
 
 	URLs = newURLs
-	localURLs, saveErrors := StorageHandler.SaveBundle(*user, types.Story, username, localURLs, URLs, []*http.Cookie{})
+	localURLs, saveErrors := StorageHandler.SaveBundle(user, types.Story, username, localURLs, URLs, []*http.Cookie{})
 	errs = append(errs, saveErrors...)
 	for _, err := range saveErrors {
 		log.Error(err)
@@ -109,5 +109,5 @@ func (server *RakerServer) StoryPage(writer http.ResponseWriter, request *http.R
 		}
 	}
 
-	historyHTML(*user, history, errs, writer)
+	historyHTML(user, history, errs, writer)
 }

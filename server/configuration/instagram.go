@@ -18,7 +18,7 @@ import (
 )
 
 func (server *RakerServer) InstagramPage(writer http.ResponseWriter, request *http.Request) {
-	user := request.Context().Value(authenticatedUserKey).(*db.User)
+	user := request.Context().Value(authenticatedUserKey).(db.User)
 
 	if err := request.ParseForm(); err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
@@ -44,7 +44,7 @@ func (server *RakerServer) InstagramPage(writer http.ResponseWriter, request *ht
 			if err != nil {
 				log.Error(err)
 				writer.WriteHeader(http.StatusBadRequest)
-				historyHTML(*user, history, []error{err}, writer)
+				historyHTML(user, history, []error{err}, writer)
 				return
 			}
 
@@ -61,7 +61,7 @@ func (server *RakerServer) InstagramPage(writer http.ResponseWriter, request *ht
 				localURLs = append(localURLs, fileName)
 			}
 
-			localURLs, saveErrors := StorageHandler.SaveBundle(*user, types.Instagram, username, localURLs, URLs, []*http.Cookie{})
+			localURLs, saveErrors := StorageHandler.SaveBundle(user, types.Instagram, username, localURLs, URLs, []*http.Cookie{})
 			errs = append(errs, saveErrors...)
 			for _, err := range saveErrors {
 				log.Error(err)
@@ -88,5 +88,5 @@ func (server *RakerServer) InstagramPage(writer http.ResponseWriter, request *ht
 		}
 	}
 
-	historyHTML(*user, history, errs, writer)
+	historyHTML(user, history, errs, writer)
 }

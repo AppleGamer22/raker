@@ -13,7 +13,7 @@ import (
 )
 
 func (server *RakerServer) Categories(writer http.ResponseWriter, request *http.Request) {
-	user := request.Context().Value(authenticatedUserKey).(*db.User)
+	user := request.Context().Value(authenticatedUserKey).(db.User)
 
 	if err := request.ParseForm(); err != nil {
 		http.Error(writer, "failed to read request form", http.StatusBadRequest)

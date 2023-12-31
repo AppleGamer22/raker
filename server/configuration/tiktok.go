@@ -18,7 +18,7 @@ import (
 )
 
 func (server *RakerServer) TikTokPage(writer http.ResponseWriter, request *http.Request) {
-	user := request.Context().Value(authenticatedUserKey).(*db.User)
+	user := request.Context().Value(authenticatedUserKey).(db.User)
 
 	if err := request.ParseForm(); err != nil {
 		log.Error(err)
@@ -44,7 +44,7 @@ func (server *RakerServer) TikTokPage(writer http.ResponseWriter, request *http.
 			if err != nil {
 				log.Error(err)
 				writer.WriteHeader(http.StatusBadRequest)
-				historyHTML(*user, history, []error{err}, writer)
+				historyHTML(user, history, []error{err}, writer)
 				return
 			}
 
@@ -66,7 +66,7 @@ func (server *RakerServer) TikTokPage(writer http.ResponseWriter, request *http.
 				localURLs = append(localURLs, fileName)
 			}
 
-			localURLs, saveErrors := StorageHandler.SaveBundle(*user, types.TikTok, username, localURLs, URLs, cookies)
+			localURLs, saveErrors := StorageHandler.SaveBundle(user, types.TikTok, username, localURLs, URLs, cookies)
 			errs = append(errs, saveErrors...)
 			for _, err := range saveErrors {
 				log.Error(err)
@@ -87,7 +87,7 @@ func (server *RakerServer) TikTokPage(writer http.ResponseWriter, request *http.
 				if _, err := server.Histories.InsertOne(context.Background(), history); err != nil {
 					log.Error(err)
 					writer.WriteHeader(http.StatusInternalServerError)
-					historyHTML(*user, history, []error{err}, writer)
+					historyHTML(user, history, []error{err}, writer)
 					return
 				}
 			}
@@ -95,5 +95,5 @@ func (server *RakerServer) TikTokPage(writer http.ResponseWriter, request *http.
 		}
 	}
 
-	historyHTML(*user, history, nil, writer)
+	historyHTML(user, history, nil, writer)
 }
