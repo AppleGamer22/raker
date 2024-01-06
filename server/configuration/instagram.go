@@ -31,7 +31,7 @@ func (server *RakerServer) InstagramPage(writer http.ResponseWriter, request *ht
 
 	post := cleaner.Line(request.Form.Get("post"))
 	incognito := cleaner.Line(request.Form.Get("incognito")) == "incognito"
-	errs := []error{}
+	var errs []error
 
 	if post != "" {
 		filter := bson.M{
@@ -49,6 +49,7 @@ func (server *RakerServer) InstagramPage(writer http.ResponseWriter, request *ht
 			}
 
 			localURLs := make([]string, 0, len(URLs))
+			errs = make([]error, 0, len(URLs))
 			for _, urlString := range URLs {
 				URL, err := url.Parse(urlString)
 				if err != nil {

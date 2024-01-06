@@ -32,6 +32,7 @@ func (server *RakerServer) TikTokPage(writer http.ResponseWriter, request *http.
 	owner := cleaner.Line(request.Form.Get("owner"))
 	post := cleaner.Line(request.Form.Get("post"))
 	incognito := cleaner.Line(request.Form.Get("incognito")) == "incognito"
+	var errs []error
 
 	if post != "" {
 		filter := bson.M{
@@ -49,7 +50,7 @@ func (server *RakerServer) TikTokPage(writer http.ResponseWriter, request *http.
 			}
 
 			localURLs := make([]string, 0, len(URLs))
-			errs := make([]error, 0, len(URLs))
+			errs = make([]error, 0, len(URLs))
 			for _, urlString := range URLs {
 				URL, err := url.Parse(urlString)
 				if err != nil {
@@ -87,13 +88,12 @@ func (server *RakerServer) TikTokPage(writer http.ResponseWriter, request *http.
 				if _, err := server.Histories.InsertOne(context.Background(), history); err != nil {
 					log.Error(err)
 					writer.WriteHeader(http.StatusInternalServerError)
-					historyHTML(user, history, []error{err}, writer)
-					return
+					errs = append(errs, err)
 				}
 			}
 
 		}
 	}
 
-	historyHTML(user, history, nil, writer)
+	historyHTML(user, history, errs, writer)
 }

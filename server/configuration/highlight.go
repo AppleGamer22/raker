@@ -30,7 +30,7 @@ func (server *RakerServer) HighlightPage(writer http.ResponseWriter, request *ht
 	}
 
 	highlightID := cleaner.Line(request.Form.Get("post"))
-	errs := []error{}
+	var errs []error
 
 	if highlightID != "" {
 		filter := bson.M{
@@ -49,6 +49,7 @@ func (server *RakerServer) HighlightPage(writer http.ResponseWriter, request *ht
 			}
 
 			localURLs := make([]string, 0, len(URLs))
+			errs = make([]error, 0, len(URLs))
 			for _, urlString := range URLs {
 				URL, err := url.Parse(urlString)
 				if err != nil {

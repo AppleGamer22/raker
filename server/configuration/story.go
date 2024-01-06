@@ -30,7 +30,7 @@ func (server *RakerServer) StoryPage(writer http.ResponseWriter, request *http.R
 
 	historyID := cleaner.Line(request.Form.Get("post"))
 	owner := cleaner.Line(request.Form.Get("owner"))
-	errs := []error{}
+	var errs []error
 
 	if historyID != "" {
 		filter := bson.M{
@@ -61,8 +61,10 @@ func (server *RakerServer) StoryPage(writer http.ResponseWriter, request *http.R
 		"type":  types.Story,
 		"owner": username,
 	}
+
 	newURLs := make([]string, 0, len(URLs))
 	localURLs := make([]string, 0, len(URLs))
+	errs = make([]error, 0, len(URLs))
 	for _, urlString := range URLs {
 		URL, err := url.Parse(urlString)
 		if err != nil {
