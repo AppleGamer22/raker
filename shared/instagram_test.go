@@ -24,7 +24,7 @@ func testInstagramURLs(t *testing.T, URLs []string) {
 
 func TestInstagramSingleImage(t *testing.T) {
 	instagram := shared.NewInstagram(configuration.Instagram.FBSR, configuration.Instagram.Session, configuration.Instagram.User)
-	URLs, username, err := instagram.Post("CbgDyqkFBdj", false)
+	URLs, username, err := instagram.Post("CbgDyqkFBdj")
 	assert.NoError(t, err)
 	assert.Equal(t, "wikipedia", username)
 	assert.Len(t, URLs, 1)
@@ -33,7 +33,7 @@ func TestInstagramSingleImage(t *testing.T) {
 
 func TestInstagramSingleVideo(t *testing.T) {
 	instagram := shared.NewInstagram(configuration.Instagram.FBSR, configuration.Instagram.Session, configuration.Instagram.User)
-	URLs, username, err := instagram.Post("BKyN0E2AApX", false)
+	URLs, username, err := instagram.Post("BKyN0E2AApX")
 	assert.NoError(t, err)
 	assert.Equal(t, "wikipedia", username)
 	assert.Len(t, URLs, 1)
@@ -42,7 +42,7 @@ func TestInstagramSingleVideo(t *testing.T) {
 
 func TestInstagramBundledImages(t *testing.T) {
 	instagram := shared.NewInstagram(configuration.Instagram.FBSR, configuration.Instagram.Session, configuration.Instagram.User)
-	URLs, username, err := instagram.Post("CZNJeAil1BC", false)
+	URLs, username, err := instagram.Post("CZNJeAil1BC")
 	assert.NoError(t, err)
 	assert.Equal(t, "wikipedia", username)
 	assert.Len(t, URLs, 2)

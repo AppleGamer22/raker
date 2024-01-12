@@ -40,7 +40,16 @@ func (server *RakerServer) InstagramPage(writer http.ResponseWriter, request *ht
 		}
 		if err := server.Histories.FindOne(context.Background(), filter).Decode(&history); err != nil {
 			instagram := shared.NewInstagram(user.Instagram.FBSR, user.Instagram.SessionID, user.Instagram.UserID)
-			URLs, username, err := instagram.Post(post, incognito)
+			var (
+				username string
+				URLs     []string
+			)
+			log.Debug(request.Form.Get("incognito"))
+			if incognito {
+				URLs, username, _, err = shared.InstagramIncognito(post)
+			} else {
+				URLs, username, err = instagram.Post(post)
+			}
 			if err != nil {
 				log.Error(err)
 				writer.WriteHeader(http.StatusBadRequest)
@@ -71,13 +80,14 @@ func (server *RakerServer) InstagramPage(writer http.ResponseWriter, request *ht
 
 			if len(localURLs) > 0 {
 				history = db.History{
-					ID:    primitive.NewObjectID().Hex(),
-					U_ID:  user.ID.Hex(),
-					URLs:  localURLs,
-					Type:  types.Instagram,
-					Owner: username,
-					Post:  post,
-					Date:  time.Now(),
+					ID:        primitive.NewObjectID().Hex(),
+					U_ID:      user.ID.Hex(),
+					URLs:      localURLs,
+					Type:      types.Instagram,
+					Owner:     username,
+					Post:      post,
+					Incognito: incognito,
+					Date:      time.Now(),
 				}
 
 				if _, err := server.Histories.InsertOne(context.Background(), history); err != nil {

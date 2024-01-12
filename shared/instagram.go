@@ -17,6 +17,24 @@ type InstagramUserID struct {
 	} `json:"data"`
 }
 
+type InstagramPostIncognito struct {
+	Data struct {
+		ShortcodeMedia struct {
+			EdgeSidecarChildren struct {
+				Edges []struct {
+					DisplayURL string `json:"display_url"`
+					VideoURL   string `json:"video_url"`
+				} `json:"edges"`
+			} `json:"edge_sidecar_to_children"`
+			Owner struct {
+				Username string `json:"username"`
+			} `json:"owner"`
+			DisplayURL string `json:"display_url"`
+			VideoURL   string `json:"video_url"`
+		} `json:"xdt_shortcode_media"`
+	} `json:"data"`
+}
+
 type InstagramItem struct {
 	CarouselMedia []struct {
 		ImageVersions2 struct {
@@ -42,7 +60,7 @@ type InstagramItem struct {
 }
 
 func (item *InstagramItem) URLs() []string {
-	output := []string{}
+	output := make([]string, 0, len(item.CarouselMedia)+1)
 	if len(item.CarouselMedia) > 0 {
 		for _, media := range item.CarouselMedia {
 			if len(media.VideoVersions) > 0 {
@@ -58,6 +76,28 @@ func (item *InstagramItem) URLs() []string {
 		}
 		if len(item.ImageVersions2.Candidates) > 0 {
 			output = append(output, item.ImageVersions2.Candidates[0].URL)
+		}
+	}
+	return output
+}
+
+func (post *InstagramPostIncognito) URLs() []string {
+	output := make([]string, 0, len(post.Data.ShortcodeMedia.EdgeSidecarChildren.Edges)+1)
+	if len(post.Data.ShortcodeMedia.EdgeSidecarChildren.Edges) > 0 {
+		for _, media := range post.Data.ShortcodeMedia.EdgeSidecarChildren.Edges {
+			if media.VideoURL != "" {
+				output = append(output, media.VideoURL)
+			}
+			if media.DisplayURL != "" {
+				output = append(output, media.DisplayURL)
+			}
+		}
+	} else {
+		if post.Data.ShortcodeMedia.VideoURL != "" {
+			output = append(output, post.Data.ShortcodeMedia.VideoURL)
+		}
+		if post.Data.ShortcodeMedia.DisplayURL != "" {
+			output = append(output, post.Data.ShortcodeMedia.DisplayURL)
 		}
 	}
 	return output
@@ -111,18 +151,16 @@ func NewInstagram(fbsr, sessionID, userID string) Instagram {
 	}
 }
 
-func (instagram *Instagram) Post(post string, incognito bool) (URLs []string, username string, err error) {
+func (instagram *Instagram) Post(post string) (URLs []string, username string, err error) {
 	htmlURL := fmt.Sprintf("https://www.instagram.com/p/%s", post)
 	htmlRequest, err := http.NewRequest(http.MethodGet, htmlURL, nil)
 	if err != nil {
 		return URLs, username, err
 	}
 
-	if !incognito {
-		htmlRequest.AddCookie(&instagram.fbsrCookie)
-		htmlRequest.AddCookie(&instagram.sessionCookie)
-		htmlRequest.AddCookie(&instagram.userCookie)
-	}
+	htmlRequest.AddCookie(&instagram.fbsrCookie)
+	htmlRequest.AddCookie(&instagram.sessionCookie)
+	htmlRequest.AddCookie(&instagram.userCookie)
 
 	htmlRequest.Header.Add("x-ig-app-id", "936619743392459")
 	htmlRequest.Header.Add("user-agent", UserAgent)
@@ -159,11 +197,9 @@ func (instagram *Instagram) Post(post string, incognito bool) (URLs []string, us
 		return URLs, username, err
 	}
 
-	if !incognito {
-		jsonRequest.AddCookie(&instagram.fbsrCookie)
-		jsonRequest.AddCookie(&instagram.sessionCookie)
-		jsonRequest.AddCookie(&instagram.userCookie)
-	}
+	jsonRequest.AddCookie(&instagram.fbsrCookie)
+	jsonRequest.AddCookie(&instagram.sessionCookie)
+	jsonRequest.AddCookie(&instagram.userCookie)
 
 	jsonRequest.Header.Add("x-ig-app-id", "936619743392459")
 	jsonRequest.Header.Add("User-Agent", UserAgent)
@@ -185,4 +221,52 @@ func (instagram *Instagram) Post(post string, incognito bool) (URLs []string, us
 	URLs = item.URLs()
 
 	return URLs, username, err
+}
+
+func InstagramIncognito(post string) ([]string, string, []*http.Cookie, error) {
+	htmlURL := fmt.Sprintf("https://www.instagram.com/p/%s", post)
+	htmlRequest, err := http.NewRequest(http.MethodGet, htmlURL, nil)
+	if err != nil {
+		return []string{}, "", []*http.Cookie{}, err
+	}
+
+	htmlRequest.Header.Add("x-ig-app-id", "936619743392459")
+	htmlRequest.Header.Add("user-agent", UserAgent)
+	htmlRequest.Header.Add("referer", "https://www.instagram.com/")
+	htmlRequest.Header.Add("sec-fetch-mode", "navigate")
+
+	htmlResponse, err := http.DefaultClient.Do(htmlRequest)
+	if err != nil {
+		return []string{}, "", []*http.Cookie{}, err
+	}
+	defer htmlResponse.Body.Close()
+
+	jsonRequest, err := http.NewRequest(http.MethodGet, "https://www.instagram.com/api/graphql", nil)
+	if err != nil {
+		return []string{}, "", []*http.Cookie{}, err
+	}
+
+	jsonRequest.Header.Add("x-ig-app-id", "936619743392459")
+	jsonRequest.Header.Add("User-Agent", UserAgent)
+	jsonRequest.Header.Add("referer", "https://www.instagram.com/")
+	jsonRequest.Form.Set("", fmt.Sprintf(`{"shortcode":"%s","fetch_comment_count":40,"fetch_related_profile_media_count":3,"parent_comment_count":24,"child_comment_count":3,"fetch_like_count":10,"fetch_tagged_user_count":null,"fetch_preview_comment_count":2,"has_threaded_comments":true,"hoisted_comment_id":null,"hoisted_reply_id":null}`, post))
+	for _, cookie := range htmlResponse.Cookies() {
+		jsonRequest.AddCookie(cookie)
+	}
+
+	jsonResponse, err := http.DefaultClient.Do(jsonRequest)
+	if err != nil {
+		return []string{}, "", []*http.Cookie{}, err
+	}
+	defer jsonResponse.Body.Close()
+
+	var instagramPost InstagramPostIncognito
+	if err := json.NewDecoder(jsonResponse.Body).Decode(&instagramPost); err != nil {
+		return []string{}, "", []*http.Cookie{}, err
+	}
+
+	username := instagramPost.Data.ShortcodeMedia.Owner.Username
+	URLs := instagramPost.URLs()
+
+	return URLs, username, htmlRequest.Cookies(), nil
 }

@@ -115,6 +115,7 @@ type History struct {
 	Owner      string    `bson:"owner" json:"owner"`
 	Post       string    `bson:"post" json:"post"`
 	Date       time.Time `bson:"date" json:"date"`
+	Incognito  bool      `bson:"incognito" json:"incognito"`
 	Categories []string  `bson:"categories" json:"categories"`
 }
 
