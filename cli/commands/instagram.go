@@ -34,7 +34,7 @@ var instagramCommand = cobra.Command{
 	RunE: func(_ *cobra.Command, args []string) error {
 		post := args[0]
 		instagram := shared.NewInstagram(conf.Config.Instagram.FBSR, conf.Config.Instagram.Session, conf.Config.Instagram.User)
-		URLs, username, err := instagram.Post(post, incognito)
+		URLs, username, err := instagram.Post(post)
 		if err != nil {
 			return err
 		}

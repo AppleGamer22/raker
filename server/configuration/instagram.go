@@ -44,7 +44,6 @@ func (server *RakerServer) InstagramPage(writer http.ResponseWriter, request *ht
 				username string
 				URLs     []string
 			)
-			log.Debug(request.Form.Get("incognito"))
 			if incognito {
 				URLs, username, _, err = shared.InstagramIncognito(post)
 			} else {

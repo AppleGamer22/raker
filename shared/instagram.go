@@ -6,7 +6,10 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"regexp"
+	"strings"
+	"time"
 )
 
 type InstagramUserID struct {
@@ -22,8 +25,10 @@ type InstagramPostIncognito struct {
 		ShortcodeMedia struct {
 			EdgeSidecarChildren struct {
 				Edges []struct {
-					DisplayURL string `json:"display_url"`
-					VideoURL   string `json:"video_url"`
+					Node struct {
+						DisplayURL string `json:"display_url"`
+						VideoURL   string `json:"video_url"`
+					} `json:"node"`
 				} `json:"edges"`
 			} `json:"edge_sidecar_to_children"`
 			Owner struct {
@@ -85,11 +90,11 @@ func (post *InstagramPostIncognito) URLs() []string {
 	output := make([]string, 0, len(post.Data.ShortcodeMedia.EdgeSidecarChildren.Edges)+1)
 	if len(post.Data.ShortcodeMedia.EdgeSidecarChildren.Edges) > 0 {
 		for _, media := range post.Data.ShortcodeMedia.EdgeSidecarChildren.Edges {
-			if media.VideoURL != "" {
-				output = append(output, media.VideoURL)
+			if media.Node.VideoURL != "" {
+				output = append(output, media.Node.VideoURL)
 			}
-			if media.DisplayURL != "" {
-				output = append(output, media.DisplayURL)
+			if media.Node.DisplayURL != "" {
+				output = append(output, media.Node.DisplayURL)
 			}
 		}
 	} else {
@@ -122,7 +127,13 @@ type Instagram struct {
 	userCookie    http.Cookie
 }
 
-var instagram_regexp = regexp.MustCompile(`\"media_id\":\"?([0-9]+)\"?`)
+var (
+	instagramRegExpMediaID              = regexp.MustCompile(`media_id\":\"([0-9]+)`)
+	instagramRegExpDATR                 = regexp.MustCompile(`_js_datr\":{\"value":\"([0-9a-zA-Z-]+)`)
+	instagramRegExpLSD                  = regexp.MustCompile(`lsd\":\"([0-9a-zA-Z-]+)`)
+	instagramRegExpScriptWithDocumentID = regexp.MustCompile(`<link rel=\"preload\" href=\"(.*?)\" as=\"script\" crossorigin=\"anonymous\" nonce=".*?" />`)
+	instagramRegExpDocumentID           = regexp.MustCompile(`params:{id:\"([0-9]+)\",metadata:{},name:\"PolarisPostActionLoadPostQueryQuery`)
+)
 
 func NewInstagram(fbsr, sessionID, userID string) Instagram {
 	return Instagram{
@@ -178,7 +189,7 @@ func (instagram *Instagram) Post(post string) (URLs []string, username string, e
 		return URLs, username, err
 	}
 
-	mediaIDMatch := instagram_regexp.FindString(string(htmlBody))
+	mediaIDMatch := instagramRegExpMediaID.FindString(string(htmlBody))
 	if mediaIDMatch == "" {
 		return URLs, username, errors.New("could not find media ID")
 	}
@@ -241,15 +252,75 @@ func InstagramIncognito(post string) ([]string, string, []*http.Cookie, error) {
 	}
 	defer htmlResponse.Body.Close()
 
-	jsonRequest, err := http.NewRequest(http.MethodGet, "https://www.instagram.com/api/graphql", nil)
+	htmlBody, err := io.ReadAll(htmlResponse.Body)
 	if err != nil {
 		return []string{}, "", []*http.Cookie{}, err
 	}
 
+	datrMatches := instagramRegExpDATR.FindStringSubmatch(string(htmlBody))
+	if len(datrMatches) == 0 || datrMatches[1] == "" {
+		return []string{}, "", []*http.Cookie{}, errors.New("could not find datr value")
+	}
+
+	lsdMatches := instagramRegExpLSD.FindStringSubmatch(string(htmlBody))
+	if len(datrMatches) == 0 || datrMatches[1] == "" {
+		return []string{}, "", []*http.Cookie{}, errors.New("could not find lsd value")
+	}
+
+	jsURLs := instagramRegExpScriptWithDocumentID.FindAllStringSubmatch(string(htmlBody), 4)
+	if jsURLs == nil || jsURLs[3][1] == "" {
+		return []string{}, "", []*http.Cookie{}, errors.New("could not find link URL")
+	}
+	jsURL := jsURLs[3][1]
+
+	jsRequest, err := http.NewRequest(http.MethodGet, jsURL, nil)
+	if err != nil {
+		return []string{}, "", []*http.Cookie{}, err
+	}
+	jsRequest.Header.Add("user-agent", UserAgent)
+	jsRequest.Header.Add("referer", "https://www.instagram.com/")
+
+	jsResponse, err := http.DefaultClient.Do(jsRequest)
+	if err != nil {
+		return []string{}, "", []*http.Cookie{}, err
+	}
+	defer jsResponse.Body.Close()
+
+	jsBody, err := io.ReadAll(jsResponse.Body)
+	if err != nil {
+		return []string{}, "", []*http.Cookie{}, err
+	}
+	documentIDs := instagramRegExpDocumentID.FindStringSubmatch(string(jsBody))
+	if documentIDs == nil || documentIDs[1] == "" {
+		return []string{}, "", []*http.Cookie{}, errors.New("could not find document ID")
+	}
+
+	form := url.Values{
+		"lsd":       {lsdMatches[1]},
+		"doc_id":    {documentIDs[1]},
+		"variables": {fmt.Sprintf(`{"shortcode":"%s","fetch_comment_count":40,"fetch_related_profile_media_count":3,"parent_comment_count":24,"child_comment_count":3,"fetch_like_count":10,"fetch_tagged_user_count":null,"fetch_preview_comment_count":2,"has_threaded_comments":true,"hoisted_comment_id":null,"hoisted_reply_id":null}`, post)},
+	}
+	jsonRequest, err := http.NewRequest(http.MethodPost, "https://www.instagram.com/api/graphql", strings.NewReader(form.Encode()))
+	if err != nil {
+		return []string{}, "", []*http.Cookie{}, err
+	}
+	jsonRequest.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	jsonRequest.Header.Add("sec-fetch-site", "same-origin")
 	jsonRequest.Header.Add("x-ig-app-id", "936619743392459")
+	jsonRequest.Header.Add("x-asbd-id", "129477")
+	jsonRequest.Header.Add("x-fb-friendly-name", "PolarisPostActionLoadPostQueryQuery")
 	jsonRequest.Header.Add("User-Agent", UserAgent)
-	jsonRequest.Header.Add("referer", "https://www.instagram.com/")
-	jsonRequest.Form.Set("", fmt.Sprintf(`{"shortcode":"%s","fetch_comment_count":40,"fetch_related_profile_media_count":3,"parent_comment_count":24,"child_comment_count":3,"fetch_like_count":10,"fetch_tagged_user_count":null,"fetch_preview_comment_count":2,"has_threaded_comments":true,"hoisted_comment_id":null,"hoisted_reply_id":null}`, post))
+	jsonRequest.Header.Add("referer", htmlURL)
+
+	jsonRequest.AddCookie(&http.Cookie{
+		Domain:   ".instagram.com",
+		Name:     "datr",
+		Value:    datrMatches[1],
+		Path:     "/",
+		Expires:  time.Now().AddDate(2, 0, 0),
+		Secure:   true,
+		HttpOnly: true,
+	})
 	for _, cookie := range htmlResponse.Cookies() {
 		jsonRequest.AddCookie(cookie)
 	}
@@ -259,6 +330,9 @@ func InstagramIncognito(post string) ([]string, string, []*http.Cookie, error) {
 		return []string{}, "", []*http.Cookie{}, err
 	}
 	defer jsonResponse.Body.Close()
+
+	// body, _ := io.ReadAll(jsonResponse.Body)
+	// fmt.Println(string(body))
 
 	var instagramPost InstagramPostIncognito
 	if err := json.NewDecoder(jsonResponse.Body).Decode(&instagramPost); err != nil {
