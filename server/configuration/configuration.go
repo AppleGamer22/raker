@@ -21,6 +21,8 @@ type Configuration struct {
 	Secret      string
 	URI         string
 	Database    string
+	Username    string
+	Password    string
 	Storage     string
 	Directories bool
 	Port        uint
@@ -62,7 +64,12 @@ func NewRakerServer() (*RakerServer, error) {
 
 	rakerServer.Authenticator = authenticator.New(rakerServer.Configuration.Secret)
 
-	dbClient, database, err := db.Connect(rakerServer.Configuration.URI, rakerServer.Configuration.Database)
+	dbClient, database, err := db.Connect(
+		rakerServer.Configuration.URI,
+		rakerServer.Configuration.Database,
+		rakerServer.Configuration.Username,
+		rakerServer.Configuration.Password,
+	)
 	if err != nil {
 		log.Fatal(err)
 	}
