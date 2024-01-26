@@ -17,7 +17,7 @@ var (
 
 func Connect(URI, databaseName, username, password string) (*mongo.Client, *mongo.Database, error) {
 	credentials := options.Credential{
-		AuthMechanism: "SCRAM-SHA-256",
+		AuthMechanism: "PLAIN",
 		AuthSource:    databaseName,
 		Username:      username,
 		Password:      password,
