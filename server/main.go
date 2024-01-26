@@ -9,6 +9,7 @@ import (
 	"os/signal"
 	"runtime"
 	"syscall"
+	"time"
 
 	"github.com/AppleGamer22/raker/server/configuration"
 	"github.com/AppleGamer22/raker/shared"
@@ -44,7 +45,9 @@ func main() {
 	<-signals
 	fmt.Print("\r")
 	log.Warn("shutting down server...")
-	if err := rakerServer.HTTPServer.Shutdown(context.Background()); err != nil {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	if err := rakerServer.HTTPServer.Shutdown(ctx); err != nil {
 		log.Warn(err)
 	}
 }
