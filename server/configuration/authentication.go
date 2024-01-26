@@ -146,10 +146,10 @@ func (server *RakerServer) InstagramSignIn(writer http.ResponseWriter, request *
 	}
 
 	http.SetCookie(writer, &http.Cookie{
-		Name:     "jwt",
-		Value:    webToken,
-		Path:     "/",
-		Domain:   request.URL.Hostname(),
+		Name:  "jwt",
+		Value: webToken,
+		Path:  "/",
+		// Domain:   request.URL.Hostname(),
 		Expires:  expiry,
 		Secure:   true,
 		HttpOnly: true,
