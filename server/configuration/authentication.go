@@ -149,7 +149,7 @@ func (server *RakerServer) InstagramSignIn(writer http.ResponseWriter, request *
 		Name:     "jwt",
 		Value:    webToken,
 		Path:     "/",
-		Domain:   request.Host,
+		Domain:   request.URL.Hostname(),
 		Expires:  expiry,
 		Secure:   true,
 		HttpOnly: true,
