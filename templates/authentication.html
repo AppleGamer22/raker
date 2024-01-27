@@ -24,15 +24,20 @@
 		<link href="/assets/theme.css" rel="stylesheet">
 		<link rel="stylesheet" href="/assets/dark.css">
 		<script defer src="/assets/bootstrap.bundle.min.js"></script>
-		<!-- <style>
-			h1, h2, h3, h4, h5, h6, label, p, a {
+		<style>
+			/* h1, h2, h3, h4, h5, h6, label, p, a {
 				word-wrap: break-word;
 			}
 			img, video {
 				height: auto;
 				max-width: 100%;
+			} */
+			@media (min-width: 375px) {
+				button.delete, button.btn-warning {
+					display: none;
+				}
 			}
-		</style> -->
+		</style>
 	</head>
 	<body>
 		<header>
@@ -112,7 +117,7 @@
 								<button type="submit" class="btn btn-warning">Save</button>
 								<form method="post" action="/api/categories">
 									<input type="hidden" name="{{.}}" value="DELETE">
-									<button type="submit" class="btn btn-danger">Delete</button>
+									<button type="submit" class="btn btn-danger delete">Delete</button>
 								</form>
 							</div>
 						</form>

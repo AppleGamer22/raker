@@ -32,6 +32,11 @@
 				height: auto;
 				max-width: 100%;
 			}
+			@media (min-width: 375px) {
+				button.delete {
+					display: none;
+				}
+			}
 		</style>
 	</head>
 	<body>
@@ -228,7 +233,7 @@
 							<input type="hidden" name="method" value="DELETE">
 							<input type="hidden" name="remove" value="{{$v}}">
 							<button type="button" class="btn btn-secondary" data-bs-toggle="collapse" data-bs-target="#collapse{{$i}}">Show/Hide</button>
-							<button type="submit" class="btn btn-danger">Delete</button>
+							<button type="submit" class="btn btn-danger delete">Delete</button>
 						</form>
 						<div class="collapse" id="collapse{{$i}}">
 							<br>
