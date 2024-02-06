@@ -7,6 +7,7 @@ import (
 
 	"github.com/AppleGamer22/raker/server/authenticator"
 	"github.com/AppleGamer22/raker/shared/types"
+	"github.com/go-webauthn/webauthn/webauthn"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -105,6 +106,28 @@ func (user *User) SelectedCategories(categories []string) map[string]bool {
 		result[category] = !checked
 	}
 	return result
+}
+
+func (user User) WebAuthnID() []byte {
+	return []byte(user.ID.Hex())
+}
+
+func (user User) WebAuthnName() string {
+	return user.Username
+}
+
+func (user User) WebAuthnDisplayName() string {
+	return user.Username
+}
+
+func (user User) WebAuthnCredentials() []webauthn.Credential {
+	return []webauthn.Credential{
+		webauthn.Credential{},
+	}
+}
+
+func (user User) WebAuthnIcon() string {
+	return ""
 }
 
 type History struct {

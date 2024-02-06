@@ -102,6 +102,14 @@ func (server *RakerServer) InstagramSignUp(writer http.ResponseWriter, request *
 	server.InstagramSignIn(writer, request)
 }
 
+func (server *RakerServer) WebAuthnBeginRegistration(writer http.ResponseWriter, request *http.Request) {
+	// user := request.Context().Value(authenticatedUserKey).(db.User)
+	// options, session, err := server.WebAuthn.BeginRegistration(user)
+	// if err != nil {
+
+	// }
+}
+
 func (server *RakerServer) InstagramSignIn(writer http.ResponseWriter, request *http.Request) {
 	if request.Method != http.MethodPost {
 		http.Redirect(writer, request, "/", http.StatusTemporaryRedirect)

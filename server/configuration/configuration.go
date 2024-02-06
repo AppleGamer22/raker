@@ -9,6 +9,7 @@ import (
 	"github.com/AppleGamer22/raker/server/db"
 
 	"github.com/charmbracelet/log"
+	"github.com/go-webauthn/webauthn/webauthn"
 	"github.com/spf13/viper"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -34,6 +35,7 @@ type RakerServer struct {
 	Users         *mongo.Collection
 	Histories     *mongo.Collection
 	Authenticator authenticator.Authenticator
+	WebAuthn      *webauthn.WebAuthn
 	HTTPServer    http.Server
 }
 
