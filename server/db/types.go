@@ -40,10 +40,12 @@ var (
 )
 
 type User struct {
-	ID        primitive.ObjectID `bson:"_id" json:"-"`
-	Username  string             `bson:"username" json:"-"`
-	Hash      string             `bson:"hash" json:"-"`
-	Instagram struct {
+	ID          primitive.ObjectID     `bson:"_id" json:"-"`
+	Username    string                 `bson:"username" json:"-"`
+	Hash        string                 `bson:"hash" json:"-"`
+	Credentials []webauthn.Credential  `bson:"credentials" json:"-"`
+	Sessions    []webauthn.SessionData `bson:"sessions" json:"-"`
+	Instagram   struct {
 		FBSR      string `bson:"fbsr" json:"-"`
 		SessionID string `bson:"session_id" json:"-"`
 		UserID    string `bson:"user_id" json:"-"`
@@ -121,9 +123,7 @@ func (user User) WebAuthnDisplayName() string {
 }
 
 func (user User) WebAuthnCredentials() []webauthn.Credential {
-	return []webauthn.Credential{
-		webauthn.Credential{},
-	}
+	return user.Credentials
 }
 
 func (user User) WebAuthnIcon() string {

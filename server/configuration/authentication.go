@@ -2,6 +2,8 @@ package configuration
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"html/template"
 	"net/http"
 	"net/url"
@@ -103,11 +105,93 @@ func (server *RakerServer) InstagramSignUp(writer http.ResponseWriter, request *
 }
 
 func (server *RakerServer) WebAuthnBeginRegistration(writer http.ResponseWriter, request *http.Request) {
-	// user := request.Context().Value(authenticatedUserKey).(db.User)
-	// options, session, err := server.WebAuthn.BeginRegistration(user)
-	// if err != nil {
+	user := request.Context().Value(authenticatedUserKey).(db.User)
+	options, session, err := server.WebAuthn.BeginRegistration(user)
+	if err != nil {
+		http.Error(writer, "incorrect credentials", http.StatusUnauthorized)
+		log.Error(err)
+		return
+	}
 
-	// }
+	user.Sessions = append(user.Sessions, *session)
+
+	filter := bson.M{
+		"_id":      user.ID,
+		"username": user.Username,
+	}
+	update := bson.M{
+		"$set": bson.M{
+			"sessions": user.Sessions,
+		},
+	}
+
+	result, err := server.Users.UpdateOne(context.Background(), filter, update)
+	if err != nil {
+		http.Error(writer, "incorrect credentials", http.StatusInternalServerError)
+		log.Error(err, "ID", user.ID.Hex())
+		return
+	} else if result.MatchedCount == 0 {
+		http.Error(writer, "incorrect credentials", http.StatusNotFound)
+		log.Error("the user was not found/modified", "ID", user.ID.Hex())
+	}
+
+	writer.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(writer).Encode(options); err != nil {
+		http.Error(writer, "incorrect credentials", http.StatusNotFound)
+		log.Error(err, "ID", user.ID.Hex())
+		return
+	}
+	writer.WriteHeader(http.StatusOK)
+}
+
+func (server *RakerServer) WebAuthnFinishRegistration(writer http.ResponseWriter, request *http.Request) {
+	user := request.Context().Value(authenticatedUserKey).(db.User)
+	if len(user.Sessions) == 0 {
+		http.Error(writer, "incorrect credentials", http.StatusUnauthorized)
+		log.Error(user.ID.Hex(), "doesn't have a valid FIDO session")
+		return
+	}
+
+	session := user.Sessions[len(user.Sessions)-1]
+	credential, err := server.WebAuthn.FinishRegistration(user, session, request)
+	if err != nil {
+		// Handle Error and return.
+		http.Error(writer, "incorrect credentials", http.StatusUnauthorized)
+		log.Error(err, "ID", user.ID.Hex())
+		return
+	}
+
+	user.Credentials = append(user.Credentials, *credential)
+
+	filter := bson.M{
+		"_id":      user.ID,
+		"username": user.Username,
+	}
+	update := bson.M{
+		"$set": bson.M{
+			"credentials": user.Credentials,
+		},
+		"$pull": bson.M{
+			"sessions": session,
+		},
+	}
+
+	result, err := server.Users.UpdateOne(context.Background(), filter, update)
+	if err != nil {
+		http.Error(writer, "incorrect credentials", http.StatusInternalServerError)
+		log.Error(err, "ID", user.ID.Hex())
+		return
+	} else if result.MatchedCount == 0 {
+		http.Error(writer, "incorrect credentials", http.StatusNotFound)
+		log.Error("the user was not found/modified", "ID", user.ID.Hex())
+	}
+
+	fmt.Fprint(writer, "Registration Success")
+	writer.WriteHeader(http.StatusOK)
+}
+
+func (server *RakerServer) WebAuthnBeginSignIn(writer http.ResponseWriter, request *http.Request) {
+
 }
 
 func (server *RakerServer) InstagramSignIn(writer http.ResponseWriter, request *http.Request) {
