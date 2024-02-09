@@ -113,15 +113,13 @@ func (server *RakerServer) WebAuthnBeginRegistration(writer http.ResponseWriter,
 		return
 	}
 
-	user.Sessions = append(user.Sessions, *session)
-
 	filter := bson.M{
 		"_id":      user.ID,
 		"username": user.Username,
 	}
 	update := bson.M{
 		"$set": bson.M{
-			"sessions": user.Sessions,
+			"session": *session,
 		},
 	}
 
@@ -146,14 +144,8 @@ func (server *RakerServer) WebAuthnBeginRegistration(writer http.ResponseWriter,
 
 func (server *RakerServer) WebAuthnFinishRegistration(writer http.ResponseWriter, request *http.Request) {
 	user := request.Context().Value(authenticatedUserKey).(db.User)
-	if len(user.Sessions) == 0 {
-		http.Error(writer, "incorrect credentials", http.StatusUnauthorized)
-		log.Error(user.ID.Hex(), "doesn't have a valid FIDO session")
-		return
-	}
 
-	session := user.Sessions[len(user.Sessions)-1]
-	credential, err := server.WebAuthn.FinishRegistration(user, session, request)
+	credential, err := server.WebAuthn.FinishRegistration(user, user.Session, request)
 	if err != nil {
 		// Handle Error and return.
 		http.Error(writer, "incorrect credentials", http.StatusUnauthorized)
@@ -170,9 +162,6 @@ func (server *RakerServer) WebAuthnFinishRegistration(writer http.ResponseWriter
 	update := bson.M{
 		"$set": bson.M{
 			"credentials": user.Credentials,
-		},
-		"$pull": bson.M{
-			"sessions": session,
 		},
 	}
 

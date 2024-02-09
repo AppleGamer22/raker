@@ -38,6 +38,46 @@
 				}
 			}
 		</style>
+		{{if .Username}}
+			<script>
+				async function checkWebAuthn() {
+					if (window.PublicKeyCredential && PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable && PublicKeyCredential.​​isConditionalMediationAvailable) {
+						try {
+							const results = await Promise.all([
+								PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable(),
+								PublicKeyCredential.isConditionalMediationAvailable()
+							]);
+							return results.every(result => result === true);
+						} catch (err) {
+							console.error(err);
+							alert(err);
+							return false;
+						}
+					}
+					return false;
+				}
+
+				async function createWebAuthn() {
+					try {
+						if (!(await checkWebAuthn())) {
+							return;
+						}
+						/** @type {PublicKeyCredentialCreationOptions} */
+						const publicKey = await (await fetch("/auth/webauthn/register/start")).json();
+						const credential = await navigator.credentials.create({publicKey});
+						await fetch("/auth/webauthn/register/finish", {
+							headers: {
+								"Content-Type": "application/json",
+							},
+							body: JSON.stringify(credential)
+						});
+					} catch (err) {
+						console.error(err);
+						alert(err);
+					}
+				}
+			</script>
+		{{end}}
 	</head>
 	<body>
 		<header>

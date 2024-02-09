@@ -40,11 +40,11 @@ var (
 )
 
 type User struct {
-	ID          primitive.ObjectID     `bson:"_id" json:"-"`
-	Username    string                 `bson:"username" json:"-"`
-	Hash        string                 `bson:"hash" json:"-"`
-	Credentials []webauthn.Credential  `bson:"credentials" json:"-"`
-	Sessions    []webauthn.SessionData `bson:"sessions" json:"-"`
+	ID          primitive.ObjectID    `bson:"_id" json:"-"`
+	Username    string                `bson:"username" json:"-"`
+	Hash        string                `bson:"hash" json:"-"`
+	Credentials []webauthn.Credential `bson:"credentials" json:"-"`
+	Session     webauthn.SessionData  `bson:"session" json:"-"`
 	Instagram   struct {
 		FBSR      string `bson:"fbsr" json:"-"`
 		SessionID string `bson:"session_id" json:"-"`
