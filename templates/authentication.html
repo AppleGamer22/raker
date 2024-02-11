@@ -40,38 +40,80 @@
 		</style>
 		{{if .Username}}
 			<script>
-				async function checkWebAuthn() {
-					if (window.PublicKeyCredential && PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable && PublicKeyCredential.​​isConditionalMediationAvailable) {
-						try {
-							const results = await Promise.all([
-								PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable(),
-								PublicKeyCredential.isConditionalMediationAvailable()
-							]);
-							return results.every(result => result === true);
-						} catch (err) {
-							console.error(err);
-							alert(err);
-							return false;
-						}
+				/**
+				 * @param {boolean} signUp
+				 */
+				async function checkWebAuthn(signUp) {
+					switch (signUp) {
+						case true:
+							if (window.PublicKeyCredential && PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable && PublicKeyCredential.isConditionalMediationAvailable) {
+								try {
+									const results = await Promise.all([
+										PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable(),
+										PublicKeyCredential.isConditionalMediationAvailable()
+									]);
+									return results.every(result => result === true);
+								} catch (err) {
+									console.error(err);
+									alert(err);
+									return false;
+								}
+							}
+							break;
+						default:
+							if (window.PublicKeyCredential && PublicKeyCredential.isConditionalMediationAvailable) {
+								return await PublicKeyCredential.isConditionalMediationAvailable();
+							}
+							break;
 					}
 					return false;
 				}
 
 				async function createWebAuthn() {
 					try {
-						if (!(await checkWebAuthn())) {
+						if (!(await checkWebAuthn(true))) {
+							alert("Platform doesn't support Passkeys...");
 							return;
 						}
 						/** @type {PublicKeyCredentialCreationOptions} */
-						const publicKey = await (await fetch("/auth/webauthn/register/start")).json();
-						const credential = await navigator.credentials.create({publicKey});
-						await fetch("/auth/webauthn/register/finish", {
+						const publicKey = await (await fetch("/auth/webauthn/sign_up/start")).json();
+						const abortController = new AbortController();
+						const credential = await navigator.credentials.create({
+							publicKey,
+							signal: abortController.signal
+						});
+						await fetch("/auth/webauthn/sign_up/finish", {
 							headers: {
 								"Content-Type": "application/json",
 							},
 							body: JSON.stringify(credential)
 						});
 					} catch (err) {
+						console.error(err);
+						alert(err);
+					}
+				}
+
+				async function sendWebAuthn() {
+					try {
+						if (!(await checkWebAuthn(false))) {
+							alert("Platform doesn't support Passkeys...");
+							return;
+						}
+						const publicKey = await (await fetch("/auth/webauthn/sign_in/start")).json();
+						const abortController = new AbortController();
+						const credential = await navigator.credentials.get({
+							publicKey,
+							signal: abortController.signal,
+							mediation: "conditional"
+						});
+						await fetch("/auth/webauthn/sign_in/finish", {
+							headers: {
+								"Content-Type": "application/json",
+							},
+							body: JSON.stringify(credential)
+						});
+					} catch (error) {
 						console.error(err);
 						alert(err);
 					}

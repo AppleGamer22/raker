@@ -104,7 +104,7 @@ func (server *RakerServer) InstagramSignUp(writer http.ResponseWriter, request *
 	server.InstagramSignIn(writer, request)
 }
 
-func (server *RakerServer) WebAuthnBeginRegistration(writer http.ResponseWriter, request *http.Request) {
+func (server *RakerServer) WebAuthnBeginSignUp(writer http.ResponseWriter, request *http.Request) {
 	user := request.Context().Value(authenticatedUserKey).(db.User)
 	options, session, err := server.WebAuthn.BeginRegistration(user)
 	if err != nil {
@@ -142,7 +142,7 @@ func (server *RakerServer) WebAuthnBeginRegistration(writer http.ResponseWriter,
 	writer.WriteHeader(http.StatusOK)
 }
 
-func (server *RakerServer) WebAuthnFinishRegistration(writer http.ResponseWriter, request *http.Request) {
+func (server *RakerServer) WebAuthnFinishSignUp(writer http.ResponseWriter, request *http.Request) {
 	user := request.Context().Value(authenticatedUserKey).(db.User)
 
 	credential, err := server.WebAuthn.FinishRegistration(user, user.Session, request)
