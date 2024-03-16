@@ -135,6 +135,8 @@ var (
 	instagramRegExpDocumentID           = regexp.MustCompile(`params:{id:\"([0-9]+)\",metadata:{},name:\"PolarisPostActionLoadPostQuery`)
 )
 
+const scriptWithDocumentMatch = 2
+
 func NewInstagram(fbsr, sessionID, userID string) Instagram {
 	return Instagram{
 		fbsrCookie: http.Cookie{
@@ -268,10 +270,10 @@ func InstagramIncognito(post string) ([]string, string, []*http.Cookie, error) {
 	}
 
 	jsURLs := instagramRegExpScriptWithDocumentID.FindAllStringSubmatch(string(htmlBody), 4)
-	if jsURLs == nil || jsURLs[3][1] == "" {
+	if jsURLs == nil || jsURLs[scriptWithDocumentMatch][1] == "" {
 		return []string{}, "", []*http.Cookie{}, errors.New("could not find link URL")
 	}
-	jsURL := jsURLs[3][1]
+	jsURL := jsURLs[scriptWithDocumentMatch][1]
 
 	jsRequest, err := http.NewRequest(http.MethodGet, jsURL, nil)
 	if err != nil {
