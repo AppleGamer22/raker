@@ -132,7 +132,7 @@ var (
 	instagramRegExpDATR                 = regexp.MustCompile(`_js_datr\":{\"value":\"([0-9a-zA-Z-]+)`)
 	instagramRegExpLSD                  = regexp.MustCompile(`lsd\":\"([0-9a-zA-Z-]+)`)
 	instagramRegExpScriptWithDocumentID = regexp.MustCompile(`<link rel=\"preload\" href=\"(.*?)\" as=\"script\" crossorigin=\"anonymous\" nonce=".*?" />`)
-	instagramRegExpDocumentID           = regexp.MustCompile(`params:{id:\"([0-9]+)\",metadata:{},name:\"PolarisPostActionLoadPostQueryQuery`)
+	instagramRegExpDocumentID           = regexp.MustCompile(`params:{id:\"([0-9]+)\",metadata:{},name:\"PolarisPostActionLoadPostQuery`)
 )
 
 func NewInstagram(fbsr, sessionID, userID string) Instagram {
