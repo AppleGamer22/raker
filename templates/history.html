@@ -24,6 +24,7 @@
 		<link href="/assets/theme.css" rel="stylesheet">
 		<link rel="stylesheet" href="/assets/dark.css">
 		<script defer src="/assets/bootstrap.bundle.min.js"></script>
+		<script defer src="/assets/htmx.min.js"></script>
 		<style>
 			h1, h2, h3, h4, h5, h6, label, p, a {
 				word-wrap: break-word;
@@ -208,14 +209,13 @@
 						</h2>
 						<div id="collapse_categories" class="accordion-collapse collapse" data-bs-parent="#accordion_categories">
 							<div class="accordion-body">
-								<form action="/api/history?media={{.Type}}&post={{.Post}}&owner={{.Owner}}" method="post">
+								<form hx-patch="/api/history?media={{.Type}}&post={{.Post}}&owner={{.Owner}}">
 									{{range $category, $checked := .SelectedCategories}}
 										<div class="form-check">
 											<input class="form-check-input" type="checkbox" id="{{$category}}" name="{{$category}}" value="{{$category}}"{{if $checked}} checked{{end}}>
 											<label class="form-check-label" for="{{$category}}">{{$category}}</label>
 										</div>
 									{{end}}
-									<input type="hidden" name="method" value="PATCH">
 									<button type="submit" class="btn btn-warning">Save</button>
 								</form>
 							</div>
@@ -229,9 +229,7 @@
 						<h6>
 							<a href="/api/storage/{{$.U_ID}}/{{$.Type}}/{{$.Owner}}/{{.}}" target="_blank" rel="noopener noreferrer">{{base $v}}</a>
 						</h6>
-						<form action="/api/history?media={{$.Type}}&post={{$.Post}}&owner={{$.Owner}}" method="post">
-							<input type="hidden" name="method" value="DELETE">
-							<input type="hidden" name="remove" value="{{$v}}">
+						<form hx-delete="/api/history?media={{$.Type}}&post={{$.Post}}&owner={{$.Owner}}&remove={{$v}}">
 							<button type="button" class="btn btn-secondary" data-bs-toggle="collapse" data-bs-target="#collapse{{$i}}">Show/Hide</button>
 							<button type="submit" class="btn btn-danger delete">Delete</button>
 						</form>

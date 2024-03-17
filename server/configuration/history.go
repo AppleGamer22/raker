@@ -46,46 +46,41 @@ func (server *RakerServer) History(writer http.ResponseWriter, request *http.Req
 	}
 
 	switch request.Method {
-	case http.MethodPost:
-		switch cleaner.Line(request.Form.Get("method")) {
-		case http.MethodPatch:
-			_, err := server.editHistory(user.ID, media, owner, post, categories)
-			if err != nil {
-				http.Error(writer, err.Error(), http.StatusBadRequest)
-				log.Error(err)
-				return
-			}
-
-			http.Redirect(writer, request, request.Referer(), http.StatusTemporaryRedirect)
-		case http.MethodDelete:
-			if file == "" {
-				http.Error(writer, "file URL must be valid", http.StatusBadRequest)
-				return
-			}
-
-			history, err := server.deleteFileFromHistory(user, owner, media, post, file)
-			if err != nil {
-				http.Error(writer, err.Error(), http.StatusBadRequest)
-				log.Error(err)
-				return
-			}
-
-			redirectURL := request.Referer()
-			URL, _ := url.Parse(redirectURL)
-			query := URL.Query()
-			if len(history.URLs) == 0 {
-				query.Del("post")
-				query.Del("owner")
-			} else if history.Type == types.Story && !query.Has("post") {
-				query.Set("post", history.Post)
-			}
-			URL.RawQuery = query.Encode()
-			redirectURL = URL.String()
-			http.Redirect(writer, request, redirectURL, http.StatusTemporaryRedirect)
-		default:
-			http.Error(writer, "request method is not recognized", http.StatusBadRequest)
+	case http.MethodPatch:
+		_, err := server.editHistory(user.ID, media, owner, post, categories)
+		if err != nil {
+			http.Error(writer, err.Error(), http.StatusBadRequest)
+			log.Error(err)
 			return
 		}
+
+		http.Redirect(writer, request, request.Referer(), http.StatusTemporaryRedirect)
+
+	case http.MethodDelete:
+		if file == "" {
+			http.Error(writer, "file URL must be valid", http.StatusBadRequest)
+			return
+		}
+
+		history, err := server.deleteFileFromHistory(user, owner, media, post, file)
+		if err != nil {
+			http.Error(writer, err.Error(), http.StatusBadRequest)
+			log.Error(err)
+			return
+		}
+
+		redirectURL := request.Referer()
+		URL, _ := url.Parse(redirectURL)
+		query := URL.Query()
+		if len(history.URLs) == 0 {
+			query.Del("post")
+			query.Del("owner")
+		} else if history.Type == types.Story && !query.Has("post") {
+			query.Set("post", history.Post)
+		}
+		URL.RawQuery = query.Encode()
+		redirectURL = URL.String()
+		http.Redirect(writer, request, redirectURL, http.StatusTemporaryRedirect)
 	default:
 		http.Error(writer, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 	}
