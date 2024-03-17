@@ -187,67 +187,10 @@
 				{{end}}
 				<button type="submit" class="btn btn-primary">Submit</button>
 			</form>
-			{{range .Errors}}
-				{{if .}}
-					<h3 class="text-danger">{{.}}</h3>
-				{{end}}
-			{{end}}
-			{{if gt (len .URLs) 0}}
-				<div class="card">
-					<div class="card-body">
-					{{date .Date}}
-					</div>
-				</div>
-				<div class="accordion" id="accordion_categories">
-					<div class="accordion-item">
-						<h2 class="accordion-header" id="heading_categories">
-							<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse_categories">
-								Categories:&nbsp;<b>{{range .Categories}}
-									{{.}}
-								{{end}}</b>
-							</button>
-						</h2>
-						<div id="collapse_categories" class="accordion-collapse collapse" data-bs-parent="#accordion_categories">
-							<div class="accordion-body">
-								<form hx-patch="/api/history?media={{.Type}}&post={{.Post}}&owner={{.Owner}}">
-									{{range $category, $checked := .SelectedCategories}}
-										<div class="form-check">
-											<input class="form-check-input" type="checkbox" id="{{$category}}" name="{{$category}}" value="{{$category}}"{{if $checked}} checked{{end}}>
-											<label class="form-check-label" for="{{$category}}">{{$category}}</label>
-										</div>
-									{{end}}
-									<button type="submit" class="btn btn-warning">Save</button>
-								</form>
-							</div>
-						</div>
-					</div>
-				</div>
-			{{end}}
-			{{range $i, $v := .URLs}}
-				<ul class="list-group">
-					<li class="list-group-item">
-						<h6>
-							<a href="/api/storage/{{$.U_ID}}/{{$.Type}}/{{$.Owner}}/{{.}}" target="_blank" rel="noopener noreferrer">{{base $v}}</a>
-						</h6>
-						<form hx-delete="/api/history?media={{$.Type}}&post={{$.Post}}&owner={{$.Owner}}&remove={{$v}}">
-							<button type="button" class="btn btn-secondary" data-bs-toggle="collapse" data-bs-target="#collapse{{$i}}">Show/Hide</button>
-							<button type="submit" class="btn btn-danger delete">Delete</button>
-						</form>
-						<div class="collapse" id="collapse{{$i}}">
-							<br>
-							{{if (isImagePath $v)}}
-								<img src="/api/storage/{{$.U_ID}}/{{$.Type}}/{{$.Owner}}/{{.}}" loading="lazy">
-							{{else if (isVideoPath $v)}}
-								<video src="/api/storage/{{$.U_ID}}/{{$.Type}}/{{$.Owner}}/{{.}}" preload="metadata" muted controls loop></video>
-							{{else}}
-								<a href="/api/storage/{{$.U_ID}}/{{$.Type}}/{{$.Owner}}/{{.}}">{{.}}</a>
-							{{end}}
-						</div>
-					</li>
-				</ul>
-			{{end}}
+			<section id="result">
+				{{template "history_result"}}
+			</section>
 		</main>
 		<noscript>Please enable JavaScript to continue using this application.</noscript>
 	</body>
-
 </html>

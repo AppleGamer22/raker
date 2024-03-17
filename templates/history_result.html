@@ -1,0 +1,20 @@
+{{define "history_result"}}
+	{{range .Errors}}
+		{{if .}}
+			<h3 class="text-danger">{{.}}</h3>
+		{{end}}
+	{{end}}
+	{{if gt (len .URLs) 0}}
+		<div class="card">
+			<div class="card-body">
+			{{date .Date}}
+			</div>
+		</div>
+		<div class="accordion" id="accordion_categories">
+			{{template "edit_categories" .}}
+		</div>
+	{{end}}
+	<section id="files">
+		{{template "html_files" .}}
+	</section>
+{{end}}

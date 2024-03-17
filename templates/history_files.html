@@ -1,0 +1,25 @@
+{{define "html_list"}}
+	{{range $i, $v := .URLs}}
+		<ul class="list-group">
+			<li class="list-group-item">
+				<h6>
+					<a href="/api/storage/{{$.U_ID}}/{{$.Type}}/{{$.Owner}}/{{.}}" target="_blank" rel="noopener noreferrer">{{base $v}}</a>
+				</h6>
+				<form hx-delete="/api/history?media={{$.Type}}&post={{$.Post}}&owner={{$.Owner}}&remove={{$v}}">
+					<button type="button" class="btn btn-secondary" data-bs-toggle="collapse" data-bs-target="#collapse{{$i}}">Show/Hide</button>
+					<button type="submit" class="btn btn-danger delete">Delete</button>
+				</form>
+				<div class="collapse" id="collapse{{$i}}">
+					<br>
+					{{if (isImagePath $v)}}
+						<img src="/api/storage/{{$.U_ID}}/{{$.Type}}/{{$.Owner}}/{{.}}" loading="lazy">
+					{{else if (isVideoPath $v)}}
+						<video src="/api/storage/{{$.U_ID}}/{{$.Type}}/{{$.Owner}}/{{.}}" preload="metadata" muted controls loop></video>
+					{{else}}
+						<a href="/api/storage/{{$.U_ID}}/{{$.Type}}/{{$.Owner}}/{{.}}">{{.}}</a>
+					{{end}}
+				</div>
+			</li>
+		</ul>
+	{{end}}
+{{end}}
