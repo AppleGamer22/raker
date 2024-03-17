@@ -1,0 +1,9 @@
+{
+	"name": "raker",
+	"scripts": {
+		"postinstall": "cp node_modules/htmx.org/dist/htmx.min.js assets"
+	},
+	"dependencies": {
+		"htmx.org": "^1.9.11"
+	}
+}
