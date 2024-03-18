@@ -1,4 +1,4 @@
-{{define "edit_categories"}}
+{{define "edit_categories.html"}}
 	<div class="accordion-item">
 		<h2 class="accordion-header" id="heading_categories">
 			<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse_categories">
@@ -9,7 +9,7 @@
 		</h2>
 		<div id="collapse_categories" class="accordion-collapse collapse" data-bs-parent="#accordion_categories">
 			<div class="accordion-body">
-				<form hx-patch="/api/history?media={{.Type}}&post={{.Post}}&owner={{.Owner}}">
+				<form hx-patch="/api/history?media={{.Type}}&post={{.Post}}&owner={{.Owner}}" hx-target="#accordion_categories">
 					{{range $category, $checked := .SelectedCategories}}
 						<div class="form-check">
 							<input class="form-check-input" type="checkbox" id="{{$category}}" name="{{$category}}" value="{{$category}}"{{if $checked}} checked{{end}}>

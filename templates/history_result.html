@@ -1,4 +1,4 @@
-{{define "history_result"}}
+{{define "history_result.html"}}
 	{{range .Errors}}
 		{{if .}}
 			<h3 class="text-danger">{{.}}</h3>
@@ -11,10 +11,10 @@
 			</div>
 		</div>
 		<div class="accordion" id="accordion_categories">
-			{{template "edit_categories" .}}
+			{{template "edit_categories.html" .}}
 		</div>
 	{{end}}
 	<section id="files">
-		{{template "html_files" .}}
+		{{template "history_files.html" .}}
 	</section>
 {{end}}

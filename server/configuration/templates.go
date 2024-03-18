@@ -31,5 +31,8 @@ var (
 		filepath.Join("templates", "authentication.html"),
 		filepath.Join("templates", "history.html"),
 		filepath.Join("templates", "histories.html"),
+		filepath.Join("templates", "edit_categories.html"),
+		filepath.Join("templates", "history_files.html"),
+		filepath.Join("templates", "history_result.html"),
 	))
 )

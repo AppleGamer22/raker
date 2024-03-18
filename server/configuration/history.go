@@ -5,7 +5,6 @@ import (
 	"errors"
 	"math"
 	"net/http"
-	"net/url"
 	"path/filepath"
 	"sort"
 	"strconv"
@@ -47,15 +46,21 @@ func (server *RakerServer) History(writer http.ResponseWriter, request *http.Req
 
 	switch request.Method {
 	case http.MethodPatch:
-		_, err := server.editHistory(user.ID, media, owner, post, categories)
+		history, err := server.editHistory(user.ID, media, owner, post, categories)
 		if err != nil {
-			http.Error(writer, err.Error(), http.StatusBadRequest)
 			log.Error(err)
-			return
 		}
 
-		http.Redirect(writer, request, request.Referer(), http.StatusTemporaryRedirect)
+		historyDisplay := db.HistoryDisplay{
+			History:            history,
+			Errors:             []error{err},
+			SelectedCategories: user.SelectedCategories(history.Categories),
+		}
 
+		if err := templates.ExecuteTemplate(writer, "edit_categories.html", historyDisplay); err != nil {
+			http.Error(writer, err.Error(), http.StatusBadRequest)
+			log.Error(err)
+		}
 	case http.MethodDelete:
 		if file == "" {
 			http.Error(writer, "file URL must be valid", http.StatusBadRequest)
@@ -64,23 +69,30 @@ func (server *RakerServer) History(writer http.ResponseWriter, request *http.Req
 
 		history, err := server.deleteFileFromHistory(user, owner, media, post, file)
 		if err != nil {
-			http.Error(writer, err.Error(), http.StatusBadRequest)
 			log.Error(err)
-			return
 		}
 
-		redirectURL := request.Referer()
-		URL, _ := url.Parse(redirectURL)
-		query := URL.Query()
-		if len(history.URLs) == 0 {
-			query.Del("post")
-			query.Del("owner")
-		} else if history.Type == types.Story && !query.Has("post") {
-			query.Set("post", history.Post)
+		// redirectURL := request.Referer()
+		// URL, _ := url.Parse(redirectURL)
+		// query := URL.Query()
+		// if len(history.URLs) == 0 {
+		// 	query.Del("post")
+		// 	query.Del("owner")
+		// } else if history.Type == types.Story && !query.Has("post") {
+		// 	query.Set("post", history.Post)
+		// }
+		// URL.RawQuery = query.Encode()
+		// redirectURL = URL.String()
+		// http.Redirect(writer, request, redirectURL, http.StatusTemporaryRedirect)
+		historyDisplay := db.HistoryDisplay{
+			History:            history,
+			Errors:             []error{err},
+			SelectedCategories: user.SelectedCategories(history.Categories),
 		}
-		URL.RawQuery = query.Encode()
-		redirectURL = URL.String()
-		http.Redirect(writer, request, redirectURL, http.StatusTemporaryRedirect)
+		if err := templates.ExecuteTemplate(writer, "history_files.html", historyDisplay); err != nil {
+			http.Error(writer, err.Error(), http.StatusBadRequest)
+			log.Error(err)
+		}
 	default:
 		http.Error(writer, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 	}

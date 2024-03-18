@@ -1,11 +1,11 @@
-{{define "html_list"}}
+{{define "history_files.html"}}
 	{{range $i, $v := .URLs}}
 		<ul class="list-group">
 			<li class="list-group-item">
 				<h6>
 					<a href="/api/storage/{{$.U_ID}}/{{$.Type}}/{{$.Owner}}/{{.}}" target="_blank" rel="noopener noreferrer">{{base $v}}</a>
 				</h6>
-				<form hx-delete="/api/history?media={{$.Type}}&post={{$.Post}}&owner={{$.Owner}}&remove={{$v}}">
+				<form hx-delete="/api/history?media={{$.Type}}&post={{$.Post}}&owner={{$.Owner}}&remove={{$v}}" hx-target="#files">
 					<button type="button" class="btn btn-secondary" data-bs-toggle="collapse" data-bs-target="#collapse{{$i}}">Show/Hide</button>
 					<button type="submit" class="btn btn-danger delete">Delete</button>
 				</form>
