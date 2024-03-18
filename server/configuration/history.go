@@ -89,7 +89,7 @@ func (server *RakerServer) History(writer http.ResponseWriter, request *http.Req
 			Errors:             []error{err},
 			SelectedCategories: user.SelectedCategories(history.Categories),
 		}
-		if err := templates.ExecuteTemplate(writer, "history_files.html", historyDisplay); err != nil {
+		if err := templates.ExecuteTemplate(writer, "history_result.html", historyDisplay); err != nil {
 			http.Error(writer, err.Error(), http.StatusBadRequest)
 			log.Error(err)
 		}
