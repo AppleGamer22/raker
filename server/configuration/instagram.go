@@ -17,12 +17,11 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func (server *RakerServer) InstagramPage(writer http.ResponseWriter, request *http.Request) {
+func (server *RakerServer) instagram(request *http.Request) (db.User, db.History, []error) {
 	user := request.Context().Value(authenticatedUserKey).(db.User)
 
 	if err := request.ParseForm(); err != nil {
-		http.Error(writer, err.Error(), http.StatusInternalServerError)
-		return
+		return db.User{}, db.History{}, []error{err}
 	}
 
 	history := db.History{
@@ -50,10 +49,7 @@ func (server *RakerServer) InstagramPage(writer http.ResponseWriter, request *ht
 				URLs, username, err = instagram.Post(post)
 			}
 			if err != nil {
-				log.Error(err)
-				writer.WriteHeader(http.StatusBadRequest)
-				historyHTML(user, history, []error{err}, writer)
-				return
+				return db.User{}, db.History{}, []error{err}
 			}
 
 			localURLs := make([]string, 0, len(URLs))
@@ -61,8 +57,6 @@ func (server *RakerServer) InstagramPage(writer http.ResponseWriter, request *ht
 			for _, urlString := range URLs {
 				URL, err := url.Parse(urlString)
 				if err != nil {
-					log.Error(err)
-					writer.WriteHeader(http.StatusBadRequest)
 					errs = append(errs, err)
 					continue
 				}
@@ -72,10 +66,6 @@ func (server *RakerServer) InstagramPage(writer http.ResponseWriter, request *ht
 
 			localURLs, saveErrors := StorageHandler.SaveBundle(user, types.Instagram, username, localURLs, URLs, []*http.Cookie{})
 			errs = append(errs, saveErrors...)
-			for _, err := range saveErrors {
-				log.Error(err)
-				writer.WriteHeader(http.StatusInternalServerError)
-			}
 
 			if len(localURLs) > 0 {
 				history = db.History{
@@ -90,13 +80,40 @@ func (server *RakerServer) InstagramPage(writer http.ResponseWriter, request *ht
 				}
 
 				if _, err := server.Histories.InsertOne(context.Background(), history); err != nil {
-					log.Error(err)
-					writer.WriteHeader(http.StatusInternalServerError)
 					errs = append(errs, err)
 				}
 			}
 		}
 	}
+	return user, history, errs
+}
 
+func (server *RakerServer) InstagramPage(writer http.ResponseWriter, request *http.Request) {
+	user, history, errs := server.instagram(request)
+	if len(errs) > 0 {
+		writer.WriteHeader(http.StatusBadRequest)
+		for _, err := range errs {
+			log.Error(err)
+		}
+	}
 	historyHTML(user, history, errs, writer)
+}
+
+func (server *RakerServer) InstagramResult(writer http.ResponseWriter, request *http.Request) {
+	user, history, errs := server.instagram(request)
+	if len(errs) > 0 {
+		writer.WriteHeader(http.StatusBadRequest)
+		for _, err := range errs {
+			log.Error(err)
+		}
+	}
+	historyDisplay := db.HistoryDisplay{
+		History:            history,
+		Errors:             errs,
+		SelectedCategories: user.SelectedCategories(history.Categories),
+	}
+	if err := templates.ExecuteTemplate(writer, "history_result.html", historyDisplay); err != nil {
+		http.Error(writer, err.Error(), http.StatusBadRequest)
+		log.Error(err)
+	}
 }

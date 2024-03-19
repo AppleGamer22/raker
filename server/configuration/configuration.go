@@ -94,13 +94,20 @@ func NewRakerServer() (*RakerServer, error) {
 	mux.Handle("/favicon.ico", http.RedirectHandler("/assets/icons/favicon.ico", http.StatusPermanentRedirect))
 	mux.Handle("/robots.txt", http.RedirectHandler("/assets/robots.txt", http.StatusPermanentRedirect))
 
+	// TODO: look into https://htmx.org/attributes/hx-indicator/
+
 	mux.Handle("/", rakerServer.Verify(false, http.HandlerFunc(rakerServer.AuthenticationPage)))
 	mux.Handle("/history", rakerServer.Verify(true, http.HandlerFunc(rakerServer.HistoryPage)))
 	mux.Handle("/instagram", rakerServer.Verify(true, http.HandlerFunc(rakerServer.InstagramPage)))
+	mux.Handle("/instagram/htmx", rakerServer.Verify(true, http.HandlerFunc(rakerServer.InstagramResult)))
 	mux.Handle("/highlight", rakerServer.Verify(true, http.HandlerFunc(rakerServer.HighlightPage)))
+	mux.Handle("/highlight/htmx", rakerServer.Verify(true, http.HandlerFunc(rakerServer.HighlightResult)))
 	mux.Handle("/story", rakerServer.Verify(true, http.HandlerFunc(rakerServer.StoryPage)))
+	mux.Handle("/story/htmx", rakerServer.Verify(true, http.HandlerFunc(rakerServer.StoryResult)))
 	mux.Handle("/tiktok", rakerServer.Verify(true, http.HandlerFunc(rakerServer.TikTokPage)))
+	mux.Handle("/tiktok/htmx", rakerServer.Verify(true, http.HandlerFunc(rakerServer.TikTokResult)))
 	mux.Handle("/vsco", rakerServer.Verify(true, http.HandlerFunc(rakerServer.VSCOPage)))
+	mux.Handle("/vsco/htmx", rakerServer.Verify(true, http.HandlerFunc(rakerServer.VSCOResult)))
 
 	rakerServer.HTTPServer = http.Server{
 		Addr:    fmt.Sprintf(":%d", rakerServer.Configuration.Port),

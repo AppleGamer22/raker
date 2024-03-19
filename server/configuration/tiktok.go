@@ -17,13 +17,11 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func (server *RakerServer) TikTokPage(writer http.ResponseWriter, request *http.Request) {
+func (server *RakerServer) tiktok(request *http.Request) (db.User, db.History, []error) {
 	user := request.Context().Value(authenticatedUserKey).(db.User)
 
 	if err := request.ParseForm(); err != nil {
-		log.Error(err)
-		http.Error(writer, err.Error(), http.StatusInternalServerError)
-		return
+		return db.User{}, db.History{}, []error{err}
 	}
 
 	history := db.History{
@@ -43,10 +41,7 @@ func (server *RakerServer) TikTokPage(writer http.ResponseWriter, request *http.
 			tiktok := shared.NewTikTok(user.TikTok.SessionID, user.TikTok.SessionIDGuard, user.TikTok.ChainToken)
 			URLs, username, cookies, err := tiktok.Post(owner, post, incognito)
 			if err != nil {
-				log.Error(err)
-				writer.WriteHeader(http.StatusBadRequest)
-				historyHTML(user, history, []error{err}, writer)
-				return
+				return db.User{}, db.History{}, []error{err}
 			}
 
 			localURLs := make([]string, 0, len(URLs))
@@ -54,8 +49,6 @@ func (server *RakerServer) TikTokPage(writer http.ResponseWriter, request *http.
 			for _, urlString := range URLs {
 				URL, err := url.Parse(urlString)
 				if err != nil {
-					log.Error(err)
-					writer.WriteHeader(http.StatusBadRequest)
 					errs = append(errs, err)
 					continue
 				}
@@ -69,10 +62,6 @@ func (server *RakerServer) TikTokPage(writer http.ResponseWriter, request *http.
 
 			localURLs, saveErrors := StorageHandler.SaveBundle(user, types.TikTok, username, localURLs, URLs, cookies)
 			errs = append(errs, saveErrors...)
-			for _, err := range saveErrors {
-				log.Error(err)
-				writer.WriteHeader(http.StatusInternalServerError)
-			}
 
 			if len(localURLs) > 0 {
 				history = db.History{
@@ -86,8 +75,6 @@ func (server *RakerServer) TikTokPage(writer http.ResponseWriter, request *http.
 				}
 
 				if _, err := server.Histories.InsertOne(context.Background(), history); err != nil {
-					log.Error(err)
-					writer.WriteHeader(http.StatusInternalServerError)
 					errs = append(errs, err)
 				}
 			}
@@ -95,5 +82,35 @@ func (server *RakerServer) TikTokPage(writer http.ResponseWriter, request *http.
 		}
 	}
 
+	return user, history, errs
+}
+
+func (server *RakerServer) TikTokPage(writer http.ResponseWriter, request *http.Request) {
+	user, history, errs := server.tiktok(request)
+	if len(errs) > 0 {
+		writer.WriteHeader(http.StatusBadRequest)
+		for _, err := range errs {
+			log.Error(err)
+		}
+	}
 	historyHTML(user, history, errs, writer)
+}
+
+func (server *RakerServer) TikTokResult(writer http.ResponseWriter, request *http.Request) {
+	user, history, errs := server.tiktok(request)
+	if len(errs) > 0 {
+		writer.WriteHeader(http.StatusBadRequest)
+		for _, err := range errs {
+			log.Error(err)
+		}
+	}
+	historyDisplay := db.HistoryDisplay{
+		History:            history,
+		Errors:             errs,
+		SelectedCategories: user.SelectedCategories(history.Categories),
+	}
+	if err := templates.ExecuteTemplate(writer, "history_result.html", historyDisplay); err != nil {
+		http.Error(writer, err.Error(), http.StatusBadRequest)
+		log.Error(err)
+	}
 }

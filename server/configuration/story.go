@@ -16,12 +16,11 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func (server *RakerServer) StoryPage(writer http.ResponseWriter, request *http.Request) {
+func (server *RakerServer) story(request *http.Request) (db.User, db.History, []error) {
 	user := request.Context().Value(authenticatedUserKey).(db.User)
 
 	if err := request.ParseForm(); err != nil {
-		http.Error(writer, err.Error(), http.StatusInternalServerError)
-		return
+		return db.User{}, db.History{}, []error{err}
 	}
 
 	history := db.History{
@@ -40,21 +39,16 @@ func (server *RakerServer) StoryPage(writer http.ResponseWriter, request *http.R
 		}
 
 		if err := server.Histories.FindOne(context.Background(), filter).Decode(&history); err == nil {
-			historyHTML(user, history, []error{}, writer)
-			return
+			return db.User{}, db.History{}, []error{err}
 		}
 	} else if owner == "" {
-		historyHTML(user, history, errs, writer)
-		return
+		return db.User{}, history, []error{}
 	}
 
 	instagram := shared.NewInstagram(user.Instagram.FBSR, user.Instagram.SessionID, user.Instagram.UserID)
 	URLs, username, err := instagram.Reels(owner, false)
 	if err != nil {
-		log.Error(err)
-		writer.WriteHeader(http.StatusBadRequest)
-		historyHTML(user, history, []error{err}, writer)
-		return
+		return db.User{}, history, []error{err}
 	}
 
 	filter := bson.M{
@@ -68,8 +62,6 @@ func (server *RakerServer) StoryPage(writer http.ResponseWriter, request *http.R
 	for _, urlString := range URLs {
 		URL, err := url.Parse(urlString)
 		if err != nil {
-			log.Error(err)
-			writer.WriteHeader(http.StatusBadRequest)
 			errs = append(errs, err)
 			continue
 		}
@@ -87,10 +79,6 @@ func (server *RakerServer) StoryPage(writer http.ResponseWriter, request *http.R
 	URLs = newURLs
 	localURLs, saveErrors := StorageHandler.SaveBundle(user, types.Story, username, localURLs, URLs, []*http.Cookie{})
 	errs = append(errs, saveErrors...)
-	for _, err := range saveErrors {
-		log.Error(err)
-		writer.WriteHeader(http.StatusInternalServerError)
-	}
 
 	if len(localURLs) > 0 {
 		historyID = primitive.NewObjectID().Hex()
@@ -105,11 +93,40 @@ func (server *RakerServer) StoryPage(writer http.ResponseWriter, request *http.R
 		}
 
 		if _, err := server.Histories.InsertOne(context.Background(), history); err != nil {
-			log.Error(err)
-			writer.WriteHeader(http.StatusInternalServerError)
 			errs = append(errs, err)
 		}
 	}
 
+	return user, history, errs
+}
+
+func (server *RakerServer) StoryPage(writer http.ResponseWriter, request *http.Request) {
+	user, history, errs := server.story(request)
+	if len(errs) > 0 {
+		writer.WriteHeader(http.StatusBadRequest)
+		for _, err := range errs {
+			log.Error(err)
+		}
+	}
+
 	historyHTML(user, history, errs, writer)
+}
+
+func (server *RakerServer) StoryResult(writer http.ResponseWriter, request *http.Request) {
+	user, history, errs := server.story(request)
+	if len(errs) > 0 {
+		writer.WriteHeader(http.StatusBadRequest)
+		for _, err := range errs {
+			log.Error(err)
+		}
+	}
+	historyDisplay := db.HistoryDisplay{
+		History:            history,
+		Errors:             errs,
+		SelectedCategories: user.SelectedCategories(history.Categories),
+	}
+	if err := templates.ExecuteTemplate(writer, "history_result.html", historyDisplay); err != nil {
+		http.Error(writer, err.Error(), http.StatusBadRequest)
+		log.Error(err)
+	}
 }

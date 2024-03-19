@@ -39,7 +39,7 @@ func init() {
 
 	var data userAgentData
 	if err := json.NewDecoder(response.Body).Decode(&data); err != nil || len(data.Data) == 0 {
-		log.Error("could not retrieve the latest user agent")
+		log.Error("could not retrieve the latest user agent", "err", err)
 		return
 	}
 

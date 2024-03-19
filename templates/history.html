@@ -112,7 +112,7 @@
 			</nav>
 		</header>
 		<main>
-			<form method="get">
+			<form hx-get="/{{.Type}}/htmx" hx-target="#result">
 				{{if eq .Type "instagram"}}
 					{{if .Owner}}
 						<div class="mb-3">

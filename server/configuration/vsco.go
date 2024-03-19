@@ -17,12 +17,11 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func (server *RakerServer) VSCOPage(writer http.ResponseWriter, request *http.Request) {
+func (server *RakerServer) vsco(request *http.Request) (db.User, db.History, []error) {
 	user := request.Context().Value(authenticatedUserKey).(db.User)
 
 	if err := request.ParseForm(); err != nil {
-		http.Error(writer, err.Error(), http.StatusInternalServerError)
-		return
+		return db.User{}, db.History{}, []error{err}
 	}
 
 	history := db.History{
@@ -38,26 +37,17 @@ func (server *RakerServer) VSCOPage(writer http.ResponseWriter, request *http.Re
 		if err := server.Histories.FindOne(context.Background(), filter).Decode(&history); err != nil {
 			urlString, username, err := shared.VSCO(owner, post)
 			if err != nil {
-				log.Error(err)
-				writer.WriteHeader(http.StatusBadRequest)
-				historyHTML(user, history, []error{err}, writer)
-				return
+				return db.User{}, db.History{}, []error{err}
 			}
 
 			URL, err := url.Parse(urlString)
 			if err != nil {
-				log.Error(err)
-				writer.WriteHeader(http.StatusBadRequest)
-				historyHTML(user, history, []error{err}, writer)
-				return
+				return db.User{}, db.History{}, []error{err}
 			}
 			fileName := fmt.Sprintf("%s_%s", post, path.Base(URL.Path))
 
 			if err := StorageHandler.Save(user, types.VSCO, username, fileName, urlString, []*http.Cookie{}); err != nil {
-				log.Error(err)
-				writer.WriteHeader(http.StatusInternalServerError)
-				historyHTML(user, history, []error{err}, writer)
-				return
+				return db.User{}, db.History{}, []error{err}
 			}
 
 			history = db.History{
@@ -71,13 +61,40 @@ func (server *RakerServer) VSCOPage(writer http.ResponseWriter, request *http.Re
 			}
 
 			if _, err := server.Histories.InsertOne(context.Background(), history); err != nil {
-				log.Error(err)
-				writer.WriteHeader(http.StatusInternalServerError)
-				historyHTML(user, history, []error{err}, writer)
-				return
+				return db.User{}, db.History{}, []error{err}
 			}
 		}
 	}
 
+	return user, history, []error{}
+}
+
+func (server *RakerServer) VSCOPage(writer http.ResponseWriter, request *http.Request) {
+	user, history, errs := server.vsco(request)
+	if len(errs) > 0 {
+		writer.WriteHeader(http.StatusBadRequest)
+		for _, err := range errs {
+			log.Error(err)
+		}
+	}
 	historyHTML(user, history, nil, writer)
+}
+
+func (server *RakerServer) VSCOResult(writer http.ResponseWriter, request *http.Request) {
+	user, history, errs := server.vsco(request)
+	if len(errs) > 0 {
+		writer.WriteHeader(http.StatusBadRequest)
+		for _, err := range errs {
+			log.Error(err)
+		}
+	}
+	historyDisplay := db.HistoryDisplay{
+		History:            history,
+		Errors:             errs,
+		SelectedCategories: user.SelectedCategories(history.Categories),
+	}
+	if err := templates.ExecuteTemplate(writer, "history_result.html", historyDisplay); err != nil {
+		http.Error(writer, err.Error(), http.StatusBadRequest)
+		log.Error(err)
+	}
 }
