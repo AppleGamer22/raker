@@ -132,10 +132,10 @@ var (
 	instagramRegExpDATR                 = regexp.MustCompile(`_js_datr\":{\"value":\"([0-9a-zA-Z-]+)`)
 	instagramRegExpLSD                  = regexp.MustCompile(`lsd\":\"([0-9a-zA-Z-]+)`)
 	instagramRegExpScriptWithDocumentID = regexp.MustCompile(`<link rel=\"preload\" href=\"(.*?)\" as=\"script\" crossorigin=\"anonymous\" nonce=".*?" />`)
-	instagramRegExpDocumentID           = regexp.MustCompile(`params:{id:\"([0-9]+)\",metadata:{},name:\"PolarisPostActionLoadPostQuery`)
+	instagramRegExpDocumentID           = regexp.MustCompile(`__d\(\"PolarisPostActionLoadPostQueryQuery_instagramRelayOperation\",\[\],\(function\(a,b,c,d,e,f\){e\.exports=\"([0-9]+)\"}\),null\);`)
 )
 
-const scriptWithDocumentMatch = 2
+const scriptWithDocumentMatch = 1
 
 func NewInstagram(fbsr, sessionID, userID string) Instagram {
 	return Instagram{
@@ -302,7 +302,8 @@ func InstagramIncognito(post string) ([]string, string, []*http.Cookie, error) {
 		"doc_id":    {documentIDs[1]},
 		"variables": {fmt.Sprintf(`{"shortcode":"%s","fetch_comment_count":40,"fetch_related_profile_media_count":3,"parent_comment_count":24,"child_comment_count":3,"fetch_like_count":10,"fetch_tagged_user_count":null,"fetch_preview_comment_count":2,"has_threaded_comments":true,"hoisted_comment_id":null,"hoisted_reply_id":null}`, post)},
 	}
-	jsonRequest, err := http.NewRequest(http.MethodPost, "https://www.instagram.com/api/graphql", strings.NewReader(form.Encode()))
+
+	jsonRequest, err := http.NewRequest(http.MethodPost, "https://www.instagram.com/graphql/query", strings.NewReader(form.Encode()))
 	if err != nil {
 		return []string{}, "", []*http.Cookie{}, err
 	}
