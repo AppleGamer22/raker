@@ -93,7 +93,7 @@ func (server *RakerServer) HighlightPage(writer http.ResponseWriter, request *ht
 func (server *RakerServer) HighlightResult(writer http.ResponseWriter, request *http.Request) {
 	user, history, errs := server.highlight(request)
 	if len(errs) > 0 {
-		writer.WriteHeader(http.StatusBadRequest)
+		// writer.WriteHeader(http.StatusBadRequest)
 		for _, err := range errs {
 			log.Error(err)
 		}

@@ -102,7 +102,7 @@ func (server *RakerServer) InstagramPage(writer http.ResponseWriter, request *ht
 func (server *RakerServer) InstagramResult(writer http.ResponseWriter, request *http.Request) {
 	user, history, errs := server.instagram(request)
 	if len(errs) > 0 {
-		writer.WriteHeader(http.StatusBadRequest)
+		// writer.WriteHeader(http.StatusBadRequest)
 		for _, err := range errs {
 			log.Error(err)
 		}

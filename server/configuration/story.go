@@ -115,7 +115,7 @@ func (server *RakerServer) StoryPage(writer http.ResponseWriter, request *http.R
 func (server *RakerServer) StoryResult(writer http.ResponseWriter, request *http.Request) {
 	user, history, errs := server.story(request)
 	if len(errs) > 0 {
-		writer.WriteHeader(http.StatusBadRequest)
+		// writer.WriteHeader(http.StatusBadRequest)
 		for _, err := range errs {
 			log.Error(err)
 		}

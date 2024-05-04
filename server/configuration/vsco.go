@@ -83,7 +83,7 @@ func (server *RakerServer) VSCOPage(writer http.ResponseWriter, request *http.Re
 func (server *RakerServer) VSCOResult(writer http.ResponseWriter, request *http.Request) {
 	user, history, errs := server.vsco(request)
 	if len(errs) > 0 {
-		writer.WriteHeader(http.StatusBadRequest)
+		// writer.WriteHeader(http.StatusBadRequest)
 		for _, err := range errs {
 			log.Error(err)
 		}

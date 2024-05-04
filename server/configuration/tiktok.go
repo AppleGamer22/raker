@@ -99,7 +99,7 @@ func (server *RakerServer) TikTokPage(writer http.ResponseWriter, request *http.
 func (server *RakerServer) TikTokResult(writer http.ResponseWriter, request *http.Request) {
 	user, history, errs := server.tiktok(request)
 	if len(errs) > 0 {
-		writer.WriteHeader(http.StatusBadRequest)
+		// writer.WriteHeader(http.StatusBadRequest)
 		for _, err := range errs {
 			log.Error(err)
 		}
