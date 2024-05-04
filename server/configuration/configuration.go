@@ -19,14 +19,15 @@ type contextKey int
 const authenticatedUserKey contextKey = 0
 
 type Configuration struct {
-	Secret      string
-	URI         string
-	Database    string
-	Username    string
-	Password    string
-	Storage     string
-	Directories bool
-	Port        uint
+	Secret       string
+	URI          string
+	Database     string
+	Username     string
+	Password     string
+	Storage      string
+	Directories  bool
+	SecureCookie bool
+	Port         uint
 }
 
 type RakerServer struct {
@@ -128,6 +129,7 @@ func init() {
 	viper.BindEnv("DATABASE")
 	viper.BindEnv("STORAGE")
 	viper.BindEnv("DIRECTORIES")
+	viper.BindEnv("SECURE_COOKIES")
 	viper.BindEnv("PORT")
 	viper.SetConfigName(".raker")
 	viper.SetConfigType("yaml")

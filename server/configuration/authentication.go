@@ -232,7 +232,7 @@ func (server *RakerServer) InstagramSignIn(writer http.ResponseWriter, request *
 		Path:  "/",
 		// Domain:   request.URL.Hostname(),
 		Expires:  expiry,
-		Secure:   true,
+		Secure:   server.Configuration.SecureCookie,
 		HttpOnly: true,
 	})
 
