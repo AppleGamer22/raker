@@ -99,6 +99,11 @@ func (handler *storageHandler) Save(user db.User, media, owner, fileName, URL st
 		return fmt.Errorf("response of %d instead of media", response.StatusCode)
 	}
 
+	if media == types.VSCO && response.Header.Get("Content-Type") == "video/MP2T" {
+		log.Debugf("decoding stream from %s", media)
+		return shared.Stream2MP4(response.Body, mediaPath)
+	}
+
 	file, err := os.Create(mediaPath)
 	if err != nil {
 		return err

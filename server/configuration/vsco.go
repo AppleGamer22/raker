@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/url"
 	"path"
+	"strings"
 	"time"
 
 	"github.com/AppleGamer22/raker/server/cleaner"
@@ -44,7 +45,12 @@ func (server *RakerServer) vsco(request *http.Request) (db.User, db.History, []e
 			if err != nil {
 				return db.User{}, db.History{}, []error{err}
 			}
-			fileName := fmt.Sprintf("%s_%s", post, path.Base(URL.Path))
+			fileName := func() string {
+				if strings.Contains(urlString, ".ts") {
+					return fmt.Sprintf("%s.mp4", post)
+				}
+				return fmt.Sprintf("%s_%s", post, path.Base(URL.Path))
+			}()
 
 			if err := StorageHandler.Save(user, types.VSCO, username, fileName, urlString, []*http.Cookie{}); err != nil {
 				return db.User{}, db.History{}, []error{err}
