@@ -18,6 +18,7 @@ WORKDIR /raker
 COPY --from=build /raker/raker .
 COPY templates templates
 COPY assets assets
+RUN apk add ffmpeg
 ENV STORAGE="/raker/storage"
 ENV DATABASE="raker"
 EXPOSE 4100
