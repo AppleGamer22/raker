@@ -39,10 +39,12 @@ func (server *RakerServer) story(request *http.Request) (db.User, db.History, []
 		}
 
 		if err := server.Histories.FindOne(context.Background(), filter).Decode(&history); err == nil {
-			return db.User{}, db.History{}, []error{err}
+			// history log already exists
+			return user, history, []error{}
 		}
 	} else if owner == "" {
-		return db.User{}, history, []error{}
+		// empty input results in empty response
+		return db.User{}, db.History{}, []error{}
 	}
 
 	instagram := shared.NewInstagram(user.Instagram.FBSR, user.Instagram.SessionID, user.Instagram.UserID)
