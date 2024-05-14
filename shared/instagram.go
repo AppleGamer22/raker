@@ -236,6 +236,39 @@ func (instagram *Instagram) Post(post string) (URLs []string, username string, e
 	return URLs, username, err
 }
 
+func extractDocumentIDFromScripts(jsURLs [][]string) (string, error) {
+	for _, match := range jsURLs {
+		jsURL := match[1]
+		if jsURL == "" {
+			continue
+		}
+		jsRequest, err := http.NewRequest(http.MethodGet, jsURL, nil)
+		if err != nil {
+			continue
+		}
+		jsRequest.Header.Add("user-agent", UserAgent)
+		jsRequest.Header.Add("referer", "https://www.instagram.com/")
+
+		jsResponse, err := http.DefaultClient.Do(jsRequest)
+		if err != nil {
+			continue
+		}
+		defer jsResponse.Body.Close()
+
+		jsBody, err := io.ReadAll(jsResponse.Body)
+		if err != nil {
+			continue
+		}
+		documentIDs := instagramRegExpDocumentID.FindStringSubmatch(string(jsBody))
+		if documentIDs == nil || documentIDs[1] == "" {
+			continue
+		}
+		return documentIDs[1], nil
+	}
+	return "", errors.New("could not find document ID")
+
+}
+
 func InstagramIncognito(post string) ([]string, string, []*http.Cookie, error) {
 	htmlURL := fmt.Sprintf("https://www.instagram.com/p/%s", post)
 	htmlRequest, err := http.NewRequest(http.MethodGet, htmlURL, nil)
@@ -270,36 +303,14 @@ func InstagramIncognito(post string) ([]string, string, []*http.Cookie, error) {
 	}
 
 	jsURLs := instagramRegExpScriptWithDocumentID.FindAllStringSubmatch(string(htmlBody), 4)
-	if jsURLs == nil || jsURLs[scriptWithDocumentMatch][1] == "" {
-		return []string{}, "", []*http.Cookie{}, errors.New("could not find link URL")
-	}
-	jsURL := jsURLs[scriptWithDocumentMatch][1]
-
-	jsRequest, err := http.NewRequest(http.MethodGet, jsURL, nil)
+	documentID, err := extractDocumentIDFromScripts(jsURLs)
 	if err != nil {
 		return []string{}, "", []*http.Cookie{}, err
-	}
-	jsRequest.Header.Add("user-agent", UserAgent)
-	jsRequest.Header.Add("referer", "https://www.instagram.com/")
-
-	jsResponse, err := http.DefaultClient.Do(jsRequest)
-	if err != nil {
-		return []string{}, "", []*http.Cookie{}, err
-	}
-	defer jsResponse.Body.Close()
-
-	jsBody, err := io.ReadAll(jsResponse.Body)
-	if err != nil {
-		return []string{}, "", []*http.Cookie{}, err
-	}
-	documentIDs := instagramRegExpDocumentID.FindStringSubmatch(string(jsBody))
-	if documentIDs == nil || documentIDs[1] == "" {
-		return []string{}, "", []*http.Cookie{}, errors.New("could not find document ID")
 	}
 
 	form := url.Values{
 		"lsd":       {lsdMatches[1]},
-		"doc_id":    {documentIDs[1]},
+		"doc_id":    {documentID},
 		"variables": {fmt.Sprintf(`{"shortcode":"%s","fetch_comment_count":40,"fetch_related_profile_media_count":3,"parent_comment_count":24,"child_comment_count":3,"fetch_like_count":10,"fetch_tagged_user_count":null,"fetch_preview_comment_count":2,"has_threaded_comments":true,"hoisted_comment_id":null,"hoisted_reply_id":null}`, post)},
 	}
 
