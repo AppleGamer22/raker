@@ -44,7 +44,7 @@ func (server *RakerServer) story(request *http.Request) (db.User, db.History, []
 		}
 	} else if owner == "" {
 		// empty input results in empty response
-		return db.User{}, db.History{}, []error{}
+		return db.User{}, history, []error{}
 	}
 
 	instagram := shared.NewInstagram(user.Instagram.FBSR, user.Instagram.SessionID, user.Instagram.UserID)
