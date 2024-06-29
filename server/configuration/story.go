@@ -44,13 +44,13 @@ func (server *RakerServer) story(request *http.Request) (db.User, db.History, []
 		}
 	} else if owner == "" {
 		// empty input results in empty response
-		return db.User{}, history, []error{}
+		return user, history, []error{}
 	}
 
 	instagram := shared.NewInstagram(user.Instagram.FBSR, user.Instagram.SessionID, user.Instagram.UserID)
 	URLs, username, err := instagram.Reels(owner, false)
 	if err != nil {
-		return db.User{}, history, []error{err}
+		return user, history, []error{err}
 	}
 
 	filter := bson.M{
