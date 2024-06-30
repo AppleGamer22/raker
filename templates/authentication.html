@@ -141,38 +141,38 @@
 							</li>
 							{{if .Username}}
 								<li class="nav-item">
-									<a class="nav-link" href="/instagram">Instagram Post</a>
+									<a class="nav-link" href="/find/instagram">Instagram Post</a>
 								</li>
 								<li class="nav-item">
-									<a class="nav-link" href="/highlight">Instagram Highlight</a>
+									<a class="nav-link" href="/find/highlight">Instagram Highlight</a>
 								</li>
 								<li class="nav-item">
-									<a class="nav-link" href="/story">Instagram Story</a>
+									<a class="nav-link" href="/find/story">Instagram Story</a>
 								</li>
 								<li class="nav-item">
-									<a class="nav-link" href="/tiktok">TikTok Post</a>
+									<a class="nav-link" href="/find/tiktok">TikTok Post</a>
 								</li>
 								<li class="nav-item">
-									<a class="nav-link" href="/vsco">VSCO Post</a>
+									<a class="nav-link" href="/find/vsco">VSCO Post</a>
 								</li>
 								<li class="nav-item">
 									<a class="nav-link" href="/history?{{.HistoryQuery}}">History</a>
 								</li>
 							{{else}}
 								<li class="nav-item ">
-									<a class="nav-link disabled" href="/instagram">Instagram Post</a>
+									<a class="nav-link disabled" href="/find/instagram">Instagram Post</a>
 								</li>
 								<li class="nav-item">
-									<a class="nav-link disabled" href="/highlight">Instagram Highlight</a>
+									<a class="nav-link disabled" href="/find/highlight">Instagram Highlight</a>
 								</li>
 								<li class="nav-item">
-									<a class="nav-link disabled" href="/story">Instagram Story</a>
+									<a class="nav-link disabled" href="/find/story">Instagram Story</a>
 								</li>
 								<li class="nav-item">
-									<a class="nav-link disabled" href="/tiktok">TikTok Post</a>
+									<a class="nav-link disabled" href="/find/tiktok">TikTok Post</a>
 								</li>
 								<li class="nav-item">
-									<a class="nav-link disabled" href="/vsco">VSCO Post</a>
+									<a class="nav-link disabled" href="/find/vsco">VSCO Post</a>
 								</li>
 								<li class="nav-item">
 									<a class="nav-link disabled" href="/history">History</a>
@@ -218,7 +218,7 @@
 					</form>
 				</div>
 				<h4>Update</h4>
-				<form method="post" action="/api/auth/update/instagram">
+				<form method="post" action="/api/auth/update/find/instagram">
 					<div class="mb-3">
 						<label for="password" class="form-label">new password</label>
 						<input type="password" class="form-control" id="password" name="password" placeholder="a unique password">
@@ -239,13 +239,13 @@
 					<button type="submit" class="btn btn-primary">Update</button>
 				</form>
 				<br>
-				<form action="/api/auth/sign_out/instagram">
+				<form action="/api/auth/sign_out/find/instagram">
 					<!-- <input type="hidden" name="type" value="sign-out"> -->
 					<button type="submit" class="btn btn-danger">Sign-out</button>
 				</form>
 			{{else}}
 				<h4>Sign-up</h4>
-				<form method="post" action="/api/auth/sign_up/instagram">
+				<form method="post" action="/api/auth/sign_up/find/instagram">
 					<div class="mb-3">
 						<label for="username1" class="form-label">username</label>
 						<input type="text" class="form-control" id="username1" name="username" placeholder="social network username" spellcheck="false">
@@ -270,7 +270,7 @@
 					<button type="submit" class="btn btn-primary">Sign-up</button>
 				</form>
 				<h4>Sign-in</h4>
-				<form method="post" action="/api/auth/sign_in/instagram">
+				<form method="post" action="/api/auth/sign_in/find/instagram">
 					<div class="mb-3">
 						<label for="username2" class="form-label">username</label>
 						<input type="text" class="form-control" id="username2" name="username" placeholder="social network username" spellcheck="false">

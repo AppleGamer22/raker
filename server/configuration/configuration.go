@@ -7,6 +7,8 @@ import (
 
 	"github.com/AppleGamer22/raker/server/authenticator"
 	"github.com/AppleGamer22/raker/server/db"
+	"github.com/AppleGamer22/raker/shared"
+	"github.com/AppleGamer22/raker/shared/types"
 
 	"github.com/charmbracelet/log"
 	"github.com/go-webauthn/webauthn/webauthn"
@@ -83,10 +85,10 @@ func NewRakerServer() (*RakerServer, error) {
 
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("/api/auth/sign_up/instagram", rakerServer.InstagramSignUp)
-	mux.HandleFunc("/api/auth/sign_in/instagram", rakerServer.InstagramSignIn)
-	mux.Handle("/api/auth/update/instagram", rakerServer.Verify(true, http.HandlerFunc(rakerServer.InstagramUpdateCredentials)))
-	mux.Handle("/api/auth/sign_out/instagram", rakerServer.Verify(true, http.HandlerFunc(rakerServer.InstagramSignOut)))
+	mux.HandleFunc("/api/auth/sign_up/find/instagram", rakerServer.InstagramSignUp)
+	mux.HandleFunc("/api/auth/sign_in/find/instagram", rakerServer.InstagramSignIn)
+	mux.Handle("/api/auth/update/find/instagram", rakerServer.Verify(true, http.HandlerFunc(rakerServer.InstagramUpdateCredentials)))
+	mux.Handle("/api/auth/sign_out/find/instagram", rakerServer.Verify(true, http.HandlerFunc(rakerServer.InstagramSignOut)))
 	mux.Handle("/api/categories", rakerServer.Verify(true, http.HandlerFunc(rakerServer.Categories)))
 	mux.Handle("/api/history", rakerServer.Verify(true, http.HandlerFunc(rakerServer.History)))
 	// mux.HandleFunc("/api/info", rakerServer.Information)
@@ -99,16 +101,91 @@ func NewRakerServer() (*RakerServer, error) {
 
 	mux.Handle("/", rakerServer.Verify(false, http.HandlerFunc(rakerServer.AuthenticationPage)))
 	mux.Handle("/history", rakerServer.Verify(true, http.HandlerFunc(rakerServer.HistoryPage)))
-	mux.Handle("/instagram", rakerServer.Verify(true, http.HandlerFunc(rakerServer.InstagramPage)))
-	mux.Handle("/instagram/htmx", rakerServer.Verify(true, http.HandlerFunc(rakerServer.InstagramResult)))
-	mux.Handle("/highlight", rakerServer.Verify(true, http.HandlerFunc(rakerServer.HighlightPage)))
-	mux.Handle("/highlight/htmx", rakerServer.Verify(true, http.HandlerFunc(rakerServer.HighlightResult)))
-	mux.Handle("/story", rakerServer.Verify(true, http.HandlerFunc(rakerServer.StoryPage)))
-	mux.Handle("/story/htmx", rakerServer.Verify(true, http.HandlerFunc(rakerServer.StoryResult)))
-	mux.Handle("/tiktok", rakerServer.Verify(true, http.HandlerFunc(rakerServer.TikTokPage)))
-	mux.Handle("/tiktok/htmx", rakerServer.Verify(true, http.HandlerFunc(rakerServer.TikTokResult)))
-	mux.Handle("/vsco", rakerServer.Verify(true, http.HandlerFunc(rakerServer.VSCOPage)))
-	mux.Handle("/vsco/htmx", rakerServer.Verify(true, http.HandlerFunc(rakerServer.VSCOResult)))
+	mux.Handle("GET /find/{type}", rakerServer.Verify(true, http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+		var (
+			user    db.User
+			history db.History
+			errs    []error
+		)
+
+		switch request.PathValue("type") {
+		case types.Instagram:
+			user, history, errs = rakerServer.instagram(request)
+		case types.Highlight:
+			user, history, errs = rakerServer.highlight(request)
+		case types.Story:
+			user, history, errs = rakerServer.story(request)
+		case types.TikTok:
+			user, history, errs = rakerServer.tiktok(request)
+		case types.VSCO:
+			user, history, errs = rakerServer.vsco(request)
+		default:
+			http.Redirect(writer, request, "/", http.StatusTemporaryRedirect)
+			return
+		}
+
+		if len(errs) > 0 {
+			writer.WriteHeader(http.StatusBadRequest)
+			for _, err := range errs {
+				log.Error(err)
+			}
+		}
+
+		historyDisplay := db.HistoryDisplay{
+			History:            history,
+			Errors:             errs,
+			Version:            shared.Version,
+			SelectedCategories: user.SelectedCategories(history.Categories),
+		}
+
+		if err := templates.ExecuteTemplate(writer, "history.html", historyDisplay); err != nil {
+			http.Error(writer, err.Error(), http.StatusInternalServerError)
+			log.Error(err)
+			return
+		}
+	})))
+
+	mux.Handle("GET /find/{type}/htmx", rakerServer.Verify(true, http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+		var (
+			user    db.User
+			history db.History
+			errs    []error
+		)
+
+		switch request.PathValue("type") {
+		case types.Instagram:
+			user, history, errs = rakerServer.instagram(request)
+		case types.Highlight:
+			user, history, errs = rakerServer.highlight(request)
+		case types.Story:
+			user, history, errs = rakerServer.story(request)
+		case types.TikTok:
+			user, history, errs = rakerServer.tiktok(request)
+		case types.VSCO:
+			user, history, errs = rakerServer.vsco(request)
+		default:
+			http.Redirect(writer, request, "/", http.StatusTemporaryRedirect)
+			return
+		}
+
+		if len(errs) > 0 {
+			// writer.WriteHeader(http.StatusBadRequest)
+			for _, err := range errs {
+				log.Error(err)
+			}
+		}
+
+		historyDisplay := db.HistoryDisplay{
+			History:            history,
+			Errors:             errs,
+			SelectedCategories: user.SelectedCategories(history.Categories),
+		}
+
+		if err := templates.ExecuteTemplate(writer, "history_result.html", historyDisplay); err != nil {
+			http.Error(writer, err.Error(), http.StatusBadRequest)
+			log.Error(err)
+		}
+	})))
 
 	rakerServer.HTTPServer = http.Server{
 		Addr:    fmt.Sprintf(":%d", rakerServer.Configuration.Port),

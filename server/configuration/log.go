@@ -1,6 +1,7 @@
 package configuration
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
@@ -16,6 +17,7 @@ func NewLoggerMiddleware(handler http.Handler) *LoggerMiddleware {
 }
 
 func (lm *LoggerMiddleware) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
+	fmt.Println(request.RequestURI)
 	statusWriter := newStatusLogWriter(writer)
 	startTime := time.Now()
 	lm.handler.ServeHTTP(statusWriter, request)

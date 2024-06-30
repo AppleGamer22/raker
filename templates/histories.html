@@ -74,19 +74,19 @@
 								<a class="nav-link" href="/">Authentication</a>
 							</li>
 							<li class="nav-item">
-								<a class="nav-link" href="/instagram">Instagram Post</a>
+								<a class="nav-link" href="/find/instagram">Instagram Post</a>
 							</li>
 							<li class="nav-item">
-								<a class="nav-link" href="/highlight">Instagram Highlight</a>
+								<a class="nav-link" href="/find/highlight">Instagram Highlight</a>
 							</li>
 							<li class="nav-item">
-								<a class="nav-link" href="/story">Instagram Story</a>
+								<a class="nav-link" href="/find/story">Instagram Story</a>
 							</li>
 							<li class="nav-item">
-								<a class="nav-link" href="/tiktok">TikTok Post</a>
+								<a class="nav-link" href="/find/tiktok">TikTok Post</a>
 							</li>
 							<li class="nav-item">
-								<a class="nav-link" href="/vsco">VSCO Post</a>
+								<a class="nav-link" href="/find/vsco">VSCO Post</a>
 							</li>
 							<li class="nav-item">
 								<a class="nav-link disabled" href="/history?page=1">History</a>
@@ -193,7 +193,7 @@
 									<span>/</span>
 									<a href="/history?{{$.Query .Owner}}" target="_blank">{{.Owner}}</a>
 									<span>/</span>
-									<a href="/{{.Type}}?owner={{.Owner}}&post={{.Post}}" target="_blank">{{.Post}}</a>
+									<a href="/find/{{.Type}}?owner={{.Owner}}&post={{.Post}}" target="_blank">{{.Post}}</a>
 									<span class="date">
 										<br>
 										{{date .Date}}
