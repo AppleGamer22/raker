@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/url"
 	"path"
+	"strings"
 	"time"
 
 	"github.com/AppleGamer22/raker/server/cleaner"
@@ -54,9 +55,13 @@ func (server *RakerServer) tiktok(request *http.Request) (db.User, db.History, [
 				}
 				if URL.Query().Get("mime_type") == "video_mp4" {
 					localURLs = append(localURLs, fmt.Sprintf("%s.mp4", post))
-					break
+					continue
 				}
 				fileName := fmt.Sprintf("%s_%s", post, path.Base(URL.Path))
+				fmt.Println(fileName)
+				if !strings.HasSuffix(fileName, ".jpeg") {
+					fileName = fmt.Sprintf("%s.jpeg", fileName)
+				}
 				localURLs = append(localURLs, fileName)
 			}
 

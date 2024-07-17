@@ -25,6 +25,7 @@ type TikTokPost struct {
 						} `json:"images"`
 					} `json:"imagePost"`
 					Video struct {
+						Cover       string `json:"cover"`
 						PlayAddress string `json:"playAddr"`
 					} `json:"video"`
 				} `json:"itemStruct"`
@@ -114,5 +115,5 @@ func (tiktok *TikTok) Post(owner, post string, incognito bool) ([]string, string
 		return URLs, username, response.Cookies(), err
 	}
 
-	return []string{URL}, username, response.Cookies(), err
+	return []string{URL, tiktokPost.DefaultScop.VideoDetail.ItemInfo.ItemStruct.Video.Cover}, username, response.Cookies(), err
 }
