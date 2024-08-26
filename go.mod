@@ -1,12 +1,11 @@
 module github.com/AppleGamer22/raker
 
 go 1.22
-
-toolchain go1.22.4
+toolchain go1.23.0
 
 require (
 	github.com/charmbracelet/log v0.4.0
-	github.com/go-webauthn/webauthn v0.11.1
+	github.com/go-webauthn/webauthn v0.11.2
 	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/google/uuid v1.6.0
 	github.com/spf13/cobra v1.8.1
@@ -23,7 +22,7 @@ require (
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/fxamacker/cbor/v2 v2.7.0 // indirect
 	github.com/go-logfmt/logfmt v0.6.0 // indirect
-	github.com/go-webauthn/x v0.1.12 // indirect
+	github.com/go-webauthn/x v0.1.14 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/go-tpm v0.9.1 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
