@@ -1,6 +1,6 @@
 # yaml-language-server: $schema=https://goreleaser.com/static/schema.json
 project_name: raker
-version: 1
+version: 2
 before:
   hooks:
     - make completion manual
@@ -36,61 +36,61 @@ builds:
     ldflags:
       - -X 'github.com/AppleGamer22/raker/cmd.Version={{.Version}}'
       - -X 'github.com/AppleGamer22/raker/cmd.Hash={{.FullCommit}}'
-archives:
-  - id: unix
-    builds:
-      - linux
-      - mac
-    name_template: >-
-      {{- .ProjectName}}_
-      {{- .Version}}_
-      {{- if eq .Os "darwin"}}mac{{else}}
-        {{- .Os}}
-      {{- end}}_
-      {{- .Arch}}
-    files:
-      - raker.bash
-      - raker.fish
-      - raker.zsh
-      - raker.1
-  - id: windows
-    builds:
-      - windows
-    format_overrides:
-      - goos: windows
-        format: zip
-    name_template: "{{.ProjectName}}_{{.Version}}_{{.Os}}_{{.Arch}}"
-    files:
-      - raker.ps1
-      - raker.1
-nfpms:
-  - package_name: raker
-    vendor: AppleGamer22
-    maintainer: Omri Bornstein <omribor@gmail.com>
-    homepage: https://github.com/AppleGamer22/raker
-    license: GPL-3.0
-    description: A social media scraper with less JavaScript than my previous one.
-    file_name_template: "{{.ProjectName}}_{{.Version}}_{{.Os}}_{{.Arch}}"
-    builds:
-      - linux
-    dependencies:
-      - chromium
-    formats:
-      - apk
-      - deb
-      - rpm
-      - archlinux
-    contents:
-      - src: raker.1
-        dst: /usr/share/man/man1/raker.1
-        file_info:
-          mode: 0644
-      - src: raker.bash
-        dst: /usr/share/bash-completion/completions/raker
-      - src: raker.fish
-        dst: /usr/share/fish/completions/raker.fish
-      - src: raker.zsh
-        dst: /usr/share/zsh/site-functions/_raker
+# archives:
+#   - id: unix
+#     builds:
+#       - linux
+#       - mac
+#     name_template: >-
+#       {{- .ProjectName}}_
+#       {{- .Version}}_
+#       {{- if eq .Os "darwin"}}mac{{else}}
+#         {{- .Os}}
+#       {{- end}}_
+#       {{- .Arch}}
+#     files:
+#       - raker.bash
+#       - raker.fish
+#       - raker.zsh
+#       - raker.1
+#   - id: windows
+#     builds:
+#       - windows
+#     format_overrides:
+#       - goos: windows
+#         format: zip
+#     name_template: "{{.ProjectName}}_{{.Version}}_{{.Os}}_{{.Arch}}"
+#     files:
+#       - raker.ps1
+#       - raker.1
+# nfpms:
+#   - package_name: raker
+#     vendor: AppleGamer22
+#     maintainer: Omri Bornstein <omribor@gmail.com>
+#     homepage: https://github.com/AppleGamer22/raker
+#     license: GPL-3.0
+#     description: A social media scraper with less JavaScript than my previous one.
+#     file_name_template: "{{.ProjectName}}_{{.Version}}_{{.Os}}_{{.Arch}}"
+#     builds:
+#       - linux
+#     dependencies:
+#       - chromium
+#     formats:
+#       - apk
+#       - deb
+#       - rpm
+#       - archlinux
+#     contents:
+#       - src: raker.1
+#         dst: /usr/share/man/man1/raker.1
+#         file_info:
+#           mode: 0644
+#       - src: raker.bash
+#         dst: /usr/share/bash-completion/completions/raker
+#       - src: raker.fish
+#         dst: /usr/share/fish/completions/raker.fish
+#       - src: raker.zsh
+#         dst: /usr/share/zsh/site-functions/_raker
 changelog:
   use: github
   filters:
@@ -151,65 +151,65 @@ dockers:
       - "--label=org.opencontainers.image.version={{.Version}}"
       - "--build-arg VERSION={{.Version}}"
       - "--build-arg HASH={{.FullCommit}}"
-nix:
-  - homepage: https://github.com/AppleGamer22/raker
-    description: A social media scraper with less JavaScript than my previous one.
-    license: GPL3
-    repository:
-      owner: AppleGamer22
-      name: nur
-      token: "{{.Env.TAP_GITHUB_TOKEN}}"
-    commit_author:
-      name: Omri Bornstein
-      email: omribor@gmail.com
-    ids:
-      - unix
-    install: |
-      mkdir -p $out/bin
-      cp -vr ./{{.ProjectName}} $out/bin/{{.ProjectName}}
-      installManPage ./{{.ProjectName}}.1
-    post_install: |
-      installShellCompletion ./{{.ProjectName}}.*sh
-aurs:
-  - homepage: https://github.com/AppleGamer22/raker
-    description: A social media scraper with less JavaScript than my previous one.
-    license: GPL3
-    maintainers:
-      - Omri Bornstein <omribor@gmail.com>
-    contributors:
-      - Omri Bornstein <omribor@gmail.com>
-    private_key: "{{.Env.AUR_SSH_PRIVATE_KEY}}"
-    git_url: ssh://aur@aur.archlinux.org/raker-bin.git
-    depends:
-      - chromium
-    package: |
-      install -Dm755 raker "${pkgdir}/usr/bin/raker"
-      install -Dm644 raker.1 "${pkgdir}/usr/share/man/man1/raker.1"
-      install -Dm644 raker.bash "${pkgdir}/usr/share/bash-completion/completions/raker"
-      install -Dm644 raker.fish "${pkgdir}/usr/share/fish/vendor_completions.d/raker.fish"
-      install -Dm644 raker.zsh "${pkgdir}/usr/share/zsh/site-functions/_raker"
-    commit_author:
-      name: Omri Bornstein
-      email: omribor@gmail.com
-brews:
-  - repository:
-      owner: AppleGamer22
-      name: homebrew-tap
-      token: "{{.Env.TAP_GITHUB_TOKEN}}"
-    download_strategy: CurlDownloadStrategy
-    commit_author:
-      name: Omri Bornstein
-      email: omribor@gmail.com
-    homepage: https://github.com/AppleGamer22/raker
-    dependencies:
-      - chromium
-    description: A social media scraper with less JavaScript than my previous one.
-    license: GPL-3.0
-    install: |
-      bin.install "raker"
-      man1.install "raker.1"
-      bash_completion.install "raker.bash" => "raker"
-      fish_completion.install "raker.fish"
-      zsh_completion.install "raker.zsh" => "_raker"
+# nix:
+#   - homepage: https://github.com/AppleGamer22/raker
+#     description: A social media scraper with less JavaScript than my previous one.
+#     license: GPL3
+#     repository:
+#       owner: AppleGamer22
+#       name: nur
+#       token: "{{.Env.TAP_GITHUB_TOKEN}}"
+#     commit_author:
+#       name: Omri Bornstein
+#       email: omribor@gmail.com
+#     ids:
+#       - unix
+#     install: |
+#       mkdir -p $out/bin
+#       cp -vr ./{{.ProjectName}} $out/bin/{{.ProjectName}}
+#       installManPage ./{{.ProjectName}}.1
+#     post_install: |
+#       installShellCompletion ./{{.ProjectName}}.*sh
+# aurs:
+#   - homepage: https://github.com/AppleGamer22/raker
+#     description: A social media scraper with less JavaScript than my previous one.
+#     license: GPL3
+#     maintainers:
+#       - Omri Bornstein <omribor@gmail.com>
+#     contributors:
+#       - Omri Bornstein <omribor@gmail.com>
+#     private_key: "{{.Env.AUR_SSH_PRIVATE_KEY}}"
+#     git_url: ssh://aur@aur.archlinux.org/raker-bin.git
+#     depends:
+#       - chromium
+#     package: |
+#       install -Dm755 raker "${pkgdir}/usr/bin/raker"
+#       install -Dm644 raker.1 "${pkgdir}/usr/share/man/man1/raker.1"
+#       install -Dm644 raker.bash "${pkgdir}/usr/share/bash-completion/completions/raker"
+#       install -Dm644 raker.fish "${pkgdir}/usr/share/fish/vendor_completions.d/raker.fish"
+#       install -Dm644 raker.zsh "${pkgdir}/usr/share/zsh/site-functions/_raker"
+#     commit_author:
+#       name: Omri Bornstein
+#       email: omribor@gmail.com
+# brews:
+#   - repository:
+#       owner: AppleGamer22
+#       name: homebrew-tap
+#       token: "{{.Env.TAP_GITHUB_TOKEN}}"
+#     download_strategy: CurlDownloadStrategy
+#     commit_author:
+#       name: Omri Bornstein
+#       email: omribor@gmail.com
+#     homepage: https://github.com/AppleGamer22/raker
+#     dependencies:
+#       - chromium
+#     description: A social media scraper with less JavaScript than my previous one.
+#     license: GPL-3.0
+#     install: |
+#       bin.install "raker"
+#       man1.install "raker.1"
+#       bash_completion.install "raker.bash" => "raker"
+#       fish_completion.install "raker.fish"
+#       zsh_completion.install "raker.zsh" => "_raker"
 sboms:
   - artifacts: archive
