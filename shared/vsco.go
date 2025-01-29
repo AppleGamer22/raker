@@ -82,6 +82,7 @@ func VSCO(owner, post string) (URL string, username string, err error) {
 	}
 
 	jsonText := script[len("<script>window.__PRELOADED_STATE__ =") : len(script)-len("</script>")]
+	jsonText = strings.ReplaceAll(jsonText, "undefined", "null")
 	var vscoPost VSCOPost
 	if err := json.Unmarshal([]byte(jsonText), &vscoPost); err != nil {
 		return URL, username, err

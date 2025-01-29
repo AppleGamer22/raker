@@ -58,7 +58,6 @@ func (server *RakerServer) tiktok(request *http.Request) (db.User, db.History, [
 					continue
 				}
 				fileName := fmt.Sprintf("%s_%s", post, path.Base(URL.Path))
-				fmt.Println(fileName)
 				if !strings.HasSuffix(fileName, ".jpeg") {
 					fileName = fmt.Sprintf("%s.jpeg", fileName)
 				}
