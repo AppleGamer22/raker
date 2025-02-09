@@ -8,7 +8,6 @@ package db
 import (
 	"context"
 	"database/sql"
-	"strings"
 
 	"github.com/lib/pq"
 )
@@ -71,27 +70,17 @@ func (q *Queries) HistoryGet(ctx context.Context, arg HistoryGetParams) (History
 }
 
 const historyGetExclusive = `-- name: HistoryGetExclusive :many
-SELECT username, type, owner, post, date, files, categories FROM Histories WHERE type IN ($2) AND categories = $1 AND OWNER LIKE '%$2%'
+SELECT username, type, owner, post, date, files, categories FROM Histories WHERE type = ANY($1::TEXT[]) AND categories = $2 AND OWNER LIKE $3
 `
 
 type HistoryGetExclusiveParams struct {
+	Column1    []string
 	Categories []string
-	Types      []string
+	Owner      string
 }
 
 func (q *Queries) HistoryGetExclusive(ctx context.Context, arg HistoryGetExclusiveParams) ([]History, error) {
-	query := historyGetExclusive
-	var queryParams []interface{}
-	queryParams = append(queryParams, arg.Categories)
-	if len(arg.Types) > 0 {
-		for _, v := range arg.Types {
-			queryParams = append(queryParams, v)
-		}
-		query = strings.Replace(query, "/*SLICE:types*/?", strings.Repeat(",?", len(arg.Types))[1:], 1)
-	} else {
-		query = strings.Replace(query, "/*SLICE:types*/?", "NULL", 1)
-	}
-	rows, err := q.db.QueryContext(ctx, query, queryParams...)
+	rows, err := q.db.QueryContext(ctx, historyGetExclusive, pq.Array(arg.Column1), pq.Array(arg.Categories), arg.Owner)
 	if err != nil {
 		return nil, err
 	}
@@ -122,27 +111,17 @@ func (q *Queries) HistoryGetExclusive(ctx context.Context, arg HistoryGetExclusi
 }
 
 const historyGetInclusive = `-- name: HistoryGetInclusive :many
-SELECT username, type, owner, post, date, files, categories FROM Histories WHERE type IN ($2) AND categories <@ $1 AND OWNER LIKE '%$2%'
+SELECT username, type, owner, post, date, files, categories FROM Histories WHERE type = ANY($1::TEXT[]) AND categories <@ $2 AND OWNER LIKE $3
 `
 
 type HistoryGetInclusiveParams struct {
+	Column1    []string
 	Categories []string
-	Types      []string
+	Owner      string
 }
 
 func (q *Queries) HistoryGetInclusive(ctx context.Context, arg HistoryGetInclusiveParams) ([]History, error) {
-	query := historyGetInclusive
-	var queryParams []interface{}
-	queryParams = append(queryParams, arg.Categories)
-	if len(arg.Types) > 0 {
-		for _, v := range arg.Types {
-			queryParams = append(queryParams, v)
-		}
-		query = strings.Replace(query, "/*SLICE:types*/?", strings.Repeat(",?", len(arg.Types))[1:], 1)
-	} else {
-		query = strings.Replace(query, "/*SLICE:types*/?", "NULL", 1)
-	}
-	rows, err := q.db.QueryContext(ctx, query, queryParams...)
+	rows, err := q.db.QueryContext(ctx, historyGetInclusive, pq.Array(arg.Column1), pq.Array(arg.Categories), arg.Owner)
 	if err != nil {
 		return nil, err
 	}
