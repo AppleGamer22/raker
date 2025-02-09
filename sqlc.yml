@@ -1,0 +1,10 @@
+# yaml-language-server: $schema=https://json.schemastore.org/sqlc-2.0.json
+version: "2"
+sql:
+  - engine: postgresql
+    schema: ./db/schemas
+    queries: ./db/queries
+    gen:
+      go:
+        package: "db"
+        out: "server/db"
