@@ -21,12 +21,13 @@ UPDATE Histories SET owner = $3 WHERE type = $1 AND owner = $2;
 -- name: HistoryGet :one
 SELECT * FROM Histories WHERE type = $1 AND post = $2;
 
--- https://github.com/sqlc-dev/sqlc/issues/895#issuecomment-785553456
+-- https://docs.sqlc.dev/en/stable/howto/select.html#passing-a-slice-as-a-parameter-to-a-query
+-- https://docs.sqlc.dev/en/stable/howto/named_parameters.html
 -- name: HistoryGetInclusive :many
-SELECT * FROM Histories WHERE type = ANY($1::TEXT[]) AND categories <@ $2 AND OWNER LIKE $3;
+SELECT * FROM Histories WHERE type = ANY(sqlc.slice('types')::text[]) AND categories <@ $1 AND OWNER LIKE $2;
 
 -- name: HistoryGetExclusive :many
-SELECT * FROM Histories WHERE type = ANY($1::TEXT[]) AND categories = $2 AND OWNER LIKE $3;
+SELECT * FROM Histories WHERE type = ANY(sqlc.slice('types')::text[]) AND categories = $1 AND OWNER LIKE $2;
 
 -- name: HistoryRemove :exec
 DELETE FROM Histories where type = $1 AND owner = $2 AND post = $3;

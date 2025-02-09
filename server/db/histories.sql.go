@@ -70,17 +70,17 @@ func (q *Queries) HistoryGet(ctx context.Context, arg HistoryGetParams) (History
 }
 
 const historyGetExclusive = `-- name: HistoryGetExclusive :many
-SELECT username, type, owner, post, date, files, categories FROM Histories WHERE type = ANY($1::TEXT[]) AND categories = $2 AND OWNER LIKE $3
+SELECT username, type, owner, post, date, files, categories FROM Histories WHERE type = ANY($3::text[]) AND categories = $1 AND OWNER LIKE $2
 `
 
 type HistoryGetExclusiveParams struct {
-	Column1    []string
 	Categories []string
 	Owner      string
+	Types      []string
 }
 
 func (q *Queries) HistoryGetExclusive(ctx context.Context, arg HistoryGetExclusiveParams) ([]History, error) {
-	rows, err := q.db.QueryContext(ctx, historyGetExclusive, pq.Array(arg.Column1), pq.Array(arg.Categories), arg.Owner)
+	rows, err := q.db.QueryContext(ctx, historyGetExclusive, pq.Array(arg.Categories), arg.Owner, pq.Array(arg.Types))
 	if err != nil {
 		return nil, err
 	}
@@ -111,17 +111,19 @@ func (q *Queries) HistoryGetExclusive(ctx context.Context, arg HistoryGetExclusi
 }
 
 const historyGetInclusive = `-- name: HistoryGetInclusive :many
-SELECT username, type, owner, post, date, files, categories FROM Histories WHERE type = ANY($1::TEXT[]) AND categories <@ $2 AND OWNER LIKE $3
+SELECT username, type, owner, post, date, files, categories FROM Histories WHERE type = ANY($3::text[]) AND categories <@ $1 AND OWNER LIKE $2
 `
 
 type HistoryGetInclusiveParams struct {
-	Column1    []string
 	Categories []string
 	Owner      string
+	Types      []string
 }
 
+// https://docs.sqlc.dev/en/stable/howto/select.html#passing-a-slice-as-a-parameter-to-a-query
+// https://docs.sqlc.dev/en/stable/howto/named_parameters.html
 func (q *Queries) HistoryGetInclusive(ctx context.Context, arg HistoryGetInclusiveParams) ([]History, error) {
-	rows, err := q.db.QueryContext(ctx, historyGetInclusive, pq.Array(arg.Column1), pq.Array(arg.Categories), arg.Owner)
+	rows, err := q.db.QueryContext(ctx, historyGetInclusive, pq.Array(arg.Categories), arg.Owner, pq.Array(arg.Types))
 	if err != nil {
 		return nil, err
 	}
