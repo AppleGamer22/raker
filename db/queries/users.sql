@@ -2,11 +2,11 @@
 INSERT INTO Users (
 	username,
 	hash,
-	instagram_session_id.
+	instagram_session_id,
 	instagram_user_id,
 	network,
-	categories,
-) VALUES ($1, $2, $3, $4, $5, $6);
+	categories
+) VALUES ($1, $2, $3, $4, 'instagram', $5);
 
 -- name: UserUpdateInstagramSession :exec
 UPDATE Users SET instagram_session_id = $2, instagram_user_id = $3 where username = $1;
