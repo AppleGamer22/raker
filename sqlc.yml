@@ -8,3 +8,5 @@ sql:
       go:
         package: "db"
         out: "server/db"
+        rename:
+          urls: URLs

@@ -1,5 +1,5 @@
-CREATE OR ALTER TABLE Owners (
-	[owner] TEXT NOT NULL,
-	[type] TEXT NOT NOT,
-	PRIMARY KEY([type], [owner]),
+CREATE TABLE Owners (
+	owner TEXT NOT NULL,
+	type TEXT NOT NULL,
+	PRIMARY KEY(type, owner)
 );
