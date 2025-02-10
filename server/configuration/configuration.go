@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"github.com/AppleGamer22/raker/server/authenticator"
-	"github.com/AppleGamer22/raker/server/db"
+	db "github.com/AppleGamer22/raker/server/db/mongo"
 	"github.com/AppleGamer22/raker/shared"
 	"github.com/AppleGamer22/raker/shared/types"
 

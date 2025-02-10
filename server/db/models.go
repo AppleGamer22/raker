@@ -11,71 +11,136 @@ import (
 	"time"
 )
 
-type Type string
+type NetworkType string
 
 const (
-	TypeInstagram Type = "instagram"
-	TypeHighlight Type = "highlight"
-	TypeStory     Type = "story"
-	TypeTiktok    Type = "tiktok"
-	TypeVsco      Type = "vsco"
+	NetworkTypeInstagram NetworkType = "instagram"
+	NetworkTypeTiktok    NetworkType = "tiktok"
+	NetworkTypeVsco      NetworkType = "vsco"
 )
 
-func (e *Type) Scan(src interface{}) error {
+func (e *NetworkType) Scan(src interface{}) error {
 	switch s := src.(type) {
 	case []byte:
-		*e = Type(s)
+		*e = NetworkType(s)
 	case string:
-		*e = Type(s)
+		*e = NetworkType(s)
 	default:
-		return fmt.Errorf("unsupported scan type for Type: %T", src)
+		return fmt.Errorf("unsupported scan type for NetworkType: %T", src)
 	}
 	return nil
 }
 
-type NullType struct {
-	Type  Type
-	Valid bool // Valid is true if Type is not NULL
+type NullNetworkType struct {
+	NetworkType NetworkType `json:"network_type"`
+	Valid       bool        `json:"valid"` // Valid is true if NetworkType is not NULL
 }
 
 // Scan implements the Scanner interface.
-func (ns *NullType) Scan(value interface{}) error {
+func (ns *NullNetworkType) Scan(value interface{}) error {
 	if value == nil {
-		ns.Type, ns.Valid = "", false
+		ns.NetworkType, ns.Valid = "", false
 		return nil
 	}
 	ns.Valid = true
-	return ns.Type.Scan(value)
+	return ns.NetworkType.Scan(value)
 }
 
 // Value implements the driver Valuer interface.
-func (ns NullType) Value() (driver.Value, error) {
+func (ns NullNetworkType) Value() (driver.Value, error) {
 	if !ns.Valid {
 		return nil, nil
 	}
-	return string(ns.Type), nil
+	return string(ns.NetworkType), nil
+}
+
+func (e NetworkType) Valid() bool {
+	switch e {
+	case NetworkTypeInstagram,
+		NetworkTypeTiktok,
+		NetworkTypeVsco:
+		return true
+	}
+	return false
+}
+
+type PostType string
+
+const (
+	PostTypeInstagram PostType = "instagram"
+	PostTypeHighlight PostType = "highlight"
+	PostTypeStory     PostType = "story"
+	PostTypeTiktok    PostType = "tiktok"
+	PostTypeVsco      PostType = "vsco"
+)
+
+func (e *PostType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = PostType(s)
+	case string:
+		*e = PostType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for PostType: %T", src)
+	}
+	return nil
+}
+
+type NullPostType struct {
+	PostType PostType `json:"post_type"`
+	Valid    bool     `json:"valid"` // Valid is true if PostType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullPostType) Scan(value interface{}) error {
+	if value == nil {
+		ns.PostType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.PostType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullPostType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.PostType), nil
+}
+
+func (e PostType) Valid() bool {
+	switch e {
+	case PostTypeInstagram,
+		PostTypeHighlight,
+		PostTypeStory,
+		PostTypeTiktok,
+		PostTypeVsco:
+		return true
+	}
+	return false
 }
 
 type History struct {
-	Username   sql.NullString
-	Type       string
-	Owner      string
-	Post       string
-	Date       time.Time
-	Files      []string
-	Categories []string
+	Username   sql.NullString `json:"username"`
+	Type       PostType       `json:"type"`
+	Owner      string         `json:"owner"`
+	Post       string         `json:"post"`
+	Date       time.Time      `json:"date"`
+	Files      []string       `json:"files"`
+	Categories []string       `json:"categories"`
 }
 
 type Owner struct {
-	Owner string
-	Type  string
+	Owner string `json:"owner"`
+	Type  string `json:"type"`
 }
 
 type User struct {
-	Username           string
-	Hash               string
-	InstagramSessionID string
-	InstagramUserID    string
-	Network            string
-	Categories         []string
+	Username           string      `json:"username"`
+	Hash               string      `json:"hash"`
+	InstagramSessionID string      `json:"instagram_session_id"`
+	InstagramUserID    string      `json:"instagram_user_id"`
+	Network            NetworkType `json:"network"`
+	Categories         []string    `json:"categories"`
 }

@@ -8,12 +8,15 @@ sql:
     gen:
       go:
         package: db
-        out: server/db
-        # emit_json_tags: true
-        # emit_prepared_queries: true
-        # emit_interface: true
+        out: ./server/db
+        emit_json_tags: true
+        emit_prepared_queries: true
+        emit_interface: true
+        emit_enum_valid_method: true
+        # emit_all_enum_values: true
         rename:
           urls: URLs
+          PostType: PostType
         # overrides:
         #   - db_type: timestamptz
         #     go_type:

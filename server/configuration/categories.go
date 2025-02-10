@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/AppleGamer22/raker/server/cleaner"
-	"github.com/AppleGamer22/raker/server/db"
+	db "github.com/AppleGamer22/raker/server/db/mongo"
 	"github.com/charmbracelet/log"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"

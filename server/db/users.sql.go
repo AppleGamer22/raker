@@ -18,12 +18,12 @@ UPDATE Users SET categories = array(
 `
 
 type UserCategoryAddParams struct {
-	Category string
-	Username string
+	Category string `json:"category"`
+	Username string `json:"username"`
 }
 
 func (q *Queries) UserCategoryAdd(ctx context.Context, arg UserCategoryAddParams) error {
-	_, err := q.db.ExecContext(ctx, userCategoryAdd, arg.Category, arg.Username)
+	_, err := q.exec(ctx, q.userCategoryAddStmt, userCategoryAdd, arg.Category, arg.Username)
 	return err
 }
 
@@ -32,12 +32,12 @@ UPDATE Users SET categories = array_remove(categories, $1::text) where username 
 `
 
 type UserCategoryRemoveParams struct {
-	Category string
-	Username string
+	Category string `json:"category"`
+	Username string `json:"username"`
 }
 
 func (q *Queries) UserCategoryRemove(ctx context.Context, arg UserCategoryRemoveParams) error {
-	_, err := q.db.ExecContext(ctx, userCategoryRemove, arg.Category, arg.Username)
+	_, err := q.exec(ctx, q.userCategoryRemoveStmt, userCategoryRemove, arg.Category, arg.Username)
 	return err
 }
 
@@ -46,7 +46,7 @@ SELECT username, hash, instagram_session_id, instagram_user_id, network, categor
 `
 
 func (q *Queries) UserGet(ctx context.Context, username string) (User, error) {
-	row := q.db.QueryRowContext(ctx, userGet, username)
+	row := q.queryRow(ctx, q.userGetStmt, userGet, username)
 	var i User
 	err := row.Scan(
 		&i.Username,
@@ -64,12 +64,12 @@ UPDATE Users SET hash = $1::text where username = $2::text
 `
 
 type UserUpdateHashParams struct {
-	Hash     string
-	Username string
+	Hash     string `json:"hash"`
+	Username string `json:"username"`
 }
 
 func (q *Queries) UserUpdateHash(ctx context.Context, arg UserUpdateHashParams) error {
-	_, err := q.db.ExecContext(ctx, userUpdateHash, arg.Hash, arg.Username)
+	_, err := q.exec(ctx, q.userUpdateHashStmt, userUpdateHash, arg.Hash, arg.Username)
 	return err
 }
 
@@ -78,13 +78,13 @@ UPDATE Users SET instagram_session_id = $1::text, instagram_user_id = $2::text w
 `
 
 type UserUpdateInstagramSessionParams struct {
-	InstagramSessionID string
-	InstagramUserID    string
-	Username           string
+	InstagramSessionID string `json:"instagram_session_id"`
+	InstagramUserID    string `json:"instagram_user_id"`
+	Username           string `json:"username"`
 }
 
 func (q *Queries) UserUpdateInstagramSession(ctx context.Context, arg UserUpdateInstagramSessionParams) error {
-	_, err := q.db.ExecContext(ctx, userUpdateInstagramSession, arg.InstagramSessionID, arg.InstagramUserID, arg.Username)
+	_, err := q.exec(ctx, q.userUpdateInstagramSessionStmt, userUpdateInstagramSession, arg.InstagramSessionID, arg.InstagramUserID, arg.Username)
 	return err
 }
 
@@ -107,15 +107,15 @@ INSERT INTO Users (
 `
 
 type UserUserParams struct {
-	Username           string
-	Hash               string
-	InstagramSessionID string
-	InstagramUserID    string
-	Categories         []string
+	Username           string   `json:"username"`
+	Hash               string   `json:"hash"`
+	InstagramSessionID string   `json:"instagram_session_id"`
+	InstagramUserID    string   `json:"instagram_user_id"`
+	Categories         []string `json:"categories"`
 }
 
 func (q *Queries) UserUser(ctx context.Context, arg UserUserParams) error {
-	_, err := q.db.ExecContext(ctx, userUser,
+	_, err := q.exec(ctx, q.userUserStmt, userUser,
 		arg.Username,
 		arg.Hash,
 		arg.InstagramSessionID,
