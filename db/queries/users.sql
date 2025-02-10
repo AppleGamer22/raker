@@ -6,21 +6,28 @@ INSERT INTO Users (
 	instagram_user_id,
 	network,
 	categories
-) VALUES ($1, $2, $3, $4, 'instagram', $5);
+) VALUES (
+	sqlc.arg(username)::text,
+	sqlc.arg(hash)::text,
+	sqlc.arg(instagram_session_id)::text,
+	sqlc.arg(instagram_user_id)::text,
+	'instagram',
+	sqlc.arg(categories)::text[]
+);
 
 -- name: UserUpdateInstagramSession :exec
-UPDATE Users SET instagram_session_id = $2, instagram_user_id = $3 where username = $1;
+UPDATE Users SET instagram_session_id = sqlc.arg(instagram_session_id)::text, instagram_user_id = sqlc.arg(instagram_user_id)::text where username = sqlc.arg(username)::text;
 
 -- name: UserUpdateHash :exec
-UPDATE Users SET hash = $2 where username = $1;
+UPDATE Users SET hash = sqlc.arg(hash)::text where username = sqlc.arg(username)::text;
 
 -- name: UserCategoryAdd :exec
 UPDATE Users SET categories = array(
-	select unnest(array_append(categories, $2)) AS c ORDER BY c
-) where username = $1;
+	select unnest(array_append(categories, sqlc.arg(category)::text)) AS c ORDER BY c
+) where username = sqlc.arg(username)::text;
 
 -- name: UserCategoryRemove :exec
-UPDATE Users SET categories = array_remove(categories, $2) where username = $1;
+UPDATE Users SET categories = array_remove(categories, sqlc.arg(category)::text) where username = sqlc.arg(username)::text;
 
 -- name: UserGet :one
-SELECT * FROM Users WHERE username = $1;
+SELECT * FROM Users WHERE username = sqlc.arg(username)::text;

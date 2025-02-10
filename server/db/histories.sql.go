@@ -7,12 +7,11 @@ package db
 
 import (
 	"context"
-	"database/sql"
 
 	"github.com/lib/pq"
 )
 
-const historyAdd = `-- name: HistoryAdd :exec
+const historyAdd = `-- name: HistoryAdd :one
 INSERT INTO Histories (
 	username,
 	type,
@@ -21,11 +20,19 @@ INSERT INTO Histories (
 	date,
 	files,
 	categories
-) VALUES ($1, $2, $3, $4, NOW(), $5, $6)
+) VALUES (
+	$1::text,
+	$2::text,
+	$3::text,
+	$4::text,
+	NOW(),
+	$5::text[],
+	$6::text[]
+) RETURNING username, type, owner, post, date, files, categories
 `
 
 type HistoryAddParams struct {
-	Username   sql.NullString
+	Username   string
 	Type       string
 	Owner      string
 	Post       string
@@ -33,8 +40,8 @@ type HistoryAddParams struct {
 	Categories []string
 }
 
-func (q *Queries) HistoryAdd(ctx context.Context, arg HistoryAddParams) error {
-	_, err := q.db.ExecContext(ctx, historyAdd,
+func (q *Queries) HistoryAdd(ctx context.Context, arg HistoryAddParams) (History, error) {
+	row := q.db.QueryRowContext(ctx, historyAdd,
 		arg.Username,
 		arg.Type,
 		arg.Owner,
@@ -42,11 +49,21 @@ func (q *Queries) HistoryAdd(ctx context.Context, arg HistoryAddParams) error {
 		pq.Array(arg.Files),
 		pq.Array(arg.Categories),
 	)
-	return err
+	var i History
+	err := row.Scan(
+		&i.Username,
+		&i.Type,
+		&i.Owner,
+		&i.Post,
+		&i.Date,
+		pq.Array(&i.Files),
+		pq.Array(&i.Categories),
+	)
+	return i, err
 }
 
 const historyGet = `-- name: HistoryGet :one
-SELECT username, type, owner, post, date, files, categories FROM Histories WHERE type = $1 AND post = $2
+SELECT username, type, owner, post, date, files, categories FROM Histories WHERE type = $1::text AND post = $2::text
 `
 
 type HistoryGetParams struct {
@@ -70,17 +87,17 @@ func (q *Queries) HistoryGet(ctx context.Context, arg HistoryGetParams) (History
 }
 
 const historyGetExclusive = `-- name: HistoryGetExclusive :many
-SELECT username, type, owner, post, date, files, categories FROM Histories WHERE type = ANY($3::text[]) AND categories = $1 AND OWNER LIKE $2
+SELECT username, type, owner, post, date, files, categories FROM Histories WHERE type = ANY($1::text[]) AND categories = $2::text[] AND OWNER LIKE $3::text
 `
 
 type HistoryGetExclusiveParams struct {
+	Types      []string
 	Categories []string
 	Owner      string
-	Types      []string
 }
 
 func (q *Queries) HistoryGetExclusive(ctx context.Context, arg HistoryGetExclusiveParams) ([]History, error) {
-	rows, err := q.db.QueryContext(ctx, historyGetExclusive, pq.Array(arg.Categories), arg.Owner, pq.Array(arg.Types))
+	rows, err := q.db.QueryContext(ctx, historyGetExclusive, pq.Array(arg.Types), pq.Array(arg.Categories), arg.Owner)
 	if err != nil {
 		return nil, err
 	}
@@ -111,19 +128,19 @@ func (q *Queries) HistoryGetExclusive(ctx context.Context, arg HistoryGetExclusi
 }
 
 const historyGetInclusive = `-- name: HistoryGetInclusive :many
-SELECT username, type, owner, post, date, files, categories FROM Histories WHERE type = ANY($3::text[]) AND categories <@ $1 AND OWNER LIKE $2
+SELECT username, type, owner, post, date, files, categories FROM Histories WHERE type = ANY($1::text[]) AND categories <@ $2::text[] AND OWNER LIKE $3::text
 `
 
 type HistoryGetInclusiveParams struct {
+	Types      []string
 	Categories []string
 	Owner      string
-	Types      []string
 }
 
 // https://docs.sqlc.dev/en/stable/howto/select.html#passing-a-slice-as-a-parameter-to-a-query
 // https://docs.sqlc.dev/en/stable/howto/named_parameters.html
 func (q *Queries) HistoryGetInclusive(ctx context.Context, arg HistoryGetInclusiveParams) ([]History, error) {
-	rows, err := q.db.QueryContext(ctx, historyGetInclusive, pq.Array(arg.Categories), arg.Owner, pq.Array(arg.Types))
+	rows, err := q.db.QueryContext(ctx, historyGetInclusive, pq.Array(arg.Types), pq.Array(arg.Categories), arg.Owner)
 	if err != nil {
 		return nil, err
 	}
@@ -154,7 +171,7 @@ func (q *Queries) HistoryGetInclusive(ctx context.Context, arg HistoryGetInclusi
 }
 
 const historyRemove = `-- name: HistoryRemove :exec
-DELETE FROM Histories where type = $1 AND owner = $2 AND post = $3
+DELETE FROM Histories where type = $1::text AND owner = $2::text AND post = $3::text
 `
 
 type HistoryRemoveParams struct {
@@ -169,46 +186,46 @@ func (q *Queries) HistoryRemove(ctx context.Context, arg HistoryRemoveParams) er
 }
 
 const historyUpdateCategories = `-- name: HistoryUpdateCategories :exec
-UPDATE Histories SET categories = $3 WHERE type = $1 AND post = $2
+UPDATE Histories SET categories = $1::text[] WHERE post = $2::text AND post = $3::text
 `
 
 type HistoryUpdateCategoriesParams struct {
+	Categories []string
 	Type       string
 	Post       string
-	Categories []string
 }
 
 func (q *Queries) HistoryUpdateCategories(ctx context.Context, arg HistoryUpdateCategoriesParams) error {
-	_, err := q.db.ExecContext(ctx, historyUpdateCategories, arg.Type, arg.Post, pq.Array(arg.Categories))
+	_, err := q.db.ExecContext(ctx, historyUpdateCategories, pq.Array(arg.Categories), arg.Type, arg.Post)
 	return err
 }
 
 const historyUpdateOwner = `-- name: HistoryUpdateOwner :exec
-UPDATE Histories SET owner = $3 WHERE type = $1 AND owner = $2
+UPDATE Histories SET owner = $1::text WHERE post = $2::text AND owner = $3::text
 `
 
 type HistoryUpdateOwnerParams struct {
-	Type    string
-	Owner   string
-	Owner_2 string
+	OldOwner string
+	Type     string
+	NewOwner string
 }
 
 func (q *Queries) HistoryUpdateOwner(ctx context.Context, arg HistoryUpdateOwnerParams) error {
-	_, err := q.db.ExecContext(ctx, historyUpdateOwner, arg.Type, arg.Owner, arg.Owner_2)
+	_, err := q.db.ExecContext(ctx, historyUpdateOwner, arg.OldOwner, arg.Type, arg.NewOwner)
 	return err
 }
 
 const updateHistoryRemoveFile = `-- name: UpdateHistoryRemoveFile :exec
-UPDATE Histories SET files = array_remove(files, $3) WHERE type = $1 AND post = $2
+UPDATE Histories SET files = array_remove(files, $1::text) WHERE post = $2::text AND post = $3::text
 `
 
 type UpdateHistoryRemoveFileParams struct {
-	Type        string
-	Post        string
-	ArrayRemove interface{}
+	File string
+	Type string
+	Post string
 }
 
 func (q *Queries) UpdateHistoryRemoveFile(ctx context.Context, arg UpdateHistoryRemoveFileParams) error {
-	_, err := q.db.ExecContext(ctx, updateHistoryRemoveFile, arg.Type, arg.Post, arg.ArrayRemove)
+	_, err := q.db.ExecContext(ctx, updateHistoryRemoveFile, arg.File, arg.Type, arg.Post)
 	return err
 }

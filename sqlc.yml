@@ -1,4 +1,5 @@
 # yaml-language-server: $schema=https://json.schemastore.org/sqlc-2.0.json
+# https://youtu.be/VX6KzpjaPp8
 version: "2"
 sql:
   - engine: postgresql
@@ -6,7 +7,15 @@ sql:
     queries: ./db/queries
     gen:
       go:
-        package: "db"
-        out: "server/db"
+        package: db
+        out: server/db
+        # emit_json_tags: true
+        # emit_prepared_queries: true
+        # emit_interface: true
         rename:
           urls: URLs
+        # overrides:
+        #   - db_type: timestamptz
+        #     go_type:
+        #       import: time
+        #       type: Time
