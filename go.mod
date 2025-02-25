@@ -1,9 +1,6 @@
 module github.com/AppleGamer22/raker
 
 go 1.23
-
-toolchain go1.23.0
-
 require (
 	github.com/charmbracelet/log v0.4.0
 	github.com/go-webauthn/webauthn v0.11.2
@@ -14,7 +11,7 @@ require (
 	github.com/spf13/viper v1.19.0
 	github.com/stretchr/testify v1.10.0
 	go.mongodb.org/mongo-driver v1.17.2
-	golang.org/x/crypto v0.33.0
+	golang.org/x/crypto v0.35.0
 )
 
 require (
