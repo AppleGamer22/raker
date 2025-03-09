@@ -17,6 +17,7 @@ builds:
     ldflags:
       - -X 'github.com/AppleGamer22/raker/cmd.Version={{.Version}}'
       - -X 'github.com/AppleGamer22/raker/cmd.Hash={{.FullCommit}}'
+      - -linkmode 'external'
       - -extldflags=-static
     flags: -tags osusergo,netgo
   # - id: mac
