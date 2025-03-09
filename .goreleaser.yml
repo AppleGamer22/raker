@@ -1,41 +1,41 @@
 # yaml-language-server: $schema=https://goreleaser.com/static/schema.json
 project_name: raker
 version: 2
-before:
-  hooks:
-    - make completion manual
-builds:
-  - id: linux
-    dir: cli
-    goos:
-      - linux
-    goarch:
-      - amd64
-      - arm64
-      - riscv64
-    ldflags:
-      - -X 'github.com/AppleGamer22/raker/cmd.Version={{.Version}}'
-      - -X 'github.com/AppleGamer22/raker/cmd.Hash={{.FullCommit}}'
-  - id: mac
-    dir: cli
-    goos:
-      - darwin
-    goarch:
-      - amd64
-      - arm64
-    ldflags:
-      - -X 'github.com/AppleGamer22/raker/cmd.Version={{.Version}}'
-      - -X 'github.com/AppleGamer22/raker/cmd.Hash={{.FullCommit}}'
-  - id: windows
-    dir: cli
-    goos:
-      - windows
-    goarch:
-      - amd64
-      - arm64
-    ldflags:
-      - -X 'github.com/AppleGamer22/raker/cmd.Version={{.Version}}'
-      - -X 'github.com/AppleGamer22/raker/cmd.Hash={{.FullCommit}}'
+# before:
+#   hooks:
+#     - make completion manual
+# builds:
+#   - id: linux
+#     dir: cli
+#     goos:
+#       - linux
+#     goarch:
+#       - amd64
+#       - arm64
+#       - riscv64
+#     ldflags:
+#       - -X 'github.com/AppleGamer22/raker/cmd.Version={{.Version}}'
+#       - -X 'github.com/AppleGamer22/raker/cmd.Hash={{.FullCommit}}'
+#   - id: mac
+#     dir: cli
+#     goos:
+#       - darwin
+#     goarch:
+#       - amd64
+#       - arm64
+#     ldflags:
+#       - -X 'github.com/AppleGamer22/raker/cmd.Version={{.Version}}'
+#       - -X 'github.com/AppleGamer22/raker/cmd.Hash={{.FullCommit}}'
+#   - id: windows
+#     dir: cli
+#     goos:
+#       - windows
+#     goarch:
+#       - amd64
+#       - arm64
+#     ldflags:
+#       - -X 'github.com/AppleGamer22/raker/cmd.Version={{.Version}}'
+#       - -X 'github.com/AppleGamer22/raker/cmd.Hash={{.FullCommit}}'
 # archives:
 #   - id: unix
 #     builds:

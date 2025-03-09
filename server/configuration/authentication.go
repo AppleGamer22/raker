@@ -265,7 +265,7 @@ func (server *RakerServer) Verify(strict bool, handler http.Handler) http.Handle
 		if err != nil {
 			log.Error(err)
 			if strict {
-				http.Error(writer, "credential update failed", http.StatusUnauthorized)
+				http.Error(writer, "credential verification failed", http.StatusUnauthorized)
 				return
 			}
 		}

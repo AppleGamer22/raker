@@ -93,6 +93,7 @@ func NewRakerServer() (*RakerServer, error) {
 	mux.Handle("/api/history", rakerServer.Verify(true, http.HandlerFunc(rakerServer.History)))
 	// mux.HandleFunc("/api/info", rakerServer.Information)
 	mux.Handle("/api/storage/", http.StripPrefix("/api/storage", rakerServer.Verify(true, NewStorageHandler(rakerServer.Configuration.Storage, rakerServer.Configuration.Directories))))
+	mux.Handle("GET /api/exif/{user}/vsco/{owner}/{file}", http.StripPrefix("/api/exif", rakerServer.Verify(true, http.HandlerFunc(rakerServer.LocationExif))))
 	mux.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir("assets"))))
 	mux.Handle("/favicon.ico", http.RedirectHandler("/assets/icons/favicon.ico", http.StatusPermanentRedirect))
 	mux.Handle("/robots.txt", http.RedirectHandler("/assets/robots.txt", http.StatusPermanentRedirect))

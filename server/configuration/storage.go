@@ -13,6 +13,7 @@ import (
 	db "github.com/AppleGamer22/raker/server/db/mongo"
 	"github.com/AppleGamer22/raker/shared"
 	"github.com/AppleGamer22/raker/shared/types"
+	"github.com/bep/imagemeta"
 	"github.com/charmbracelet/log"
 )
 
@@ -188,4 +189,35 @@ func (handler *storageHandler) Delete(user db.User, media, owner, fileName strin
 	}
 
 	return nil
+}
+
+func (handler *storageHandler) LocationEXIF(user db.User, media, owner, fileName string) (float64, float64) {
+	filePath := path.Join(user.ID.Hex(), media, owner, fileName)
+	mediaPath := path.Join(handler.root, filePath)
+	mediaPath = cleaner.Path(mediaPath)
+	file, err := os.Open(mediaPath)
+	if err != nil {
+		log.Error(err)
+		return 0, 0
+	}
+	defer file.Close()
+
+	var tags imagemeta.Tags
+	handleTag := func(ti imagemeta.TagInfo) error {
+		tags.Add(ti)
+		return nil
+	}
+
+	if err := imagemeta.Decode(imagemeta.Options{R: file, HandleTag: handleTag, ImageFormat: imagemeta.JPEG}); err != nil {
+		log.Error(err)
+		return 0, 0
+	}
+
+	latitude, longitude, err := tags.GetLatLong()
+	if err != nil {
+		log.Error(err)
+		return 0, 0
+	}
+
+	return latitude, longitude
 }

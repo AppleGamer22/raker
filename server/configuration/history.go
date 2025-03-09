@@ -3,6 +3,7 @@ package configuration
 import (
 	"context"
 	"errors"
+	"fmt"
 	"math"
 	"net/http"
 	"path/filepath"
@@ -272,6 +273,21 @@ func historyHTML(user db.User, history db.History, serverErrors []error, writer 
 		log.Error(err)
 		return
 	}
+}
+
+func (server *RakerServer) LocationExif(writer http.ResponseWriter, request *http.Request) {
+	user := request.Context().Value(authenticatedUserKey).(db.User)
+	if request.PathValue("user") != user.ID.Hex() {
+		http.Error(writer, "unathorised", http.StatusUnauthorized)
+		return
+	}
+	latitude, longitude := StorageHandler.LocationEXIF(user, "vsco", request.PathValue("owner"), request.PathValue("file"))
+	if latitude == 0 && longitude == 0 {
+		http.Error(writer, "no location EXIF found", http.StatusNotFound)
+		return
+	}
+	mapsURL := fmt.Sprintf("https://www.google.com/maps/search/?api=1&query=%f,%f", latitude, longitude)
+	http.Redirect(writer, request, mapsURL, http.StatusTemporaryRedirect)
 }
 
 func (server *RakerServer) HistoryPage(writer http.ResponseWriter, request *http.Request) {
