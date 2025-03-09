@@ -3,7 +3,7 @@ WORKDIR /raker
 COPY raker .
 # COPY ../../templates templates
 # COPY ../../assets assets
-RUN apk add ffmpeg
+RUN apk add ffmpeg libc6-compat
 ENV STORAGE="/raker/storage"
 ENV DATABASE="raker"
 EXPOSE 4100
