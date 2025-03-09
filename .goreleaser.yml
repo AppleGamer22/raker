@@ -7,7 +7,7 @@ version: 2
 builds:
   - id: linux
     env: [CGO_ENABLED=0]
-    dir: cli
+    dir: server
     goos:
       - linux
     goarch:
