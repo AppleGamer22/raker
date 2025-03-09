@@ -18,6 +18,7 @@ builds:
       - -X 'github.com/AppleGamer22/raker/cmd.Version={{.Version}}'
       - -X 'github.com/AppleGamer22/raker/cmd.Hash={{.FullCommit}}'
       - -extldflags=-static
+    flags: -tags osusergo,netgo
   # - id: mac
   #   dir: cli
   #   goos:
