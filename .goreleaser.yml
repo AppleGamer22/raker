@@ -17,9 +17,9 @@ builds:
     ldflags:
       - -X 'github.com/AppleGamer22/raker/cmd.Version={{.Version}}'
       - -X 'github.com/AppleGamer22/raker/cmd.Hash={{.FullCommit}}'
-      - -linkmode 'external'
+      # - -linkmode 'external'
       - -extldflags '-static'
-    flags: -tags osusergo,netgo
+    # flags: -tags osusergo,netgo
   # - id: mac
   #   dir: cli
   #   goos:
@@ -160,7 +160,7 @@ dockers:
       - ghcr.io/applegamer22/{{.ProjectName}}:{{.Version}}-arm64
     build_flag_templates:
       - --pull
-      - --platform=linux/arm64
+      - --platform=linux/arm64/v8
       - --label=org.opencontainers.image.created={{.Date}}
       - --label=org.opencontainers.image.title={{.ProjectName}}
       - --label=org.opencontainers.image.revision={{.FullCommit}}
