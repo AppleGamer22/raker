@@ -1,4 +1,4 @@
-FROM --platform=$BUILDPLATFORM alpine:3.21.3
+FROM alpine:3.21.3
 WORKDIR /raker
 COPY raker .
 RUN apk add ffmpeg
