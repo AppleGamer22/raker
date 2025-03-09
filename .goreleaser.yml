@@ -15,8 +15,8 @@ builds:
       - arm64
       # - riscv64
     ldflags:
-      - -X 'github.com/AppleGamer22/raker/cmd.Version={{.Version}}'
-      - -X 'github.com/AppleGamer22/raker/cmd.Hash={{.FullCommit}}'
+      - -X 'github.com/AppleGamer22/raker/shared.Version={{.Version}}'
+      - -X 'github.com/AppleGamer22/raker/shared.Hash={{.FullCommit}}'
       # - -linkmode 'external'
       # - -extldflags '-static'
   # - id: mac
