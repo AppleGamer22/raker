@@ -139,6 +139,7 @@ release:
   prerelease: auto
 dockers:
   - use: buildx
+    goarch: amd64
     image_templates:
       - docker.io/applegamer22/{{.ProjectName}}:{{.Version}}-amd64
       - ghcr.io/applegamer22/{{.ProjectName}}:{{.Version}}-amd64
@@ -150,6 +151,7 @@ dockers:
       - --label=org.opencontainers.image.revision={{.FullCommit}}
       - --label=org.opencontainers.image.version={{.Version}}
   - use: buildx
+    goarch: arm64
     image_templates:
       - docker.io/applegamer22/{{.ProjectName}}:{{.Version}}-arm64
       - ghcr.io/applegamer22/{{.ProjectName}}:{{.Version}}-arm64
