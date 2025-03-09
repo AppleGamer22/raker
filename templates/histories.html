@@ -222,7 +222,13 @@
 											{{range $iii, $url := .URLs}}
 												<div class="carousel-item{{if eq $iii 0}} active{{end}}">
 													{{if (isImagePath .)}}
-														<img class="d-block w-100" src="/api/storage/{{$history.U_ID}}/{{$history.Type}}/{{$history.Owner}}/{{$url}}" loading="lazy">
+														{{if eq ($history.Type) "vsco"}}
+															<a href="/api/exif/{{$history.U_ID}}/{{$history.Type}}/{{$history.Owner}}/{{$url}}" target="_blank">
+																<img class="d-block w-100" src="/api/storage/{{$history.U_ID}}/{{$history.Type}}/{{$history.Owner}}/{{$url}}" loading="lazy">
+															</a>
+														{{else}}
+															<img class="d-block w-100" src="/api/storage/{{$history.U_ID}}/{{$history.Type}}/{{$history.Owner}}/{{$url}}" loading="lazy">
+														{{end}}
 													{{else if (isVideoPath .)}}
 														<video class="d-block w-100" src="/api/storage/{{$history.U_ID}}/{{$history.Type}}/{{$history.Owner}}/{{$url}}" preload="metadata" muted controls loop></video>
 													{{else}}
