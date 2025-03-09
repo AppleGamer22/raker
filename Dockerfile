@@ -1,4 +1,4 @@
-FROM --platform=$BUILDPLATFORM alpine:3.21.3 AS server
+FROM alpine:3.21.3
 WORKDIR /raker
 COPY raker .
 # COPY ../../templates templates
