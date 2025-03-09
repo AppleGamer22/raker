@@ -6,6 +6,7 @@ version: 2
 #     - make completion manual
 builds:
   - id: linux
+    env: [CGO_ENABLED=0]
     dir: cli
     goos:
       - linux
@@ -118,23 +119,23 @@ release:
     owner: AppleGamer22
     name: raker
   discussion_category_name: General
-  footer: |
-    ## Installation
-    ### Arch Linux Distributions
-    * [`yay`](https://github.com/Jguer/yay):
-    ```bash
-    yay -S raker-bin
-    ```
-    * [`paru`](https://github.com/morganamilo/paru):
-    ```bash
-    paru -S raker-bin
-    ```
+  # footer: |
+  #   ## Installation
+  #   ### Arch Linux Distributions
+  #   * [`yay`](https://github.com/Jguer/yay):
+  #   ```bash
+  #   yay -S raker-bin
+  #   ```
+  #   * [`paru`](https://github.com/morganamilo/paru):
+  #   ```bash
+  #   paru -S raker-bin
+  #   ```
 
-    ### macOS
-    * [Homebrew Tap](https://github.com/AppleGamer22/homebrew-raker):
-    ```bash
-    brew install AppleGamer22/tap/raker
-    ```
+  #   ### macOS
+  #   * [Homebrew Tap](https://github.com/AppleGamer22/homebrew-raker):
+  #   ```bash
+  #   brew install AppleGamer22/tap/raker
+  #   ```
   prerelease: auto
 dockers:
   - use: buildx
