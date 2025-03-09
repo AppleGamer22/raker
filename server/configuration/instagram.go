@@ -12,6 +12,7 @@ import (
 	db "github.com/AppleGamer22/raker/server/db/mongo"
 	"github.com/AppleGamer22/raker/shared"
 	"github.com/AppleGamer22/raker/shared/types"
+	"github.com/AppleGamer22/raker/templates"
 	"github.com/charmbracelet/log"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -112,7 +113,7 @@ func (server *RakerServer) InstagramResult(writer http.ResponseWriter, request *
 		Errors:             errs,
 		SelectedCategories: user.SelectedCategories(history.Categories),
 	}
-	if err := templates.ExecuteTemplate(writer, "history_result.html", historyDisplay); err != nil {
+	if err := templates.Templates.ExecuteTemplate(writer, "history_result.html", historyDisplay); err != nil {
 		http.Error(writer, err.Error(), http.StatusBadRequest)
 		log.Error(err)
 	}

@@ -5,10 +5,12 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/AppleGamer22/raker/assets"
 	"github.com/AppleGamer22/raker/server/authenticator"
 	db "github.com/AppleGamer22/raker/server/db/mongo"
 	"github.com/AppleGamer22/raker/shared"
 	"github.com/AppleGamer22/raker/shared/types"
+	"github.com/AppleGamer22/raker/templates"
 
 	"github.com/charmbracelet/log"
 	"github.com/go-webauthn/webauthn/webauthn"
@@ -94,7 +96,7 @@ func NewRakerServer() (*RakerServer, error) {
 	// mux.HandleFunc("/api/info", rakerServer.Information)
 	mux.Handle("/api/storage/", http.StripPrefix("/api/storage", rakerServer.Verify(true, NewStorageHandler(rakerServer.Configuration.Storage, rakerServer.Configuration.Directories))))
 	mux.Handle("GET /api/exif/{user}/vsco/{owner}/{file}", http.StripPrefix("/api/exif", rakerServer.Verify(true, http.HandlerFunc(rakerServer.LocationExif))))
-	mux.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir("assets"))))
+	mux.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.FS(assets.Assets))))
 	mux.Handle("/favicon.ico", http.RedirectHandler("/assets/icons/favicon.ico", http.StatusPermanentRedirect))
 	mux.Handle("/robots.txt", http.RedirectHandler("/assets/robots.txt", http.StatusPermanentRedirect))
 
@@ -139,7 +141,7 @@ func NewRakerServer() (*RakerServer, error) {
 			SelectedCategories: user.SelectedCategories(history.Categories),
 		}
 
-		if err := templates.ExecuteTemplate(writer, "history.html", historyDisplay); err != nil {
+		if err := templates.Templates.ExecuteTemplate(writer, "history.html", historyDisplay); err != nil {
 			http.Error(writer, err.Error(), http.StatusInternalServerError)
 			log.Error(err)
 			return
@@ -182,7 +184,7 @@ func NewRakerServer() (*RakerServer, error) {
 			SelectedCategories: user.SelectedCategories(history.Categories),
 		}
 
-		if err := templates.ExecuteTemplate(writer, "history_result.html", historyDisplay); err != nil {
+		if err := templates.Templates.ExecuteTemplate(writer, "history_result.html", historyDisplay); err != nil {
 			http.Error(writer, err.Error(), http.StatusBadRequest)
 			log.Error(err)
 		}

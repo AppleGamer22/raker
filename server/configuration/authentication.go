@@ -14,6 +14,7 @@ import (
 	db "github.com/AppleGamer22/raker/server/db/mongo"
 	"github.com/AppleGamer22/raker/shared"
 	"github.com/AppleGamer22/raker/shared/types"
+	"github.com/AppleGamer22/raker/templates"
 	"github.com/charmbracelet/log"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -378,7 +379,7 @@ func (server *RakerServer) AuthenticationPage(writer http.ResponseWriter, reques
 		Version: shared.Version,
 	}
 
-	if err := templates.ExecuteTemplate(writer, "authentication.html", categoryDisplay); err != nil {
+	if err := templates.Templates.ExecuteTemplate(writer, "authentication.html", categoryDisplay); err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
 		log.Error(err)
 		return

@@ -1,6 +1,7 @@
-package configuration
+package templates
 
 import (
+	"embed"
 	"html/template"
 	"path/filepath"
 	"regexp"
@@ -27,12 +28,7 @@ var (
 			return videoPathRegex.MatchString(path)
 		},
 	}
-	templates = template.Must(template.New("").Funcs(funcs).ParseFiles(
-		filepath.Join("templates", "authentication.html"),
-		filepath.Join("templates", "history.html"),
-		filepath.Join("templates", "histories.html"),
-		filepath.Join("templates", "edit_categories.html"),
-		filepath.Join("templates", "history_files.html"),
-		filepath.Join("templates", "history_result.html"),
-	))
+	//go:embed *.html
+	fs        embed.FS
+	Templates = template.Must(template.New("").Funcs(funcs).ParseFS(fs, "*.html"))
 )

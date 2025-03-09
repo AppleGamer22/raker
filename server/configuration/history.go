@@ -14,6 +14,7 @@ import (
 	db "github.com/AppleGamer22/raker/server/db/mongo"
 	"github.com/AppleGamer22/raker/shared"
 	"github.com/AppleGamer22/raker/shared/types"
+	"github.com/AppleGamer22/raker/templates"
 	"github.com/charmbracelet/log"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -58,7 +59,7 @@ func (server *RakerServer) History(writer http.ResponseWriter, request *http.Req
 			SelectedCategories: user.SelectedCategories(history.Categories),
 		}
 
-		if err := templates.ExecuteTemplate(writer, "edit_categories.html", historyDisplay); err != nil {
+		if err := templates.Templates.ExecuteTemplate(writer, "edit_categories.html", historyDisplay); err != nil {
 			http.Error(writer, err.Error(), http.StatusBadRequest)
 			log.Error(err)
 		}
@@ -90,7 +91,7 @@ func (server *RakerServer) History(writer http.ResponseWriter, request *http.Req
 			Errors:             []error{err},
 			SelectedCategories: user.SelectedCategories(history.Categories),
 		}
-		if err := templates.ExecuteTemplate(writer, "history_result.html", historyDisplay); err != nil {
+		if err := templates.Templates.ExecuteTemplate(writer, "history_result.html", historyDisplay); err != nil {
 			http.Error(writer, err.Error(), http.StatusBadRequest)
 			log.Error(err)
 		}
@@ -268,7 +269,7 @@ func historyHTML(user db.User, history db.History, serverErrors []error, writer 
 		SelectedCategories: user.SelectedCategories(history.Categories),
 	}
 
-	if err := templates.ExecuteTemplate(writer, "history.html", historyDisplay); err != nil {
+	if err := templates.Templates.ExecuteTemplate(writer, "history.html", historyDisplay); err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
 		log.Error(err)
 		return
@@ -342,7 +343,7 @@ func (server *RakerServer) HistoryPage(writer http.ResponseWriter, request *http
 		Error:      err,
 	}
 
-	if err := templates.ExecuteTemplate(writer, "histories.html", historiesDisplay); err != nil {
+	if err := templates.Templates.ExecuteTemplate(writer, "histories.html", historiesDisplay); err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
 		log.Error(err)
 		return
