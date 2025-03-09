@@ -1,6 +1,7 @@
 FROM --platform=$BUILDPLATFORM alpine:3.21.3 AS server
 WORKDIR /raker
 COPY raker .
+RUN chmod +x raker
 # COPY ../../templates templates
 # COPY ../../assets assets
 RUN apk add ffmpeg
