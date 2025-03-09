@@ -1,5 +1,6 @@
 # `raker`
-[![Go Reference](https://pkg.go.dev/badge/github.com/AppleGamer22/raker.svg)](https://pkg.go.dev/github.com/AppleGamer22/raker) [![Release](https://github.com/AppleGamer22/raker/actions/workflows/release.yml/badge.svg)](https://github.com/AppleGamer22/raker/actions/workflows/release.yml) [![Update Documentation](https://github.com/AppleGamer22/raker/actions/workflows/tag.yml/badge.svg)](https://github.com/AppleGamer22/raker/actions/workflows/tag.yml)
+[![Go Reference](https://pkg.go.dev/badge/github.com/AppleGamer22/raker.svg)](https://pkg.go.dev/github.com/AppleGamer22/raker) [![Release](https://github.com/AppleGamer22/raker/actions/workflows/release.yml/badge.svg)](https://github.com/AppleGamer22/raker/actions/workflows/release.yml)
+<!-- [![Update Documentation](https://github.com/AppleGamer22/raker/actions/workflows/tag.yml/badge.svg)](https://github.com/AppleGamer22/raker/actions/workflows/tag.yml) -->
 
 <!-- [![Test](https://github.com/AppleGamer22/raker/actions/workflows/test.yml/badge.svg)](https://github.com/AppleGamer22/raker/actions/workflows/test.yml) [![CodeQL](https://github.com/AppleGamer22/raker/actions/workflows/codeql.yml/badge.svg)](https://github.com/AppleGamer22/raker/actions/workflows/codeql.yml) -->
 
