@@ -17,6 +17,7 @@ builds:
     ldflags:
       - -X 'github.com/AppleGamer22/raker/cmd.Version={{.Version}}'
       - -X 'github.com/AppleGamer22/raker/cmd.Hash={{.FullCommit}}'
+      - -extldflags=-static
   # - id: mac
   #   dir: cli
   #   goos:
