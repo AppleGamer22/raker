@@ -12,7 +12,13 @@
 				<div class="collapse" id="collapse{{$i}}">
 					<br>
 					{{if (isImagePath $v)}}
-						<img src="/api/storage/{{$.U_ID}}/{{$.Type}}/{{$.Owner}}/{{.}}" loading="lazy">
+						{{if eq ($.Type) "vsco"}}
+							<a href="/api/exif/{{$.U_ID}}/{{$.Type}}/{{$.Owner}}/{{.}}" target="_blank">
+								<img src="/api/storage/{{$.U_ID}}/{{$.Type}}/{{$.Owner}}/{{.}}" loading="lazy">
+							</a>
+						{{else}}
+							<img src="/api/storage/{{$.U_ID}}/{{$.Type}}/{{$.Owner}}/{{.}}" loading="lazy">
+						{{end}}
 					{{else if (isVideoPath $v)}}
 						<video src="/api/storage/{{$.U_ID}}/{{$.Type}}/{{$.Owner}}/{{.}}" preload="metadata" muted controls loop></video>
 					{{else}}
