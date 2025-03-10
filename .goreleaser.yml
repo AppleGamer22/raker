@@ -6,8 +6,8 @@ version: 2
 #     - make completion manual
 builds:
   - id: linux
-    env: [CGO_ENABLED=0]
-    dir: server
+    # env: [CGO_ENABLED=0]
+    main: ./server
     goos:
       - linux
     goarch:
