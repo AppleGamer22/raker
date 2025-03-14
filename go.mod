@@ -5,7 +5,7 @@ go 1.23.0
 toolchain go1.23.6
 
 require (
-	github.com/bep/imagemeta v0.9.0
+	github.com/bep/imagemeta v0.10.0
 	github.com/charmbracelet/log v0.4.1
 	github.com/go-webauthn/webauthn v0.12.2
 	github.com/golang-jwt/jwt/v5 v5.2.1
