@@ -8,7 +8,7 @@ require (
 	github.com/bep/imagemeta v0.10.0
 	github.com/charmbracelet/log v0.4.1
 	github.com/go-webauthn/webauthn v0.12.2
-	github.com/golang-jwt/jwt/v5 v5.2.1
+	github.com/golang-jwt/jwt/v5 v5.2.2
 	github.com/google/uuid v1.6.0
 	github.com/lib/pq v1.10.9
 	github.com/spf13/cobra v1.9.1
