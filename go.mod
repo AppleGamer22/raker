@@ -2,7 +2,7 @@ module github.com/AppleGamer22/raker
 
 go 1.23.0
 
-toolchain go1.23.6
+toolchain go1.24.1
 
 require (
 	github.com/bep/imagemeta v0.10.0
@@ -12,7 +12,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/lib/pq v1.10.9
 	github.com/spf13/cobra v1.9.1
-	github.com/spf13/viper v1.20.0
+	github.com/spf13/viper v1.20.1
 	github.com/stretchr/testify v1.10.0
 	go.mongodb.org/mongo-driver v1.17.3
 	golang.org/x/crypto v0.36.0
