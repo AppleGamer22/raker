@@ -63,16 +63,20 @@ func (q *Queries) HistoryAdd(ctx context.Context, arg HistoryAddParams) (History
 }
 
 const historyGet = `-- name: HistoryGet :one
-SELECT username, type, owner, post, date, files, categories FROM Histories WHERE type = $1::post_type AND post = $2::text
+SELECT username, type, owner, post, date, files, categories FROM Histories
+WHERE type = $1::post_type
+	AND post = $2::text
+	AND username = $3::text
 `
 
 type HistoryGetParams struct {
-	Type PostType `json:"type"`
-	Post string   `json:"post"`
+	Type     PostType `json:"type"`
+	Post     string   `json:"post"`
+	Username string   `json:"username"`
 }
 
 func (q *Queries) HistoryGet(ctx context.Context, arg HistoryGetParams) (History, error) {
-	row := q.queryRow(ctx, q.historyGetStmt, historyGet, arg.Type, arg.Post)
+	row := q.queryRow(ctx, q.historyGetStmt, historyGet, arg.Type, arg.Post, arg.Username)
 	var i History
 	err := row.Scan(
 		&i.Username,
@@ -87,17 +91,27 @@ func (q *Queries) HistoryGet(ctx context.Context, arg HistoryGetParams) (History
 }
 
 const historyGetExclusive = `-- name: HistoryGetExclusive :many
-SELECT username, type, owner, post, date, files, categories FROM Histories WHERE type = ANY($1::post_type[]) AND categories = $2::text[] AND OWNER LIKE $3::text
+SELECT username, type, owner, post, date, files, categories FROM Histories
+WHERE type = ANY($1::post_type[])
+	AND categories = $2::text[]
+	AND OWNER LIKE $3::text
+	AND username = $4::text
 `
 
 type HistoryGetExclusiveParams struct {
 	Types      []PostType `json:"types"`
 	Categories []string   `json:"categories"`
 	Owner      string     `json:"owner"`
+	Username   string     `json:"username"`
 }
 
 func (q *Queries) HistoryGetExclusive(ctx context.Context, arg HistoryGetExclusiveParams) ([]History, error) {
-	rows, err := q.query(ctx, q.historyGetExclusiveStmt, historyGetExclusive, pq.Array(arg.Types), pq.Array(arg.Categories), arg.Owner)
+	rows, err := q.query(ctx, q.historyGetExclusiveStmt, historyGetExclusive,
+		pq.Array(arg.Types),
+		pq.Array(arg.Categories),
+		arg.Owner,
+		arg.Username,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -128,19 +142,29 @@ func (q *Queries) HistoryGetExclusive(ctx context.Context, arg HistoryGetExclusi
 }
 
 const historyGetInclusive = `-- name: HistoryGetInclusive :many
-SELECT username, type, owner, post, date, files, categories FROM Histories WHERE type = ANY($1::post_type[]) AND categories <@ $2::text[] AND OWNER LIKE $3::text
+SELECT username, type, owner, post, date, files, categories FROM Histories
+WHERE type = ANY($1::post_type[])
+	AND categories <@ $2::text[]
+	AND OWNER LIKE $3::text
+	AND username = $4::text
 `
 
 type HistoryGetInclusiveParams struct {
 	Types      []PostType `json:"types"`
 	Categories []string   `json:"categories"`
 	Owner      string     `json:"owner"`
+	Username   string     `json:"username"`
 }
 
 // https://docs.sqlc.dev/en/stable/howto/select.html#passing-a-slice-as-a-parameter-to-a-query
 // https://docs.sqlc.dev/en/stable/howto/named_parameters.html
 func (q *Queries) HistoryGetInclusive(ctx context.Context, arg HistoryGetInclusiveParams) ([]History, error) {
-	rows, err := q.query(ctx, q.historyGetInclusiveStmt, historyGetInclusive, pq.Array(arg.Types), pq.Array(arg.Categories), arg.Owner)
+	rows, err := q.query(ctx, q.historyGetInclusiveStmt, historyGetInclusive,
+		pq.Array(arg.Types),
+		pq.Array(arg.Categories),
+		arg.Owner,
+		arg.Username,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -171,61 +195,101 @@ func (q *Queries) HistoryGetInclusive(ctx context.Context, arg HistoryGetInclusi
 }
 
 const historyRemove = `-- name: HistoryRemove :exec
-DELETE FROM Histories where type = $1::post_type AND owner = $2::text AND post = $3::text
+DELETE FROM Histories
+WHERE type = $1::post_type
+	AND owner = $2::text
+	AND post = $3::text
+	AND username = $4::text
 `
 
 type HistoryRemoveParams struct {
-	Type  PostType `json:"type"`
-	Owner string   `json:"owner"`
-	Post  string   `json:"post"`
+	Type     PostType `json:"type"`
+	Owner    string   `json:"owner"`
+	Post     string   `json:"post"`
+	Username string   `json:"username"`
 }
 
 func (q *Queries) HistoryRemove(ctx context.Context, arg HistoryRemoveParams) error {
-	_, err := q.exec(ctx, q.historyRemoveStmt, historyRemove, arg.Type, arg.Owner, arg.Post)
+	_, err := q.exec(ctx, q.historyRemoveStmt, historyRemove,
+		arg.Type,
+		arg.Owner,
+		arg.Post,
+		arg.Username,
+	)
 	return err
 }
 
 const historyUpdateCategories = `-- name: HistoryUpdateCategories :exec
-UPDATE Histories SET categories = $1::text[] WHERE post = $2::post_type AND post = $3::text
+UPDATE Histories
+SET categories = $1::text[]
+WHERE post = $2::post_type
+	AND post = $3::text
+	AND username = $4::text
 `
 
 type HistoryUpdateCategoriesParams struct {
 	Categories []string `json:"categories"`
 	Type       PostType `json:"type"`
 	Post       string   `json:"post"`
+	Username   string   `json:"username"`
 }
 
 func (q *Queries) HistoryUpdateCategories(ctx context.Context, arg HistoryUpdateCategoriesParams) error {
-	_, err := q.exec(ctx, q.historyUpdateCategoriesStmt, historyUpdateCategories, pq.Array(arg.Categories), arg.Type, arg.Post)
+	_, err := q.exec(ctx, q.historyUpdateCategoriesStmt, historyUpdateCategories,
+		pq.Array(arg.Categories),
+		arg.Type,
+		arg.Post,
+		arg.Username,
+	)
 	return err
 }
 
 const historyUpdateOwner = `-- name: HistoryUpdateOwner :exec
-UPDATE Histories SET owner = $1::text WHERE post = $2::post_type AND owner = $3::text
+UPDATE Histories
+SET owner = $1::text
+WHERE post = $2::post_type
+	AND owner = $3::text
+	AND username = $4::text
 `
 
 type HistoryUpdateOwnerParams struct {
 	OldOwner string   `json:"old_owner"`
 	Type     PostType `json:"type"`
 	NewOwner string   `json:"new_owner"`
+	Username string   `json:"username"`
 }
 
 func (q *Queries) HistoryUpdateOwner(ctx context.Context, arg HistoryUpdateOwnerParams) error {
-	_, err := q.exec(ctx, q.historyUpdateOwnerStmt, historyUpdateOwner, arg.OldOwner, arg.Type, arg.NewOwner)
+	_, err := q.exec(ctx, q.historyUpdateOwnerStmt, historyUpdateOwner,
+		arg.OldOwner,
+		arg.Type,
+		arg.NewOwner,
+		arg.Username,
+	)
 	return err
 }
 
 const updateHistoryRemoveFile = `-- name: UpdateHistoryRemoveFile :exec
-UPDATE Histories SET files = array_remove(files, $1::text) WHERE post = $2::post_type AND post = $3::text
+UPDATE Histories
+SET files = array_remove(files, $1::text)
+WHERE post = $2::post_type
+	AND post = $3::text
+	AND username = $4::text
 `
 
 type UpdateHistoryRemoveFileParams struct {
-	File string   `json:"file"`
-	Type PostType `json:"type"`
-	Post string   `json:"post"`
+	File     string   `json:"file"`
+	Type     PostType `json:"type"`
+	Post     string   `json:"post"`
+	Username string   `json:"username"`
 }
 
 func (q *Queries) UpdateHistoryRemoveFile(ctx context.Context, arg UpdateHistoryRemoveFileParams) error {
-	_, err := q.exec(ctx, q.updateHistoryRemoveFileStmt, updateHistoryRemoveFile, arg.File, arg.Type, arg.Post)
+	_, err := q.exec(ctx, q.updateHistoryRemoveFileStmt, updateHistoryRemoveFile,
+		arg.File,
+		arg.Type,
+		arg.Post,
+		arg.Username,
+	)
 	return err
 }
