@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/http/cookiejar"
 	"regexp"
 )
 
@@ -46,22 +47,54 @@ func NewTikTok(sessionID, sessionIDGuard, chainToken string) TikTok {
 	return TikTok{sessionID, sessionIDGuard, chainToken}
 }
 
-func (tiktok *TikTok) Post(owner, post string, incognito bool) ([]string, string, []*http.Cookie, error) {
+func (tikok *TikTok) MSToken(owner string) (http.Client, error) {
+	jar, _ := cookiejar.New(nil)
+	client := http.Client{
+		Jar: jar,
+	}
 	ownerURL := fmt.Sprintf("https://www.tiktok.com/@%s", owner)
 	request, err := http.NewRequest(http.MethodGet, ownerURL, nil)
 	if err != nil {
-		return []string{}, "", []*http.Cookie{}, err
+		return http.Client{}, err
 	}
 	request.Header.Add("User-Agent", UserAgent)
-	response, err := http.DefaultClient.Do(request)
+
+	response, err := client.Do(request)
 	if err != nil {
-		return []string{}, "", []*http.Cookie{}, err
+		return http.Client{}, err
 	}
 	response.Body.Close()
-	sessionCookies := response.Cookies()
+
+	request, err = http.NewRequest(http.MethodPost, "https://mssdk-sg.tiktok.com/web/common", nil)
+	if err != nil {
+		return http.Client{}, err
+	}
+
+	query := request.URL.Query()
+	for _, cookie := range response.Cookies() {
+		if cookie.Name == "msToken" {
+			query.Add("msToken", cookie.Value)
+		}
+	}
+	request.URL.RawQuery = query.Encode()
+	request.Header.Add("User-Agent", UserAgent)
+	for _, cookie := range request.Cookies() {
+		request.AddCookie(cookie)
+	}
+
+	response, err = client.Do(request)
+	if err != nil {
+		return http.Client{}, err
+	}
+	response.Body.Close()
+
+	return client, nil
+}
+
+func (tiktok *TikTok) Post(owner, post string, incognito bool) ([]string, string, []*http.Cookie, error) {
 
 	postURL := fmt.Sprintf("https://www.tiktok.com/@%s/video/%s", owner, post)
-	request, err = http.NewRequest(http.MethodGet, postURL, nil)
+	request, err := http.NewRequest(http.MethodGet, postURL, nil)
 	if err != nil {
 		return []string{}, "", []*http.Cookie{}, err
 	}
@@ -91,31 +124,13 @@ func (tiktok *TikTok) Post(owner, post string, incognito bool) ([]string, string
 	// 	request.AddCookie(&sessionGuardCookie)
 	// }
 	// request.Header.Add("User-Agent", UserAgent)
-	for _, cookie := range sessionCookies {
-		if cookie.Name == "msToken" {
-			tokenRequest, err := http.NewRequest(http.MethodPost, "https://mssdk-sg.tiktok.com/web/common", nil)
-			if err != nil {
-				return []string{}, "", []*http.Cookie{}, err
-			}
-
-			query := tokenRequest.URL.Query()
-			query.Add("msToken", cookie.Value)
-			tokenRequest.URL.RawQuery = query.Encode()
-			tokenRequest.Header.Add("User-Agent", UserAgent)
-
-			response, err := http.DefaultClient.Do(tokenRequest)
-			if err != nil {
-				return []string{}, "", []*http.Cookie{}, err
-			}
-			response.Body.Close()
-			request.AddCookie(response.Cookies()[0])
-		} else {
-			request.AddCookie(cookie)
-		}
+	client, err := tiktok.MSToken(owner)
+	if err != nil {
+		return []string{}, "", []*http.Cookie{}, err
 	}
 	// request.Header.Add("sec-ch-ua", `"Not_A Brand";v="99", "Google Chrome";v="109", "Chromium";v="109"`)
 
-	response, err = http.DefaultClient.Do(request)
+	response, err := client.Do(request)
 	if err != nil {
 		return []string{}, "", []*http.Cookie{}, err
 	}
