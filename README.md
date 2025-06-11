@@ -46,7 +46,7 @@ services:
     ports:
       - 4100:4100
     volumes:
-      - ./storage:/raker/storage
+      - /run/media/applegamer22/RPI4HDD/hdd1/.raker/storage:/raker/storage
     depends_on:
       - database
   database:
@@ -56,7 +56,21 @@ services:
         - PUID=1000
         - PGID=1000
       volumes:
-        - ./database/:/data/db
+        - /run/media/applegamer22/RPI4HDD/hdd1/.raker/database/:/data/db
       ports:
         - 27017:27017
+  # migration is work in progress
+  mariadb:
+    container_name: mariadb
+    image: mariadb:11.7.2-ubi9
+    user: "1000"
+    ports:
+      - 3306:3306
+    volumes:
+      - /run/media/applegamer22/RPI4HDD/hdd1/.raker/mariadb:/var/lib/mysql:Z
+    environment:
+      TZ: Australia/Melbourne
+      MARIADB_ROOT_PASSWORD: mariadb
+      MARIADB_DATABASE: raker
+      MARIADB_USER: ${USER}
 ```
