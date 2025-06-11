@@ -4,30 +4,29 @@ INSERT INTO Users (
 	hash,
 	instagram_session_id,
 	instagram_user_id,
-	network,
-	categories
+	network
 ) VALUES (
-	sqlc.arg(username)::text,
-	sqlc.arg(hash)::text,
-	sqlc.arg(instagram_session_id)::text,
-	sqlc.arg(instagram_user_id)::text,
-	'instagram',
-	sqlc.arg(categories)::text[]
+	sqlc.arg(username),
+	sqlc.arg(hash),
+	sqlc.arg(instagram_session_id),
+	sqlc.arg(instagram_user_id),
+	'instagram'
 );
 
 -- name: UserUpdateInstagramSession :exec
-UPDATE Users SET instagram_session_id = sqlc.arg(instagram_session_id)::text, instagram_user_id = sqlc.arg(instagram_user_id)::text where username = sqlc.arg(username)::text;
+UPDATE Users SET instagram_session_id = sqlc.arg(instagram_session_id), instagram_user_id = sqlc.arg(instagram_user_id) where username = sqlc.arg(username);
 
 -- name: UserUpdateHash :exec
-UPDATE Users SET hash = sqlc.arg(hash)::text where username = sqlc.arg(username)::text;
+UPDATE Users SET hash = sqlc.arg(hash) where username = sqlc.arg(username);
 
 -- name: UserCategoryAdd :exec
-UPDATE Users SET categories = array(
-	select unnest(array_append(categories, sqlc.arg(category)::text)) AS c ORDER BY c
-) where username = sqlc.arg(username)::text;
+insert into UserCategories (username, category) values (sqlc.arg(username), sqlc.arg(category));
 
 -- name: UserCategoryRemove :exec
-UPDATE Users SET categories = array_remove(categories, sqlc.arg(category)::text) where username = sqlc.arg(username)::text;
+delete from UserCategories where username = sqlc.arg(username) and category = sqlc.arg(category);
 
 -- name: UserGet :one
-SELECT * FROM Users WHERE username = sqlc.arg(username)::text;
+SELECT * FROM Users WHERE username = sqlc.arg(username);
+
+-- name: UserCategoriesGet :one
+SELECT category FROM UserCategories WHERE username = sqlc.arg(username);

@@ -2,7 +2,7 @@
 # https://youtu.be/VX6KzpjaPp8
 version: "2"
 sql:
-  - engine: postgresql
+  - engine: mysql
     schema: ./db/schemas
     queries: ./db/queries
     gen:
@@ -17,8 +17,8 @@ sql:
         rename:
           urls: URLs
           PostType: PostType
-        # overrides:
-        #   - db_type: timestamptz
-        #     go_type:
-        #       import: time
-        #       type: Time
+        overrides:
+          - db_type: timestamptz
+            go_type:
+              import: time
+              type: Time
