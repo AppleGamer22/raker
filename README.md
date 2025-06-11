@@ -73,4 +73,19 @@ services:
       MARIADB_ROOT_PASSWORD: mariadb
       MARIADB_DATABASE: raker
       MARIADB_USER: ${USER}
+  # docker exec -it postgres psql -U $USER raker
+  postgres:
+    container_name: postgres
+    image: postgres:17.5-alpine3.22
+    user: "1000"
+    ports:
+      - 5432:5432
+    volumes:
+      - /run/media/applegamer22/RPI4HDD/hdd1/.raker/postgres:/var/lib/postgresql/data
+      - /etc/passwd:/etc/passwd:ro
+    environment:
+      TZ: Australia/Melbourne
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: raker
+      POSTGRES_USER: ${USER}
 ```
