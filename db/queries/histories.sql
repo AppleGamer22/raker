@@ -75,28 +75,49 @@ limit 30;
 -- https://docs.sqlc.dev/en/stable/howto/select.html#passing-a-slice-as-a-parameter-to-a-query
 -- https://docs.sqlc.dev/en/stable/howto/named_parameters.html
 -- name: HistoryGetInclusive :many
-SELECT * FROM Histories inner JOIN HistoryCategories
+SELECT
+	sqlc.embed(Histories),
+	JSON_ARRAYAGG(category) as categories,
+	JSON_ARRAYAGG(file) as files
+FROM Histories
+inner JOIN HistoryCategories
 	on Histories.username = HistoryCategories.username
 	and Histories.type = HistoryCategories.type
 	and Histories.owner = HistoryCategories.owner
 	and Histories.post = HistoryCategories.post
+inner JOIN HistoryFiles
+	on Histories.username = HistoryFiles.username
+	and Histories.type = HistoryFiles.type
+	and Histories.owner = HistoryFiles.owner
+	and Histories.post = HistoryFiles.post
 WHERE Histories.type in (sqlc.slice(types))
 	AND category in (sqlc.slice(categories))
 	AND Histories.owner like sqlc.arg(owner)
 	AND Histories.username = sqlc.arg(username)
+GROUP BY Histories.post
 limit 30;
 
 -- name: HistoryGetExclusive :many
-SELECT * FROM Histories inner JOIN HistoryCategories
+SELECT
+	sqlc.embed(Histories),
+	JSON_ARRAYAGG(category) as categories,
+	JSON_ARRAYAGG(file) as files
+FROM Histories
+inner JOIN HistoryCategories
 	on Histories.username = HistoryCategories.username
 	and Histories.type = HistoryCategories.type
 	and Histories.owner = HistoryCategories.owner
 	and Histories.post = HistoryCategories.post
+inner JOIN HistoryFiles
+	on Histories.username = HistoryFiles.username
+	and Histories.type = HistoryFiles.type
+	and Histories.owner = HistoryFiles.owner
+	and Histories.post = HistoryFiles.post
 where Histories.type in (sqlc.slice(types))
 	AND category in (sqlc.slice(categories))
 	AND Histories.owner like sqlc.arg(owner)
 	AND Histories.username = sqlc.arg(username)
-GROUP BY HistoryCategories.post
+GROUP BY Histories.post
 having count(HistoryCategories.post) = sqlc.arg(category_count)
 limit 30;
 

@@ -8,8 +8,8 @@ package db
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"strings"
-	"time"
 )
 
 const historyAdd = `-- name: HistoryAdd :exec
@@ -150,16 +150,26 @@ func (q *Queries) HistoryGet(ctx context.Context, arg HistoryGetParams) (History
 }
 
 const historyGetExclusive = `-- name: HistoryGetExclusive :many
-SELECT histories.username, histories.type, histories.owner, histories.post, date, historycategories.username, historycategories.type, historycategories.owner, historycategories.post, category FROM Histories inner JOIN HistoryCategories
+SELECT
+	histories.username, histories.type, histories.owner, histories.post, histories.date,
+	JSON_ARRAYAGG(category) as categories,
+	JSON_ARRAYAGG(file) as files
+FROM Histories
+inner JOIN HistoryCategories
 	on Histories.username = HistoryCategories.username
 	and Histories.type = HistoryCategories.type
 	and Histories.owner = HistoryCategories.owner
 	and Histories.post = HistoryCategories.post
+inner JOIN HistoryFiles
+	on Histories.username = HistoryFiles.username
+	and Histories.type = HistoryFiles.type
+	and Histories.owner = HistoryFiles.owner
+	and Histories.post = HistoryFiles.post
 where Histories.type in (/*SLICE:types*/?)
 	AND category in (/*SLICE:categories*/?)
 	AND Histories.owner like ?
 	AND Histories.username = ?
-GROUP BY HistoryCategories.post
+GROUP BY Histories.post
 having count(HistoryCategories.post) = ?
 limit 30
 `
@@ -173,16 +183,9 @@ type HistoryGetExclusiveParams struct {
 }
 
 type HistoryGetExclusiveRow struct {
-	Username   sql.NullString            `json:"username"`
-	Type       NullHistoriesType         `json:"type"`
-	Owner      string                    `json:"owner"`
-	Post       string                    `json:"post"`
-	Date       time.Time                 `json:"date"`
-	Username_2 sql.NullString            `json:"username_2"`
-	Type_2     NullHistorycategoriesType `json:"type_2"`
-	Owner_2    sql.NullString            `json:"owner_2"`
-	Post_2     sql.NullString            `json:"post_2"`
-	Category   sql.NullString            `json:"category"`
+	History    History         `json:"history"`
+	Categories json.RawMessage `json:"categories"`
+	Files      json.RawMessage `json:"files"`
 }
 
 func (q *Queries) HistoryGetExclusive(ctx context.Context, arg HistoryGetExclusiveParams) ([]HistoryGetExclusiveRow, error) {
@@ -216,16 +219,13 @@ func (q *Queries) HistoryGetExclusive(ctx context.Context, arg HistoryGetExclusi
 	for rows.Next() {
 		var i HistoryGetExclusiveRow
 		if err := rows.Scan(
-			&i.Username,
-			&i.Type,
-			&i.Owner,
-			&i.Post,
-			&i.Date,
-			&i.Username_2,
-			&i.Type_2,
-			&i.Owner_2,
-			&i.Post_2,
-			&i.Category,
+			&i.History.Username,
+			&i.History.Type,
+			&i.History.Owner,
+			&i.History.Post,
+			&i.History.Date,
+			&i.Categories,
+			&i.Files,
 		); err != nil {
 			return nil, err
 		}
@@ -241,15 +241,26 @@ func (q *Queries) HistoryGetExclusive(ctx context.Context, arg HistoryGetExclusi
 }
 
 const historyGetInclusive = `-- name: HistoryGetInclusive :many
-SELECT histories.username, histories.type, histories.owner, histories.post, date, historycategories.username, historycategories.type, historycategories.owner, historycategories.post, category FROM Histories inner JOIN HistoryCategories
+SELECT
+	histories.username, histories.type, histories.owner, histories.post, histories.date,
+	JSON_ARRAYAGG(category) as categories,
+	JSON_ARRAYAGG(file) as files
+FROM Histories
+inner JOIN HistoryCategories
 	on Histories.username = HistoryCategories.username
 	and Histories.type = HistoryCategories.type
 	and Histories.owner = HistoryCategories.owner
 	and Histories.post = HistoryCategories.post
+inner JOIN HistoryFiles
+	on Histories.username = HistoryFiles.username
+	and Histories.type = HistoryFiles.type
+	and Histories.owner = HistoryFiles.owner
+	and Histories.post = HistoryFiles.post
 WHERE Histories.type in (/*SLICE:types*/?)
 	AND category in (/*SLICE:categories*/?)
 	AND Histories.owner like ?
 	AND Histories.username = ?
+GROUP BY Histories.post
 limit 30
 `
 
@@ -261,16 +272,9 @@ type HistoryGetInclusiveParams struct {
 }
 
 type HistoryGetInclusiveRow struct {
-	Username   sql.NullString            `json:"username"`
-	Type       NullHistoriesType         `json:"type"`
-	Owner      string                    `json:"owner"`
-	Post       string                    `json:"post"`
-	Date       time.Time                 `json:"date"`
-	Username_2 sql.NullString            `json:"username_2"`
-	Type_2     NullHistorycategoriesType `json:"type_2"`
-	Owner_2    sql.NullString            `json:"owner_2"`
-	Post_2     sql.NullString            `json:"post_2"`
-	Category   sql.NullString            `json:"category"`
+	History    History         `json:"history"`
+	Categories json.RawMessage `json:"categories"`
+	Files      json.RawMessage `json:"files"`
 }
 
 // https://docs.sqlc.dev/en/stable/howto/select.html#passing-a-slice-as-a-parameter-to-a-query
@@ -305,16 +309,13 @@ func (q *Queries) HistoryGetInclusive(ctx context.Context, arg HistoryGetInclusi
 	for rows.Next() {
 		var i HistoryGetInclusiveRow
 		if err := rows.Scan(
-			&i.Username,
-			&i.Type,
-			&i.Owner,
-			&i.Post,
-			&i.Date,
-			&i.Username_2,
-			&i.Type_2,
-			&i.Owner_2,
-			&i.Post_2,
-			&i.Category,
+			&i.History.Username,
+			&i.History.Type,
+			&i.History.Owner,
+			&i.History.Post,
+			&i.History.Date,
+			&i.Categories,
+			&i.Files,
 		); err != nil {
 			return nil, err
 		}

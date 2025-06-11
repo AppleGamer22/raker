@@ -13,6 +13,7 @@ sql:
         emit_prepared_queries: true
         emit_interface: true
         emit_enum_valid_method: true
+        emit_pointers_for_null_types: true
         # emit_all_enum_values: true
         rename:
           urls: URLs
