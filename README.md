@@ -60,19 +60,20 @@ services:
       ports:
         - 27017:27017
   # migration is work in progress
-  mariadb:
-    container_name: mariadb
-    image: mariadb:11.7.2-ubi9
-    user: "1000"
-    ports:
-      - 3306:3306
-    volumes:
-      - /run/media/applegamer22/RPI4HDD/hdd1/.raker/mariadb:/var/lib/mysql:Z
-    environment:
-      TZ: Australia/Melbourne
-      MARIADB_ROOT_PASSWORD: mariadb
-      MARIADB_DATABASE: raker
-      MARIADB_USER: ${USER}
+  # docker exec -it mariadb mariadb -u root -p
+  # mariadb:
+  #   container_name: mariadb
+  #   image: mariadb:11.7.2-ubi9
+  #   user: "1000"
+  #   ports:
+  #     - 3306:3306
+  #   volumes:
+  #     - ./mariadb:/var/lib/mysql:Z
+  #   environment:
+  #     TZ: Australia/Melbourne
+  #     MARIADB_ROOT_PASSWORD: mariadb
+  #     MARIADB_DATABASE: raker
+  #     MARIADB_USER: ${USER}
   # docker exec -it postgres psql -U $USER raker
   postgres:
     container_name: postgres
@@ -81,7 +82,7 @@ services:
     ports:
       - 5432:5432
     volumes:
-      - /run/media/applegamer22/RPI4HDD/hdd1/.raker/postgres:/var/lib/postgresql/data
+      - ./postgres:/var/lib/postgresql/data
       - /etc/passwd:/etc/passwd:ro
     environment:
       TZ: Australia/Melbourne
