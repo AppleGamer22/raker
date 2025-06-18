@@ -89,4 +89,5 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: raker
       POSTGRES_USER: ${USER}
+      POSTGRES_INITDB_ARGS: --data-checksums
 ```
