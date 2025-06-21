@@ -42,7 +42,8 @@ WHERE post = sqlc.arg(type)::post_type
 SELECT * FROM Histories
 WHERE type = sqlc.arg(type)::post_type
 	AND post = sqlc.arg(post)::text
-	AND username = sqlc.arg(username)::text;
+	AND username = sqlc.arg(username)::text
+limit sqlc.arg(page_size)::int offset sqlc.arg(page)::int;
 
 -- https://docs.sqlc.dev/en/stable/howto/select.html#passing-a-slice-as-a-parameter-to-a-query
 -- https://docs.sqlc.dev/en/stable/howto/named_parameters.html
@@ -51,14 +52,16 @@ SELECT * FROM Histories
 WHERE type = ANY(sqlc.slice(types)::post_type[])
 	AND categories <@ sqlc.slice(categories)::text[]
 	AND OWNER LIKE sqlc.arg(owner)::text
-	AND username = sqlc.arg(username)::text;
+	AND username = sqlc.arg(username)::text
+limit sqlc.arg(page_size)::int offset sqlc.arg(page)::int;
 
 -- name: HistoryGetExclusive :many
 SELECT * FROM Histories
 WHERE type = ANY(sqlc.slice(types)::post_type[])
 	AND categories = sqlc.slice(categories)::text[]
 	AND OWNER LIKE sqlc.arg(owner)::text
-	AND username = sqlc.arg(username)::text;
+	AND username = sqlc.arg(username)::text
+limit sqlc.arg(page_size)::int offset sqlc.arg(page)::int;
 
 -- name: HistoryRemove :exec
 DELETE FROM Histories

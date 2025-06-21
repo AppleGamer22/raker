@@ -67,16 +67,25 @@ SELECT username, type, owner, post, date, files, categories FROM Histories
 WHERE type = $1::post_type
 	AND post = $2::text
 	AND username = $3::text
+limit $5::int offset $4::int
 `
 
 type HistoryGetParams struct {
 	Type     PostType `json:"type"`
 	Post     string   `json:"post"`
 	Username string   `json:"username"`
+	Page     int32    `json:"page"`
+	PageSize int32    `json:"page_size"`
 }
 
 func (q *Queries) HistoryGet(ctx context.Context, arg HistoryGetParams) (History, error) {
-	row := q.queryRow(ctx, q.historyGetStmt, historyGet, arg.Type, arg.Post, arg.Username)
+	row := q.queryRow(ctx, q.historyGetStmt, historyGet,
+		arg.Type,
+		arg.Post,
+		arg.Username,
+		arg.Page,
+		arg.PageSize,
+	)
 	var i History
 	err := row.Scan(
 		&i.Username,
@@ -96,6 +105,7 @@ WHERE type = ANY($1::post_type[])
 	AND categories = $2::text[]
 	AND OWNER LIKE $3::text
 	AND username = $4::text
+limit $6::int offset $5::int
 `
 
 type HistoryGetExclusiveParams struct {
@@ -103,6 +113,8 @@ type HistoryGetExclusiveParams struct {
 	Categories []string   `json:"categories"`
 	Owner      string     `json:"owner"`
 	Username   string     `json:"username"`
+	Page       int32      `json:"page"`
+	PageSize   int32      `json:"page_size"`
 }
 
 func (q *Queries) HistoryGetExclusive(ctx context.Context, arg HistoryGetExclusiveParams) ([]History, error) {
@@ -111,6 +123,8 @@ func (q *Queries) HistoryGetExclusive(ctx context.Context, arg HistoryGetExclusi
 		pq.Array(arg.Categories),
 		arg.Owner,
 		arg.Username,
+		arg.Page,
+		arg.PageSize,
 	)
 	if err != nil {
 		return nil, err
@@ -147,6 +161,7 @@ WHERE type = ANY($1::post_type[])
 	AND categories <@ $2::text[]
 	AND OWNER LIKE $3::text
 	AND username = $4::text
+limit $6::int offset $5::int
 `
 
 type HistoryGetInclusiveParams struct {
@@ -154,6 +169,8 @@ type HistoryGetInclusiveParams struct {
 	Categories []string   `json:"categories"`
 	Owner      string     `json:"owner"`
 	Username   string     `json:"username"`
+	Page       int32      `json:"page"`
+	PageSize   int32      `json:"page_size"`
 }
 
 // https://docs.sqlc.dev/en/stable/howto/select.html#passing-a-slice-as-a-parameter-to-a-query
@@ -164,6 +181,8 @@ func (q *Queries) HistoryGetInclusive(ctx context.Context, arg HistoryGetInclusi
 		pq.Array(arg.Categories),
 		arg.Owner,
 		arg.Username,
+		arg.Page,
+		arg.PageSize,
 	)
 	if err != nil {
 		return nil, err
