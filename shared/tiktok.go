@@ -99,31 +99,31 @@ func (tiktok *TikTok) Post(owner, post string, incognito bool) ([]string, string
 		return []string{}, "", []*http.Cookie{}, err
 	}
 
-	// if !incognito {
-	// 	sessionCookie := http.Cookie{
-	// 		Name:     "sessionid",
-	// 		Value:    tiktok.SessionID,
-	// 		Domain:   ".tiktok.com",
-	// 		HttpOnly: true,
-	// 	}
-	// 	request.AddCookie(&sessionCookie)
-	// 	chainCookie := http.Cookie{
-	// 		Name:     "tt_chain_token",
-	// 		Value:    tiktok.ChainToken,
-	// 		Domain:   ".tiktok.com",
-	// 		HttpOnly: true,
-	// 		Secure:   true,
-	// 	}
-	// 	request.AddCookie(&chainCookie)
-	// 	sessionGuardCookie := http.Cookie{
-	// 		Name:     "sid_guard",
-	// 		Value:    tiktok.SessionIDGuard,
-	// 		Domain:   ".tiktok.com",
-	// 		HttpOnly: true,
-	// 	}
-	// 	request.AddCookie(&sessionGuardCookie)
-	// }
-	// request.Header.Add("User-Agent", UserAgent)
+	if !incognito {
+		sessionCookie := http.Cookie{
+			Name:     "sessionid",
+			Value:    tiktok.SessionID,
+			Domain:   ".tiktok.com",
+			HttpOnly: true,
+		}
+		request.AddCookie(&sessionCookie)
+		chainCookie := http.Cookie{
+			Name:     "tt_chain_token",
+			Value:    tiktok.ChainToken,
+			Domain:   ".tiktok.com",
+			HttpOnly: true,
+			Secure:   true,
+		}
+		request.AddCookie(&chainCookie)
+		sessionGuardCookie := http.Cookie{
+			Name:     "sid_guard",
+			Value:    tiktok.SessionIDGuard,
+			Domain:   ".tiktok.com",
+			HttpOnly: true,
+		}
+		request.AddCookie(&sessionGuardCookie)
+	}
+	request.Header.Add("User-Agent", UserAgent)
 	client, err := tiktok.MSToken(owner)
 	if err != nil {
 		return []string{}, "", []*http.Cookie{}, err
