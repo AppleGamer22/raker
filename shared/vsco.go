@@ -2,11 +2,13 @@ package shared
 
 import (
 	"bufio"
+	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"net/http"
+	"net/http/cookiejar"
 	"regexp"
 	"strings"
 )
@@ -63,33 +65,49 @@ func extractStreamURL(playbackURL string) (string, error) {
 
 var vsco_regexp = regexp.MustCompile(`<script>window\.__PRELOADED_STATE__ =(.*?)</script>`)
 
-func VSCO(owner, post string) (URL string, username string, err error) {
+func VSCO(owner, post string) (string, string, []*http.Cookie, error) {
 	postURL := fmt.Sprintf("https://vsco.co/%s/media/%s", owner, post)
-	response, err := http.Get(postURL)
-	if err != nil {
-		return URL, username, err
-	}
-	defer response.Body.Close()
 
-	body, err := io.ReadAll(response.Body)
+	jar, err := cookiejar.New(nil)
 	if err != nil {
-		return URL, username, err
+		return "", "", []*http.Cookie{}, err
+	}
+
+	client := &http.Client{
+		Jar: jar,
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{
+				MinVersion: tls.VersionTLS13,
+			},
+		},
+	}
+
+	htmlResponse, err := client.Get(postURL)
+	if err != nil {
+		return "", "", []*http.Cookie{}, err
+	}
+	defer htmlResponse.Body.Close()
+
+	body, err := io.ReadAll(htmlResponse.Body)
+	if err != nil {
+		return "", "", []*http.Cookie{}, err
 	}
 
 	script := vsco_regexp.FindString(string(body))
 	if script == "" {
-		return URL, username, errors.New("could not find JSON")
+		return "", "", []*http.Cookie{}, errors.New("could not find JSON")
 	}
 
 	jsonText := script[len("<script>window.__PRELOADED_STATE__ =") : len(script)-len("</script>")]
 	jsonText = strings.ReplaceAll(jsonText, "undefined", "null")
 	var vscoPost VSCOPost
 	if err := json.Unmarshal([]byte(jsonText), &vscoPost); err != nil {
-		return URL, username, err
+		return "", "", []*http.Cookie{}, err
 	}
 
 	media := vscoPost.Medias.ByID[post]
-	username = media.Media.PermaSubdomain
+	username := media.Media.PermaSubdomain
+	var URL string
 
 	if len(media.Media.VideoURL) > 0 {
 		URL = fmt.Sprintf("https://%s", media.Media.VideoURL)
@@ -100,5 +118,5 @@ func VSCO(owner, post string) (URL string, username string, err error) {
 		URL = fmt.Sprintf("https://%s", media.Media.ResponsiveURL)
 	}
 
-	return URL, username, err
+	return URL, username, jar.Cookies(htmlResponse.Request.URL), err
 }

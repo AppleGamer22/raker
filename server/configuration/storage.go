@@ -1,6 +1,7 @@
 package configuration
 
 import (
+	"crypto/tls"
 	"errors"
 	"fmt"
 	"io"
@@ -89,7 +90,19 @@ func (handler *storageHandler) Save(user db.User, media, owner, fileName, URL st
 	}
 
 	request.Header.Add("User-Agent", shared.UserAgent)
-	response, err := http.DefaultClient.Do(request)
+
+	client := http.DefaultClient
+	if media == types.VSCO {
+		client = &http.Client{
+			Transport: &http.Transport{
+				TLSClientConfig: &tls.Config{
+					MinVersion: tls.VersionTLS13,
+				},
+			},
+		}
+	}
+
+	response, err := client.Do(request)
 	if err != nil {
 		return err
 	}

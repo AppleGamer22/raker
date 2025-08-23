@@ -26,7 +26,7 @@ var vscoCommand = cobra.Command{
 	RunE: func(_ *cobra.Command, args []string) error {
 		username := args[0]
 		post := args[1]
-		urlString, username, err := shared.VSCO(username, post)
+		urlString, username, _, err := shared.VSCO(username, post)
 		if err != nil {
 			return err
 		}

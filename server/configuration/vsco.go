@@ -37,7 +37,7 @@ func (server *RakerServer) vsco(request *http.Request) (db.User, db.History, []e
 			"type": types.VSCO,
 		}
 		if err := server.Histories.FindOne(context.Background(), filter).Decode(&history); err != nil {
-			urlString, username, err := shared.VSCO(owner, post)
+			urlString, username, cookies, err := shared.VSCO(owner, post)
 			if err != nil {
 				return db.User{}, db.History{}, []error{err}
 			}
@@ -53,7 +53,7 @@ func (server *RakerServer) vsco(request *http.Request) (db.User, db.History, []e
 				return fmt.Sprintf("%s_%s", post, path.Base(URL.Path))
 			}()
 
-			if err := StorageHandler.Save(user, types.VSCO, username, fileName, urlString, []*http.Cookie{}); err != nil {
+			if err := StorageHandler.Save(user, types.VSCO, username, fileName, urlString, cookies); err != nil {
 				return db.User{}, db.History{}, []error{err}
 			}
 
