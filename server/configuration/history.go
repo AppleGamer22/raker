@@ -284,9 +284,9 @@ func (server *RakerServer) LocationExif(writer http.ResponseWriter, request *htt
 	}
 	latitude, longitude := StorageHandler.LocationEXIF(user, "vsco", request.PathValue("owner"), request.PathValue("file"))
 	if latitude == 0 && longitude == 0 {
-		writer.WriteHeader(http.StatusNotFound)
 		writer.Header().Set("Content-Type", "text/html")
 		fmt.Fprint(writer, `<html><script>window.close()</script></html>`)
+		writer.WriteHeader(http.StatusNotFound)
 		return
 	}
 	mapsURL := fmt.Sprintf("https://www.google.com/maps/search/?api=1&query=%f,%f", latitude, longitude)
