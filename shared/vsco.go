@@ -10,6 +10,8 @@ import (
 	"net/http/cookiejar"
 	"regexp"
 	"strings"
+
+	"github.com/imroc/req/v3"
 )
 
 type VSCOPost struct {
@@ -77,7 +79,15 @@ func VSCO(owner, post string) (string, string, []*http.Cookie, error) {
 		return "", "", []*http.Cookie{}, err
 	}
 
-	htmlResponse, err := DefaultClient.Do(htmlRequest)
+	// client := &http.Client{
+	// 	Transport: &http.Transport{
+	// 		TLSClientConfig: &tls.Config{
+	// 			MinVersion: tls.VersionTLS13,
+	// 		},
+	// 	},
+	// }
+
+	htmlResponse, err := req.DefaultClient().Do(htmlRequest)
 	if err != nil {
 		return "", "", []*http.Cookie{}, err
 	}

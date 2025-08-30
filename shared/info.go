@@ -19,7 +19,6 @@ var (
 	Hash           = "development"
 	UserAgent      = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36"
 	textareaRegExp = regexp.MustCompile(`<textarea class="form-control" rows="8">(.*?)</textarea>`)
-	DefaultClient  = req.NewClient().ImpersonateChrome().SetUserAgent(UserAgent)
 )
 
 type userAgentData struct {
@@ -32,6 +31,7 @@ func init() {
 	log.SetLevel(log.DebugLevel)
 	logger := slog.New(log.Default())
 	slog.SetDefault(logger)
+	req.ImpersonateChrome()
 }
 
 func init() {
@@ -68,6 +68,7 @@ func init() {
 	for _, userAgent := range data {
 		if strings.Contains(strings.ToLower(userAgent.UserAgent), osName) && !strings.Contains(userAgent.UserAgent, "Samsung") {
 			UserAgent = userAgent.UserAgent
+			req.SetUserAgent(UserAgent)
 			log.Infof("using user agent %s", UserAgent)
 			return
 		}
