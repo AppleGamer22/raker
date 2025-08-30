@@ -1,8 +1,8 @@
 module github.com/AppleGamer22/raker
 
-go 1.23.0
+go 1.24
 
-toolchain go1.24.1
+toolchain go1.24.6
 
 require (
 	github.com/bep/imagemeta v0.12.0
@@ -11,6 +11,7 @@ require (
 	github.com/golang-jwt/jwt/v5 v5.3.0
 	github.com/google/uuid v1.6.0
 	github.com/lib/pq v1.10.9
+	github.com/refraction-networking/utls v1.8.0
 	github.com/spf13/cobra v1.9.1
 	github.com/spf13/viper v1.20.1
 	github.com/stretchr/testify v1.11.1
@@ -19,6 +20,7 @@ require (
 )
 
 require (
+	github.com/andybalholm/brotli v1.0.6 // indirect
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
 	github.com/charmbracelet/colorprofile v0.2.3-0.20250311203215-f60798e515dc // indirect
 	github.com/charmbracelet/lipgloss v1.1.0 // indirect
@@ -34,7 +36,7 @@ require (
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/go-tpm v0.9.5 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
-	github.com/klauspost/compress v1.16.7 // indirect
+	github.com/klauspost/compress v1.17.4 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mattn/go-runewidth v0.0.16 // indirect

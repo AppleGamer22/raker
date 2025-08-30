@@ -1,8 +1,12 @@
 package shared
 
 import (
+	"context"
 	"encoding/json"
+	"fmt"
 	"io"
+	"log/slog"
+	"net"
 	"net/http"
 	"regexp"
 	"runtime"
@@ -10,6 +14,7 @@ import (
 	"time"
 
 	"github.com/charmbracelet/log"
+	utls "github.com/refraction-networking/utls"
 )
 
 var (
@@ -27,6 +32,30 @@ func init() {
 	log.SetReportCaller(true)
 	log.SetTimeFormat(time.RFC3339)
 	log.SetLevel(log.DebugLevel)
+	logger := slog.New(log.Default())
+	slog.SetDefault(logger)
+}
+
+var DefaultClient = &http.Client{
+	Transport: &http.Transport{
+		ForceAttemptHTTP2: true,
+		DialTLSContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
+			colonPos := strings.LastIndex(addr, ":")
+			if colonPos == -1 {
+				colonPos = len(addr)
+			}
+			hostname := addr[:colonPos]
+			tcpConn, err := (&net.Dialer{}).DialContext(ctx, network, addr)
+			if err != nil {
+				return nil, err
+			}
+			tlsConn := utls.UClient(tcpConn, &utls.Config{ServerName: hostname}, utls.HelloChrome_Auto)
+
+			err = tlsConn.Handshake()
+			fmt.Println(tlsConn.ConnectionState().NegotiatedProtocol)
+			return tlsConn, err
+		},
+	},
 }
 
 func init() {
