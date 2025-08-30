@@ -2,7 +2,6 @@ package shared
 
 import (
 	"bufio"
-	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -73,16 +72,12 @@ func VSCO(owner, post string) (string, string, []*http.Cookie, error) {
 		return "", "", []*http.Cookie{}, err
 	}
 
-	client := &http.Client{
-		Jar: jar,
-		Transport: &http.Transport{
-			TLSClientConfig: &tls.Config{
-				MinVersion: tls.VersionTLS13,
-			},
-		},
+	htmlRequest, err := http.NewRequest(http.MethodGet, postURL, nil)
+	if err != nil {
+		return "", "", []*http.Cookie{}, err
 	}
 
-	htmlResponse, err := client.Get(postURL)
+	htmlResponse, err := DefaultClient.Do(htmlRequest)
 	if err != nil {
 		return "", "", []*http.Cookie{}, err
 	}
@@ -92,6 +87,8 @@ func VSCO(owner, post string) (string, string, []*http.Cookie, error) {
 	if err != nil {
 		return "", "", []*http.Cookie{}, err
 	}
+
+	// fmt.Println(string(body))
 
 	script := vsco_regexp.FindString(string(body))
 	if script == "" {

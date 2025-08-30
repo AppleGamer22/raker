@@ -3,6 +3,7 @@ package shared
 import (
 	"encoding/json"
 	"io"
+	"log/slog"
 	"net/http"
 	"regexp"
 	"runtime"
@@ -10,6 +11,7 @@ import (
 	"time"
 
 	"github.com/charmbracelet/log"
+	"github.com/imroc/req/v3"
 )
 
 var (
@@ -17,6 +19,7 @@ var (
 	Hash           = "development"
 	UserAgent      = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36"
 	textareaRegExp = regexp.MustCompile(`<textarea class="form-control" rows="8">(.*?)</textarea>`)
+	DefaultClient  = req.NewClient().ImpersonateChrome().SetUserAgent(UserAgent)
 )
 
 type userAgentData struct {
@@ -27,6 +30,8 @@ func init() {
 	log.SetReportCaller(true)
 	log.SetTimeFormat(time.RFC3339)
 	log.SetLevel(log.DebugLevel)
+	logger := slog.New(log.Default())
+	slog.SetDefault(logger)
 }
 
 func init() {
