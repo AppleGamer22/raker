@@ -3,7 +3,6 @@ package shared
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"io"
 	"log/slog"
 	"net"
@@ -36,24 +35,41 @@ func init() {
 	slog.SetDefault(logger)
 }
 
+// CustomDialTLS uses uTLS for TLS handshake
+func CustomDialTLS(ctx context.Context, network, addr string) (conn *utls.UConn, err error) {
+	colonPos := strings.LastIndex(addr, ":")
+	if colonPos == -1 {
+		colonPos = len(addr)
+	}
+	hostname := addr[:colonPos]
+	config := &utls.Config{
+		ServerName: hostname,
+		NextProtos: []string{"h2", "http/1.1"},
+	}
+	// Standard TCP connection
+	tcpConn, err := (&net.Dialer{Timeout: 10 * time.Second}).DialContext(ctx, network, addr)
+	if err != nil {
+		return nil, err
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	// Pick a ClientHelloID (imitate Chrome, Firefox, etc.)
+	uconn := utls.UClient(tcpConn, config, utls.HelloChrome_Auto)
+	err = uconn.Handshake()
+	if err != nil {
+		return nil, err
+	}
+	return uconn, nil
+}
+
 var DefaultClient = &http.Client{
 	Transport: &http.Transport{
-		ForceAttemptHTTP2: true,
+		// ForceAttemptHTTP2: true,
+		// TLSClientConfig:   &tls.Config{InsecureSkipVerify: true},
 		DialTLSContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
-			colonPos := strings.LastIndex(addr, ":")
-			if colonPos == -1 {
-				colonPos = len(addr)
-			}
-			hostname := addr[:colonPos]
-			tcpConn, err := (&net.Dialer{}).DialContext(ctx, network, addr)
-			if err != nil {
-				return nil, err
-			}
-			tlsConn := utls.UClient(tcpConn, &utls.Config{ServerName: hostname}, utls.HelloChrome_Auto)
-
-			err = tlsConn.Handshake()
-			fmt.Println(tlsConn.ConnectionState().NegotiatedProtocol)
-			return tlsConn, err
+			return CustomDialTLS(ctx, network, addr)
 		},
 	},
 }
