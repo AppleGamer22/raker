@@ -31,49 +31,57 @@ func (server *RakerServer) vsco(request *http.Request) (db.User, db.History, []e
 	}
 	owner := cleaner.Line(request.Form.Get("owner"))
 	post := cleaner.Line(request.Form.Get("post"))
+	var errs []error
 	if post != "" {
 		filter := bson.M{
 			"post": post,
 			"type": types.VSCO,
 		}
 		if err := server.Histories.FindOne(context.Background(), filter).Decode(&history); err != nil {
-			urlString, username, cookies, err := shared.VSCO(owner, post)
+			URLs, username, cookies, err := shared.VSCO(owner, post)
 			if err != nil {
 				return db.User{}, db.History{}, []error{err}
 			}
 
-			URL, err := url.Parse(urlString)
-			if err != nil {
-				return db.User{}, db.History{}, []error{err}
-			}
-			fileName := func() string {
-				if strings.Contains(urlString, ".ts") {
-					return fmt.Sprintf("%s.mp4", post)
+			localURLs := make([]string, 0, len(URLs))
+			errs = make([]error, 0, len(URLs))
+			for _, urlString := range URLs {
+
+				URL, err := url.Parse(urlString)
+				if err != nil {
+					errs = append(errs, err)
 				}
-				return fmt.Sprintf("%s_%s", post, path.Base(URL.Path))
-			}()
+				if strings.Contains(urlString, ".ts") {
+					localURLs = append(localURLs, fmt.Sprintf("%s.mp4", post))
+				} else if strings.Contains(URL.Path, "/poster/private") {
+					localURLs = append(localURLs, fmt.Sprintf("%s.jpg", post))
+				} else {
+					localURLs = append(localURLs, fmt.Sprintf("%s_%s", post, path.Base(URL.Path)))
+				}
+			}
+			localURLs, saveErrors := StorageHandler.SaveBundle(user, types.VSCO, username, localURLs, URLs, cookies)
+			errs = append(errs, saveErrors...)
 
-			if err := StorageHandler.Save(user, types.VSCO, username, fileName, urlString, cookies); err != nil {
-				return db.User{}, db.History{}, []error{err}
+			if len(localURLs) > 0 {
+				history = db.History{
+					ID:    primitive.NewObjectID().Hex(),
+					U_ID:  user.ID.Hex(),
+					URLs:  localURLs,
+					Type:  types.VSCO,
+					Owner: username,
+					Post:  post,
+					Date:  time.Now(),
+				}
+
+				if _, err := server.Histories.InsertOne(context.Background(), history); err != nil {
+					return db.User{}, db.History{}, []error{err}
+				}
 			}
 
-			history = db.History{
-				ID:    primitive.NewObjectID().Hex(),
-				U_ID:  user.ID.Hex(),
-				URLs:  []string{fileName},
-				Type:  types.VSCO,
-				Owner: username,
-				Post:  post,
-				Date:  time.Now(),
-			}
-
-			if _, err := server.Histories.InsertOne(context.Background(), history); err != nil {
-				return db.User{}, db.History{}, []error{err}
-			}
 		}
 	}
 
-	return user, history, []error{}
+	return user, history, errs
 }
 
 func (server *RakerServer) VSCOPage(writer http.ResponseWriter, request *http.Request) {

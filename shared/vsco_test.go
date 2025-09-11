@@ -10,9 +10,11 @@ import (
 )
 
 func TestVSCOPicture(t *testing.T) {
-	urlString, username, _, err := shared.VSCO("evgeneygolovesov", "6293acba42c9064de28f25b7")
+	urlStrings, username, _, err := shared.VSCO("evgeneygolovesov", "6293acba42c9064de28f25b7")
 	assert.NoError(t, err)
 	assert.Equal(t, "evgeneygolovesov", username)
+	assert.Len(t, urlStrings, 1)
+	urlString := urlStrings[0]
 	URL, err := url.Parse(urlString)
 	assert.NoError(t, err)
 	assert.Equal(t, "https", URL.Scheme, urlString)

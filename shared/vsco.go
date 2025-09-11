@@ -21,6 +21,8 @@ type VSCOPost struct {
 				ResponsiveURL  string `json:"responsiveUrl"`
 				VideoURL       string `json:"videoUrl"`
 				PlaybackURL    string `json:"playbackUrl"`
+				PosterURL      string `json:"posterUrl"`
+				PosterWidth    uint   `json:"widthPx"`
 				Site           struct {
 					Domain string `json:"domain"`
 				} `json:"site"`
@@ -41,7 +43,6 @@ func findFirstURL(response io.ReadCloser) string {
 }
 
 func extractStreamURL(playbackURL string) (string, error) {
-	// https://vsco.co/annameadd/media/d939d55c-9543-4b3a-92e5-701d28246e79
 	playlistResponse, err := http.Get(playbackURL)
 	if err != nil {
 		return "", err
@@ -65,12 +66,12 @@ func extractStreamURL(playbackURL string) (string, error) {
 
 var vsco_regexp = regexp.MustCompile(`<script>window\.__PRELOADED_STATE__ =(.*?)</script>`)
 
-func VSCO(owner, post string) (string, string, []*http.Cookie, error) {
+func VSCO(owner, post string) ([]string, string, []*http.Cookie, error) {
 	postURL := fmt.Sprintf("https://vsco.co/%s/media/%s", owner, post)
 
 	jar, err := cookiejar.New(nil)
 	if err != nil {
-		return "", "", []*http.Cookie{}, err
+		return []string{}, "", []*http.Cookie{}, err
 	}
 
 	client := &http.Client{
@@ -85,45 +86,51 @@ func VSCO(owner, post string) (string, string, []*http.Cookie, error) {
 
 	htmlRequest, err := http.NewRequest(http.MethodGet, postURL, nil)
 	if err != nil {
-		return "", "", []*http.Cookie{}, err
+		return []string{}, "", []*http.Cookie{}, err
 	}
 	htmlRequest.Header.Add("User-Agent", UserAgent)
 
 	htmlResponse, err := client.Do(htmlRequest)
 	if err != nil {
-		return "", "", []*http.Cookie{}, err
+		return []string{}, "", []*http.Cookie{}, err
 	}
 	defer htmlResponse.Body.Close()
 
 	body, err := io.ReadAll(htmlResponse.Body)
 	if err != nil {
-		return "", "", []*http.Cookie{}, err
+		return []string{}, "", []*http.Cookie{}, err
 	}
 
 	script := vsco_regexp.FindString(string(body))
 	if script == "" {
-		return "", "", []*http.Cookie{}, errors.New("could not find JSON")
+		return []string{}, "", []*http.Cookie{}, errors.New("could not find JSON")
 	}
 
 	jsonText := script[len("<script>window.__PRELOADED_STATE__ =") : len(script)-len("</script>")]
 	jsonText = strings.ReplaceAll(jsonText, "undefined", "null")
 	var vscoPost VSCOPost
 	if err := json.Unmarshal([]byte(jsonText), &vscoPost); err != nil {
-		return "", "", []*http.Cookie{}, err
+		return []string{}, "", []*http.Cookie{}, err
 	}
 
 	media := vscoPost.Medias.ByID[post]
 	username := media.Media.PermaSubdomain
-	var URL string
+	URLs := make([]string, 0, 2)
 
 	if len(media.Media.VideoURL) > 0 {
-		URL = fmt.Sprintf("https://%s", media.Media.VideoURL)
+		URLs = append(URLs, fmt.Sprintf("https://%s", media.Media.VideoURL))
 	} else if len(media.Media.PlaybackURL) > 0 {
 		username = media.Media.Site.Domain
-		URL, err = extractStreamURL(media.Media.PlaybackURL)
+		URL, err := extractStreamURL(media.Media.PlaybackURL)
+		if err != nil {
+			return []string{}, "", []*http.Cookie{}, err
+		}
+		URLs = append(URLs, URL)
+		URLs = append(URLs, fmt.Sprintf("%s?time=0&width=%d", media.Media.PosterURL, media.Media.PosterWidth))
 	} else {
-		URL = fmt.Sprintf("https://%s", media.Media.ResponsiveURL)
+		URL := fmt.Sprintf("https://%s", media.Media.ResponsiveURL)
+		URLs = append(URLs, URL)
 	}
 
-	return URL, username, jar.Cookies(htmlResponse.Request.URL), err
+	return URLs, username, jar.Cookies(htmlResponse.Request.URL), err
 }
