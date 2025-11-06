@@ -25,7 +25,7 @@ jobs:
         with:
           go-version: stable
       - name: Set-up QEMU
-        uses: docker/setup-qemu-action@v3.6.0
+        uses: docker/setup-qemu-action@v3.7.0
       # - name: Install 
       #   run: sudo apt install musl-tools musl-dev
       - name: Set-up Docker BuildX
