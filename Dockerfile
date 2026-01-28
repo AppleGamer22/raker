@@ -1,4 +1,4 @@
-FROM alpine:3.23.2
+FROM alpine:3.23.3
 WORKDIR /raker
 COPY raker .
 RUN apk add ffmpeg
