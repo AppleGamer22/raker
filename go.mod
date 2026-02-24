@@ -1,11 +1,9 @@
 module github.com/AppleGamer22/raker
 
-go 1.24.0
-
-toolchain go1.24.6
+go 1.25
 
 require (
-	github.com/bep/imagemeta v0.14.0
+	github.com/bep/imagemeta v0.15.0
 	github.com/charmbracelet/log v0.4.2
 	github.com/go-webauthn/webauthn v0.15.0
 	github.com/golang-jwt/jwt/v5 v5.3.1
