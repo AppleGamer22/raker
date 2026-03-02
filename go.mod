@@ -3,7 +3,7 @@ module github.com/AppleGamer22/raker
 go 1.25.0
 
 require (
-	github.com/bep/imagemeta v0.16.0
+	github.com/bep/imagemeta v0.17.0
 	github.com/charmbracelet/log v0.4.2
 	github.com/go-webauthn/webauthn v0.16.0
 	github.com/golang-jwt/jwt/v5 v5.3.1
