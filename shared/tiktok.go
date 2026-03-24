@@ -162,8 +162,8 @@ func (tiktok *TikTok) Post(owner, post string, incognito bool) ([]string, string
 		for _, image := range tiktokPost.DefaultScop.VideoDetail.ItemInfo.ItemStruct.ImagePost.Images {
 			URLs = append(URLs, image.ImageURL.URLs[0])
 		}
-		return URLs, username, response.Cookies(), err
+		return URLs, username, request.Cookies(), err
 	}
 
-	return []string{URL, tiktokPost.DefaultScop.VideoDetail.ItemInfo.ItemStruct.Video.Cover}, username, response.Cookies(), err
+	return []string{URL, tiktokPost.DefaultScop.VideoDetail.ItemInfo.ItemStruct.Video.Cover}, username, request.Cookies(), err
 }
