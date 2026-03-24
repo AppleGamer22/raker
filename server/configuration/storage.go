@@ -221,7 +221,7 @@ func (handler *storageHandler) LocationEXIF(user db.User, media, owner, fileName
 		return nil
 	}
 
-	if err := imagemeta.Decode(imagemeta.Options{R: file, HandleTag: handleTag, ImageFormat: imagemeta.JPEG}); err != nil {
+	if _, err := imagemeta.Decode(imagemeta.Options{R: file, HandleTag: handleTag, ImageFormat: imagemeta.JPEG}); err != nil {
 		log.Error(err)
 		return 0, 0
 	}
