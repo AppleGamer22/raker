@@ -1,11 +1,23 @@
 package shared_test
 
 import (
-	"github.com/AppleGamer22/raker/cli/conf"
 	"github.com/spf13/viper"
 )
 
-var configuration conf.Configuration
+type Configuration struct {
+	Instagram struct {
+		Session string
+		User    string
+		FBSR    string
+	}
+	TikTok struct {
+		Session string
+		Guard   string
+		Chain   string
+	}
+}
+
+var configuration Configuration
 
 func init() {
 	// https://stackoverflow.com/a/65747120/7148921

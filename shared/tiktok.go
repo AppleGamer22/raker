@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/http/cookiejar"
 	"regexp"
+	"slices"
 )
 
 type TikTokPost struct {
@@ -26,8 +27,11 @@ type TikTokPost struct {
 						} `json:"images"`
 					} `json:"imagePost"`
 					Video struct {
-						Cover       string `json:"cover"`
-						PlayAddress string `json:"playAddr"`
+						Cover          string `json:"cover"`
+						PlayAddress    string `json:"playAddr"`
+						PlayAddrStruct struct {
+							UrlList []string
+						}
 					} `json:"video"`
 				} `json:"itemStruct"`
 			} `json:"itemInfo"`
@@ -91,12 +95,12 @@ func (tikok *TikTok) MSToken(owner string) (http.Client, error) {
 	return client, nil
 }
 
-func (tiktok *TikTok) Post(owner, post string, incognito bool) ([]string, string, []*http.Cookie, error) {
+func (tiktok *TikTok) Post(owner, post string, incognito bool) ([]string, []string, string, []*http.Cookie, error) {
 
 	postURL := fmt.Sprintf("https://www.tiktok.com/@%s/video/%s", owner, post)
 	request, err := http.NewRequest(http.MethodGet, postURL, nil)
 	if err != nil {
-		return []string{}, "", []*http.Cookie{}, err
+		return []string{}, []string{}, "", []*http.Cookie{}, err
 	}
 
 	if !incognito {
@@ -126,44 +130,44 @@ func (tiktok *TikTok) Post(owner, post string, incognito bool) ([]string, string
 	request.Header.Add("User-Agent", UserAgent)
 	client, err := tiktok.MSToken(owner)
 	if err != nil {
-		return []string{}, "", []*http.Cookie{}, err
+		return []string{}, []string{}, "", []*http.Cookie{}, err
 	}
 	// request.Header.Add("sec-ch-ua", `"Not_A Brand";v="99", "Google Chrome";v="109", "Chromium";v="109"`)
 
 	response, err := client.Do(request)
 	if err != nil {
-		return []string{}, "", []*http.Cookie{}, err
+		return []string{}, []string{}, "", []*http.Cookie{}, err
 	}
 	defer response.Body.Close()
 
 	body, err := io.ReadAll(response.Body)
 	if err != nil {
-		return []string{}, "", []*http.Cookie{}, err
+		return []string{}, []string{}, "", []*http.Cookie{}, err
 	}
 
 	script := tiktok_regexp.FindString(string(body))
 	if script == "" {
-		return []string{}, "", []*http.Cookie{}, errors.New("could not find JSON")
+		return []string{}, []string{}, "", []*http.Cookie{}, errors.New("could not find JSON")
 	}
 
 	jsonText := script[len(`<script id="__UNIVERSAL_DATA_FOR_REHYDRATION__" type="application/json">`) : len(script)-len("</script>")]
 	var tiktokPost TikTokPost
 	if err := json.Unmarshal([]byte(jsonText), &tiktokPost); err != nil {
-		return []string{}, "", []*http.Cookie{}, err
+		return []string{}, []string{}, "", []*http.Cookie{}, err
 	}
 
 	username := tiktokPost.DefaultScop.VideoDetail.ItemInfo.ItemStruct.Author.UniqueID
 	URL := tiktokPost.DefaultScop.VideoDetail.ItemInfo.ItemStruct.Video.PlayAddress
 	if URL == "" {
 		if len(tiktokPost.DefaultScop.VideoDetail.ItemInfo.ItemStruct.ImagePost.Images) == 0 {
-			return []string{}, "", []*http.Cookie{}, errors.New("Post not available from incognito mode")
+			return []string{}, []string{}, "", []*http.Cookie{}, errors.New("Post not available from incognito mode")
 		}
 		URLs := make([]string, 0, len(tiktokPost.DefaultScop.VideoDetail.ItemInfo.ItemStruct.ImagePost.Images))
 		for _, image := range tiktokPost.DefaultScop.VideoDetail.ItemInfo.ItemStruct.ImagePost.Images {
 			URLs = append(URLs, image.ImageURL.URLs[0])
 		}
-		return URLs, username, request.Cookies(), err
+		return []string{}, URLs, username, slices.Concat(request.Cookies(), response.Cookies()), err
 	}
 
-	return []string{URL, tiktokPost.DefaultScop.VideoDetail.ItemInfo.ItemStruct.Video.Cover}, username, request.Cookies(), err
+	return tiktokPost.DefaultScop.VideoDetail.ItemInfo.ItemStruct.Video.PlayAddrStruct.UrlList, []string{tiktokPost.DefaultScop.VideoDetail.ItemInfo.ItemStruct.Video.Cover}, username, slices.Concat(request.Cookies(), response.Cookies()), err
 }

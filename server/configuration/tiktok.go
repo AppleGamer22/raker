@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"net/url"
 	"path"
-	"strings"
+	"slices"
 	"time"
 
 	"github.com/AppleGamer22/raker/server/cleaner"
@@ -41,32 +41,42 @@ func (server *RakerServer) tiktok(request *http.Request) (db.User, db.History, [
 		}
 		if err := server.Histories.FindOne(context.Background(), filter).Decode(&history); err != nil {
 			tiktok := shared.NewTikTok(user.TikTok.SessionID, user.TikTok.SessionIDGuard, user.TikTok.ChainToken)
-			URLs, username, cookies, err := tiktok.Post(owner, post, incognito)
+			videoURLs, coverURLs, username, cookies, err := tiktok.Post(owner, post, incognito)
 			if err != nil {
 				return db.User{}, db.History{}, []error{err}
 			}
 
-			localURLs := make([]string, 0, len(URLs))
-			errs = make([]error, 0, len(URLs))
-			for _, urlString := range URLs {
+			errs = make([]error, 0, len(coverURLs)+1)
+			var videoURL string
+			for i, urlString := range videoURLs {
+				fileName := fmt.Sprintf("%s.mp4", post)
+				if err := StorageHandler.Save(user, types.TikTok, username, fileName, urlString, cookies); err != nil {
+					if i == len(videoURLs)-1 {
+						errs = append(errs, err)
+					}
+					continue
+				}
+				videoURL = fileName
+				break
+			}
+
+			localURLs := make([]string, 0, len(coverURLs)+1)
+			for _, urlString := range coverURLs {
 				URL, err := url.Parse(urlString)
 				if err != nil {
 					errs = append(errs, err)
 					continue
 				}
-				if URL.Query().Get("mime_type") == "video_mp4" {
-					localURLs = append(localURLs, fmt.Sprintf("%s.mp4", post))
-					continue
-				}
-				fileName := fmt.Sprintf("%s_%s", post, path.Base(URL.Path))
-				if !strings.HasSuffix(fileName, ".jpeg") {
-					fileName = fmt.Sprintf("%s.jpeg", fileName)
-				}
+				fileName := fmt.Sprintf("%s_%s.jpeg", post, path.Base(URL.Path))
 				localURLs = append(localURLs, fileName)
 			}
 
-			localURLs, saveErrors := StorageHandler.SaveBundle(user, types.TikTok, username, localURLs, URLs, cookies)
+			localURLs, saveErrors := StorageHandler.SaveBundle(user, types.TikTok, username, localURLs, coverURLs, cookies)
 			errs = append(errs, saveErrors...)
+
+			if len(videoURL) > 0 {
+				localURLs = slices.Insert(localURLs, 0, videoURL)
+			}
 
 			if len(localURLs) > 0 {
 				history = db.History{
