@@ -56,7 +56,11 @@ func (server *RakerServer) vsco(request *http.Request) (db.User, db.History, []e
 				} else if strings.Contains(URL.Path, "/poster/private") {
 					localURLs = append(localURLs, fmt.Sprintf("%s.jpg", post))
 				} else {
-					localURLs = append(localURLs, fmt.Sprintf("%s_%s", post, path.Base(URL.Path)))
+					localURL := fmt.Sprintf("%s_%s", post, path.Base(URL.Path))
+					if !strings.HasSuffix(localURL, ".jpg") {
+						localURL = fmt.Sprintf("%s.jpeg", localURL)
+					}
+					localURLs = append(localURLs, localURL)
 				}
 			}
 			localURLs, saveErrors := StorageHandler.SaveBundle(user, types.VSCO, username, localURLs, URLs, cookies)
