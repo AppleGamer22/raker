@@ -6,16 +6,14 @@ import (
 	"net/http"
 	"net/url"
 	"path"
-	"time"
 
 	"github.com/AppleGamer22/raker/server/cleaner"
-	db "github.com/AppleGamer22/raker/server/db/mongo"
+	"github.com/AppleGamer22/raker/server/db"
+	old "github.com/AppleGamer22/raker/server/db/mongo"
 	"github.com/AppleGamer22/raker/shared"
 	"github.com/AppleGamer22/raker/shared/types"
 	"github.com/AppleGamer22/raker/templates"
 	"github.com/charmbracelet/log"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func (server *RakerServer) highlight(request *http.Request) (db.User, db.History, []error) {
@@ -26,20 +24,22 @@ func (server *RakerServer) highlight(request *http.Request) (db.User, db.History
 	}
 
 	history := db.History{
-		Type: types.Highlight,
+		PostType: types.Highlight,
 	}
 
 	highlightID := cleaner.Line(request.Form.Get("post"))
 	var errs []error
 
 	if highlightID != "" {
-		filter := bson.M{
-			"post": highlightID,
-			"type": types.Highlight,
-		}
-
-		if err := server.Histories.FindOne(context.Background(), filter).Decode(&history); err != nil {
-			instagram := shared.NewInstagram(user.Instagram.FBSR, user.Instagram.SessionID, user.Instagram.UserID)
+		retrievedHistory, err := server.DBClient.HistoryGet(context.Background(), db.HistoryGetParams{
+			PostType: db.PostTypeHighlight,
+			Post:     highlightID,
+			Username: user.Username,
+		})
+		if err == nil {
+			history = retrievedHistory
+		} else {
+			instagram := shared.NewInstagram("", user.InstagramSessionID, user.InstagramUserID)
 			URLs, username, err := instagram.Reels(highlightID, true)
 			if err != nil {
 				return db.User{}, db.History{}, []error{err}
@@ -61,18 +61,17 @@ func (server *RakerServer) highlight(request *http.Request) (db.User, db.History
 			errs = append(errs, saveErrors...)
 
 			if len(localURLs) > 0 {
-				history = db.History{
-					ID:    primitive.NewObjectID().Hex(),
-					U_ID:  user.Username,
-					URLs:  localURLs,
-					Type:  types.Highlight,
-					Owner: username,
-					Post:  highlightID,
-					Date:  time.Now(),
-				}
-
-				if _, err := server.Histories.InsertOne(context.Background(), history); err != nil {
+				addedHistory, err := server.DBClient.HistoryAdd(context.Background(), db.HistoryAddParams{
+					Username:  user.Username,
+					PostType:  db.PostTypeHighlight,
+					PostOwner: username,
+					Post:      highlightID,
+					Files:     localURLs,
+				})
+				if err != nil {
 					errs = append(errs, err)
+				} else {
+					history = addedHistory
 				}
 			}
 		}
@@ -99,7 +98,7 @@ func (server *RakerServer) HighlightResult(writer http.ResponseWriter, request *
 			log.Error(err)
 		}
 	}
-	historyDisplay := db.HistoryDisplay{
+	historyDisplay := old.HistoryDisplay{
 		History:            history,
 		Errors:             errs,
 		SelectedCategories: user.SelectedCategories(history.Categories),
