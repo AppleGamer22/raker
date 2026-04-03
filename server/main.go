@@ -21,7 +21,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer rakerServer.DBClient.Disconnect(context.Background())
+	defer rakerServer.DBClient.Close()
 
 	log.Infof("raker %s %s (%s/%s)", shared.Version, shared.Hash, runtime.GOOS, runtime.GOARCH)
 	log.Infof("Storage path: %s", rakerServer.Storage)

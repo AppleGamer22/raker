@@ -4,7 +4,6 @@ import (
 	"time"
 
 	jwt "github.com/golang-jwt/jwt/v5"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type Authenticator struct {
@@ -14,29 +13,26 @@ type Authenticator struct {
 type jwtPayload struct {
 	jwt.RegisteredClaims
 	Username string `json:"username"`
-	// Password string             `json:"password"`
-	U_ID primitive.ObjectID `json:"U_ID"`
 }
 
 func New(secret string) Authenticator {
 	return Authenticator{[]byte(secret)}
 }
 
-func (a *Authenticator) Parse(tokenString string) (primitive.ObjectID, string, error) {
+func (a *Authenticator) Parse(tokenString string) (string, error) {
 	token, err := jwt.ParseWithClaims(tokenString, &jwtPayload{}, func(token *jwt.Token) (interface{}, error) {
 		return a.secret, nil
 	}, jwt.WithValidMethods([]string{jwt.SigningMethodHS256.Alg()}))
 	if payload, ok := token.Claims.(*jwtPayload); ok && token.Valid {
-		return payload.U_ID, payload.Username, nil
+		return payload.Username, nil
 	} else {
-		return primitive.NilObjectID, "", err
+		return "", err
 	}
 }
 
-func (a *Authenticator) Sign(U_ID primitive.ObjectID, username string) (string, time.Time, error) {
+func (a *Authenticator) Sign(U_ID string, username string) (string, time.Time, error) {
 	payload := jwtPayload{
 		Username: username,
-		U_ID:     U_ID,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().AddDate(1, 0, 0)),
 		},

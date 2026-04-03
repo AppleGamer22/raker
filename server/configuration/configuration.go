@@ -1,21 +1,22 @@
 package configuration
 
 import (
+	"database/sql"
 	"fmt"
 	"net/http"
 	"os"
 
 	"github.com/AppleGamer22/raker/assets"
 	"github.com/AppleGamer22/raker/server/authenticator"
+	pgsql "github.com/AppleGamer22/raker/server/db"
 	db "github.com/AppleGamer22/raker/server/db/mongo"
 	"github.com/AppleGamer22/raker/shared"
 	"github.com/AppleGamer22/raker/shared/types"
 	"github.com/AppleGamer22/raker/templates"
-
-	"github.com/charmbracelet/log"
 	"github.com/go-webauthn/webauthn/webauthn"
 	"github.com/spf13/viper"
-	"go.mongodb.org/mongo-driver/mongo"
+
+	"github.com/charmbracelet/log"
 )
 
 type contextKey int
@@ -36,9 +37,8 @@ type Configuration struct {
 
 type RakerServer struct {
 	Configuration
-	DBClient      *mongo.Client
-	Users         *mongo.Collection
-	Histories     *mongo.Collection
+	DBConnection *sql.DB
+	DBClient *pgsql.Queries
 	Authenticator authenticator.Authenticator
 	WebAuthn      *webauthn.WebAuthn
 	HTTPServer    http.Server
@@ -71,19 +71,17 @@ func NewRakerServer() (*RakerServer, error) {
 
 	rakerServer.Authenticator = authenticator.New(rakerServer.Configuration.Secret)
 
-	dbClient, database, err := db.Connect(
-		rakerServer.Configuration.URI,
-		rakerServer.Configuration.Database,
-		rakerServer.Configuration.Username,
-		rakerServer.Configuration.Password,
-	)
+	connection, err := sql.Open("postgres", rakerServer.URI)
+
 	if err != nil {
 		log.Fatal(err)
 	}
-	rakerServer.DBClient = dbClient
-	// remember to defer client.Disconnet
-	rakerServer.Histories = database.Collection("histories")
-	rakerServer.Users = database.Collection("users")
+	if err := connection.Ping(); err != nil {
+		log.Fatal(err)
+	}
+	rakerServer.DBConnection = connection
+	pgdb := pgsql.New(connection)
+	rakerServer.DBClient = pgdb
 
 	mux := http.NewServeMux()
 
