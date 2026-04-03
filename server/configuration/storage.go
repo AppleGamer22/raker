@@ -11,7 +11,7 @@ import (
 	"sync"
 
 	"github.com/AppleGamer22/raker/server/cleaner"
-	db "github.com/AppleGamer22/raker/server/db/mongo"
+	"github.com/AppleGamer22/raker/server/db"
 	"github.com/AppleGamer22/raker/shared"
 	"github.com/AppleGamer22/raker/shared/types"
 	"github.com/bep/imagemeta"
@@ -56,7 +56,7 @@ func (handler *storageHandler) Save(user db.User, media, owner, fileName, URL st
 		return fmt.Errorf("invalid media type: %s", media)
 	}
 
-	filePath := path.Join(user.ID.Hex(), media, owner, fileName)
+	filePath := path.Join(user.Username, media, owner, fileName)
 	mediaPath := path.Join(handler.root, filePath)
 	mediaPath = cleaner.Path(mediaPath)
 
@@ -174,7 +174,7 @@ func (handler *storageHandler) Delete(user db.User, media, owner, fileName strin
 		return fmt.Errorf("invalid media type: %s", media)
 	}
 
-	filePath := path.Join(user.ID.Hex(), media, owner, fileName)
+	filePath := path.Join(user.Username, media, owner, fileName)
 	mediaPath := path.Join(handler.root, filePath)
 	mediaPath = cleaner.Path(mediaPath)
 
@@ -205,7 +205,7 @@ func (handler *storageHandler) Delete(user db.User, media, owner, fileName strin
 }
 
 func (handler *storageHandler) LocationEXIF(user db.User, media, owner, fileName string) (float64, float64) {
-	filePath := path.Join(user.ID.Hex(), media, owner, fileName)
+	filePath := path.Join(user.Username, media, owner, fileName)
 	mediaPath := path.Join(handler.root, filePath)
 	mediaPath = cleaner.Path(mediaPath)
 	file, err := os.Open(mediaPath)

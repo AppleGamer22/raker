@@ -28,7 +28,7 @@ func (server *RakerServer) Categories(writer http.ResponseWriter, request *http.
 					"_id": user.ID,
 				},
 				bson.M{
-					"U_ID": user.ID.Hex(),
+					"U_ID": user.Username,
 				},
 			},
 		}

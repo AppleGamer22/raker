@@ -11,7 +11,8 @@ import (
 	"strconv"
 
 	"github.com/AppleGamer22/raker/server/cleaner"
-	db "github.com/AppleGamer22/raker/server/db/mongo"
+	"github.com/AppleGamer22/raker/server/db"
+	old "github.com/AppleGamer22/raker/server/db/mongo"
 	"github.com/AppleGamer22/raker/shared"
 	"github.com/AppleGamer22/raker/shared/types"
 	"github.com/AppleGamer22/raker/templates"
@@ -48,12 +49,12 @@ func (server *RakerServer) History(writer http.ResponseWriter, request *http.Req
 
 	switch request.Method {
 	case http.MethodPatch:
-		history, err := server.editHistory(user.ID, media, owner, post, categories)
+		history, err := server.editHistory(user.Username, media, owner, post, categories)
 		if err != nil {
 			log.Error(err)
 		}
 
-		historyDisplay := db.HistoryDisplay{
+		historyDisplay := old.HistoryDisplay{
 			History:            history,
 			Errors:             []error{err},
 			SelectedCategories: user.SelectedCategories(history.Categories),
@@ -86,7 +87,7 @@ func (server *RakerServer) History(writer http.ResponseWriter, request *http.Req
 		// URL.RawQuery = query.Encode()
 		// redirectURL = URL.String()
 		// http.Redirect(writer, request, redirectURL, http.StatusTemporaryRedirect)
-		historyDisplay := db.HistoryDisplay{
+		historyDisplay := old.HistoryDisplay{
 			History:            history,
 			Errors:             []error{err},
 			SelectedCategories: user.SelectedCategories(history.Categories),
@@ -107,7 +108,7 @@ func (server *RakerServer) filterHistories(user db.User, owner string, categorie
 		}
 	}
 
-	filter := bson.M{"U_ID": user.ID.Hex()}
+	filter := bson.M{"U_ID": user.Username}
 
 	if len(categories) != 0 {
 		equal := len(categories) == len(user.Categories)
@@ -204,41 +205,26 @@ func (server *RakerServer) filterHistories(user db.User, owner string, categorie
 	return matrix, page, pages, int(count), err
 }
 
-func (server *RakerServer) editHistory(U_ID primitive.ObjectID, media, owner, post string, categories []string) (db.History, error) {
-	filter := bson.M{
-		"U_ID":  U_ID.Hex(),
-		"type":  media,
-		"owner": owner,
-		"post":  post,
-	}
-
-	update := bson.M{
-		"$set": bson.M{
-			"categories": categories,
-		},
-	}
+func (server *RakerServer) editHistory(username, media, owner, post string, categories []string) (db.History, error) {
 
 	var history db.History
-	err := server.Histories.FindOneAndUpdate(context.Background(), filter, update, db.UpdateOption).Decode(&history)
+	err := server.DBClient.HistoryUpdateCategories(context.Background(), db.HistoryUpdateCategoriesParams{
+		Categories: categories,
+		Type:       db.PostType(media),
+		Post:       post,
+		Username:   username,
+	})
 	return history, err
 }
 
 func (server *RakerServer) deleteFileFromHistory(user db.User, owner, media, post, file string) (db.History, error) {
-	filter := bson.M{
-		"U_ID": user.ID.Hex(),
-		"urls": file,
-		"post": post,
-	}
-
-	update := bson.M{
-		"$pull": bson.M{
-			"urls": file,
-		},
-	}
-
-	var history db.History
-
-	if err := server.Histories.FindOneAndUpdate(context.Background(), filter, update, db.UpdateOption).Decode(&history); err != nil {
+	history, err := server.DBClient.UpdateHistoryRemoveFile(context.Background(), db.UpdateHistoryRemoveFileParams{
+		File:     file,
+		Type:     db.PostType(media),
+		Post:     post,
+		Username: user.Username,
+	})
+	if err != nil {
 		return db.History{}, err
 	}
 
@@ -246,23 +232,24 @@ func (server *RakerServer) deleteFileFromHistory(user db.User, owner, media, pos
 		return db.History{}, err
 	}
 
-	if len(history.URLs) == 0 {
-		delete(filter, "urls")
-		result, err := server.Histories.DeleteOne(context.Background(), filter)
+	if len(history.Files) == 0 {
+		err := server.DBClient.HistoryRemove(context.Background(), db.HistoryRemoveParams{
+			Type:      db.PostType(media),
+			Post:      post,
+			Username:  user.Username,
+			PostOwner: owner,
+		})
 		if err != nil {
 			return db.History{}, err
-		} else if result.DeletedCount == 0 {
-			return db.History{}, errors.New("no histories were found")
-		} else {
-			return db.History{}, nil
 		}
+		return db.History{}, nil
 	}
 
 	return history, nil
 }
 
 func historyHTML(user db.User, history db.History, serverErrors []error, writer http.ResponseWriter) {
-	historyDisplay := db.HistoryDisplay{
+	historyDisplay := old.HistoryDisplay{
 		History:            history,
 		Errors:             serverErrors,
 		Version:            shared.Version,
@@ -278,7 +265,7 @@ func historyHTML(user db.User, history db.History, serverErrors []error, writer 
 
 func (server *RakerServer) LocationExif(writer http.ResponseWriter, request *http.Request) {
 	user := request.Context().Value(authenticatedUserKey).(db.User)
-	if request.PathValue("user") != user.ID.Hex() {
+	if request.PathValue("user") != user.Username {
 		http.Error(writer, "unathorised", http.StatusUnauthorized)
 		return
 	}
@@ -330,7 +317,7 @@ func (server *RakerServer) HistoryPage(writer http.ResponseWriter, request *http
 		log.Error(err)
 	}
 
-	historiesDisplay := db.HistoriesDisplay{
+	historiesDisplay := old.HistoriesDisplay{
 		Owner:      owner,
 		Categories: user.SelectedCategories(categories),
 		Types:      db.SelectedMediaTypes(mediaTypes),

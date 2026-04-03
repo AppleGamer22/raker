@@ -19,7 +19,7 @@ type Querier interface {
 	HistoryRemove(ctx context.Context, arg HistoryRemoveParams) error
 	HistoryUpdateCategories(ctx context.Context, arg HistoryUpdateCategoriesParams) error
 	HistoryUpdateOwner(ctx context.Context, arg HistoryUpdateOwnerParams) error
-	UpdateHistoryRemoveFile(ctx context.Context, arg UpdateHistoryRemoveFileParams) error
+	UpdateHistoryRemoveFile(ctx context.Context, arg UpdateHistoryRemoveFileParams) (History, error)
 	UserAdd(ctx context.Context, arg UserAddParams) error
 	UserCategoryAdd(ctx context.Context, arg UserCategoryAddParams) error
 	UserCategoryRemove(ctx context.Context, arg UserCategoryRemoveParams) error

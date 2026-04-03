@@ -340,12 +340,13 @@ func (q *Queries) HistoryUpdateOwner(ctx context.Context, arg HistoryUpdateOwner
 	return err
 }
 
-const updateHistoryRemoveFile = `-- name: UpdateHistoryRemoveFile :exec
+const updateHistoryRemoveFile = `-- name: UpdateHistoryRemoveFile :one
 UPDATE Histories
 SET files = array_remove(files, $1::text)
-WHERE post = $2::post_type
+WHERE type = $2::post_type
 	AND post = $3::text
 	AND username = $4::text
+RETURNING username, post_type, post_owner, post, post_date, files, categories
 `
 
 type UpdateHistoryRemoveFileParams struct {
@@ -355,12 +356,22 @@ type UpdateHistoryRemoveFileParams struct {
 	Username string   `json:"username"`
 }
 
-func (q *Queries) UpdateHistoryRemoveFile(ctx context.Context, arg UpdateHistoryRemoveFileParams) error {
-	_, err := q.exec(ctx, q.updateHistoryRemoveFileStmt, updateHistoryRemoveFile,
+func (q *Queries) UpdateHistoryRemoveFile(ctx context.Context, arg UpdateHistoryRemoveFileParams) (History, error) {
+	row := q.queryRow(ctx, q.updateHistoryRemoveFileStmt, updateHistoryRemoveFile,
 		arg.File,
 		arg.Type,
 		arg.Post,
 		arg.Username,
 	)
-	return err
+	var i History
+	err := row.Scan(
+		&i.Username,
+		&i.PostType,
+		&i.PostOwner,
+		&i.Post,
+		&i.PostDate,
+		pq.Array(&i.Files),
+		pq.Array(&i.Categories),
+	)
+	return i, err
 }

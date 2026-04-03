@@ -47,12 +47,13 @@ WHERE post = sqlc.arg(type)::post_type
 	AND post = sqlc.arg(post)::text
 	AND username = sqlc.arg(username)::text;
 
--- name: UpdateHistoryRemoveFile :exec
+-- name: UpdateHistoryRemoveFile :one
 UPDATE Histories
 SET files = array_remove(files, sqlc.arg(file)::text)
-WHERE post = sqlc.arg(type)::post_type
+WHERE type = sqlc.arg(type)::post_type
 	AND post = sqlc.arg(post)::text
-	AND username = sqlc.arg(username)::text;
+	AND username = sqlc.arg(username)::text
+RETURNING *;
 
 -- name: HistoryUpdateOwner :exec
 UPDATE Histories

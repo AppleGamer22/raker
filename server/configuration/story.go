@@ -87,7 +87,7 @@ func (server *RakerServer) story(request *http.Request) (db.User, db.History, []
 		historyID = primitive.NewObjectID().Hex()
 		history = db.History{
 			ID:    historyID,
-			U_ID:  user.ID.Hex(),
+			U_ID:  user.Username,
 			URLs:  localURLs,
 			Type:  types.Story,
 			Owner: username,

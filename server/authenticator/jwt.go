@@ -30,7 +30,7 @@ func (a *Authenticator) Parse(tokenString string) (string, error) {
 	}
 }
 
-func (a *Authenticator) Sign(U_ID string, username string) (string, time.Time, error) {
+func (a *Authenticator) Sign(username string) (string, time.Time, error) {
 	payload := jwtPayload{
 		Username: username,
 		RegisteredClaims: jwt.RegisteredClaims{

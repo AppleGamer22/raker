@@ -121,7 +121,7 @@ func (server *RakerServer) InstagramSignIn(writer http.ResponseWriter, request *
 		return
 	}
 
-	webToken, expiry, err := server.Authenticator.Sign(user.Username, user.Username)
+	webToken, expiry, err := server.Authenticator.Sign(user.Username)
 	if err != nil {
 		http.Error(writer, "sign-in failed", http.StatusUnauthorized)
 		log.Error(err, "ID", user.Username)

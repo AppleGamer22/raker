@@ -81,7 +81,7 @@ func (server *RakerServer) tiktok(request *http.Request) (db.User, db.History, [
 			if len(localURLs) > 0 {
 				history = db.History{
 					ID:    primitive.NewObjectID().Hex(),
-					U_ID:  user.ID.Hex(),
+					U_ID:  user.Username,
 					URLs:  localURLs,
 					Type:  types.TikTok,
 					Owner: username,
