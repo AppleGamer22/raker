@@ -128,6 +128,7 @@ type History struct {
 	PostDate   time.Time `json:"post_date"`
 	Files      []string  `json:"files"`
 	Categories []string  `json:"categories"`
+	Incognito  bool      `json:"incognito"`
 }
 
 type Owner struct {

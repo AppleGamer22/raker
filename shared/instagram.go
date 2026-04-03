@@ -122,7 +122,7 @@ type InstagramReels struct {
 }
 
 type Instagram struct {
-	fbsrCookie    http.Cookie
+	// fbsrCookie    http.Cookie
 	sessionCookie http.Cookie
 	userCookie    http.Cookie
 }
@@ -137,15 +137,15 @@ var (
 
 const scriptWithDocumentMatch = 1
 
-func NewInstagram(fbsr, sessionID, userID string) Instagram {
+func NewInstagram(sessionID, userID string) Instagram {
 	return Instagram{
-		fbsrCookie: http.Cookie{
-			Name:     "fbsr_124024574287414",
-			Value:    fbsr,
-			Domain:   ".instagram.com",
-			Path:     "/",
-			SameSite: http.SameSiteNoneMode,
-		},
+		// fbsrCookie: http.Cookie{
+		// 	Name:     "fbsr_124024574287414",
+		// 	Value:    fbsr,
+		// 	Domain:   ".instagram.com",
+		// 	Path:     "/",
+		// 	SameSite: http.SameSiteNoneMode,
+		// },
 		sessionCookie: http.Cookie{
 			Name:     "sessionid",
 			Value:    sessionID,
@@ -171,7 +171,7 @@ func (instagram *Instagram) Post(post string) (URLs []string, username string, e
 		return URLs, username, err
 	}
 
-	htmlRequest.AddCookie(&instagram.fbsrCookie)
+	// htmlRequest.AddCookie(&instagram.fbsrCookie)
 	htmlRequest.AddCookie(&instagram.sessionCookie)
 	htmlRequest.AddCookie(&instagram.userCookie)
 
@@ -210,7 +210,7 @@ func (instagram *Instagram) Post(post string) (URLs []string, username string, e
 		return URLs, username, err
 	}
 
-	jsonRequest.AddCookie(&instagram.fbsrCookie)
+	// jsonRequest.AddCookie(&instagram.fbsrCookie)
 	jsonRequest.AddCookie(&instagram.sessionCookie)
 	jsonRequest.AddCookie(&instagram.userCookie)
 

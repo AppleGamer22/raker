@@ -8,3 +8,6 @@ CREATE TABLE Histories (
 	files TEXT [],
 	categories TEXT []
 );
+
+alter table Histories
+add column incognito boolean not null default false;

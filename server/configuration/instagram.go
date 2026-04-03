@@ -6,16 +6,14 @@ import (
 	"net/http"
 	"net/url"
 	"path"
-	"time"
 
 	"github.com/AppleGamer22/raker/server/cleaner"
-	db "github.com/AppleGamer22/raker/server/db/mongo"
+	"github.com/AppleGamer22/raker/server/db"
+	old "github.com/AppleGamer22/raker/server/db/mongo"
 	"github.com/AppleGamer22/raker/shared"
 	"github.com/AppleGamer22/raker/shared/types"
 	"github.com/AppleGamer22/raker/templates"
 	"github.com/charmbracelet/log"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func (server *RakerServer) instagram(request *http.Request) (db.User, db.History, []error) {
@@ -25,21 +23,25 @@ func (server *RakerServer) instagram(request *http.Request) (db.User, db.History
 		return db.User{}, db.History{}, []error{err}
 	}
 
-	history := db.History{
-		Type: types.Instagram,
-	}
-
 	post := cleaner.Line(request.Form.Get("post"))
 	incognito := cleaner.Line(request.Form.Get("incognito")) == "incognito"
+	history := db.History{
+		PostType:  db.PostTypeInstagram,
+		Incognito: incognito,
+	}
 	var errs []error
 
 	if post != "" {
-		filter := bson.M{
-			"post": post,
-			"type": types.Instagram,
-		}
-		if err := server.Histories.FindOne(context.Background(), filter).Decode(&history); err != nil {
-			instagram := shared.NewInstagram(user.Instagram.FBSR, user.Instagram.SessionID, user.Instagram.UserID)
+		retrievedHistory, err := server.DBClient.HistoryGet(context.Background(), db.HistoryGetParams{
+			PostType: db.PostTypeInstagram,
+			Post:     post,
+			Username: user.Username,
+		})
+		if err == nil {
+			retrievedHistory.Incognito = incognito
+			history = retrievedHistory
+		} else {
+			instagram := shared.NewInstagram(user.InstagramSessionID, user.InstagramUserID)
 			var (
 				username string
 				URLs     []string
@@ -69,19 +71,18 @@ func (server *RakerServer) instagram(request *http.Request) (db.User, db.History
 			errs = append(errs, saveErrors...)
 
 			if len(localURLs) > 0 {
-				history = db.History{
-					ID:        primitive.NewObjectID().Hex(),
-					U_ID:      user.Username,
-					URLs:      localURLs,
-					Type:      types.Instagram,
-					Owner:     username,
+				addedHistory, err := server.DBClient.HistoryAdd(context.Background(), db.HistoryAddParams{
+					Username:  user.Username,
+					PostType:  db.PostTypeInstagram,
+					PostOwner: username,
 					Post:      post,
-					Incognito: incognito,
-					Date:      time.Now(),
-				}
-
-				if _, err := server.Histories.InsertOne(context.Background(), history); err != nil {
+					Files:     localURLs,
+				})
+				if err != nil {
 					errs = append(errs, err)
+				} else {
+					addedHistory.Incognito = incognito
+					history = addedHistory
 				}
 			}
 		}
@@ -108,7 +109,7 @@ func (server *RakerServer) InstagramResult(writer http.ResponseWriter, request *
 			log.Error(err)
 		}
 	}
-	historyDisplay := db.HistoryDisplay{
+	historyDisplay := old.HistoryDisplay{
 		History:            history,
 		Errors:             errs,
 		SelectedCategories: user.SelectedCategories(history.Categories),

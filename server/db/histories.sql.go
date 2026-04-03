@@ -31,7 +31,7 @@ VALUES (
 		$5::text [],
 		$6::text []
 	)
-RETURNING username, post_type, post_owner, post, post_date, files, categories
+RETURNING username, post_type, post_owner, post, post_date, files, categories, incognito
 `
 
 type HistoryAddParams struct {
@@ -61,6 +61,7 @@ func (q *Queries) HistoryAdd(ctx context.Context, arg HistoryAddParams) (History
 		&i.PostDate,
 		pq.Array(&i.Files),
 		pq.Array(&i.Categories),
+		&i.Incognito,
 	)
 	return i, err
 }
@@ -84,7 +85,7 @@ VALUES (
 		$6::text [],
 		$7::text []
 	)
-RETURNING username, post_type, post_owner, post, post_date, files, categories
+RETURNING username, post_type, post_owner, post, post_date, files, categories, incognito
 `
 
 type HistoryAddFromArchiveParams struct {
@@ -116,6 +117,7 @@ func (q *Queries) HistoryAddFromArchive(ctx context.Context, arg HistoryAddFromA
 		&i.PostDate,
 		pq.Array(&i.Files),
 		pq.Array(&i.Categories),
+		&i.Incognito,
 	)
 	return i, err
 }
@@ -161,7 +163,7 @@ func (q *Queries) HistoryCountByFile(ctx context.Context, arg HistoryCountByFile
 }
 
 const historyGet = `-- name: HistoryGet :one
-SELECT username, post_type, post_owner, post, post_date, files, categories
+SELECT username, post_type, post_owner, post, post_date, files, categories, incognito
 FROM Histories
 WHERE post_type = $1::post_type
 	AND post = $2::text
@@ -185,12 +187,13 @@ func (q *Queries) HistoryGet(ctx context.Context, arg HistoryGetParams) (History
 		&i.PostDate,
 		pq.Array(&i.Files),
 		pq.Array(&i.Categories),
+		&i.Incognito,
 	)
 	return i, err
 }
 
 const historyGetByOwner = `-- name: HistoryGetByOwner :one
-SELECT username, post_type, post_owner, post, post_date, files, categories
+SELECT username, post_type, post_owner, post, post_date, files, categories, incognito
 FROM Histories
 WHERE post_type = $1::post_type
 	AND post_owner = $2::text
@@ -221,12 +224,13 @@ func (q *Queries) HistoryGetByOwner(ctx context.Context, arg HistoryGetByOwnerPa
 		&i.PostDate,
 		pq.Array(&i.Files),
 		pq.Array(&i.Categories),
+		&i.Incognito,
 	)
 	return i, err
 }
 
 const historyGetExclusive = `-- name: HistoryGetExclusive :many
-SELECT username, post_type, post_owner, post, post_date, files, categories
+SELECT username, post_type, post_owner, post, post_date, files, categories, incognito
 FROM Histories
 WHERE post_type = ANY ($1::post_type [])
 	AND categories = $2::text []
@@ -268,6 +272,7 @@ func (q *Queries) HistoryGetExclusive(ctx context.Context, arg HistoryGetExclusi
 			&i.PostDate,
 			pq.Array(&i.Files),
 			pq.Array(&i.Categories),
+			&i.Incognito,
 		); err != nil {
 			return nil, err
 		}
@@ -283,7 +288,7 @@ func (q *Queries) HistoryGetExclusive(ctx context.Context, arg HistoryGetExclusi
 }
 
 const historyGetInclusive = `-- name: HistoryGetInclusive :many
-SELECT username, post_type, post_owner, post, post_date, files, categories
+SELECT username, post_type, post_owner, post, post_date, files, categories, incognito
 FROM Histories
 WHERE post_type = ANY ($1::post_type [])
 	AND categories <@ $2::text []
@@ -327,6 +332,7 @@ func (q *Queries) HistoryGetInclusive(ctx context.Context, arg HistoryGetInclusi
 			&i.PostDate,
 			pq.Array(&i.Files),
 			pq.Array(&i.Categories),
+			&i.Incognito,
 		); err != nil {
 			return nil, err
 		}
@@ -342,7 +348,7 @@ func (q *Queries) HistoryGetInclusive(ctx context.Context, arg HistoryGetInclusi
 }
 
 const historyGetPage = `-- name: HistoryGetPage :many
-SELECT username, post_type, post_owner, post, post_date, files, categories
+SELECT username, post_type, post_owner, post, post_date, files, categories, incognito
 FROM Histories
 WHERE post_type = ANY ($1::post_type [])
 	AND (
@@ -395,6 +401,7 @@ func (q *Queries) HistoryGetPage(ctx context.Context, arg HistoryGetPageParams) 
 			&i.PostDate,
 			pq.Array(&i.Files),
 			pq.Array(&i.Categories),
+			&i.Incognito,
 		); err != nil {
 			return nil, err
 		}
@@ -490,7 +497,7 @@ SET files = array_remove(files, $1::text)
 WHERE type = $2::post_type
 	AND post = $3::text
 	AND username = $4::text
-RETURNING username, post_type, post_owner, post, post_date, files, categories
+RETURNING username, post_type, post_owner, post, post_date, files, categories, incognito
 `
 
 type UpdateHistoryRemoveFileParams struct {
@@ -516,6 +523,7 @@ func (q *Queries) UpdateHistoryRemoveFile(ctx context.Context, arg UpdateHistory
 		&i.PostDate,
 		pq.Array(&i.Files),
 		pq.Array(&i.Categories),
+		&i.Incognito,
 	)
 	return i, err
 }
