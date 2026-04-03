@@ -199,11 +199,6 @@ func (server *RakerServer) InstagramUpdateCredentials(writer http.ResponseWriter
 		}
 	}
 
-	// fbsr := cleaner.Line(request.Form.Get("fbsr"))
-	// if fbsr == "" {
-	// 	fbsr = user.Instagram.FBSR
-	// }
-
 	sessionID := cleaner.Line(request.Form.Get("session"))
 	if sessionID == "" {
 		sessionID = user.InstagramSessionID
@@ -218,6 +213,7 @@ func (server *RakerServer) InstagramUpdateCredentials(writer http.ResponseWriter
 		InstagramSessionID: sessionID,
 		InstagramUserID:    userID,
 		Username:           user.Username,
+		PasswordHash:       password,
 	})
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)

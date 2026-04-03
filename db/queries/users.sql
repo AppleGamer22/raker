@@ -19,7 +19,8 @@ VALUES (
 -- name: UserUpdateInstagramSession :exec
 UPDATE Users
 SET instagram_session_id = sqlc.arg(instagram_session_id)::text,
-	instagram_user_id = sqlc.arg(instagram_user_id)::text
+	instagram_user_id = sqlc.arg(instagram_user_id)::text,
+	password_hash = sqlc.arg(password_hash)::text
 where username = sqlc.arg(username)::text;
 
 -- name: UserUpdateHash :exec

@@ -127,17 +127,24 @@ func (q *Queries) UserUpdateHash(ctx context.Context, arg UserUpdateHashParams) 
 const userUpdateInstagramSession = `-- name: UserUpdateInstagramSession :exec
 UPDATE Users
 SET instagram_session_id = $1::text,
-	instagram_user_id = $2::text
-where username = $3::text
+	instagram_user_id = $2::text,
+	password_hash = $3::text
+where username = $4::text
 `
 
 type UserUpdateInstagramSessionParams struct {
 	InstagramSessionID string `json:"instagram_session_id"`
 	InstagramUserID    string `json:"instagram_user_id"`
+	PasswordHash       string `json:"password_hash"`
 	Username           string `json:"username"`
 }
 
 func (q *Queries) UserUpdateInstagramSession(ctx context.Context, arg UserUpdateInstagramSessionParams) error {
-	_, err := q.exec(ctx, q.userUpdateInstagramSessionStmt, userUpdateInstagramSession, arg.InstagramSessionID, arg.InstagramUserID, arg.Username)
+	_, err := q.exec(ctx, q.userUpdateInstagramSessionStmt, userUpdateInstagramSession,
+		arg.InstagramSessionID,
+		arg.InstagramUserID,
+		arg.PasswordHash,
+		arg.Username,
+	)
 	return err
 }
