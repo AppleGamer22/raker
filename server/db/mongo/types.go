@@ -142,6 +142,20 @@ type History struct {
 	Categories []string  `bson:"categories" json:"categories"`
 }
 
+type HistoryArchive struct {
+	ID    string   `bson:"_id" json:"-"`
+	U_ID  string   `bson:"U_ID" json:"-"`
+	URLs  []string `bson:"urls" json:"urls"`
+	Type  string   `bson:"type" json:"type"`
+	Owner string   `bson:"owner" json:"owner"`
+	Post  string   `bson:"post" json:"post"`
+	Date  struct {
+		Value time.Time `json:"$date"`
+	} `bson:"date" json:"date"`
+	Incognito  bool     `bson:"incognito" json:"incognito"`
+	Categories []string `bson:"categories" json:"categories"`
+}
+
 type HistoryDisplay struct {
 	History
 	SelectedCategories map[string]bool

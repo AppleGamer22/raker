@@ -126,25 +126,16 @@ FROM Histories
 WHERE type = $1::post_type
 	AND post = $2::text
 	AND username = $3::text
-LIMIT $5::int OFFSET $4::int
 `
 
 type HistoryGetParams struct {
 	Type     PostType `json:"type"`
 	Post     string   `json:"post"`
 	Username string   `json:"username"`
-	Page     int32    `json:"page"`
-	PageSize int32    `json:"page_size"`
 }
 
 func (q *Queries) HistoryGet(ctx context.Context, arg HistoryGetParams) (History, error) {
-	row := q.queryRow(ctx, q.historyGetStmt, historyGet,
-		arg.Type,
-		arg.Post,
-		arg.Username,
-		arg.Page,
-		arg.PageSize,
-	)
+	row := q.queryRow(ctx, q.historyGetStmt, historyGet, arg.Type, arg.Post, arg.Username)
 	var i History
 	err := row.Scan(
 		&i.Username,

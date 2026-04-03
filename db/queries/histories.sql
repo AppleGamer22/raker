@@ -66,8 +66,7 @@ SELECT *
 FROM Histories
 WHERE type = sqlc.arg(type)::post_type
 	AND post = sqlc.arg(post)::text
-	AND username = sqlc.arg(username)::text
-LIMIT sqlc.arg(page_size)::int OFFSET sqlc.arg(page)::int;
+	AND username = sqlc.arg(username)::text;
 
 -- https://docs.sqlc.dev/en/stable/howto/select.html#passing-a-slice-as-a-parameter-to-a-query
 -- https://docs.sqlc.dev/en/stable/howto/named_parameters.html
