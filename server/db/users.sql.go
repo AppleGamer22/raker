@@ -87,7 +87,7 @@ func (q *Queries) UserCategoryRemove(ctx context.Context, arg UserCategoryRemove
 }
 
 const userGet = `-- name: UserGet :one
-SELECT username, password_hash, instagram_session_id, instagram_user_id, network, categories
+SELECT username, password_hash, instagram_session_id, instagram_user_id, network, categories, tiktok_session_id, tiktok_session_id_guard
 FROM Users
 WHERE username = $1::text
 `
@@ -102,6 +102,8 @@ func (q *Queries) UserGet(ctx context.Context, username string) (User, error) {
 		&i.InstagramUserID,
 		&i.Network,
 		pq.Array(&i.Categories),
+		&i.TiktokSessionID,
+		&i.TiktokSessionIDGuard,
 	)
 	return i, err
 }

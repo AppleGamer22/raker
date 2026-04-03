@@ -6,17 +6,14 @@ import (
 	"net/http"
 	"net/url"
 	"path"
-	"slices"
-	"time"
 
 	"github.com/AppleGamer22/raker/server/cleaner"
-	db "github.com/AppleGamer22/raker/server/db/mongo"
+	"github.com/AppleGamer22/raker/server/db"
+	old "github.com/AppleGamer22/raker/server/db/mongo"
 	"github.com/AppleGamer22/raker/shared"
 	"github.com/AppleGamer22/raker/shared/types"
 	"github.com/AppleGamer22/raker/templates"
 	"github.com/charmbracelet/log"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func (server *RakerServer) tiktok(request *http.Request) (db.User, db.History, []error) {
@@ -27,7 +24,7 @@ func (server *RakerServer) tiktok(request *http.Request) (db.User, db.History, [
 	}
 
 	history := db.History{
-		Type: types.TikTok,
+		PostType: types.TikTok,
 	}
 	owner := cleaner.Line(request.Form.Get("owner"))
 	post := cleaner.Line(request.Form.Get("post"))
@@ -35,12 +32,15 @@ func (server *RakerServer) tiktok(request *http.Request) (db.User, db.History, [
 	var errs []error
 
 	if post != "" {
-		filter := bson.M{
-			"post": post,
-			"type": types.TikTok,
-		}
-		if err := server.Histories.FindOne(context.Background(), filter).Decode(&history); err != nil {
-			tiktok := shared.NewTikTok(user.TikTok.SessionID, user.TikTok.SessionIDGuard, user.TikTok.ChainToken)
+		retrievedHistory, err := server.DBClient.HistoryGet(context.Background(), db.HistoryGetParams{
+			PostType: db.PostTypeTiktok,
+			Post:     post,
+			Username: user.Username,
+		})
+		if err == nil {
+			history = retrievedHistory
+		} else {
+			tiktok := shared.NewTikTok(user.TiktokSessionID, user.TiktokSessionIDGuard)
 			videoURLs, coverURLs, username, cookies, err := tiktok.Post(owner, post, incognito)
 			if err != nil {
 				return db.User{}, db.History{}, []error{err}
@@ -75,23 +75,21 @@ func (server *RakerServer) tiktok(request *http.Request) (db.User, db.History, [
 			errs = append(errs, saveErrors...)
 
 			if len(videoURL) > 0 {
-				localURLs = slices.Insert(localURLs, 0, videoURL)
+				localURLs = append([]string{videoURL}, localURLs...)
 			}
 
 			if len(localURLs) > 0 {
-				history = db.History{
-					ID:    primitive.NewObjectID().Hex(),
-					U_ID:  user.Username,
-					URLs:  localURLs,
-					Type:  types.TikTok,
-					Owner: username,
-					Post:  post,
-					Date:  time.Now(),
+				addedHistory, err := server.DBClient.HistoryAdd(context.Background(), db.HistoryAddParams{
+					Username:  user.Username,
+					PostType:  db.PostTypeTiktok,
+					PostOwner: username,
+					Post:      post,
+					Files:     localURLs,
+				})
+				if err != nil {
+					return db.User{}, db.History{}, []error{err}
 				}
-
-				if _, err := server.Histories.InsertOne(context.Background(), history); err != nil {
-					errs = append(errs, err)
-				}
+				history = addedHistory
 			}
 
 		}
@@ -119,7 +117,7 @@ func (server *RakerServer) TikTokResult(writer http.ResponseWriter, request *htt
 			log.Error(err)
 		}
 	}
-	historyDisplay := db.HistoryDisplay{
+	historyDisplay := old.HistoryDisplay{
 		History:            history,
 		Errors:             errs,
 		SelectedCategories: user.SelectedCategories(history.Categories),

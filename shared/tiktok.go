@@ -42,13 +42,13 @@ type TikTokPost struct {
 type TikTok struct {
 	SessionID      string
 	SessionIDGuard string
-	ChainToken     string
+	// ChainToken     string
 }
 
 var tiktok_regexp = regexp.MustCompile(`<script id=\"__UNIVERSAL_DATA_FOR_REHYDRATION__\" type=\"application/json\">(.*?)</script>`)
 
-func NewTikTok(sessionID, sessionIDGuard, chainToken string) TikTok {
-	return TikTok{sessionID, sessionIDGuard, chainToken}
+func NewTikTok(sessionID, sessionIDGuard string) TikTok {
+	return TikTok{sessionID, sessionIDGuard}
 }
 
 func (tikok *TikTok) MSToken(owner string) (http.Client, error) {
@@ -111,14 +111,14 @@ func (tiktok *TikTok) Post(owner, post string, incognito bool) ([]string, []stri
 			HttpOnly: true,
 		}
 		request.AddCookie(&sessionCookie)
-		chainCookie := http.Cookie{
-			Name:     "tt_chain_token",
-			Value:    tiktok.ChainToken,
-			Domain:   ".tiktok.com",
-			HttpOnly: true,
-			Secure:   true,
-		}
-		request.AddCookie(&chainCookie)
+		// chainCookie := http.Cookie{
+		// 	Name:     "tt_chain_token",
+		// 	Value:    tiktok.ChainToken,
+		// 	Domain:   ".tiktok.com",
+		// 	HttpOnly: true,
+		// 	Secure:   true,
+		// }
+		// request.AddCookie(&chainCookie)
 		sessionGuardCookie := http.Cookie{
 			Name:     "sid_guard",
 			Value:    tiktok.SessionIDGuard,

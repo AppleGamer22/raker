@@ -6,3 +6,9 @@ CREATE TABLE Users (
 	network network_type NOT NULL,
 	categories TEXT []
 );
+
+alter table Users
+add column tiktok_session_id TEXT NOT NULL DEFAULT '';
+
+alter table Users
+add column tiktok_session_id_guard TEXT NOT NULL DEFAULT '';

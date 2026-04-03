@@ -33,7 +33,7 @@ func (server *RakerServer) vsco(request *http.Request) (db.User, db.History, []e
 
 	if post != "" {
 		retrievedHistory, err := server.DBClient.HistoryGet(context.Background(), db.HistoryGetParams{
-			Type:     db.PostTypeVsco,
+			PostType: db.PostTypeVsco,
 			Post:     post,
 			Username: user.Username,
 		})
