@@ -8,8 +8,8 @@ import (
 
 	"github.com/AppleGamer22/raker/assets"
 	"github.com/AppleGamer22/raker/server/authenticator"
-	pgsql "github.com/AppleGamer22/raker/server/db"
-	db "github.com/AppleGamer22/raker/server/db/mongo"
+	"github.com/AppleGamer22/raker/server/db"
+	old "github.com/AppleGamer22/raker/server/db/mongo"
 	"github.com/AppleGamer22/raker/shared"
 	"github.com/AppleGamer22/raker/shared/types"
 	"github.com/AppleGamer22/raker/templates"
@@ -37,8 +37,8 @@ type Configuration struct {
 
 type RakerServer struct {
 	Configuration
-	DBConnection *sql.DB
-	DBClient *pgsql.Queries
+	DBConnection  *sql.DB
+	DBClient      *db.Queries
 	Authenticator authenticator.Authenticator
 	WebAuthn      *webauthn.WebAuthn
 	HTTPServer    http.Server
@@ -80,7 +80,7 @@ func NewRakerServer() (*RakerServer, error) {
 		log.Fatal(err)
 	}
 	rakerServer.DBConnection = connection
-	pgdb := pgsql.New(connection)
+	pgdb := db.New(connection)
 	rakerServer.DBClient = pgdb
 
 	mux := http.NewServeMux()
@@ -132,7 +132,7 @@ func NewRakerServer() (*RakerServer, error) {
 			}
 		}
 
-		historyDisplay := db.HistoryDisplay{
+		historyDisplay := old.HistoryDisplay{
 			History:            history,
 			Errors:             errs,
 			Version:            shared.Version,
@@ -176,7 +176,7 @@ func NewRakerServer() (*RakerServer, error) {
 			}
 		}
 
-		historyDisplay := db.HistoryDisplay{
+		historyDisplay := old.HistoryDisplay{
 			History:            history,
 			Errors:             errs,
 			SelectedCategories: user.SelectedCategories(history.Categories),

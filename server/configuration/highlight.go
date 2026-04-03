@@ -39,7 +39,7 @@ func (server *RakerServer) highlight(request *http.Request) (db.User, db.History
 		if err == nil {
 			history = retrievedHistory
 		} else {
-			instagram := shared.NewInstagram("", user.InstagramSessionID, user.InstagramUserID)
+			instagram := shared.NewInstagram(user.InstagramSessionID, user.InstagramUserID)
 			URLs, username, err := instagram.Reels(highlightID, true)
 			if err != nil {
 				return db.User{}, db.History{}, []error{err}

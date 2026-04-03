@@ -47,7 +47,7 @@ func (server *RakerServer) story(request *http.Request) (db.User, db.History, []
 		return user, history, []error{}
 	}
 
-	instagram := shared.NewInstagram("", user.InstagramSessionID, user.InstagramUserID)
+	instagram := shared.NewInstagram(user.InstagramSessionID, user.InstagramUserID)
 	URLs, username, err := instagram.Reels(owner, false)
 	if err != nil {
 		return user, history, []error{err}
