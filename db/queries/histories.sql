@@ -1,25 +1,27 @@
 -- name: HistoryAdd :one
-INSERT INTO Histories (
-	username,
-	type,
-	owner,
-	post,
-	date,
-	files,
-	categories
-) VALUES (
-	sqlc.arg(username)::text,
-	sqlc.arg(type)::post_type,
-	sqlc.arg(owner)::text,
-	sqlc.arg(post)::text,
-	NOW(),
-	sqlc.arg(files)::text[],
-	sqlc.arg(categories)::text[]
-) RETURNING *;
+INSERT INTO Histories(
+		username,
+		post_type,
+		post_owner,
+		post,
+		post_date,
+		files,
+		categories
+	)
+VALUES (
+		sqlc.arg(username)::text,
+		sqlc.arg(post_type)::post_type,
+		sqlc.arg(post_owner)::text,
+		sqlc.arg(post)::text,
+		NOW(),
+		sqlc.arg(files)::text [],
+		sqlc.arg(categories)::text []
+	)
+RETURNING *;
 
 -- name: HistoryUpdateCategories :exec
 UPDATE Histories
-SET categories = sqlc.slice(categories)::text[]
+SET categories = sqlc.slice(categories)::text []
 WHERE post = sqlc.arg(type)::post_type
 	AND post = sqlc.arg(post)::text
 	AND username = sqlc.arg(username)::text;
@@ -33,39 +35,42 @@ WHERE post = sqlc.arg(type)::post_type
 
 -- name: HistoryUpdateOwner :exec
 UPDATE Histories
-SET owner = sqlc.arg(old_owner)::text
+SET post_owner = sqlc.arg(old_owner)::text
 WHERE post = sqlc.arg(type)::post_type
-	AND owner = sqlc.arg(new_owner)::text
+	AND post_owner = sqlc.arg(new_owner)::text
 	AND username = sqlc.arg(username)::text;
 
 -- name: HistoryGet :one
-SELECT * FROM Histories
+SELECT *
+FROM Histories
 WHERE type = sqlc.arg(type)::post_type
 	AND post = sqlc.arg(post)::text
 	AND username = sqlc.arg(username)::text
-limit sqlc.arg(page_size)::int offset sqlc.arg(page)::int;
+LIMIT sqlc.arg(page_size)::int OFFSET sqlc.arg(page)::int;
 
 -- https://docs.sqlc.dev/en/stable/howto/select.html#passing-a-slice-as-a-parameter-to-a-query
 -- https://docs.sqlc.dev/en/stable/howto/named_parameters.html
 -- name: HistoryGetInclusive :many
-SELECT * FROM Histories
-WHERE type = ANY(sqlc.slice(types)::post_type[])
-	AND categories <@ sqlc.slice(categories)::text[]
-	AND OWNER LIKE sqlc.arg(owner)::text
+SELECT *
+FROM Histories
+WHERE type = ANY (sqlc.slice(types)::post_type [])
+	AND categories <@ sqlc.slice(categories)::text []
+	AND post_owner LIKE sqlc.arg(post_owner)::text
 	AND username = sqlc.arg(username)::text
-limit sqlc.arg(page_size)::int offset sqlc.arg(page)::int;
+LIMIT sqlc.arg(page_size)::int OFFSET sqlc.arg(page)::int;
 
 -- name: HistoryGetExclusive :many
-SELECT * FROM Histories
-WHERE type = ANY(sqlc.slice(types)::post_type[])
-	AND categories = sqlc.slice(categories)::text[]
-	AND OWNER LIKE sqlc.arg(owner)::text
+SELECT *
+FROM Histories
+WHERE type = ANY (sqlc.slice(types)::post_type [])
+	AND categories = sqlc.slice(categories)::text []
+	AND post_owner LIKE sqlc.arg(post_owner)::text
 	AND username = sqlc.arg(username)::text
-limit sqlc.arg(page_size)::int offset sqlc.arg(page)::int;
+LIMIT sqlc.arg(page_size)::int OFFSET sqlc.arg(page)::int;
 
 -- name: HistoryRemove :exec
 DELETE FROM Histories
 WHERE type = sqlc.arg(type)::post_type
-	AND owner = sqlc.arg(owner)::text
+	AND post_owner = sqlc.arg(post_owner)::text
 	AND post = sqlc.arg(post)::text
 	AND username = sqlc.arg(username)::text;

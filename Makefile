@@ -30,10 +30,6 @@ completion:
 	go run ./cli completion zsh > raker.zsh
 	go run ./cli completion powershell > raker.ps1
 
-manual:
-	go run ./utils/replace raker.1 -b "vVERSION" -a "$(VERSION)"
-	go run ./utils/replace raker.1 -b "DATE" -a "$(shell go run ./utils/date)"
-
 clean:
 	rm -rf raker raker-server bin dist raker.bash raker.fish raker.zsh raker.ps1
 	go clean -testcache -cache

@@ -3,5 +3,17 @@
 		"bson",
 		"chromedp",
 		"VSCO"
+	],
+	"sqltools.connections": [
+		{
+			"ssh": "Disabled",
+			"previewLimit": 50,
+			"server": "rpi4b12",
+			"port": 5432,
+			"driver": "PostgreSQL",
+			"name": "raker",
+			"database": "raker",
+			"username": "applegamer22"
+		}
 	]
 }

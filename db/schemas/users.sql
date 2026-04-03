@@ -4,5 +4,5 @@ CREATE TABLE Users (
 	instagram_session_id TEXT NOT NULL,
 	instagram_user_id TEXT NOT NULL,
 	network network_type NOT NULL,
-	categories TEXT[]
+	categories TEXT []
 );
