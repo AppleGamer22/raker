@@ -24,7 +24,7 @@ func (instagram *Instagram) Reels(id string, highlight bool) (URLs []string, use
 	}
 	request.URL.RawQuery = query.Encode()
 
-	request.AddCookie(&instagram.fbsrCookie)
+	// request.AddCookie(&instagram.fbsrCookie)
 	request.AddCookie(&instagram.sessionCookie)
 	request.AddCookie(&instagram.userCookie)
 	request.Header.Add("x-ig-app-id", "936619743392459")
@@ -59,7 +59,7 @@ func (instagram *Instagram) userID(username string) (string, error) {
 	query.Add("username", username)
 	request.URL.RawQuery = query.Encode()
 
-	request.AddCookie(&instagram.fbsrCookie)
+	// request.AddCookie(&instagram.fbsrCookie)
 	request.AddCookie(&instagram.sessionCookie)
 	request.AddCookie(&instagram.userCookie)
 	request.Header.Add("x-ig-app-id", "936619743392459")
