@@ -391,8 +391,9 @@ WHERE post_type = ANY ($1::post_type [])
 			and categories <@ $3::text []
 		)
 	)
-	AND post_owner LIKE $4::text
+	AND post_owner LIKE FORMAT('%%%s%%', $4::text)
 	AND username = $5::text
+order by post_date DESC
 LIMIT $7::int OFFSET $6::int
 `
 

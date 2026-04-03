@@ -7,7 +7,6 @@ import (
 
 	"github.com/AppleGamer22/raker/server/authenticator"
 	"github.com/AppleGamer22/raker/server/db"
-	"github.com/AppleGamer22/raker/shared/types"
 	"github.com/go-webauthn/webauthn/webauthn"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -138,15 +137,23 @@ type HistoriesDisplay struct {
 	Error      error
 }
 
-func (historiesDisplay HistoriesDisplay) Query(value string) template.URL {
+func (historiesDisplay HistoriesDisplay) Query(value interface{}) template.URL {
+	queryValue := ""
+	switch value := value.(type) {
+	case string:
+		queryValue = value
+	case db.PostType:
+		queryValue = string(value)
+	}
+
 	query := url.Values{}
-	if !types.ValidMediaType(value) {
-		query.Set("owner", value)
+	if !db.PostType(queryValue).Valid() {
+		query.Set("owner", queryValue)
 		for mediaType := range historiesDisplay.Types {
 			query.Set(mediaType, mediaType)
 		}
 	} else {
-		query.Set(value, value)
+		query.Set(queryValue, queryValue)
 	}
 	if historiesDisplay.Exclusive {
 		query.Set("exclusive", "exclusive")

@@ -196,7 +196,7 @@
 									<a href="/find/{{.PostType}}?owner={{.PostOwner}}&post={{.Post}}" target="_blank">{{.Post}}</a>
 									<span class="date">
 										<br>
-										{{date .Date}}
+										{{date .PostDate}}
 										<br>
 									</span>
 									<span class="categories">
@@ -222,17 +222,17 @@
 											{{range $iii, $url := .Files}}
 												<div class="carousel-item{{if eq $iii 0}} active{{end}}">
 													{{if (isImagePath .)}}
-														{{if eq ($history.Type) "vsco"}}
-															<a href="/api/exif/{{$history.U_ID}}/{{$history.PostType}}/{{$history.PostOwner}}/{{$url}}" target="_blank">
-																<img class="d-block w-100" src="/api/storage/{{$history.U_ID}}/{{$history.PostType}}/{{$history.PostOwner}}/{{$url}}" loading="lazy">
+														{{if eq ($history.PostType) "vsco"}}
+															<a href="/api/exif/{{$history.Username}}/{{$history.PostType}}/{{$history.PostOwner}}/{{$url}}" target="_blank">
+																<img class="d-block w-100" src="/api/storage/{{$history.Username}}/{{$history.PostType}}/{{$history.PostOwner}}/{{$url}}" loading="lazy">
 															</a>
 														{{else}}
-															<img class="d-block w-100" src="/api/storage/{{$history.U_ID}}/{{$history.PostType}}/{{$history.PostOwner}}/{{$url}}" loading="lazy">
+															<img class="d-block w-100" src="/api/storage/{{$history.Username}}/{{$history.PostType}}/{{$history.PostOwner}}/{{$url}}" loading="lazy">
 														{{end}}
 													{{else if (isVideoPath .)}}
-														<video class="d-block w-100" src="/api/storage/{{$history.U_ID}}/{{$history.PostType}}/{{$history.PostOwner}}/{{$url}}" preload="metadata" muted controls loop></video>
+														<video class="d-block w-100" src="/api/storage/{{$history.Username}}/{{$history.PostType}}/{{$history.PostOwner}}/{{$url}}" preload="metadata" muted controls loop></video>
 													{{else}}
-														<a href="/api/storage/{{$history.U_ID}}/{{$history.PostType}}/{{$history.PostOwner}}/{{$url}}">{{$url}}</a>
+														<a href="/api/storage/{{$history.Username}}/{{$history.PostType}}/{{$history.PostOwner}}/{{$url}}">{{$url}}</a>
 													{{end}}
 												</div>
 											{{end}}

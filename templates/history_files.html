@@ -3,7 +3,7 @@
 		<ul class="list-group">
 			<li class="list-group-item">
 				<h6>
-					<a href="/api/storage/{{$.U_ID}}/{{$.PostType}}/{{$.PostOwner}}/{{.}}" target="_blank" rel="noopener noreferrer">{{base $v}}</a>
+					<a href="/api/storage/{{$.Username}}/{{$.PostType}}/{{$.PostOwner}}/{{.}}" target="_blank" rel="noopener noreferrer">{{base $v}}</a>
 				</h6>
 				<form hx-delete="/api/history?media={{$.PostType}}&post={{$.Post}}&owner={{$.PostOwner}}&remove={{$v}}" hx-target="#result">
 					<button type="button" class="btn btn-secondary" data-bs-toggle="collapse" data-bs-target="#collapse{{$i}}">Show/Hide</button>
@@ -12,17 +12,17 @@
 				<div class="collapse" id="collapse{{$i}}">
 					<br>
 					{{if (isImagePath $v)}}
-						{{if eq ($.Type) "vsco"}}
-							<a href="/api/exif/{{$.U_ID}}/{{$.PostType}}/{{$.PostOwner}}/{{.}}" target="_blank">
-								<img src="/api/storage/{{$.U_ID}}/{{$.PostType}}/{{$.PostOwner}}/{{.}}" loading="lazy">
+						{{if eq ($.PostType) "vsco"}}
+							<a href="/api/exif/{{$.Username}}/{{$.PostType}}/{{$.PostOwner}}/{{.}}" target="_blank">
+								<img src="/api/storage/{{$.Username}}/{{$.PostType}}/{{$.PostOwner}}/{{.}}" loading="lazy">
 							</a>
 						{{else}}
-							<img src="/api/storage/{{$.U_ID}}/{{$.PostType}}/{{$.PostOwner}}/{{.}}" loading="lazy">
+							<img src="/api/storage/{{$.Username}}/{{$.PostType}}/{{$.PostOwner}}/{{.}}" loading="lazy">
 						{{end}}
 					{{else if (isVideoPath $v)}}
-						<video src="/api/storage/{{$.U_ID}}/{{$.PostType}}/{{$.PostOwner}}/{{.}}" preload="metadata" muted controls loop></video>
+						<video src="/api/storage/{{$.Username}}/{{$.PostType}}/{{$.PostOwner}}/{{.}}" preload="metadata" muted controls loop></video>
 					{{else}}
-						<a href="/api/storage/{{$.U_ID}}/{{$.PostType}}/{{$.PostOwner}}/{{.}}">{{.}}</a>
+						<a href="/api/storage/{{$.Username}}/{{$.PostType}}/{{$.PostOwner}}/{{.}}">{{.}}</a>
 					{{end}}
 				</div>
 			</li>
