@@ -24,6 +24,9 @@ func New(db DBTX) *Queries {
 func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	q := Queries{db: db}
 	var err error
+	if q.historiesCategoryRenameStmt, err = db.PrepareContext(ctx, historiesCategoryRename); err != nil {
+		return nil, fmt.Errorf("error preparing query HistoriesCategoryRename: %w", err)
+	}
 	if q.historyAddStmt, err = db.PrepareContext(ctx, historyAdd); err != nil {
 		return nil, fmt.Errorf("error preparing query HistoryAdd: %w", err)
 	}
@@ -86,6 +89,11 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 
 func (q *Queries) Close() error {
 	var err error
+	if q.historiesCategoryRenameStmt != nil {
+		if cerr := q.historiesCategoryRenameStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing historiesCategoryRenameStmt: %w", cerr)
+		}
+	}
 	if q.historyAddStmt != nil {
 		if cerr := q.historyAddStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing historyAddStmt: %w", cerr)
@@ -220,6 +228,7 @@ func (q *Queries) queryRow(ctx context.Context, stmt *sql.Stmt, query string, ar
 type Queries struct {
 	db                             DBTX
 	tx                             *sql.Tx
+	historiesCategoryRenameStmt    *sql.Stmt
 	historyAddStmt                 *sql.Stmt
 	historyAddFromArchiveStmt      *sql.Stmt
 	historyCountStmt               *sql.Stmt
@@ -245,6 +254,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 	return &Queries{
 		db:                             tx,
 		tx:                             tx,
+		historiesCategoryRenameStmt:    q.historiesCategoryRenameStmt,
 		historyAddStmt:                 q.historyAddStmt,
 		historyAddFromArchiveStmt:      q.historyAddFromArchiveStmt,
 		historyCountStmt:               q.historyCountStmt,

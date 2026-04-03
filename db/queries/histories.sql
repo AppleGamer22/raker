@@ -62,6 +62,24 @@ WHERE post = sqlc.arg(post_type)::post_type
 	AND post_owner = sqlc.arg(new_owner)::text
 	AND username = sqlc.arg(username)::text;
 
+-- name: HistoriesCategoryRename :exec
+UPDATE Histories
+SET categories = (
+		SELECT array_agg(
+				c
+				ORDER BY c
+			)
+		FROM unnest(
+				array_replace(
+					categories,
+					sqlc.arg(old_category)::text,
+					sqlc.arg(new_category)::text
+				)
+			) AS c
+	)
+WHERE username = sqlc.arg(username)::text
+	AND sqlc.arg(old_category)::text = ANY(categories);
+
 -- name: HistoryGet :one
 SELECT *
 FROM Histories

@@ -5,11 +5,8 @@ import (
 	"net/http"
 
 	"github.com/AppleGamer22/raker/server/cleaner"
-	db "github.com/AppleGamer22/raker/server/db/mongo"
+	"github.com/AppleGamer22/raker/server/db"
 	"github.com/charmbracelet/log"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func (server *RakerServer) Categories(writer http.ResponseWriter, request *http.Request) {
@@ -20,68 +17,52 @@ func (server *RakerServer) Categories(writer http.ResponseWriter, request *http.
 		return
 	}
 
+	ctx := context.Background()
+
 	for _, category := range user.Categories {
 		editedCategory := cleaner.Line(request.Form.Get(category))
-		filter := bson.M{
-			"$or": bson.A{
-				bson.M{
-					"_id": user.ID,
-				},
-				bson.M{
-					"U_ID": user.Username,
-				},
-			},
-		}
-		operations := []mongo.WriteModel{}
+
 		switch editedCategory {
 		case "":
 			continue
 		case http.MethodDelete:
-			updateOperation := mongo.NewUpdateManyModel()
-			filter["categories"] = category
-			updateOperation.SetFilter(filter)
-			updateOperation.SetUpdate(bson.M{
-				"$pull": bson.M{
-					"categories": category,
-				},
-			})
-			operations = append(operations, updateOperation)
+			if err := server.DBClient.UserCategoryRemove(ctx, db.UserCategoryRemoveParams{
+				Username: user.Username,
+				Category: category,
+			}); err != nil {
+				log.Error(err, "category", category)
+				http.Error(writer, err.Error(), http.StatusInternalServerError)
+				return
+			}
 		default:
-			updateOperation := mongo.NewUpdateOneModel()
-			filter["categories"] = category
-			updateOperation.SetFilter(filter)
-			updateOperation.SetUpdate(bson.M{
-				"$set": bson.M{
-					"categories.$": editedCategory,
-				},
-			})
-			operations = append(operations, updateOperation)
+			// Rename: update all user's histories with the old category, then update user's list
+			if err := server.DBClient.HistoriesCategoryRename(ctx, db.HistoriesCategoryRenameParams{
+				Username:    user.Username,
+				OldCategory: category,
+				NewCategory: editedCategory,
+			}); err != nil {
+				log.Error(err, "category", category, "renamed", editedCategory)
+				http.Error(writer, err.Error(), http.StatusInternalServerError)
+				return
+			}
 
-			sortOperation := mongo.NewUpdateManyModel()
-			filter["categories"] = editedCategory
-			sortOperation.SetFilter(filter)
-			sortOperation.SetUpdate(bson.M{
-				"$push": bson.M{
-					"$each": bson.A{},
-					"$sort": 1,
-				},
-			})
-			operations = append(operations, sortOperation)
-		}
+			if err := server.DBClient.UserCategoryRemove(ctx, db.UserCategoryRemoveParams{
+				Username: user.Username,
+				Category: category,
+			}); err != nil {
+				log.Error(err, "category", category, "removed")
+				http.Error(writer, err.Error(), http.StatusInternalServerError)
+				return
+			}
 
-		bulkOptions := options.BulkWriteOptions{}
-		bulkOptions.SetOrdered(true)
-
-		if _, err := server.Histories.BulkWrite(context.Background(), operations, &bulkOptions); err != nil {
-			log.Error(err, "category", category, "edited", editedCategory)
-			http.Error(writer, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		if _, err := server.Users.BulkWrite(context.Background(), operations, &bulkOptions); err != nil {
-			log.Error(err, "category", category, "edited", editedCategory)
-			http.Error(writer, err.Error(), http.StatusInternalServerError)
-			return
+			if err := server.DBClient.UserCategoryAdd(ctx, db.UserCategoryAddParams{
+				Username: user.Username,
+				Category: editedCategory,
+			}); err != nil {
+				log.Error(err, "category", editedCategory, "added")
+				http.Error(writer, err.Error(), http.StatusInternalServerError)
+				return
+			}
 		}
 	}
 

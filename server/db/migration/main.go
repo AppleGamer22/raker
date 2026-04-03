@@ -73,8 +73,9 @@ func histories(ctx context.Context, pgdb *db.Queries) {
 		}
 		// fmt.Printf("Read history %+v\n", history)
 		_, err := pgdb.HistoryGet(ctx, db.HistoryGetParams{
-			Type: db.PostType(history.Type),
-			Post: history.Post,
+			Post:     history.Post,
+			Username: "",
+			PostType: db.PostType(history.Post),
 		})
 		// skip if already inserted
 		if err == nil {

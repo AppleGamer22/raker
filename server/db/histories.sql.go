@@ -12,6 +12,36 @@ import (
 	"github.com/lib/pq"
 )
 
+const historiesCategoryRename = `-- name: HistoriesCategoryRename :exec
+UPDATE Histories
+SET categories = (
+		SELECT array_agg(
+				c
+				ORDER BY c
+			)
+		FROM unnest(
+				array_replace(
+					categories,
+					$1::text,
+					$2::text
+				)
+			) AS c
+	)
+WHERE username = $3::text
+	AND $1::text = ANY(categories)
+`
+
+type HistoriesCategoryRenameParams struct {
+	OldCategory string `json:"old_category"`
+	NewCategory string `json:"new_category"`
+	Username    string `json:"username"`
+}
+
+func (q *Queries) HistoriesCategoryRename(ctx context.Context, arg HistoriesCategoryRenameParams) error {
+	_, err := q.exec(ctx, q.historiesCategoryRenameStmt, historiesCategoryRename, arg.OldCategory, arg.NewCategory, arg.Username)
+	return err
+}
+
 const historyAdd = `-- name: HistoryAdd :one
 INSERT INTO Histories(
 		username,

@@ -9,6 +9,7 @@ import (
 )
 
 type Querier interface {
+	HistoriesCategoryRename(ctx context.Context, arg HistoriesCategoryRenameParams) error
 	HistoryAdd(ctx context.Context, arg HistoryAddParams) (History, error)
 	HistoryAddFromArchive(ctx context.Context, arg HistoryAddFromArchiveParams) (History, error)
 	HistoryCount(ctx context.Context) (int64, error)
