@@ -2,7 +2,7 @@
 <html lang="en">
 
 	<head>
-		<title>raker/{{.Type}}/{{.Post}}</title>
+		<title>raker/{{.PostType}}/{{.Post}}</title>
 		<meta charset="utf-8">
 		<meta name="author" content="AppleGamer22">
 		<meta name="viewport" content="viewport-fit=cover, width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0">
@@ -58,7 +58,7 @@
 							<li class="nav-item">
 								<a class="nav-link" href="/">Authentication</a>
 							</li>
-							{{if eq .Type "instagram"}}
+							{{if eq .PostType "instagram"}}
 								<li class="nav-item">
 									<a class="nav-link disabled" href="/find/instagram">Instagram Post</a>
 								</li>
@@ -67,7 +67,7 @@
 									<a class="nav-link" href="/find/instagram">Instagram Post</a>
 								</li>
 							{{end}}
-							{{if eq .Type "highlight"}}
+							{{if eq .PostType "highlight"}}
 								<li class="nav-item">
 									<a class="nav-link disabled" href="/find/highlight">Instagram Highlight</a>
 								</li>
@@ -76,7 +76,7 @@
 									<a class="nav-link" href="/find/highlight">Instagram Highlight</a>
 								</li>
 							{{end}}
-							{{if eq .Type "story"}}
+							{{if eq .PostType "story"}}
 								<li class="nav-item">
 									<a class="nav-link disabled" href="/find/story">Instagram Story</a>
 								</li>
@@ -85,7 +85,7 @@
 									<a class="nav-link" href="/find/story">Instagram Story</a>
 								</li>
 							{{end}}
-							{{if eq .Type "tiktok"}}
+							{{if eq .PostType "tiktok"}}
 								<li class="nav-item">
 									<a class="nav-link disabled" href="/find/tiktok">TikTok Post</a>
 								</li>
@@ -94,7 +94,7 @@
 									<a class="nav-link" href="/find/tiktok">TikTok Post</a>
 								</li>
 							{{end}}
-							{{if eq .Type "vsco"}}
+							{{if eq .PostType "vsco"}}
 								<li class="nav-item">
 									<a class="nav-link disabled" href="/find/vsco">VSCO Post</a>
 								</li>
@@ -112,12 +112,12 @@
 			</nav>
 		</header>
 		<main>
-			<form hx-get="/find/{{.Type}}/htmx" hx-target="#result">
-				{{if eq .Type "instagram"}}
-					{{if .Owner}}
+			<form hx-get="/find/{{.PostType}}/htmx" hx-target="#result">
+				{{if eq .PostType "instagram"}}
+					{{if .PostOwner}}
 						<div class="mb-3">
 							<label class="form-label">owner</label>
-							<input type="text" value="{{.Owner}}" class="form-control" disabled>
+							<input type="text" value="{{.PostOwner}}" class="form-control" disabled>
 						</div>
 					{{end}}
 					<div class="mb-3">
@@ -133,11 +133,11 @@
 						</li>
 					</ul>
 				{{end}}
-				{{if eq .Type "highlight"}}
-					{{if .Owner}}
+				{{if eq .PostType "highlight"}}
+					{{if .PostOwner}}
 						<div class="mb-3">
 							<label class="form-label">owner</label>
-							<input type="text" value="{{.Owner}}" class="form-control" disabled>
+							<input type="text" value="{{.PostOwner}}" class="form-control" disabled>
 						</div>
 					{{end}}
 					<div class="mb-3">
@@ -145,7 +145,7 @@
 						<input type="text" value="{{.Post}}" class="form-control" id="post" name="post" placeholder="https://www.instagram.com/stories/find/highlights/ID" spellcheck="false">
 					</div>
 				{{end}}
-				{{if eq .Type "story"}}
+				{{if eq .PostType "story"}}
 					{{if .Post}}
 						<div class="mb-3">
 							<label for="id" class="form-label">history ID</label>
@@ -154,13 +154,13 @@
 					{{end}}
 					<div class="mb-3">
 						<label for="owner" class="form-label">owner</label>
-						<input type="text" value="{{.Owner}}" class="form-control" id="owner" name="owner" placeholder="https://www.instagram.com/stories/OWNER" spellcheck="false">
+						<input type="text" value="{{.PostOwner}}" class="form-control" id="owner" name="owner" placeholder="https://www.instagram.com/stories/OWNER" spellcheck="false">
 					</div>
 				{{end}}
-				{{if eq .Type "tiktok"}}
+				{{if eq .PostType "tiktok"}}
 					<div class="mb-3">
 						<label for="owner" class="form-label">owner</label>
-						<input type="text" value="{{.Owner}}" class="form-control" id="owner" name="owner" placeholder="https://tiktok.com/@OWNER/video/id" spellcheck="false">
+						<input type="text" value="{{.PostOwner}}" class="form-control" id="owner" name="owner" placeholder="https://tiktok.com/@OWNER/video/id" spellcheck="false">
 					</div>
 					<div class="mb-3">
 						<label for="post" class="form-label">post ID</label>
@@ -175,10 +175,10 @@
 						</li>
 					</ul>
 				{{end}}
-				{{if eq .Type "vsco"}}
+				{{if eq .PostType "vsco"}}
 					<div class="mb-3">
 						<label for="owner" class="form-label">owner</label>
-						<input type="text" value="{{.Owner}}" class="form-control" id="owner" name="owner" placeholder="https://vsco.co/OWNER/media/id" spellcheck="false">
+						<input type="text" value="{{.PostOwner}}" class="form-control" id="owner" name="owner" placeholder="https://vsco.co/OWNER/media/id" spellcheck="false">
 					</div>
 					<div class="mb-3">
 						<label for="post" class="form-label">post ID</label>

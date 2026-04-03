@@ -139,6 +139,7 @@ func (server *RakerServer) filterHistories(user db.User, owner string, categorie
 	if err != nil {
 		return [][]db.History{}, 0, 0, 0, err
 	}
+	fmt.Println(histories)
 
 	matrix := make([][]db.History, 0, int(math.Ceil(float64(len(histories))/3.0)))
 	for i := 0; i < len(histories); i += 3 {
@@ -265,7 +266,7 @@ func (server *RakerServer) HistoryPage(writer http.ResponseWriter, request *http
 	}
 
 	historiesDisplay := old.HistoriesDisplay{
-		Owner:      owner,
+		PostOwner:  owner,
 		Categories: user.SelectedCategories(categories),
 		Types:      db.SelectedMediaTypes(mediaTypes),
 		Histories:  histories,

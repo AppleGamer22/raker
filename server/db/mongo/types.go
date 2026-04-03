@@ -127,7 +127,7 @@ func (historyDisplay HistoryDisplay) HistoryQuery() template.URL {
 
 type HistoriesDisplay struct {
 	Histories  [][]db.History
-	Owner      string
+	PostOwner  string
 	Types      map[string]bool
 	Categories map[string]bool
 	Exclusive  bool

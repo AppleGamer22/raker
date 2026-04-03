@@ -152,7 +152,7 @@
 					</div>
 				</div>
 				<h4>Owner</h4>
-				<input type="text" value="{{.Owner}}" class="form-control" placeholder="owner" id="owner" name="owner" spellcheck="false">
+				<input type="text" value="{{.PostOwner}}" class="form-control" placeholder="owner" id="owner" name="owner" spellcheck="false">
 				<button type="submit" class="btn btn-primary w-100">Submit</button>
 				{{if gt .Count 0}}
 					<br><br>
@@ -189,11 +189,11 @@
 						<div class="row">
 							{{range $ii, $history := $row}}
 								<div class="col">
-									<a href="/history?{{$.Query .Type}}" target="_blank">{{.Type}}</a>
+									<a href="/history?{{$.Query .PostType}}" target="_blank">{{.PostType}}</a>
 									<span>/</span>
-									<a href="/history?{{$.Query .Owner}}" target="_blank">{{.Owner}}</a>
+									<a href="/history?{{$.Query .PostOwner}}" target="_blank">{{.PostOwner}}</a>
 									<span>/</span>
-									<a href="/find/{{.Type}}?owner={{.Owner}}&post={{.Post}}" target="_blank">{{.Post}}</a>
+									<a href="/find/{{.PostType}}?owner={{.PostOwner}}&post={{.Post}}" target="_blank">{{.Post}}</a>
 									<span class="date">
 										<br>
 										{{date .Date}}
@@ -207,9 +207,9 @@
 										{{end}}
 									</span>
 									<div id="carousel_{{.Post}}" class="carousel slide" data-bs-interval="false">
-										{{if gt (len .URLs) 1}}
+										{{if gt (len .Files) 1}}
 											<div class="carousel-indicators">
-												{{range $iii, $url := .URLs}}
+												{{range $iii, $url := .Files}}
 													{{if eq $iii 0}}
 														<button type="button" data-bs-target="#carousel_{{$history.Post}}" data-bs-slide-to="{{$iii}}" class="active"></button>
 													{{else}}
@@ -219,25 +219,25 @@
 											</div>
 										{{end}}
 										<div class="carousel-inner">
-											{{range $iii, $url := .URLs}}
+											{{range $iii, $url := .Files}}
 												<div class="carousel-item{{if eq $iii 0}} active{{end}}">
 													{{if (isImagePath .)}}
 														{{if eq ($history.Type) "vsco"}}
-															<a href="/api/exif/{{$history.U_ID}}/{{$history.Type}}/{{$history.Owner}}/{{$url}}" target="_blank">
-																<img class="d-block w-100" src="/api/storage/{{$history.U_ID}}/{{$history.Type}}/{{$history.Owner}}/{{$url}}" loading="lazy">
+															<a href="/api/exif/{{$history.U_ID}}/{{$history.PostType}}/{{$history.PostOwner}}/{{$url}}" target="_blank">
+																<img class="d-block w-100" src="/api/storage/{{$history.U_ID}}/{{$history.PostType}}/{{$history.PostOwner}}/{{$url}}" loading="lazy">
 															</a>
 														{{else}}
-															<img class="d-block w-100" src="/api/storage/{{$history.U_ID}}/{{$history.Type}}/{{$history.Owner}}/{{$url}}" loading="lazy">
+															<img class="d-block w-100" src="/api/storage/{{$history.U_ID}}/{{$history.PostType}}/{{$history.PostOwner}}/{{$url}}" loading="lazy">
 														{{end}}
 													{{else if (isVideoPath .)}}
-														<video class="d-block w-100" src="/api/storage/{{$history.U_ID}}/{{$history.Type}}/{{$history.Owner}}/{{$url}}" preload="metadata" muted controls loop></video>
+														<video class="d-block w-100" src="/api/storage/{{$history.U_ID}}/{{$history.PostType}}/{{$history.PostOwner}}/{{$url}}" preload="metadata" muted controls loop></video>
 													{{else}}
-														<a href="/api/storage/{{$history.U_ID}}/{{$history.Type}}/{{$history.Owner}}/{{$url}}">{{$url}}</a>
+														<a href="/api/storage/{{$history.U_ID}}/{{$history.PostType}}/{{$history.PostOwner}}/{{$url}}">{{$url}}</a>
 													{{end}}
 												</div>
 											{{end}}
 										</div>
-										{{if gt (len .URLs) 1}}
+										{{if gt (len .Files) 1}}
 											<button class="carousel-control-prev" type="button" data-bs-target="#carousel_{{.Post}}" data-bs-slide="prev">
 												<span class="carousel-control-prev-icon"></span>
 												<span class="visually-hidden">Previous</span>

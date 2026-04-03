@@ -1,11 +1,11 @@
 {{define "history_files.html"}}
-	{{range $i, $v := .URLs}}
+	{{range $i, $v := .Files}}
 		<ul class="list-group">
 			<li class="list-group-item">
 				<h6>
-					<a href="/api/storage/{{$.U_ID}}/{{$.Type}}/{{$.Owner}}/{{.}}" target="_blank" rel="noopener noreferrer">{{base $v}}</a>
+					<a href="/api/storage/{{$.U_ID}}/{{$.PostType}}/{{$.PostOwner}}/{{.}}" target="_blank" rel="noopener noreferrer">{{base $v}}</a>
 				</h6>
-				<form hx-delete="/api/history?media={{$.Type}}&post={{$.Post}}&owner={{$.Owner}}&remove={{$v}}" hx-target="#result">
+				<form hx-delete="/api/history?media={{$.PostType}}&post={{$.Post}}&owner={{$.PostOwner}}&remove={{$v}}" hx-target="#result">
 					<button type="button" class="btn btn-secondary" data-bs-toggle="collapse" data-bs-target="#collapse{{$i}}">Show/Hide</button>
 					<button type="submit" class="btn btn-danger delete">Delete</button>
 				</form>
@@ -13,16 +13,16 @@
 					<br>
 					{{if (isImagePath $v)}}
 						{{if eq ($.Type) "vsco"}}
-							<a href="/api/exif/{{$.U_ID}}/{{$.Type}}/{{$.Owner}}/{{.}}" target="_blank">
-								<img src="/api/storage/{{$.U_ID}}/{{$.Type}}/{{$.Owner}}/{{.}}" loading="lazy">
+							<a href="/api/exif/{{$.U_ID}}/{{$.PostType}}/{{$.PostOwner}}/{{.}}" target="_blank">
+								<img src="/api/storage/{{$.U_ID}}/{{$.PostType}}/{{$.PostOwner}}/{{.}}" loading="lazy">
 							</a>
 						{{else}}
-							<img src="/api/storage/{{$.U_ID}}/{{$.Type}}/{{$.Owner}}/{{.}}" loading="lazy">
+							<img src="/api/storage/{{$.U_ID}}/{{$.PostType}}/{{$.PostOwner}}/{{.}}" loading="lazy">
 						{{end}}
 					{{else if (isVideoPath $v)}}
-						<video src="/api/storage/{{$.U_ID}}/{{$.Type}}/{{$.Owner}}/{{.}}" preload="metadata" muted controls loop></video>
+						<video src="/api/storage/{{$.U_ID}}/{{$.PostType}}/{{$.PostOwner}}/{{.}}" preload="metadata" muted controls loop></video>
 					{{else}}
-						<a href="/api/storage/{{$.U_ID}}/{{$.Type}}/{{$.Owner}}/{{.}}">{{.}}</a>
+						<a href="/api/storage/{{$.U_ID}}/{{$.PostType}}/{{$.PostOwner}}/{{.}}">{{.}}</a>
 					{{end}}
 				</div>
 			</li>
