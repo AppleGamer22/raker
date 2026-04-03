@@ -33,8 +33,14 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.historyCountStmt, err = db.PrepareContext(ctx, historyCount); err != nil {
 		return nil, fmt.Errorf("error preparing query HistoryCount: %w", err)
 	}
+	if q.historyCountByFileStmt, err = db.PrepareContext(ctx, historyCountByFile); err != nil {
+		return nil, fmt.Errorf("error preparing query HistoryCountByFile: %w", err)
+	}
 	if q.historyGetStmt, err = db.PrepareContext(ctx, historyGet); err != nil {
 		return nil, fmt.Errorf("error preparing query HistoryGet: %w", err)
+	}
+	if q.historyGetByOwnerStmt, err = db.PrepareContext(ctx, historyGetByOwner); err != nil {
+		return nil, fmt.Errorf("error preparing query HistoryGetByOwner: %w", err)
 	}
 	if q.historyGetExclusiveStmt, err = db.PrepareContext(ctx, historyGetExclusive); err != nil {
 		return nil, fmt.Errorf("error preparing query HistoryGetExclusive: %w", err)
@@ -95,9 +101,19 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing historyCountStmt: %w", cerr)
 		}
 	}
+	if q.historyCountByFileStmt != nil {
+		if cerr := q.historyCountByFileStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing historyCountByFileStmt: %w", cerr)
+		}
+	}
 	if q.historyGetStmt != nil {
 		if cerr := q.historyGetStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing historyGetStmt: %w", cerr)
+		}
+	}
+	if q.historyGetByOwnerStmt != nil {
+		if cerr := q.historyGetByOwnerStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing historyGetByOwnerStmt: %w", cerr)
 		}
 	}
 	if q.historyGetExclusiveStmt != nil {
@@ -207,7 +223,9 @@ type Queries struct {
 	historyAddStmt                 *sql.Stmt
 	historyAddFromArchiveStmt      *sql.Stmt
 	historyCountStmt               *sql.Stmt
+	historyCountByFileStmt         *sql.Stmt
 	historyGetStmt                 *sql.Stmt
+	historyGetByOwnerStmt          *sql.Stmt
 	historyGetExclusiveStmt        *sql.Stmt
 	historyGetInclusiveStmt        *sql.Stmt
 	historyGetPageStmt             *sql.Stmt
@@ -230,7 +248,9 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		historyAddStmt:                 q.historyAddStmt,
 		historyAddFromArchiveStmt:      q.historyAddFromArchiveStmt,
 		historyCountStmt:               q.historyCountStmt,
+		historyCountByFileStmt:         q.historyCountByFileStmt,
 		historyGetStmt:                 q.historyGetStmt,
+		historyGetByOwnerStmt:          q.historyGetByOwnerStmt,
 		historyGetExclusiveStmt:        q.historyGetExclusiveStmt,
 		historyGetInclusiveStmt:        q.historyGetInclusiveStmt,
 		historyGetPageStmt:             q.historyGetPageStmt,

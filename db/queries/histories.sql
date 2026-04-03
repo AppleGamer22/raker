@@ -69,6 +69,22 @@ WHERE post_type = sqlc.arg(post_type)::post_type
 	AND post = sqlc.arg(post)::text
 	AND username = sqlc.arg(username)::text;
 
+-- name: HistoryGetByOwner :one
+SELECT *
+FROM Histories
+WHERE post_type = sqlc.arg(post_type)::post_type
+	AND post_owner = sqlc.arg(post_owner)::text
+	AND post = sqlc.arg(post)::text
+	AND username = sqlc.arg(username)::text;
+
+-- name: HistoryCountByFile :one
+SELECT count(*)
+FROM Histories
+WHERE post_type = sqlc.arg(post_type)::post_type
+	AND post_owner = sqlc.arg(post_owner)::text
+	AND sqlc.arg(file)::text = ANY(files)
+	AND username = sqlc.arg(username)::text;
+
 -- https://docs.sqlc.dev/en/stable/howto/select.html#passing-a-slice-as-a-parameter-to-a-query
 -- https://docs.sqlc.dev/en/stable/howto/named_parameters.html
 -- name: HistoryGetInclusive :many

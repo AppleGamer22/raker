@@ -5,16 +5,15 @@ import (
 	"net/http"
 	"net/url"
 	"path"
-	"time"
 
 	"github.com/AppleGamer22/raker/server/cleaner"
-	db "github.com/AppleGamer22/raker/server/db/mongo"
+	"github.com/AppleGamer22/raker/server/db"
+	old "github.com/AppleGamer22/raker/server/db/mongo"
 	"github.com/AppleGamer22/raker/shared"
 	"github.com/AppleGamer22/raker/shared/types"
 	"github.com/AppleGamer22/raker/templates"
 	"github.com/charmbracelet/log"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
+	"github.com/google/uuid"
 )
 
 func (server *RakerServer) story(request *http.Request) (db.User, db.History, []error) {
@@ -25,7 +24,7 @@ func (server *RakerServer) story(request *http.Request) (db.User, db.History, []
 	}
 
 	history := db.History{
-		Type: types.Story,
+		PostType: types.Story,
 	}
 
 	historyID := cleaner.Line(request.Form.Get("post"))
@@ -33,30 +32,25 @@ func (server *RakerServer) story(request *http.Request) (db.User, db.History, []
 	var errs []error
 
 	if historyID != "" {
-		filter := bson.M{
-			"post":  historyID,
-			"owner": owner,
-			"type":  types.Story,
-		}
-
-		if err := server.Histories.FindOne(context.Background(), filter).Decode(&history); err == nil {
+		retrievedHistory, err := server.DBClient.HistoryGetByOwner(context.Background(), db.HistoryGetByOwnerParams{
+			PostType:  db.PostTypeStory,
+			PostOwner: owner,
+			Post:      historyID,
+			Username:  user.Username,
+		})
+		if err == nil {
 			// history log already exists
-			return user, history, []error{}
+			return user, retrievedHistory, []error{}
 		}
 	} else if owner == "" {
 		// empty input results in empty response
 		return user, history, []error{}
 	}
 
-	instagram := shared.NewInstagram(user.Instagram.FBSR, user.Instagram.SessionID, user.Instagram.UserID)
+	instagram := shared.NewInstagram("", user.InstagramSessionID, user.InstagramUserID)
 	URLs, username, err := instagram.Reels(owner, false)
 	if err != nil {
 		return user, history, []error{err}
-	}
-
-	filter := bson.M{
-		"type":  types.Story,
-		"owner": username,
 	}
 
 	newURLs := make([]string, 0, len(URLs))
@@ -70,8 +64,13 @@ func (server *RakerServer) story(request *http.Request) (db.User, db.History, []
 		}
 
 		fileName := path.Base(URL.Path)
-		filter["urls"] = fileName
-		if count, err := server.Histories.CountDocuments(context.Background(), filter); err != nil || count > 0 {
+		count, err := server.DBClient.HistoryCountByFile(context.Background(), db.HistoryCountByFileParams{
+			PostType:  db.PostTypeStory,
+			PostOwner: username,
+			File:      fileName,
+			Username:  user.Username,
+		})
+		if err != nil || count > 0 {
 			continue
 		}
 
@@ -84,19 +83,20 @@ func (server *RakerServer) story(request *http.Request) (db.User, db.History, []
 	errs = append(errs, saveErrors...)
 
 	if len(localURLs) > 0 {
-		historyID = primitive.NewObjectID().Hex()
-		history = db.History{
-			ID:    historyID,
-			U_ID:  user.Username,
-			URLs:  localURLs,
-			Type:  types.Story,
-			Owner: username,
-			Post:  historyID,
-			Date:  time.Now(),
+		if historyID == "" {
+			historyID = uuid.NewString()
 		}
-
-		if _, err := server.Histories.InsertOne(context.Background(), history); err != nil {
+		addedHistory, err := server.DBClient.HistoryAdd(context.Background(), db.HistoryAddParams{
+			Username:  user.Username,
+			PostType:  db.PostTypeStory,
+			PostOwner: username,
+			Post:      historyID,
+			Files:     localURLs,
+		})
+		if err != nil {
 			errs = append(errs, err)
+		} else {
+			history = addedHistory
 		}
 	}
 
@@ -123,7 +123,7 @@ func (server *RakerServer) StoryResult(writer http.ResponseWriter, request *http
 			log.Error(err)
 		}
 	}
-	historyDisplay := db.HistoryDisplay{
+	historyDisplay := old.HistoryDisplay{
 		History:            history,
 		Errors:             errs,
 		SelectedCategories: user.SelectedCategories(history.Categories),

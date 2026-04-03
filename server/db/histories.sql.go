@@ -132,6 +132,34 @@ func (q *Queries) HistoryCount(ctx context.Context) (int64, error) {
 	return count, err
 }
 
+const historyCountByFile = `-- name: HistoryCountByFile :one
+SELECT count(*)
+FROM Histories
+WHERE post_type = $1::post_type
+	AND post_owner = $2::text
+	AND $3::text = ANY(files)
+	AND username = $4::text
+`
+
+type HistoryCountByFileParams struct {
+	PostType  PostType `json:"post_type"`
+	PostOwner string   `json:"post_owner"`
+	File      string   `json:"file"`
+	Username  string   `json:"username"`
+}
+
+func (q *Queries) HistoryCountByFile(ctx context.Context, arg HistoryCountByFileParams) (int64, error) {
+	row := q.queryRow(ctx, q.historyCountByFileStmt, historyCountByFile,
+		arg.PostType,
+		arg.PostOwner,
+		arg.File,
+		arg.Username,
+	)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const historyGet = `-- name: HistoryGet :one
 SELECT username, post_type, post_owner, post, post_date, files, categories
 FROM Histories
@@ -148,6 +176,42 @@ type HistoryGetParams struct {
 
 func (q *Queries) HistoryGet(ctx context.Context, arg HistoryGetParams) (History, error) {
 	row := q.queryRow(ctx, q.historyGetStmt, historyGet, arg.PostType, arg.Post, arg.Username)
+	var i History
+	err := row.Scan(
+		&i.Username,
+		&i.PostType,
+		&i.PostOwner,
+		&i.Post,
+		&i.PostDate,
+		pq.Array(&i.Files),
+		pq.Array(&i.Categories),
+	)
+	return i, err
+}
+
+const historyGetByOwner = `-- name: HistoryGetByOwner :one
+SELECT username, post_type, post_owner, post, post_date, files, categories
+FROM Histories
+WHERE post_type = $1::post_type
+	AND post_owner = $2::text
+	AND post = $3::text
+	AND username = $4::text
+`
+
+type HistoryGetByOwnerParams struct {
+	PostType  PostType `json:"post_type"`
+	PostOwner string   `json:"post_owner"`
+	Post      string   `json:"post"`
+	Username  string   `json:"username"`
+}
+
+func (q *Queries) HistoryGetByOwner(ctx context.Context, arg HistoryGetByOwnerParams) (History, error) {
+	row := q.queryRow(ctx, q.historyGetByOwnerStmt, historyGetByOwner,
+		arg.PostType,
+		arg.PostOwner,
+		arg.Post,
+		arg.Username,
+	)
 	var i History
 	err := row.Scan(
 		&i.Username,
