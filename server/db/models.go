@@ -137,7 +137,7 @@ type Owner struct {
 
 type User struct {
 	Username           string      `json:"username"`
-	Hash               string      `json:"hash"`
+	PasswordHash       string      `json:"password_hash"`
 	InstagramSessionID string      `json:"instagram_session_id"`
 	InstagramUserID    string      `json:"instagram_user_id"`
 	Network            NetworkType `json:"network"`

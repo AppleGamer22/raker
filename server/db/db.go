@@ -27,6 +27,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.historyAddStmt, err = db.PrepareContext(ctx, historyAdd); err != nil {
 		return nil, fmt.Errorf("error preparing query HistoryAdd: %w", err)
 	}
+	if q.historyAddFromArchiveStmt, err = db.PrepareContext(ctx, historyAddFromArchive); err != nil {
+		return nil, fmt.Errorf("error preparing query HistoryAddFromArchive: %w", err)
+	}
 	if q.historyGetStmt, err = db.PrepareContext(ctx, historyGet); err != nil {
 		return nil, fmt.Errorf("error preparing query HistoryGet: %w", err)
 	}
@@ -74,6 +77,11 @@ func (q *Queries) Close() error {
 	if q.historyAddStmt != nil {
 		if cerr := q.historyAddStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing historyAddStmt: %w", cerr)
+		}
+	}
+	if q.historyAddFromArchiveStmt != nil {
+		if cerr := q.historyAddFromArchiveStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing historyAddFromArchiveStmt: %w", cerr)
 		}
 	}
 	if q.historyGetStmt != nil {
@@ -181,6 +189,7 @@ type Queries struct {
 	db                             DBTX
 	tx                             *sql.Tx
 	historyAddStmt                 *sql.Stmt
+	historyAddFromArchiveStmt      *sql.Stmt
 	historyGetStmt                 *sql.Stmt
 	historyGetExclusiveStmt        *sql.Stmt
 	historyGetInclusiveStmt        *sql.Stmt
@@ -201,6 +210,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		db:                             tx,
 		tx:                             tx,
 		historyAddStmt:                 q.historyAddStmt,
+		historyAddFromArchiveStmt:      q.historyAddFromArchiveStmt,
 		historyGetStmt:                 q.historyGetStmt,
 		historyGetExclusiveStmt:        q.historyGetExclusiveStmt,
 		historyGetInclusiveStmt:        q.historyGetInclusiveStmt,

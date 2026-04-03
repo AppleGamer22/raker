@@ -41,24 +41,24 @@ var (
 
 type User struct {
 	ID          primitive.ObjectID    `bson:"_id" json:"-"`
-	Username    string                `bson:"username" json:"-"`
-	Hash        string                `bson:"hash" json:"-"`
+	Username    string                `bson:"username" json:"username"`
+	Hash        string                `bson:"hash" json:"hash"`
 	Credentials []webauthn.Credential `bson:"credentials" json:"-"`
 	Session     webauthn.SessionData  `bson:"session" json:"-"`
 	Instagram   struct {
 		FBSR      string `bson:"fbsr" json:"-"`
-		SessionID string `bson:"session_id" json:"-"`
-		UserID    string `bson:"user_id" json:"-"`
+		SessionID string `bson:"session_id" json:"session_id"`
+		UserID    string `bson:"user_id" json:"user_id"`
 		// AppID     string `bson:"app_id" json:"-"`
-	} `bson:"instagram" json:"-"`
+	} `bson:"instagram" json:"Instagram"`
 	TikTok struct {
 		SessionID      string `bson:"session_id" json:"-"`
 		SessionIDGuard string `bson:"session_id_guard" json:"-"`
 		ChainToken     string `bson:"chain_token" json:"-"`
 	} `bson:"tiktok" json:"-"`
 	Joined     time.Time `bson:"joined" json:"-"`
-	Network    string    `bson:"network" json:"-"`
-	Categories []string  `bson:"categories" json:"-"`
+	Network    string    `bson:"network" json:"network"`
+	Categories []string  `bson:"categories" json:"categories"`
 }
 
 type UserCategoryDisplay struct {

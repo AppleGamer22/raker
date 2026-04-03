@@ -1,7 +1,7 @@
 -- name: UserAdd :exec
 INSERT INTO Users (
 		username,
-		hash,
+		password_hash,
 		instagram_session_id,
 		instagram_user_id,
 		network,
@@ -9,7 +9,7 @@ INSERT INTO Users (
 	)
 VALUES (
 		sqlc.arg(username)::text,
-		sqlc.arg(hash)::text,
+		sqlc.arg(password_hash)::text,
 		sqlc.arg(instagram_session_id)::text,
 		sqlc.arg(instagram_user_id)::text,
 		'instagram',
@@ -24,7 +24,7 @@ where username = sqlc.arg(username)::text;
 
 -- name: UserUpdateHash :exec
 UPDATE Users
-SET hash = sqlc.arg(hash)::text
+SET password_hash = sqlc.arg(password_hash)::text
 where username = sqlc.arg(username)::text;
 
 -- name: UserCategoryAdd :exec

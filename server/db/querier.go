@@ -10,6 +10,7 @@ import (
 
 type Querier interface {
 	HistoryAdd(ctx context.Context, arg HistoryAddParams) (History, error)
+	HistoryAddFromArchive(ctx context.Context, arg HistoryAddFromArchiveParams) (History, error)
 	HistoryGet(ctx context.Context, arg HistoryGetParams) (History, error)
 	HistoryGetExclusive(ctx context.Context, arg HistoryGetExclusiveParams) ([]History, error)
 	// https://docs.sqlc.dev/en/stable/howto/select.html#passing-a-slice-as-a-parameter-to-a-query

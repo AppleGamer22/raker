@@ -7,6 +7,7 @@ package db
 
 import (
 	"context"
+	"time"
 
 	"github.com/lib/pq"
 )
@@ -48,6 +49,61 @@ func (q *Queries) HistoryAdd(ctx context.Context, arg HistoryAddParams) (History
 		arg.PostType,
 		arg.PostOwner,
 		arg.Post,
+		pq.Array(arg.Files),
+		pq.Array(arg.Categories),
+	)
+	var i History
+	err := row.Scan(
+		&i.Username,
+		&i.PostType,
+		&i.PostOwner,
+		&i.Post,
+		&i.PostDate,
+		pq.Array(&i.Files),
+		pq.Array(&i.Categories),
+	)
+	return i, err
+}
+
+const historyAddFromArchive = `-- name: HistoryAddFromArchive :one
+INSERT INTO Histories(
+		username,
+		post_type,
+		post_owner,
+		post,
+		post_date,
+		files,
+		categories
+	)
+VALUES (
+		$1::text,
+		$2::post_type,
+		$3::text,
+		$4::text,
+		$5::TIMESTAMPTZ,
+		$6::text [],
+		$7::text []
+	)
+RETURNING username, post_type, post_owner, post, post_date, files, categories
+`
+
+type HistoryAddFromArchiveParams struct {
+	Username   string    `json:"username"`
+	PostType   PostType  `json:"post_type"`
+	PostOwner  string    `json:"post_owner"`
+	Post       string    `json:"post"`
+	PostDate   time.Time `json:"post_date"`
+	Files      []string  `json:"files"`
+	Categories []string  `json:"categories"`
+}
+
+func (q *Queries) HistoryAddFromArchive(ctx context.Context, arg HistoryAddFromArchiveParams) (History, error) {
+	row := q.queryRow(ctx, q.historyAddFromArchiveStmt, historyAddFromArchive,
+		arg.Username,
+		arg.PostType,
+		arg.PostOwner,
+		arg.Post,
+		arg.PostDate,
 		pq.Array(arg.Files),
 		pq.Array(arg.Categories),
 	)

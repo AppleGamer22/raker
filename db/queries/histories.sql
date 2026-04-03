@@ -1,3 +1,24 @@
+-- name: HistoryAddFromArchive :one
+INSERT INTO Histories(
+		username,
+		post_type,
+		post_owner,
+		post,
+		post_date,
+		files,
+		categories
+	)
+VALUES (
+		sqlc.arg(username)::text,
+		sqlc.arg(post_type)::post_type,
+		sqlc.arg(post_owner)::text,
+		sqlc.arg(post)::text,
+		sqlc.arg(post_date)::TIMESTAMPTZ,
+		sqlc.arg(files)::text [],
+		sqlc.arg(categories)::text []
+	)
+RETURNING *;
+
 -- name: HistoryAdd :one
 INSERT INTO Histories(
 		username,

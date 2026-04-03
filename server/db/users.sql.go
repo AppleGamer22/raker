@@ -14,7 +14,7 @@ import (
 const userAdd = `-- name: UserAdd :exec
 INSERT INTO Users (
 		username,
-		hash,
+		password_hash,
 		instagram_session_id,
 		instagram_user_id,
 		network,
@@ -32,7 +32,7 @@ VALUES (
 
 type UserAddParams struct {
 	Username           string   `json:"username"`
-	Hash               string   `json:"hash"`
+	PasswordHash       string   `json:"password_hash"`
 	InstagramSessionID string   `json:"instagram_session_id"`
 	InstagramUserID    string   `json:"instagram_user_id"`
 	Categories         []string `json:"categories"`
@@ -41,7 +41,7 @@ type UserAddParams struct {
 func (q *Queries) UserAdd(ctx context.Context, arg UserAddParams) error {
 	_, err := q.exec(ctx, q.userAddStmt, userAdd,
 		arg.Username,
-		arg.Hash,
+		arg.PasswordHash,
 		arg.InstagramSessionID,
 		arg.InstagramUserID,
 		pq.Array(arg.Categories),
@@ -87,7 +87,7 @@ func (q *Queries) UserCategoryRemove(ctx context.Context, arg UserCategoryRemove
 }
 
 const userGet = `-- name: UserGet :one
-SELECT username, hash, instagram_session_id, instagram_user_id, network, categories
+SELECT username, password_hash, instagram_session_id, instagram_user_id, network, categories
 FROM Users
 WHERE username = $1::text
 `
@@ -97,7 +97,7 @@ func (q *Queries) UserGet(ctx context.Context, username string) (User, error) {
 	var i User
 	err := row.Scan(
 		&i.Username,
-		&i.Hash,
+		&i.PasswordHash,
 		&i.InstagramSessionID,
 		&i.InstagramUserID,
 		&i.Network,
@@ -108,17 +108,17 @@ func (q *Queries) UserGet(ctx context.Context, username string) (User, error) {
 
 const userUpdateHash = `-- name: UserUpdateHash :exec
 UPDATE Users
-SET hash = $1::text
+SET password_hash = $1::text
 where username = $2::text
 `
 
 type UserUpdateHashParams struct {
-	Hash     string `json:"hash"`
-	Username string `json:"username"`
+	PasswordHash string `json:"password_hash"`
+	Username     string `json:"username"`
 }
 
 func (q *Queries) UserUpdateHash(ctx context.Context, arg UserUpdateHashParams) error {
-	_, err := q.exec(ctx, q.userUpdateHashStmt, userUpdateHash, arg.Hash, arg.Username)
+	_, err := q.exec(ctx, q.userUpdateHashStmt, userUpdateHash, arg.PasswordHash, arg.Username)
 	return err
 }
 
