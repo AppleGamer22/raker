@@ -120,22 +120,34 @@ func (q *Queries) HistoryAddFromArchive(ctx context.Context, arg HistoryAddFromA
 	return i, err
 }
 
+const historyCount = `-- name: HistoryCount :one
+select count(*)
+from Histories
+`
+
+func (q *Queries) HistoryCount(ctx context.Context) (int64, error) {
+	row := q.queryRow(ctx, q.historyCountStmt, historyCount)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const historyGet = `-- name: HistoryGet :one
 SELECT username, post_type, post_owner, post, post_date, files, categories
 FROM Histories
-WHERE type = $1::post_type
+WHERE post_type = $1::post_type
 	AND post = $2::text
 	AND username = $3::text
 `
 
 type HistoryGetParams struct {
-	Type     PostType `json:"type"`
+	PostType PostType `json:"post_type"`
 	Post     string   `json:"post"`
 	Username string   `json:"username"`
 }
 
 func (q *Queries) HistoryGet(ctx context.Context, arg HistoryGetParams) (History, error) {
-	row := q.queryRow(ctx, q.historyGetStmt, historyGet, arg.Type, arg.Post, arg.Username)
+	row := q.queryRow(ctx, q.historyGetStmt, historyGet, arg.PostType, arg.Post, arg.Username)
 	var i History
 	err := row.Scan(
 		&i.Username,
@@ -152,7 +164,7 @@ func (q *Queries) HistoryGet(ctx context.Context, arg HistoryGetParams) (History
 const historyGetExclusive = `-- name: HistoryGetExclusive :many
 SELECT username, post_type, post_owner, post, post_date, files, categories
 FROM Histories
-WHERE type = ANY ($1::post_type [])
+WHERE post_type = ANY ($1::post_type [])
 	AND categories = $2::text []
 	AND post_owner LIKE $3::text
 	AND username = $4::text
@@ -160,7 +172,7 @@ LIMIT $6::int OFFSET $5::int
 `
 
 type HistoryGetExclusiveParams struct {
-	Types      []PostType `json:"types"`
+	PostTypes  []PostType `json:"post_types"`
 	Categories []string   `json:"categories"`
 	PostOwner  string     `json:"post_owner"`
 	Username   string     `json:"username"`
@@ -170,7 +182,7 @@ type HistoryGetExclusiveParams struct {
 
 func (q *Queries) HistoryGetExclusive(ctx context.Context, arg HistoryGetExclusiveParams) ([]History, error) {
 	rows, err := q.query(ctx, q.historyGetExclusiveStmt, historyGetExclusive,
-		pq.Array(arg.Types),
+		pq.Array(arg.PostTypes),
 		pq.Array(arg.Categories),
 		arg.PostOwner,
 		arg.Username,
@@ -209,7 +221,7 @@ func (q *Queries) HistoryGetExclusive(ctx context.Context, arg HistoryGetExclusi
 const historyGetInclusive = `-- name: HistoryGetInclusive :many
 SELECT username, post_type, post_owner, post, post_date, files, categories
 FROM Histories
-WHERE type = ANY ($1::post_type [])
+WHERE post_type = ANY ($1::post_type [])
 	AND categories <@ $2::text []
 	AND post_owner LIKE $3::text
 	AND username = $4::text
@@ -217,7 +229,7 @@ LIMIT $6::int OFFSET $5::int
 `
 
 type HistoryGetInclusiveParams struct {
-	Types      []PostType `json:"types"`
+	PostTypes  []PostType `json:"post_types"`
 	Categories []string   `json:"categories"`
 	PostOwner  string     `json:"post_owner"`
 	Username   string     `json:"username"`
@@ -229,7 +241,75 @@ type HistoryGetInclusiveParams struct {
 // https://docs.sqlc.dev/en/stable/howto/named_parameters.html
 func (q *Queries) HistoryGetInclusive(ctx context.Context, arg HistoryGetInclusiveParams) ([]History, error) {
 	rows, err := q.query(ctx, q.historyGetInclusiveStmt, historyGetInclusive,
-		pq.Array(arg.Types),
+		pq.Array(arg.PostTypes),
+		pq.Array(arg.Categories),
+		arg.PostOwner,
+		arg.Username,
+		arg.Page,
+		arg.PageSize,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []History
+	for rows.Next() {
+		var i History
+		if err := rows.Scan(
+			&i.Username,
+			&i.PostType,
+			&i.PostOwner,
+			&i.Post,
+			&i.PostDate,
+			pq.Array(&i.Files),
+			pq.Array(&i.Categories),
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const historyGetPage = `-- name: HistoryGetPage :many
+SELECT username, post_type, post_owner, post, post_date, files, categories
+FROM Histories
+WHERE post_type = ANY ($1::post_type [])
+	AND (
+		(
+			$2::boolean
+			and categories = $3::text []
+		)
+		or (
+			not $2::boolean
+			and categories <@ $3::text []
+		)
+	)
+	AND post_owner LIKE $4::text
+	AND username = $5::text
+LIMIT $7::int OFFSET $6::int
+`
+
+type HistoryGetPageParams struct {
+	PostTypes  []PostType `json:"post_types"`
+	Exclusive  bool       `json:"exclusive"`
+	Categories []string   `json:"categories"`
+	PostOwner  string     `json:"post_owner"`
+	Username   string     `json:"username"`
+	Page       int32      `json:"page"`
+	PageSize   int32      `json:"page_size"`
+}
+
+func (q *Queries) HistoryGetPage(ctx context.Context, arg HistoryGetPageParams) ([]History, error) {
+	rows, err := q.query(ctx, q.historyGetPageStmt, historyGetPage,
+		pq.Array(arg.PostTypes),
+		arg.Exclusive,
 		pq.Array(arg.Categories),
 		arg.PostOwner,
 		arg.Username,
@@ -325,7 +405,7 @@ WHERE post = $2::post_type
 
 type HistoryUpdateOwnerParams struct {
 	OldOwner string   `json:"old_owner"`
-	Type     PostType `json:"type"`
+	PostType PostType `json:"post_type"`
 	NewOwner string   `json:"new_owner"`
 	Username string   `json:"username"`
 }
@@ -333,7 +413,7 @@ type HistoryUpdateOwnerParams struct {
 func (q *Queries) HistoryUpdateOwner(ctx context.Context, arg HistoryUpdateOwnerParams) error {
 	_, err := q.exec(ctx, q.historyUpdateOwnerStmt, historyUpdateOwner,
 		arg.OldOwner,
-		arg.Type,
+		arg.PostType,
 		arg.NewOwner,
 		arg.Username,
 	)

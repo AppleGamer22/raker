@@ -17,9 +17,6 @@ import (
 	"github.com/AppleGamer22/raker/shared/types"
 	"github.com/AppleGamer22/raker/templates"
 	"github.com/charmbracelet/log"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func (server *RakerServer) History(writer http.ResponseWriter, request *http.Request) {
@@ -108,60 +105,7 @@ func (server *RakerServer) filterHistories(user db.User, owner string, categorie
 		}
 	}
 
-	filter := bson.M{"U_ID": user.Username}
-
-	if len(categories) != 0 {
-		equal := len(categories) == len(user.Categories)
-		if equal {
-			for i := 0; i < len(categories); i++ {
-				if categories[i] != user.Categories[i] {
-					equal = false
-					break
-				}
-			}
-		}
-		if exclusive {
-			sort.Strings(categories)
-			filter["categories"] = categories
-		} else {
-			if !equal {
-				filter["categories"] = bson.M{
-					"$in": categories,
-				}
-			}
-		}
-	} else {
-		filter["$or"] = bson.A{
-			bson.M{
-				"categories": bson.M{
-					"$size": 0,
-				},
-			},
-			bson.M{
-				"categories": bson.M{
-					"$exists": false,
-				},
-			},
-			bson.M{
-				"categories": nil,
-			},
-		}
-	}
-
-	if len(mediaTypes) > 0 {
-		filter["type"] = bson.M{
-			"$in": mediaTypes,
-		}
-	}
-
-	if owner != "" {
-		filter["owner"] = bson.M{"$regex": primitive.Regex{
-			Pattern: owner,
-			Options: "i",
-		}}
-	}
-
-	count, err := server.Histories.CountDocuments(context.Background(), filter)
+	count, err := server.DBClient.HistoryCount(context.Background())
 	if err != nil {
 		return [][]db.History{}, 0, 0, 0, err
 	}
@@ -174,32 +118,35 @@ func (server *RakerServer) filterHistories(user db.User, owner string, categorie
 		page = pages
 	}
 
-	paginationOptions := options.Find()
-	paginationOptions.SetSkip(int64((page - 1) * 30))
-	paginationOptions.SetLimit(int64(30))
-	paginationOptions.SetSort(bson.D{{Key: "date", Value: -1}})
+	if exclusive {
+		sort.Strings(categories)
+	}
 
-	cursor, err := server.Histories.Find(context.Background(), filter, paginationOptions)
+	postTypes := make([]db.PostType, 0, len(mediaTypes))
+	for _, mediaType := range mediaTypes {
+		postTypes = append(postTypes, db.PostType(mediaType))
+	}
+
+	histories, err := server.DBClient.HistoryGetPage(context.Background(), db.HistoryGetPageParams{
+		PostTypes:  postTypes,
+		Exclusive:  exclusive,
+		Categories: categories,
+		PostOwner:  owner,
+		Username:   user.Username,
+		Page:       int32((page - 1) * 30),
+		PageSize:   30,
+	})
 	if err != nil {
 		return [][]db.History{}, 0, 0, 0, err
 	}
-	defer cursor.Close(context.Background())
 
-	matrix := [][]db.History{}
-	row := make([]db.History, 0, 3)
-	for cursor.Next(context.Background()) {
-		if len(row) == 3 {
-			matrix = append(matrix, row)
-			row = make([]db.History, 0, 3)
+	matrix := make([][]db.History, 0, int(math.Ceil(float64(len(histories))/3.0)))
+	for i := 0; i < len(histories); i += 3 {
+		end := i + 3
+		if end > len(histories) {
+			end = len(histories)
 		}
-		var history db.History
-		if err = cursor.Decode(&history); err != nil {
-			break
-		}
-		row = append(row, history)
-	}
-	if len(row) > 0 {
-		matrix = append(matrix, row)
+		matrix = append(matrix, histories[i:end])
 	}
 
 	return matrix, page, pages, int(count), err

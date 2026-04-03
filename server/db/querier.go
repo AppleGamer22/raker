@@ -11,11 +11,13 @@ import (
 type Querier interface {
 	HistoryAdd(ctx context.Context, arg HistoryAddParams) (History, error)
 	HistoryAddFromArchive(ctx context.Context, arg HistoryAddFromArchiveParams) (History, error)
+	HistoryCount(ctx context.Context) (int64, error)
 	HistoryGet(ctx context.Context, arg HistoryGetParams) (History, error)
 	HistoryGetExclusive(ctx context.Context, arg HistoryGetExclusiveParams) ([]History, error)
 	// https://docs.sqlc.dev/en/stable/howto/select.html#passing-a-slice-as-a-parameter-to-a-query
 	// https://docs.sqlc.dev/en/stable/howto/named_parameters.html
 	HistoryGetInclusive(ctx context.Context, arg HistoryGetInclusiveParams) ([]History, error)
+	HistoryGetPage(ctx context.Context, arg HistoryGetPageParams) ([]History, error)
 	HistoryRemove(ctx context.Context, arg HistoryRemoveParams) error
 	HistoryUpdateCategories(ctx context.Context, arg HistoryUpdateCategoriesParams) error
 	HistoryUpdateOwner(ctx context.Context, arg HistoryUpdateOwnerParams) error

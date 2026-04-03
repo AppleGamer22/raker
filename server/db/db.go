@@ -30,6 +30,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.historyAddFromArchiveStmt, err = db.PrepareContext(ctx, historyAddFromArchive); err != nil {
 		return nil, fmt.Errorf("error preparing query HistoryAddFromArchive: %w", err)
 	}
+	if q.historyCountStmt, err = db.PrepareContext(ctx, historyCount); err != nil {
+		return nil, fmt.Errorf("error preparing query HistoryCount: %w", err)
+	}
 	if q.historyGetStmt, err = db.PrepareContext(ctx, historyGet); err != nil {
 		return nil, fmt.Errorf("error preparing query HistoryGet: %w", err)
 	}
@@ -38,6 +41,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	}
 	if q.historyGetInclusiveStmt, err = db.PrepareContext(ctx, historyGetInclusive); err != nil {
 		return nil, fmt.Errorf("error preparing query HistoryGetInclusive: %w", err)
+	}
+	if q.historyGetPageStmt, err = db.PrepareContext(ctx, historyGetPage); err != nil {
+		return nil, fmt.Errorf("error preparing query HistoryGetPage: %w", err)
 	}
 	if q.historyRemoveStmt, err = db.PrepareContext(ctx, historyRemove); err != nil {
 		return nil, fmt.Errorf("error preparing query HistoryRemove: %w", err)
@@ -84,6 +90,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing historyAddFromArchiveStmt: %w", cerr)
 		}
 	}
+	if q.historyCountStmt != nil {
+		if cerr := q.historyCountStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing historyCountStmt: %w", cerr)
+		}
+	}
 	if q.historyGetStmt != nil {
 		if cerr := q.historyGetStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing historyGetStmt: %w", cerr)
@@ -97,6 +108,11 @@ func (q *Queries) Close() error {
 	if q.historyGetInclusiveStmt != nil {
 		if cerr := q.historyGetInclusiveStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing historyGetInclusiveStmt: %w", cerr)
+		}
+	}
+	if q.historyGetPageStmt != nil {
+		if cerr := q.historyGetPageStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing historyGetPageStmt: %w", cerr)
 		}
 	}
 	if q.historyRemoveStmt != nil {
@@ -190,9 +206,11 @@ type Queries struct {
 	tx                             *sql.Tx
 	historyAddStmt                 *sql.Stmt
 	historyAddFromArchiveStmt      *sql.Stmt
+	historyCountStmt               *sql.Stmt
 	historyGetStmt                 *sql.Stmt
 	historyGetExclusiveStmt        *sql.Stmt
 	historyGetInclusiveStmt        *sql.Stmt
+	historyGetPageStmt             *sql.Stmt
 	historyRemoveStmt              *sql.Stmt
 	historyUpdateCategoriesStmt    *sql.Stmt
 	historyUpdateOwnerStmt         *sql.Stmt
@@ -211,9 +229,11 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		tx:                             tx,
 		historyAddStmt:                 q.historyAddStmt,
 		historyAddFromArchiveStmt:      q.historyAddFromArchiveStmt,
+		historyCountStmt:               q.historyCountStmt,
 		historyGetStmt:                 q.historyGetStmt,
 		historyGetExclusiveStmt:        q.historyGetExclusiveStmt,
 		historyGetInclusiveStmt:        q.historyGetInclusiveStmt,
+		historyGetPageStmt:             q.historyGetPageStmt,
 		historyRemoveStmt:              q.historyRemoveStmt,
 		historyUpdateCategoriesStmt:    q.historyUpdateCategoriesStmt,
 		historyUpdateOwnerStmt:         q.historyUpdateOwnerStmt,
