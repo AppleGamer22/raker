@@ -41,48 +41,23 @@ services:
     build: .
     environment:
       SECRET: a secret
-      URI: mongodb://database:27017
+      URI: "postgres://${USER}:postgres@postgres/raker?sslmode=prefer"
       DATABASE: raker
     ports:
       - 4100:4100
     volumes:
-      - /run/media/applegamer22/RPI4HDD/hdd1/.raker/storage:/raker/storage
+      - ./storage:/raker/storage
     depends_on:
       - database
-  database:
-      container_name: database
-      image: mongo:5.0.8
-      environment:
-        - PUID=1000
-        - PGID=1000
-      volumes:
-        - /run/media/applegamer22/RPI4HDD/hdd1/.raker/database/:/data/db
-      ports:
-        - 27017:27017
-  # migration is work in progress
-  # docker exec -it mariadb mariadb -u root -p
-  # mariadb:
-  #   container_name: mariadb
-  #   image: mariadb:11.7.2-ubi9
-  #   user: "1000"
-  #   ports:
-  #     - 3306:3306
-  #   volumes:
-  #     - ./mariadb:/var/lib/mysql:Z
-  #   environment:
-  #     TZ: Australia/Melbourne
-  #     MARIADB_ROOT_PASSWORD: mariadb
-  #     MARIADB_DATABASE: raker
-  #     MARIADB_USER: ${USER}
   # docker exec -it postgres psql -U $USER raker
   postgres:
     container_name: postgres
-    image: postgres:17.5-alpine3.22
+    image: postgres:18.3-alpine
     user: "1000"
     ports:
       - 5432:5432
     volumes:
-      - ./postgres:/var/lib/postgresql/data
+      - ./postgres:/var/lib/postgresql
       - /etc/passwd:/etc/passwd:ro
     environment:
       TZ: Australia/Melbourne
