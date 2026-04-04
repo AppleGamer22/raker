@@ -40,6 +40,7 @@ func (server *RakerServer) History(writer http.ResponseWriter, request *http.Req
 	sort.Strings(categories)
 
 	if media == "" || owner == "" || post == "" {
+		log.Error("media type, owner & post must be valid")
 		http.Error(writer, "media type, owner & post must be valid", http.StatusBadRequest)
 		return
 	}
@@ -105,7 +106,18 @@ func (server *RakerServer) filterHistories(user db.User, owner string, categorie
 		}
 	}
 
-	count, err := server.DBClient.HistoryCount(context.Background())
+	postTypes := make([]db.PostType, 0, len(mediaTypes))
+	for _, mediaType := range mediaTypes {
+		postTypes = append(postTypes, db.PostType(mediaType))
+	}
+
+	count, err := server.DBClient.HistoryCount(context.Background(), db.HistoryCountParams{
+		PostTypes:  postTypes,
+		Exclusive:  exclusive,
+		Categories: categories,
+		PostOwner:  owner,
+		Username:   user.Username,
+	})
 	if err != nil {
 		return [][]db.History{}, 0, 0, 0, err
 	}
@@ -120,11 +132,6 @@ func (server *RakerServer) filterHistories(user db.User, owner string, categorie
 
 	if exclusive {
 		sort.Strings(categories)
-	}
-
-	postTypes := make([]db.PostType, 0, len(mediaTypes))
-	for _, mediaType := range mediaTypes {
-		postTypes = append(postTypes, db.PostType(mediaType))
 	}
 
 	histories, err := server.DBClient.HistoryGetPage(context.Background(), db.HistoryGetPageParams{
@@ -154,10 +161,10 @@ func (server *RakerServer) filterHistories(user db.User, owner string, categorie
 
 func (server *RakerServer) editHistory(username, media, owner, post string, categories []string) (db.History, error) {
 
-	var history db.History
-	err := server.DBClient.HistoryUpdateCategories(context.Background(), db.HistoryUpdateCategoriesParams{
+	history, err := server.DBClient.HistoryUpdateCategories(context.Background(), db.HistoryUpdateCategoriesParams{
 		Categories: categories,
-		Type:       db.PostType(media),
+		PostType:   db.PostType(media),
+		PostOwner:  owner,
 		Post:       post,
 		Username:   username,
 	})
@@ -166,10 +173,11 @@ func (server *RakerServer) editHistory(username, media, owner, post string, cate
 
 func (server *RakerServer) deleteFileFromHistory(user db.User, owner, media, post, file string) (db.History, error) {
 	history, err := server.DBClient.UpdateHistoryRemoveFile(context.Background(), db.UpdateHistoryRemoveFileParams{
-		File:     file,
-		Type:     db.PostType(media),
-		Post:     post,
-		Username: user.Username,
+		File:      file,
+		PostType:  db.PostType(media),
+		PostOwner: owner,
+		Post:      post,
+		Username:  user.Username,
 	})
 	if err != nil {
 		return db.History{}, err
@@ -181,7 +189,7 @@ func (server *RakerServer) deleteFileFromHistory(user db.User, owner, media, pos
 
 	if len(history.Files) == 0 {
 		err := server.DBClient.HistoryRemove(context.Background(), db.HistoryRemoveParams{
-			Type:      db.PostType(media),
+			PostType:  db.PostType(media),
 			Post:      post,
 			Username:  user.Username,
 			PostOwner: owner,

@@ -16,6 +16,7 @@ dist/
 **/docker-compose.yml
 **/histories.json
 **/users.json
+**/__debug_bin*
 
 # Created by https://www.toptal.com/developers/gitignore/api/node
 # Edit at https://www.toptal.com/developers/gitignore?templates=node

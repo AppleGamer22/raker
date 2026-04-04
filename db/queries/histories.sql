@@ -40,26 +40,29 @@ VALUES (
 	)
 RETURNING *;
 
--- name: HistoryUpdateCategories :exec
+-- name: HistoryUpdateCategories :one
 UPDATE Histories
 SET categories = sqlc.slice(categories)::text []
-WHERE post = sqlc.arg(type)::post_type
+WHERE post_type = sqlc.arg(post_type)::post_type
 	AND post = sqlc.arg(post)::text
-	AND username = sqlc.arg(username)::text;
+	AND post_owner = sqlc.arg(post_owner)::text
+	AND username = sqlc.arg(username)::text
+RETURNING *;
 
 -- name: UpdateHistoryRemoveFile :one
 UPDATE Histories
 SET files = array_remove(files, sqlc.arg(file)::text)
-WHERE type = sqlc.arg(type)::post_type
+WHERE post_type = sqlc.arg(post_type)::post_type
 	AND post = sqlc.arg(post)::text
+	AND post_owner = sqlc.arg(post_owner)::text
 	AND username = sqlc.arg(username)::text
 RETURNING *;
 
 -- name: HistoryUpdateOwner :exec
 UPDATE Histories
-SET post_owner = sqlc.arg(old_owner)::text
-WHERE post = sqlc.arg(post_type)::post_type
-	AND post_owner = sqlc.arg(new_owner)::text
+SET post_owner = sqlc.arg(new_owner)::text
+WHERE post_type = sqlc.arg(post_type)::post_type
+	AND post_owner = sqlc.arg(old_owner)::text
 	AND username = sqlc.arg(username)::text;
 
 -- name: HistoriesCategoryRename :exec
@@ -144,11 +147,24 @@ LIMIT sqlc.arg(page_size)::int OFFSET sqlc.arg(page)::int;
 
 -- name: HistoryCount :one
 select count(*)
-from Histories;
+from Histories
+WHERE post_type = ANY (sqlc.slice(post_types)::post_type [])
+	AND (
+		(
+			sqlc.arg(exclusive)::boolean
+			and categories = sqlc.slice(categories)::text []
+		)
+		or (
+			not sqlc.arg(exclusive)::boolean
+			and categories <@ sqlc.slice(categories)::text []
+		)
+	)
+	AND post_owner LIKE FORMAT('%%%s%%', sqlc.arg(post_owner)::text)
+	AND username = sqlc.arg(username)::text;
 
 -- name: HistoryRemove :exec
 DELETE FROM Histories
-WHERE type = sqlc.arg(type)::post_type
+WHERE post_type = sqlc.arg(post_type)::post_type
 	AND post_owner = sqlc.arg(post_owner)::text
 	AND post = sqlc.arg(post)::text
 	AND username = sqlc.arg(username)::text;

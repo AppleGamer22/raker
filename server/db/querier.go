@@ -12,7 +12,7 @@ type Querier interface {
 	HistoriesCategoryRename(ctx context.Context, arg HistoriesCategoryRenameParams) error
 	HistoryAdd(ctx context.Context, arg HistoryAddParams) (History, error)
 	HistoryAddFromArchive(ctx context.Context, arg HistoryAddFromArchiveParams) (History, error)
-	HistoryCount(ctx context.Context) (int64, error)
+	HistoryCount(ctx context.Context, arg HistoryCountParams) (int64, error)
 	HistoryCountByFile(ctx context.Context, arg HistoryCountByFileParams) (int64, error)
 	HistoryGet(ctx context.Context, arg HistoryGetParams) (History, error)
 	HistoryGetByOwner(ctx context.Context, arg HistoryGetByOwnerParams) (History, error)
@@ -22,7 +22,7 @@ type Querier interface {
 	HistoryGetInclusive(ctx context.Context, arg HistoryGetInclusiveParams) ([]History, error)
 	HistoryGetPage(ctx context.Context, arg HistoryGetPageParams) ([]History, error)
 	HistoryRemove(ctx context.Context, arg HistoryRemoveParams) error
-	HistoryUpdateCategories(ctx context.Context, arg HistoryUpdateCategoriesParams) error
+	HistoryUpdateCategories(ctx context.Context, arg HistoryUpdateCategoriesParams) (History, error)
 	HistoryUpdateOwner(ctx context.Context, arg HistoryUpdateOwnerParams) error
 	UpdateHistoryRemoveFile(ctx context.Context, arg UpdateHistoryRemoveFileParams) (History, error)
 	UserAdd(ctx context.Context, arg UserAddParams) error
