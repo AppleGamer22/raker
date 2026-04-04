@@ -11,3 +11,7 @@ CREATE TABLE Histories (
 
 alter table Histories
 add column incognito boolean not null default false;
+
+alter table Histories
+alter column categories
+set not null;

@@ -70,11 +70,12 @@ func (server *RakerServer) vsco(request *http.Request) (db.User, db.History, []e
 
 			if len(localURLs) > 0 {
 				addedHistory, err := server.DBClient.HistoryAdd(context.Background(), db.HistoryAddParams{
-					Username:  user.Username,
-					PostType:  db.PostTypeVsco,
-					PostOwner: username,
-					Post:      post,
-					Files:     localURLs,
+					Username:   user.Username,
+					PostType:   db.PostTypeVsco,
+					PostOwner:  username,
+					Post:       post,
+					Files:      localURLs,
+					Categories: []string{},
 				})
 
 				if err != nil {

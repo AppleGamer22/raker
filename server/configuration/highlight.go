@@ -62,11 +62,12 @@ func (server *RakerServer) highlight(request *http.Request) (db.User, db.History
 
 			if len(localURLs) > 0 {
 				addedHistory, err := server.DBClient.HistoryAdd(context.Background(), db.HistoryAddParams{
-					Username:  user.Username,
-					PostType:  db.PostTypeHighlight,
-					PostOwner: username,
-					Post:      highlightID,
-					Files:     localURLs,
+					Username:   user.Username,
+					PostType:   db.PostTypeHighlight,
+					PostOwner:  username,
+					Post:       highlightID,
+					Files:      localURLs,
+					Categories: []string{},
 				})
 				if err != nil {
 					errs = append(errs, err)

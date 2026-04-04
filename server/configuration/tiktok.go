@@ -80,11 +80,12 @@ func (server *RakerServer) tiktok(request *http.Request) (db.User, db.History, [
 
 			if len(localURLs) > 0 {
 				addedHistory, err := server.DBClient.HistoryAdd(context.Background(), db.HistoryAddParams{
-					Username:  user.Username,
-					PostType:  db.PostTypeTiktok,
-					PostOwner: username,
-					Post:      post,
-					Files:     localURLs,
+					Username:   user.Username,
+					PostType:   db.PostTypeTiktok,
+					PostOwner:  username,
+					Post:       post,
+					Files:      localURLs,
+					Categories: []string{},
 				})
 				if err != nil {
 					return db.User{}, db.History{}, []error{err}

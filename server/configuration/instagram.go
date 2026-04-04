@@ -72,11 +72,12 @@ func (server *RakerServer) instagram(request *http.Request) (db.User, db.History
 
 			if len(localURLs) > 0 {
 				addedHistory, err := server.DBClient.HistoryAdd(context.Background(), db.HistoryAddParams{
-					Username:  user.Username,
-					PostType:  db.PostTypeInstagram,
-					PostOwner: username,
-					Post:      post,
-					Files:     localURLs,
+					Username:   user.Username,
+					PostType:   db.PostTypeInstagram,
+					PostOwner:  username,
+					Post:       post,
+					Files:      localURLs,
+					Categories: []string{},
 				})
 				if err != nil {
 					errs = append(errs, err)

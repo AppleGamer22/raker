@@ -87,11 +87,12 @@ func (server *RakerServer) story(request *http.Request) (db.User, db.History, []
 			historyID = uuid.NewString()
 		}
 		addedHistory, err := server.DBClient.HistoryAdd(context.Background(), db.HistoryAddParams{
-			Username:  user.Username,
-			PostType:  db.PostTypeStory,
-			PostOwner: username,
-			Post:      historyID,
-			Files:     localURLs,
+			Username:   user.Username,
+			PostType:   db.PostTypeStory,
+			PostOwner:  username,
+			Post:       historyID,
+			Files:      localURLs,
+			Categories: []string{},
 		})
 		if err != nil {
 			errs = append(errs, err)
