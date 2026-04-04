@@ -35,8 +35,17 @@ func (server *RakerServer) Categories(writer http.ResponseWriter, request *http.
 				return
 			}
 		default:
+			tx, err := server.DBConnection.Begin()
+			if err != nil {
+				log.Error(err, "category", category, "removed")
+				http.Error(writer, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			defer tx.Rollback()
+
+			qtx := server.DBClient.WithTx(tx)
 			// Rename: update all user's histories with the old category, then update user's list
-			if err := server.DBClient.HistoriesCategoryRename(ctx, db.HistoriesCategoryRenameParams{
+			if err := qtx.HistoriesCategoryRename(ctx, db.HistoriesCategoryRenameParams{
 				Username:    user.Username,
 				OldCategory: category,
 				NewCategory: editedCategory,
@@ -46,7 +55,7 @@ func (server *RakerServer) Categories(writer http.ResponseWriter, request *http.
 				return
 			}
 
-			if err := server.DBClient.UserCategoryRemove(ctx, db.UserCategoryRemoveParams{
+			if err := qtx.UserCategoryRemove(ctx, db.UserCategoryRemoveParams{
 				Username: user.Username,
 				Category: category,
 			}); err != nil {
@@ -55,10 +64,16 @@ func (server *RakerServer) Categories(writer http.ResponseWriter, request *http.
 				return
 			}
 
-			if err := server.DBClient.UserCategoryAdd(ctx, db.UserCategoryAddParams{
+			if err := qtx.UserCategoryAdd(ctx, db.UserCategoryAddParams{
 				Username: user.Username,
 				Category: editedCategory,
 			}); err != nil {
+				log.Error(err, "category", editedCategory, "added")
+				http.Error(writer, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			if err := tx.Commit(); err != nil {
 				log.Error(err, "category", editedCategory, "added")
 				http.Error(writer, err.Error(), http.StatusInternalServerError)
 				return

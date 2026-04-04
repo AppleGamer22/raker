@@ -28,8 +28,7 @@ func main() {
 	if rakerServer.Directories {
 		log.Info("allowing directory listing")
 	}
-	log.Infof("MongoDB database URI: %s", rakerServer.URI)
-	log.Infof("MongoDB database: %s", rakerServer.Database)
+	log.Infof("database URI: %s", rakerServer.URI)
 	log.Infof("Server is listening at http://localhost:%d", rakerServer.Port)
 
 	signals := make(chan os.Signal, 2)
