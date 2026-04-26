@@ -59,7 +59,7 @@ func (server *RakerServer) vsco(request *http.Request) (db.User, db.History, []e
 					localURLs = append(localURLs, fmt.Sprintf("%s.jpg", post))
 				} else {
 					localURL := fmt.Sprintf("%s_%s", post, path.Base(URL.Path))
-					if !strings.HasSuffix(localURL, ".jpg") {
+					if !strings.HasSuffix(localURL, ".jpg") && !strings.HasSuffix(localURL, ".jpeg") {
 						localURL = fmt.Sprintf("%s.jpeg", localURL)
 					}
 					localURLs = append(localURLs, localURL)
