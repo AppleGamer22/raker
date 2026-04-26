@@ -208,6 +208,8 @@ func VSCO(owner, post string) ([]string, string, []*http.Cookie, error) {
 		return []string{}, "", []*http.Cookie{}, err
 	}
 	htmlRequest.Header.Add("User-Agent", UserAgent)
+	htmlRequest.Header.Add("sec-ch-ua", `"Google Chrome";v="147", "Not.A/Brand";v="8", "Chromium";v="147"`)
+	htmlRequest.Header.Add("accept", "text/html,application/xhtml+xml,application/xml;image/avif,image/webp,image/apng,*/*;application/signed-exchange;")
 
 	htmlResponse, err := client.Do(htmlRequest)
 	if err != nil {
