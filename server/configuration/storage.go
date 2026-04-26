@@ -91,6 +91,8 @@ func (handler *storageHandler) Save(user db.User, media, owner, fileName, URL st
 	}
 
 	request.Header.Add("User-Agent", shared.UserAgent)
+	request.Header.Add("sec-ch-ua", `"Google Chrome";v="147", "Not.A/Brand";v="8", "Chromium";v="147"`)
+	request.Header.Add("accept", "text/html,application/xhtml+xml,application/xml;image/avif,image/webp,image/apng,*/*;application/signed-exchange;")
 
 	client := http.DefaultClient
 	if media == types.VSCO {
@@ -109,6 +111,7 @@ func (handler *storageHandler) Save(user db.User, media, owner, fileName, URL st
 	statusClass := response.StatusCode / 100
 	if statusClass == 4 || statusClass == 5 {
 		fmt.Println(URL)
+		fmt.Println(response)
 		return fmt.Errorf("response of %d instead of media", response.StatusCode)
 	}
 
