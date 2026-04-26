@@ -111,7 +111,6 @@ func (handler *storageHandler) Save(user db.User, media, owner, fileName, URL st
 	statusClass := response.StatusCode / 100
 	if statusClass == 4 || statusClass == 5 {
 		fmt.Println(URL)
-		fmt.Println(response)
 		return fmt.Errorf("response of %d instead of media", response.StatusCode)
 	}
 
