@@ -1,7 +1,6 @@
 package configuration
 
 import (
-	"crypto/tls"
 	"errors"
 	"fmt"
 	"io"
@@ -9,6 +8,7 @@ import (
 	"os"
 	"path"
 	"sync"
+	"time"
 
 	"github.com/AppleGamer22/raker/server/cleaner"
 	"github.com/AppleGamer22/raker/server/db"
@@ -16,6 +16,7 @@ import (
 	"github.com/AppleGamer22/raker/shared/types"
 	"github.com/bep/imagemeta"
 	"github.com/charmbracelet/log"
+	utls "github.com/refraction-networking/utls"
 )
 
 type storageHandler struct {
@@ -94,11 +95,8 @@ func (handler *storageHandler) Save(user db.User, media, owner, fileName, URL st
 	client := http.DefaultClient
 	if media == types.VSCO {
 		client = &http.Client{
-			Transport: &http.Transport{
-				TLSClientConfig: &tls.Config{
-					MinVersion: tls.VersionTLS13,
-				},
-			},
+			Timeout:   time.Second * 30,
+			Transport: shared.NewBypassJA3Transport(utls.HelloChrome_Auto),
 		}
 	}
 
@@ -110,6 +108,7 @@ func (handler *storageHandler) Save(user db.User, media, owner, fileName, URL st
 
 	statusClass := response.StatusCode / 100
 	if statusClass == 4 || statusClass == 5 {
+		fmt.Println(URL)
 		return fmt.Errorf("response of %d instead of media", response.StatusCode)
 	}
 
