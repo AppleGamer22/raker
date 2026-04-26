@@ -115,7 +115,7 @@ func (b *BypassJA3Transport) getTLSConfig(req *http.Request) *utls.Config {
 	return &utls.Config{
 		ServerName:         req.URL.Host,
 		InsecureSkipVerify: true,
-		NextProtos:         []string{"h2", "http/1.1"},
+		NextProtos:         []string{"h2"},
 	}
 }
 
