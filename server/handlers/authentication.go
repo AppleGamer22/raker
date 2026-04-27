@@ -117,6 +117,7 @@ func (server *RakerServer) NewAuthInterceptor() connect.UnaryInterceptorFunc {
 			req connect.AnyRequest,
 		) (connect.AnyResponse, error) {
 			if _, ok := unauthenticatedProcedures[req.Spec().Procedure]; ok {
+				// sign-in/up
 				return next(ctx, req)
 			}
 
@@ -135,14 +136,14 @@ func (server *RakerServer) NewAuthInterceptor() connect.UnaryInterceptorFunc {
 					continue
 				}
 
-				_, err := server.GetUserFromCookie(cookie)
-
+				user, err := server.GetUserFromCookie(cookie)
 				if err != nil {
 					log.Error(err)
 					return nil, err
 				}
 
-				return next(ctx, req)
+				ctxWithUser := context.WithValue(ctx, authenticatedUserKey, user)
+				return next(ctxWithUser, req)
 			}
 
 			return nil, connect.NewError(
@@ -151,4 +152,14 @@ func (server *RakerServer) NewAuthInterceptor() connect.UnaryInterceptorFunc {
 			)
 		}
 	}
+}
+
+// GetUserCategories implements [v1connect.RakerServerHandler].
+func (server *RakerServer) GetUserCategories(ctx context.Context, request *emptypb.Empty) (*v1.UserCategoriesResponse, error) {
+	user, ok := ctx.Value(authenticatedUserKey).(db.User)
+	if !ok {
+		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("not authenticated"))
+	}
+
+	return &v1.UserCategoriesResponse{Categories: user.Categories}, nil
 }

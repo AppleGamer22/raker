@@ -1,12 +1,16 @@
-import { useMutation } from "@connectrpc/connect-query";
+import { useMutation, useQuery } from "@connectrpc/connect-query";
+import { useForm } from "@tanstack/react-form";
 import { createFileRoute } from "@tanstack/react-router";
+import { XIcon } from "lucide-react";
 import { useState } from "react";
+import z from "zod";
 
-import { signInInstagram } from "@/buf/raker/v1/raker-RakerServer_connectquery";
+import { signInInstagram, getUserCategories } from "@/buf/raker/v1/raker-RakerServer_connectquery";
 import { Button } from "@/components/ui/button";
 import { CardContent } from "@/components/ui/card";
-import { Field, FieldGroup, FieldLabel, FieldLegend, FieldSet } from "@/components/ui/field";
+import { Field, FieldContent, FieldError, FieldGroup, FieldLabel, FieldLegend, FieldSet } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from "@/components/ui/input-group";
 import { Separator } from "@/components/ui/separator";
 import { useUser } from "@/hooks/user-provider";
 // import { createRootRoute } from "@tanstack/react-router";
@@ -170,12 +174,115 @@ function UpdateForm() {
 	);
 }
 
+const updateCategoriesSchema = z.object({
+	categories: z.array(z.string().catch("")),
+});
+
+function Categories() {
+	const categoriesQuery = useQuery(getUserCategories, {});
+	const categories = categoriesQuery.data?.categories ?? [];
+	const form = useForm({
+		defaultValues: {
+			categories: categories,
+		},
+		validators: {
+			onBlur: updateCategoriesSchema,
+		},
+	});
+
+	return (
+		<form
+			onSubmit={(e) => {
+				e.preventDefault();
+			}}
+		>
+			<FieldGroup>
+				<FieldSet>
+					<FieldLegend>Categories</FieldLegend>
+					<FieldGroup>
+						{categoriesQuery.isPending ? <FieldLegend>Loading categories...</FieldLegend> : null}
+						{categoriesQuery.isError ? <FieldError>{categoriesQuery.error.message}</FieldError> : null}
+						<form.Field name="categories" mode="array">
+							{(field) => {
+								const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
+								return (
+									<FieldSet>
+										<FieldGroup>
+											{field.state.value.map((_, i) => (
+												<form.Field key={i} name={`categories[${i}]`}>
+													{(subField) => {
+														const isSubFieldInvalid =
+															subField.state.meta.isTouched &&
+															!subField.state.meta.isValid;
+														return (
+															<Field
+																orientation="horizontal"
+																data-invalid={isSubFieldInvalid}
+															>
+																<FieldContent>
+																	<InputGroup>
+																		<InputGroupInput
+																			name={subField.name}
+																			value={subField.state.value}
+																			onBlur={subField.handleBlur}
+																			onChange={(e) =>
+																				subField.handleChange(e.target.value)
+																			}
+																			aria-invalid={isSubFieldInvalid}
+																			placeholder={
+																				i < categories.length
+																					? categories[i]
+																					: "New Category Name"
+																			}
+																		></InputGroupInput>
+
+																		<InputGroupAddon align="inline-end">
+																			<InputGroupButton
+																				type="button"
+																				variant="ghost"
+																				size="icon-xs"
+																				onClick={() => {
+																					// TODO: call server method to remove category from user row
+																					field.removeValue(i);
+																				}}
+																				aria-label={`Remove Category ${i + 1}`}
+																				disabled
+																			>
+																				<XIcon />
+																			</InputGroupButton>
+																		</InputGroupAddon>
+																	</InputGroup>
+																	{isSubFieldInvalid && (
+																		<FieldError
+																			errors={subField.state.meta.errors}
+																		/>
+																	)}
+																</FieldContent>
+															</Field>
+														);
+													}}
+												</form.Field>
+											))}
+										</FieldGroup>
+										{isInvalid && <FieldError errors={field.state.meta.errors} />}
+									</FieldSet>
+								);
+							}}
+						</form.Field>
+					</FieldGroup>
+				</FieldSet>
+			</FieldGroup>
+		</form>
+	);
+}
+
 // oxlint-disable-next-line no-unused-vars
 function SignedIn() {
 	return (
 		<>
 			<CardContent>
-				{/* <Separator className="my-3" /> */}
+				<Categories />
+				<Separator className="my-3" />
 				<UpdateForm />
 			</CardContent>
 		</>

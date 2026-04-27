@@ -34,6 +34,10 @@ message SignInRequest {
   string password = 2;
 }
 
+message UserCategoriesResponse {
+  repeated string categories = 1;
+}
+
 message EditCategoryRequest {
   string old_category = 1;
   string new_category = 2;
@@ -97,6 +101,8 @@ service RakerServer {
   rpc SignInInstagram(SignInRequest) returns (google.protobuf.Empty);
 
   rpc EditCategory(EditCategoryRequest) returns (google.protobuf.Empty);
+
+  rpc GetUserCategories(google.protobuf.Empty) returns (UserCategoriesResponse);
 
   rpc ScrapeInstagram(UnaryScrapeRequest) returns (ScrapeResponse);
 
