@@ -1,17 +1,43 @@
+import { TanStackDevtools } from "@tanstack/react-devtools";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { ReactQueryDevtoolsPanel } from "@tanstack/react-query-devtools";
 import { RouterProvider } from "@tanstack/react-router";
+
+import "./styles.css";
+import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { StrictMode } from "react";
 import ReactDOM from "react-dom/client";
 
-import { router } from "./router";
+import { ThemeProvider } from "@/hooks/theme-provider";
 
-import "./styles.css";
+import { queryClient, router } from "./router";
 
 const rootElement = document.getElementById("root");
+
 if (!rootElement || !rootElement.innerHTML) {
 	const root = ReactDOM.createRoot(rootElement!);
 	root.render(
 		<StrictMode>
-			<RouterProvider router={router} />
+			<ThemeProvider storageKey="raker-ui-theme">
+				<QueryClientProvider client={queryClient}>
+					<RouterProvider router={router} />
+					<TanStackDevtools
+						config={{
+							position: "bottom-right",
+						}}
+						plugins={[
+							{
+								name: "TanStack Router",
+								render: <TanStackRouterDevtoolsPanel router={router} />,
+							},
+							{
+								name: "TanStack Query",
+								render: <ReactQueryDevtoolsPanel client={queryClient} />,
+							},
+						]}
+					/>
+				</QueryClientProvider>
+			</ThemeProvider>
 		</StrictMode>,
 	);
 }

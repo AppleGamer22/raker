@@ -4,5 +4,10 @@
 	"tabWidth": 4,
 	"trailingComma": "all",
 	"sortImports": true,
+	"sortTailwindcss": {
+		"functions": ["clsx", "cn"],
+		"stylesheet": "./src/styles.css"
+	},
+	"sortPackageJson": true,
 	"useTabs": true
 }
