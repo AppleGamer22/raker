@@ -10,7 +10,7 @@ import {
 	type CarouselApi,
 } from "@/components/ui/carousel";
 
-function postTypeString(type: PostType) {
+export function postTypeString(type: PostType) {
 	switch (type) {
 		case PostType.Instagram:
 			return "instagram";

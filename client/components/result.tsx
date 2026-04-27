@@ -2,7 +2,7 @@ import { timestampDate } from "@bufbuild/protobuf/wkt";
 import { GalleryHorizontalIcon, Grid3x3Icon, TextAlignJustifyIcon } from "lucide-react";
 
 import type { ScrapeResponse } from "@/buf/raker/v1/raker_pb";
-import { FilesCarousel } from "@/components/file-display";
+import { FileDisplay, FilesCarousel } from "@/components/file-display";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useUser } from "@/hooks/user-provider";
@@ -32,6 +32,16 @@ export function Result({ result }: { result: ScrapeResponse }) {
 					className="mt-2 w-full [&_img]:max-h-[50vh] [&_img]:w-auto [&_video]:max-h-[50vh] [&_video]:w-auto"
 				>
 					<FilesCarousel post={result} username={username} />
+				</TabsContent>
+				<TabsContent value="grid" className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+					{result.files.map((file) => (
+						<FileDisplay
+							key={`grid-file-${result.postType}-${result.postOwner}-${result.post}-${file}`}
+							file={file}
+							post={result}
+							username={username}
+						/>
+					))}
 				</TabsContent>
 			</Tabs>
 		</section>
