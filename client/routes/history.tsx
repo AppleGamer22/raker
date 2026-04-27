@@ -5,7 +5,6 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { SearchIcon } from "lucide-react";
 import { Fragment, useEffect, useState } from "react";
 import { toast } from "sonner";
-import z from "zod";
 
 import { searchHistory, searchHistoryOwners } from "@/buf/raker/v1/raker-RakerServer_connectquery";
 import { PostType, type ScrapeResponse } from "@/buf/raker/v1/raker_pb";
@@ -51,6 +50,29 @@ import { useUser } from "@/hooks/user-provider";
 export const Route = createFileRoute("/history")({
 	component: History,
 });
+const defaultPostTypes = [
+	PostType.Instagram,
+	PostType.Highlight,
+	PostType.Story,
+	PostType.TikTok,
+	PostType.Snapchat,
+	PostType.VSCO,
+];
+
+type OwnerPostType = {
+	owner: string;
+	type: PostType | -1;
+};
+
+type HistoryFormValues = {
+	types: PostType[];
+	exclusive: boolean;
+	categories: string[];
+	ownerSearchTerm: string;
+	ownersSearchValue: OwnerPostType[];
+};
+
+type HistoryFormApi = any;
 
 function PostTypeIconLabel({ type }: { type: PostType }) {
 	switch (type) {
@@ -114,302 +136,131 @@ function PlatformIcon({ type }: { type: PostType | -1 }) {
 	}
 }
 
-function HistoryPostTypeForm({
-	types,
-	onChangeTypes,
-}: {
-	types: PostType[];
-	onChangeTypes: (types: PostType[]) => void;
-}) {
-	const form = useForm({
-		defaultValues: {
-			types,
-		},
-		validators: {
-			onChange: z.object({
-				types: z.array(z.number()),
-			}),
-		},
-		onSubmit: ({ value }) => onChangeTypes(value.types),
-	});
+function HistoryPostTypeForm({ form }: { form: HistoryFormApi }) {
+	const typeOptions = [
+		{ id: "post-type-instagram", value: PostType.Instagram, label: "Post", Icon: InstagramIcon },
+		{ id: "post-type-highlight", value: PostType.Highlight, label: "Highlight", Icon: InstagramIcon },
+		{ id: "post-type-story", value: PostType.Story, label: "Story", Icon: InstagramIcon },
+		{ id: "post-type-tiktok", value: PostType.TikTok, label: "Post", Icon: TikTokIcon },
+		{ id: "post-type-snapchat", value: PostType.Snapchat, label: "Highlight", Icon: SnapchatIcon },
+		{ id: "post-type-vsco", value: PostType.VSCO, label: "Post", Icon: VSCOIcon },
+	] as const;
 
 	return (
-		<form>
-			<FieldGroup>
-				<FieldSet>
-					<FieldLegend>Post Types</FieldLegend>
-					<form.Field name="types" mode="array">
-						{(field) => (
-							<FieldGroup className="flex flex-row flex-wrap gap-1 *:w-auto">
-								<FieldLabel htmlFor="post-type-instagram" className="max-w-fit">
+		<FieldGroup>
+			<FieldSet>
+				<FieldLegend>Post Types</FieldLegend>
+				<form.Field name="types" mode="array">
+					{(field: any) => (
+						<FieldGroup className="flex flex-row flex-wrap gap-1 *:w-auto">
+							{typeOptions.map(({ id, value, label, Icon }) => (
+								<FieldLabel key={id} htmlFor={id} className="max-w-fit">
 									<Field orientation="horizontal">
 										<Checkbox
-											id="post-type-instagram"
-											checked={field.state.value.includes(PostType.Instagram)}
+											id={id}
+											checked={field.state.value.includes(value)}
 											onCheckedChange={(checked) => {
 												if (checked) {
-													if (!field.state.value.includes(PostType.Instagram)) {
-														field.pushValue(PostType.Instagram);
+													if (!field.state.value.includes(value)) {
+														field.pushValue(value);
 													}
 												} else {
-													const index = field.state.value.indexOf(PostType.Instagram);
+													const index = field.state.value.indexOf(value);
 													if (index > -1) {
 														field.removeValue(index);
 													}
 												}
-												form.handleSubmit();
 											}}
 										/>
 										<FieldContent>
 											<FieldTitle>
-												<InstagramIcon className="w-4" />
-												Post
+												<Icon className="w-4" />
+												{label}
 											</FieldTitle>
 										</FieldContent>
 									</Field>
 								</FieldLabel>
-								<FieldLabel htmlFor="post-type-highlight" className="max-w-fit">
-									<Field orientation="horizontal">
-										<Checkbox
-											id="post-type-highlight"
-											checked={field.state.value.includes(PostType.Highlight)}
-											onCheckedChange={(checked) => {
-												if (checked) {
-													if (!field.state.value.includes(PostType.Highlight)) {
-														field.pushValue(PostType.Highlight);
-													}
-												} else {
-													const index = field.state.value.indexOf(PostType.Highlight);
-													if (index > -1) {
-														field.removeValue(index);
-													}
-												}
-												form.handleSubmit();
-											}}
-										/>
-										<FieldTitle>
-											<InstagramIcon className="w-4" />
-											Highlight
-										</FieldTitle>
-									</Field>
-								</FieldLabel>
-								<FieldLabel htmlFor="post-type-story" className="max-w-fit">
-									<Field orientation="horizontal">
-										<Checkbox
-											id="post-type-story"
-											checked={field.state.value.includes(PostType.Story)}
-											onCheckedChange={(checked) => {
-												if (checked) {
-													if (!field.state.value.includes(PostType.Story)) {
-														field.pushValue(PostType.Story);
-													}
-												} else {
-													const index = field.state.value.indexOf(PostType.Story);
-													if (index > -1) {
-														field.removeValue(index);
-													}
-												}
-												form.handleSubmit();
-											}}
-										/>
-										<FieldTitle>
-											<InstagramIcon className="w-4" />
-											Story
-										</FieldTitle>
-									</Field>
-								</FieldLabel>
-								<FieldLabel htmlFor="post-type-tiktok" className="max-w-fit">
-									<Field orientation="horizontal">
-										<Checkbox
-											id="post-type-tiktok"
-											checked={field.state.value.includes(PostType.TikTok)}
-											onCheckedChange={(checked) => {
-												if (checked) {
-													if (!field.state.value.includes(PostType.TikTok)) {
-														field.pushValue(PostType.TikTok);
-													}
-												} else {
-													const index = field.state.value.indexOf(PostType.TikTok);
-													if (index > -1) {
-														field.removeValue(index);
-													}
-												}
-												form.handleSubmit();
-											}}
-										/>
-										<FieldTitle>
-											<TikTokIcon className="w-4" />
-											Post
-										</FieldTitle>
-									</Field>
-								</FieldLabel>
-								<FieldLabel htmlFor="post-type-snapchat" className="max-w-fit">
-									<Field orientation="horizontal">
-										<Checkbox
-											id="post-type-snapchat"
-											checked={field.state.value.includes(PostType.Snapchat)}
-											onCheckedChange={(checked) => {
-												if (checked) {
-													if (!field.state.value.includes(PostType.Snapchat)) {
-														field.pushValue(PostType.Snapchat);
-													}
-												} else {
-													const index = field.state.value.indexOf(PostType.Snapchat);
-													if (index > -1) {
-														field.removeValue(index);
-													}
-												}
-												form.handleSubmit();
-											}}
-										/>
-										<FieldTitle>
-											<SnapchatIcon className="w-4" />
-											Highlight
-										</FieldTitle>
-									</Field>
-								</FieldLabel>
-								<FieldLabel htmlFor="post-type-vsco" className="max-w-fit">
-									<Field orientation="horizontal">
-										<Checkbox
-											id="post-type-vsco"
-											checked={field.state.value.includes(PostType.VSCO)}
-											onCheckedChange={(checked) => {
-												if (checked) {
-													if (!field.state.value.includes(PostType.VSCO)) {
-														field.pushValue(PostType.VSCO);
-													}
-												} else {
-													const index = field.state.value.indexOf(PostType.VSCO);
-													if (index > -1) {
-														field.removeValue(index);
-													}
-												}
-												form.handleSubmit();
-											}}
-										/>
-										<FieldTitle>
-											<VSCOIcon className="w-4" />
-											Post
-										</FieldTitle>
-									</Field>
-								</FieldLabel>
-							</FieldGroup>
-						)}
-					</form.Field>
-				</FieldSet>
-			</FieldGroup>
-		</form>
+							))}
+						</FieldGroup>
+					)}
+				</form.Field>
+			</FieldSet>
+		</FieldGroup>
 	);
 }
 
 function HistoryPostCategoryForm({
-	exclusive,
-	setExclusive,
-	selectedCategories,
+	form,
 	availableCategories,
-	setCategories,
 }: {
-	exclusive: boolean;
-	setExclusive: (b: boolean) => void;
-	selectedCategories: string[];
+	form: HistoryFormApi;
 	availableCategories: string[];
-	setCategories: (c: string[]) => void;
 }) {
-	const form = useForm({
-		defaultValues: {
-			exclusive,
-			categories: selectedCategories,
-		},
-		validators: {
-			onChange: z.object({
-				exclusive: z.boolean().catch(false),
-				categories: z.array(z.string()),
-			}),
-		},
-		onSubmit: ({ value }) => {
-			setExclusive(value.exclusive);
-			setCategories(value.categories);
-		},
-	});
-
 	return (
-		<form
-			onSubmit={(e) => {
-				e.preventDefault();
-			}}
-		>
-			<FieldGroup>
-				<FieldSet>
-					<FieldLegend>Post Categories</FieldLegend>
-					<FieldGroup className="flex flex-row flex-wrap gap-1 *:w-auto">
-						<form.Field name="exclusive">
-							{(field) => (
-								<FieldLabel htmlFor="category-exclusive" className="max-w-fit">
-									<Field orientation="horizontal">
-										<Switch
-											id="category-exclusive"
-											name={field.name}
-											checked={field.state.value}
-											onCheckedChange={(checked) => {
-												field.handleChange(checked);
-												form.handleSubmit();
-											}}
-										/>
-										<FieldContent>
-											<FieldTitle>Exclusive</FieldTitle>
-										</FieldContent>
-									</Field>
-								</FieldLabel>
-							)}
-						</form.Field>
-						<Separator orientation="vertical" />
-						<form.Field name="categories" mode="array">
-							{(field) => (
-								<>
-									{availableCategories.map((category) => (
-										<FieldLabel
-											key={`category-${category}`}
-											htmlFor={`category-${category}`}
-											className="max-w-fit"
-										>
-											<Field orientation="horizontal">
-												<Checkbox
-													id={`category-${category}`}
-													name={field.name}
-													checked={field.state.value.includes(category)}
-													onCheckedChange={(checked) => {
-														if (checked) {
-															if (!field.state.value.includes(category)) {
-																field.pushValue(category);
-															}
-														} else {
-															const index = field.state.value.indexOf(category);
-															if (index > -1) {
-																field.removeValue(index);
-															}
+		<FieldGroup>
+			<FieldSet>
+				<FieldLegend>Post Categories</FieldLegend>
+				<FieldGroup className="flex flex-row flex-wrap gap-1 *:w-auto">
+					<form.Field name="exclusive">
+						{(field: any) => (
+							<FieldLabel htmlFor="category-exclusive" className="max-w-fit">
+								<Field orientation="horizontal">
+									<Switch
+										id="category-exclusive"
+										name={field.name}
+										checked={field.state.value}
+										onCheckedChange={(checked) => {
+											field.handleChange(checked);
+										}}
+									/>
+									<FieldContent>
+										<FieldTitle>Exclusive</FieldTitle>
+									</FieldContent>
+								</Field>
+							</FieldLabel>
+						)}
+					</form.Field>
+					<Separator orientation="vertical" />
+					<form.Field name="categories" mode="array">
+						{(field: any) => (
+							<>
+								{availableCategories.map((category) => (
+									<FieldLabel
+										key={`category-${category}`}
+										htmlFor={`category-${category}`}
+										className="max-w-fit"
+									>
+										<Field orientation="horizontal">
+											<Checkbox
+												id={`category-${category}`}
+												name={field.name}
+												checked={field.state.value.includes(category)}
+												onCheckedChange={(checked) => {
+													if (checked) {
+														if (!field.state.value.includes(category)) {
+															field.pushValue(category);
 														}
-														form.handleSubmit();
-													}}
-												/>
-												<FieldContent>
-													<FieldTitle>{category}</FieldTitle>
-												</FieldContent>
-											</Field>
-										</FieldLabel>
-									))}
-								</>
-							)}
-						</form.Field>
-					</FieldGroup>
-				</FieldSet>
-			</FieldGroup>
-		</form>
+													} else {
+														const index = field.state.value.indexOf(category);
+														if (index > -1) {
+															field.removeValue(index);
+														}
+													}
+												}}
+											/>
+											<FieldContent>
+												<FieldTitle>{category}</FieldTitle>
+											</FieldContent>
+										</Field>
+									</FieldLabel>
+								))}
+							</>
+						)}
+					</form.Field>
+				</FieldGroup>
+			</FieldSet>
+		</FieldGroup>
 	);
-}
-
-interface OwnerPostType {
-	owner: string;
-	type: PostType | -1;
 }
 
 function HistoryPagination({
@@ -445,34 +296,48 @@ function HistoryPagination({
 function History() {
 	const navigate = useNavigate({ from: Route.fullPath });
 	const { username, categories: availableCategories } = useUser();
-
-	const [types, setTypes] = useState([
-		PostType.Instagram,
-		PostType.Highlight,
-		PostType.Story,
-		PostType.TikTok,
-		PostType.Snapchat,
-		PostType.VSCO,
-	]);
-	const [categories, setCategories] = useState<string[]>(availableCategories);
 	const [ownersSearchOptions, setOwnersSearchOptions] = useState<OwnerPostType[]>([]);
-	const [exclusive, setExclusive] = useState(false);
 	const [isOpen, setIsOpen] = useState(false);
-	const [ownerSearchTerm, setOwnerSearchTerm] = useState("");
-	const [ownersSearchValue, setOwnersSearchValue] = useState<OwnerPostType[]>([]);
 	const [totalCount, setTotalCount] = useState(BigInt(0));
 	const [currentPage, setCurrentPage] = useState(0);
-	const [pageCount, setPageCount] = useState(0);
+	const [pageCount] = useState(0);
 	const [histories, setHistories] = useState<ScrapeResponse[]>([]);
 
 	const anchor = useComboboxAnchor();
 
 	const ownersMutation = useMutation(searchHistoryOwners);
 	const searchHistoryMutation = useMutation(searchHistory);
+	const form = useForm({
+		defaultValues: {
+			types: defaultPostTypes,
+			exclusive: false,
+			categories: availableCategories,
+			ownerSearchTerm: "",
+			ownersSearchValue: [],
+		} as HistoryFormValues,
+		onSubmit: async ({ value: { categories, exclusive, ownersSearchValue, types } }) => {
+			try {
+				const { histories, totalCount } = await searchHistoryMutation.mutateAsync({
+					categories: categories,
+					exclusive: exclusive,
+					types: types,
+					owners: ownersSearchValue.map(({ owner }) => owner),
+					page: BigInt(1),
+					pageSize: 30,
+				});
+				setTotalCount(totalCount);
+				setHistories(histories);
+			} catch (err) {
+				toast.error((err as Error).message, {
+					position: "top-center",
+				});
+			}
+		},
+	});
 
 	useEffect(() => {
-		setCategories(availableCategories);
-	}, [availableCategories]);
+		form.setFieldValue("categories", availableCategories);
+	}, [availableCategories, form]);
 
 	useEffect(() => {
 		if (username === null) {
@@ -482,153 +347,177 @@ function History() {
 
 	return (
 		<CardContent>
-			<Collapsible open={isOpen} onOpenChange={setIsOpen}>
-				<CollapsibleTrigger className="w-full rounded-md border px-3 py-2 text-left hover:bg-muted/40">
-					<div className="flex flex-wrap items-center gap-2">
-						{types.length > 0 ? (
-							types.map((type, index) => (
-								<Badge key={`type-summary-${type}-${index}`} variant="secondary">
-									<PostTypeIconLabel type={type} />
-								</Badge>
-							))
-						) : (
-							<Badge variant="ghost">No post types selected</Badge>
-						)}
-					</div>
-					<Separator className="my-2" />
-					<div className="flex flex-wrap items-center gap-2">
-						<Badge variant={exclusive ? "default" : "outline"}>Exclusive: {exclusive ? "On" : "Off"}</Badge>
-						{categories.length > 0 ? (
-							categories.map((category, index) => (
-								<Badge key={`category-summary-${category}-${index}`} variant="default">
-									{category}
-								</Badge>
-							))
-						) : (
-							<Badge variant="ghost">No categories selected</Badge>
-						)}
-					</div>
-				</CollapsibleTrigger>
-				<CollapsibleContent className="mt-1">
-					<HistoryPostTypeForm types={types} onChangeTypes={setTypes} />
-					<Separator className="my-2" />
-					<HistoryPostCategoryForm
-						exclusive={exclusive}
-						setExclusive={setExclusive}
-						availableCategories={availableCategories}
-						selectedCategories={categories}
-						setCategories={setCategories}
-					/>
-				</CollapsibleContent>
-			</Collapsible>
-			<Combobox
-				multiple
-				items={ownerSearchTerm.length > 0 ? [ownerSearchTerm, ...ownersSearchOptions] : ownersSearchOptions}
-				value={ownersSearchValue}
-				onValueChange={(value) => (value !== null ? setOwnersSearchValue(value) : null)}
-			>
-				<ComboboxChips className="my-2" ref={anchor}>
-					<ComboboxValue>
-						{(values) => (
-							<Fragment>
-								{values.map(({ owner, type }: OwnerPostType) => (
-									<ComboboxChip key={`search-chip-${type}-${owner}`} className="select-text!">
-										<PlatformIcon type={type} />
-										{owner}
-									</ComboboxChip>
-								))}
-								<ComboboxChipsInput
-									placeholder="post owner search"
-									onChange={async (e) => {
-										let ownerSearchQuery = e.target.value;
-										if (ownerSearchTerm.substring(0, 4) !== ownerSearchQuery.substring(0, 4)) {
-											ownerSearchQuery = ownerSearchQuery.substring(0, 4);
-										}
-										if (ownerSearchQuery.length === 4) {
-											try {
-												const { owners } = await ownersMutation.mutateAsync({
-													categories,
-													exclusive,
-													types,
-													owner: ownerSearchQuery,
-												});
-												setOwnersSearchOptions(owners);
-											} catch (err) {
-												toast.error((err as Error).message, {
-													position: "top-center",
-												});
-											}
-										} else if (ownerSearchQuery.length === 0) {
-											setOwnersSearchOptions([]);
-										}
-										setOwnerSearchTerm(e.target.value);
-									}}
-								></ComboboxChipsInput>
-								<InputGroupAddon>
-									<SearchIcon />
-								</InputGroupAddon>
-							</Fragment>
-						)}
-					</ComboboxValue>
-				</ComboboxChips>
-				{ownerSearchTerm.length > 0 && (
-					<ComboboxContent>
-						<ComboboxList>
-							{ownerSearchTerm.length > 0 && (
-								<ComboboxGroup>
-									<ComboboxLabel>Search Term</ComboboxLabel>
-									<ComboboxItem
-										key="search-term"
-										value={{ owner: ownerSearchTerm, type: -1 } as OwnerPostType}
-									>
-										{ownerSearchTerm}
-									</ComboboxItem>
-								</ComboboxGroup>
-							)}
-							{ownersSearchOptions.length > 0 && (
-								<ComboboxGroup>
-									<ComboboxLabel>Post Owners</ComboboxLabel>
-									{ownersSearchOptions
-										.filter(
-											(item1) =>
-												item1.owner.includes(ownerSearchTerm) &&
-												ownersSearchValue.filter((item2) => item2 === item1).length === 0,
-										)
-										.map((item) => (
-											<ComboboxItem key={`search-${item.type}-${item.owner}`} value={item}>
-												<PlatformIcon type={item.type} />
-												{item.owner}
-											</ComboboxItem>
-										))}
-								</ComboboxGroup>
-							)}
-						</ComboboxList>
-					</ComboboxContent>
-				)}
-			</Combobox>
-			<Button
-				className="w-full"
-				onClick={async () => {
-					try {
-						const { histories, totalCount } = await searchHistoryMutation.mutateAsync({
-							categories,
-							exclusive,
-							types,
-							owners: ownersSearchValue.map(({ owner }) => owner),
-							page: BigInt(1),
-							pageSize: 30,
-						});
-						setTotalCount(totalCount);
-						setHistories(histories);
-					} catch (err) {
-						toast.error((err as Error).message, {
-							position: "top-center",
-						});
-					}
+			<form
+				onSubmit={(e) => {
+					e.preventDefault();
+					e.stopPropagation();
+					form.handleSubmit();
 				}}
 			>
-				Search
-			</Button>
+				<Collapsible open={isOpen} onOpenChange={setIsOpen}>
+					<form.Subscribe selector={(state) => state.values}>
+						{({ types, exclusive, categories }) => (
+							<CollapsibleTrigger className="w-full rounded-md border px-3 py-2 text-left hover:bg-muted/40">
+								<div className="flex flex-wrap items-center gap-2">
+									{types.length > 0 ? (
+										types.map((type, index) => (
+											<Badge key={`type-summary-${type}-${index}`} variant="secondary">
+												<PostTypeIconLabel type={type} />
+											</Badge>
+										))
+									) : (
+										<Badge variant="ghost">No post types selected</Badge>
+									)}
+								</div>
+								<Separator className="my-2" />
+								<div className="flex flex-wrap items-center gap-2">
+									<Badge variant={exclusive ? "default" : "outline"}>
+										Exclusive: {exclusive ? "On" : "Off"}
+									</Badge>
+									{categories.length > 0 ? (
+										categories.map((category, index) => (
+											<Badge key={`category-summary-${category}-${index}`} variant="default">
+												{category}
+											</Badge>
+										))
+									) : (
+										<Badge variant="ghost">No categories selected</Badge>
+									)}
+								</div>
+							</CollapsibleTrigger>
+						)}
+					</form.Subscribe>
+					<CollapsibleContent className="mt-1">
+						<HistoryPostTypeForm form={form} />
+						<Separator className="my-2" />
+						<HistoryPostCategoryForm form={form} availableCategories={availableCategories} />
+					</CollapsibleContent>
+				</Collapsible>
+
+				<form.Field name="ownerSearchTerm">
+					{(searchField: any) => (
+						<form.Field name="ownersSearchValue">
+							{(ownersField: any) => (
+								<Combobox
+									multiple
+									items={
+										searchField.state.value.length > 0
+											? [searchField.state.value, ...ownersSearchOptions]
+											: ownersSearchOptions
+									}
+									value={ownersField.state.value}
+									onValueChange={(value) => {
+										if (value !== null) {
+											ownersField.handleChange(value);
+										}
+									}}
+								>
+									<ComboboxChips className="my-2" ref={anchor}>
+										<ComboboxValue>
+											{(values) => (
+												<Fragment>
+													{values.map(({ owner, type }: OwnerPostType) => (
+														<ComboboxChip
+															key={`search-chip-${type}-${owner}`}
+															className="select-text!"
+														>
+															<PlatformIcon type={type} />
+															{owner}
+														</ComboboxChip>
+													))}
+													<ComboboxChipsInput
+														placeholder="post owner search"
+														value={searchField.state.value}
+														onChange={async (e) => {
+															let ownerSearchQuery = e.target.value;
+															if (
+																searchField.state.value.substring(0, 4) !==
+																ownerSearchQuery.substring(0, 4)
+															) {
+																ownerSearchQuery = ownerSearchQuery.substring(0, 4);
+															}
+															searchField.handleChange(e.target.value);
+															if (ownerSearchQuery.length === 4) {
+																try {
+																	const { owners } = await ownersMutation.mutateAsync(
+																		{
+																			categories:
+																				form.getFieldValue("categories"),
+																			exclusive: form.getFieldValue("exclusive"),
+																			types: form.getFieldValue("types"),
+																			owner: ownerSearchQuery,
+																		},
+																	);
+																	setOwnersSearchOptions(owners);
+																} catch (err) {
+																	toast.error((err as Error).message, {
+																		position: "top-center",
+																	});
+																}
+															} else if (ownerSearchQuery.length === 0) {
+																setOwnersSearchOptions([]);
+															}
+														}}
+													/>
+													<InputGroupAddon>
+														<SearchIcon />
+													</InputGroupAddon>
+												</Fragment>
+											)}
+										</ComboboxValue>
+									</ComboboxChips>
+									{searchField.state.value.length > 0 && (
+										<ComboboxContent>
+											<ComboboxList>
+												<ComboboxGroup>
+													<ComboboxLabel>Search Term</ComboboxLabel>
+													<ComboboxItem
+														key="search-term"
+														value={
+															{
+																owner: searchField.state.value,
+																type: -1,
+															} as OwnerPostType
+														}
+													>
+														{searchField.state.value}
+													</ComboboxItem>
+												</ComboboxGroup>
+												{ownersSearchOptions.length > 0 && (
+													<ComboboxGroup>
+														<ComboboxLabel>Post Owners</ComboboxLabel>
+														{ownersSearchOptions
+															.filter(
+																(item1) =>
+																	item1.owner.includes(searchField.state.value) &&
+																	ownersField.state.value.filter(
+																		(item2: any) => item2 === item1,
+																	).length === 0,
+															)
+															.map((item) => (
+																<ComboboxItem
+																	key={`search-${item.type}-${item.owner}`}
+																	value={item}
+																>
+																	<PlatformIcon type={item.type} />
+																	{item.owner}
+																</ComboboxItem>
+															))}
+													</ComboboxGroup>
+												)}
+											</ComboboxList>
+										</ComboboxContent>
+									)}
+								</Combobox>
+							)}
+						</form.Field>
+					)}
+				</form.Field>
+
+				<Button className="w-full" type="submit" disabled={searchHistoryMutation.isPending}>
+					Search
+				</Button>
+			</form>
 			{searchHistoryMutation.isPending && <Progress className="pt-2" value={null} />}
 			{totalCount > 0 && <Label className="my-2 justify-center">{totalCount} results</Label>}
 			<HistoryPagination current={currentPage} total={pageCount} onChange={setCurrentPage} />
