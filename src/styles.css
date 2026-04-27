@@ -125,3 +125,9 @@
 		@apply bg-background text-foreground;
 	}
 }
+
+/* non-shadcn styles */
+* {
+	/* Use Tailwind’s  utilities to re-enable selection: select-text, select-auto, select-all */
+	@apply select-none;
+}
