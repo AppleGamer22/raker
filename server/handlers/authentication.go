@@ -13,6 +13,11 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
+var unauthenticatedProcedures = map[string]struct{}{
+	"/raker.v1.RakerServer/SignInInstagram": {},
+	"/raker.v1.RakerServer/SignUpInstagram": {},
+}
+
 // SignUpInstagram implements [v1connect.RakerServerHandler].
 func (server *RakerServer) SignUpInstagram(ctx context.Context, request *v1.SignUpRequest) (*emptypb.Empty, error) {
 	username := request.Username
@@ -133,6 +138,10 @@ func (server *RakerServer) NewAuthInterceptor() connect.UnaryInterceptorFunc {
 			ctx context.Context,
 			req connect.AnyRequest,
 		) (connect.AnyResponse, error) {
+			if _, ok := unauthenticatedProcedures[req.Spec().Procedure]; ok {
+				return next(ctx, req)
+			}
+
 			cookies, err := http.ParseCookie(req.Header().Get("Cookie"))
 
 			if err != nil {
