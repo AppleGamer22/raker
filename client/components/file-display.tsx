@@ -35,7 +35,7 @@ export function FilesCarousel({
 	post: ScrapeResponse;
 }) {
 	const [api, setApi] = useState<CarouselApi>();
-	const [current, setCurrent] = useState(1);
+	const [selectedIndex, setSelectedIndex] = useState(0);
 
 	const syncSelectedSlideHeight = useCallback((emblaApi: CarouselApi) => {
 		if (!emblaApi) {
@@ -57,13 +57,16 @@ export function FilesCarousel({
 		}
 
 		const onSelect = () => {
-			setCurrent(api.selectedScrollSnap() + 1);
+			setSelectedIndex(api.selectedScrollSnap());
 			syncSelectedSlideHeight(api);
 		};
 
-		const onReInit = () => syncSelectedSlideHeight(api);
+		const onReInit = () => {
+			setSelectedIndex(api.selectedScrollSnap());
+			syncSelectedSlideHeight(api);
+		};
 
-		// onSelect();
+		onSelect();
 		api.on("reInit", onReInit);
 		api.on("select", onSelect);
 		api.on("settle", onSelect);
@@ -96,8 +99,21 @@ export function FilesCarousel({
 			</CarouselContent>
 			<CarouselPrevious className="top-1/2 left-2 z-10 -translate-y-1/2" />
 			<CarouselNext className="top-1/2 right-2 z-10 -translate-y-1/2" />
-			<div className="py-2 text-center text-sm text-muted-foreground">
-				{current} of {files.length}
+			<div className="flex items-center justify-center gap-2 pt-2" role="group" aria-label="Slide navigation">
+				{files.map((_, index) => (
+					<button
+						type="button"
+						key={`dot-${postType}-${postOwner}-${post}-${index}`}
+						onClick={() => api?.scrollTo(index)}
+						className={`h-2 rounded-full transition-all focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none ${
+							index === selectedIndex
+								? "w-6 bg-primary"
+								: "w-2 bg-muted-foreground/40 hover:bg-muted-foreground/70"
+						}`}
+						aria-label={`Go to slide ${index + 1}`}
+						aria-current={index === selectedIndex ? "true" : undefined}
+					/>
+				))}
 			</div>
 		</Carousel>
 	) : (
