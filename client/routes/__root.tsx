@@ -21,9 +21,11 @@ function Root() {
 			<MobileMenu open={open && isMobile} onOpenChange={setOpen} />
 
 			<Menu>
-				<Card className="m-2 min-h-[calc(100dvh-var(--header-height)-1.1rem)] md:min-h-[calc(100dvh-1rem)]">
-					<Outlet />
-				</Card>
+				<div className={isMobile ? "pt-(--header-height)" : undefined}>
+					<Card className="m-2 min-h-[calc(100dvh-var(--header-height)-1.1rem)] md:min-h-[calc(100dvh-1rem)]">
+						<Outlet />
+					</Card>
+				</div>
 			</Menu>
 		</main>
 	);

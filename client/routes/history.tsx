@@ -589,7 +589,7 @@ function History() {
 			<div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
 				{histories.map(({ postType, postOwner, post, postDate, categories, files }) => (
 					<Card key={`post-${postType}-${postOwner}-${post}`}>
-						<CardHeader className="w-full break-all">
+						<CardHeader className="w-full wrap-break-word">
 							<span className="inline-block space-x-1 leading-none *:my-0.5 *:align-middle">
 								<Badge variant="secondary">
 									<PostTypeIconLabel type={postType} />
@@ -603,9 +603,7 @@ function History() {
 									<code className="leading-none">{post}</code>
 								</Badge>
 							</span>
-							{postDate !== undefined && (
-								<p className="wrap-break-word">{timestampDate(postDate).toString()}</p>
-							)}
+							{postDate !== undefined && <p>{timestampDate(postDate).toString()}</p>}
 							<span>
 								{categories.map((category) => (
 									<Badge

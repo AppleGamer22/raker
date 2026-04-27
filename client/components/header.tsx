@@ -13,7 +13,7 @@ import { VSCOIcon } from "@/components/ui/svgs/vsco";
 
 export default function Header({ toggleMenu }: { toggleMenu: () => void }) {
 	return (
-		<header className="sticky top-0 z-50 flex w-full items-center border-b bg-background backdrop-blur-lg">
+		<header className="fixed inset-x-0 top-0 z-50 flex w-full items-center border-b bg-background/95 backdrop-blur-lg">
 			<div className="grid h-(--header-height) w-full grid-cols-[1fr_auto_1fr] items-center px-4">
 				<div className="justify-self-start">
 					<Button className="h-8 w-8" variant="outline" size="icon" onClick={toggleMenu}>
