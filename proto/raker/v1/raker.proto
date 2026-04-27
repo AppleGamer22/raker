@@ -4,8 +4,9 @@ package raker.v1;
 
 import "google/protobuf/empty.proto";
 import "google/type/datetime.proto";
+import "google/type/latlng.proto";
 
-option go_package = "github.com/AppleGamer22/raker/proto";
+option go_package = "github.com/AppleGamer22/raker/server/connectrpc";
 
 // enum NetworkType {
 //   Instagram = 0;
@@ -58,6 +59,7 @@ message ScrapeResponse {
   repeated string files = 6;
   repeated string categories = 7;
   bool incognito = 8;
+  optional google.type.LatLng coordinates = 9;
 }
 
 message RemoveFileRequest {
