@@ -1,5 +1,6 @@
 import { SidebarIcon } from "lucide-react";
 
+import { RakerLogo } from "@/components/logo";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 
@@ -13,7 +14,7 @@ export default function Header({ toggleMenu }: { toggleMenu: () => void }) {
 					</Button>
 				</div>
 				<div className="justify-self-center">
-					<img alt="Raker Logo" src="/raker.svg" className="w-6" />
+					<RakerLogo withVersion />
 				</div>
 				<div className="justify-self-end">
 					<ThemeToggle />

@@ -2,6 +2,7 @@ import { Link, useLocation } from "@tanstack/react-router";
 import { UserKeyIcon, DatabaseSearchIcon } from "lucide-react";
 import type { ReactNode } from "react";
 
+import { RakerLogo } from "@/components/logo";
 import {
 	Sheet,
 	SheetContent,
@@ -48,9 +49,9 @@ export function Menu({
 				collapsible={isMobileSheet ? "none" : "offcanvas"}
 			>
 				<SidebarHeader>
-					<SidebarGroup className="grid grid-cols-[1fr_auto_1fr] items-center">
+					<SidebarGroup className="grid grid-cols-[1fr_auto_1fr] items-center *:px-4">
 						<div className="justify-self-center">
-							<img alt="Raker Logo" src="/raker.svg" className="w-6" />
+							<RakerLogo withVersion />
 						</div>
 						<div className="justify-self-end">
 							<ThemeToggle />
