@@ -14,7 +14,7 @@ server:
 	docker stop database
 
 buf:
-	rm -rf server/buf
+	# rm -rf server/buf
 	buf dep update
 	buf generate
 	go mod tidy
