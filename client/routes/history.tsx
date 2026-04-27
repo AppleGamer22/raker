@@ -495,7 +495,7 @@ function History() {
 						{(values) => (
 							<Fragment>
 								{values.map(({ owner, type }: OwnerPostType) => (
-									<ComboboxChip key={`search-chip-${type}-${owner}`}>
+									<ComboboxChip key={`search-chip-${type}-${owner}`} className="select-text!">
 										<PlatformIcon type={type} />
 										{owner}
 									</ComboboxChip>
@@ -604,11 +604,11 @@ function History() {
 								</Badge>
 								<span>/</span>
 								<Badge variant="secondary">
-									<code className="leading-none">{postOwner}</code>
+									<code className="leading-none select-text!">{postOwner}</code>
 								</Badge>
 								<span>/</span>
 								<Badge variant="secondary">
-									<code className="leading-none">{post}</code>
+									<code className="leading-none select-text!">{post}</code>
 								</Badge>
 							</span>
 							{postDate !== undefined && <p>{timestampDate(postDate).toString()}</p>}

@@ -146,6 +146,6 @@
 
 /* non-shadcn styles */
 * {
-	/* Use Tailwind’s  utilities to re-enable selection: select-text, select-auto, select-all */
+	/* Use Tailwind’s  utilities to re-enable selection: select-text!, select-auto!, select-all! */
 	@apply select-none;
 }
