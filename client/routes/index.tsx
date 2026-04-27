@@ -8,6 +8,7 @@ import { CardContent } from "@/components/ui/card";
 import { Field, FieldGroup, FieldLabel, FieldLegend, FieldSet } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
+import { useUser } from "@/hooks/user-provider";
 // import { createRootRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/")({ component: AuthPage, ssr: false });
@@ -58,7 +59,14 @@ function SignInForm() {
 		<form
 			onSubmit={(e) => {
 				e.preventDefault();
-				signInMutation.mutate({ username, password });
+				signInMutation.mutate(
+					{ username, password },
+					{
+						onSuccess: () => {
+							location.reload();
+						},
+					},
+				);
 			}}
 		>
 			<FieldGroup>
@@ -141,6 +149,19 @@ function UpdateForm() {
 						</Field>
 						<Field orientation="horizontal">
 							<Button type="submit">Update</Button>
+							<Button
+								variant="destructive"
+								onClick={async () => {
+									try {
+										await cookieStore.delete("jwt");
+										location.reload();
+									} catch (err) {
+										console.error(err);
+									}
+								}}
+							>
+								Sign-out
+							</Button>
 						</Field>
 					</FieldGroup>
 				</FieldSet>
@@ -154,7 +175,7 @@ function SignedIn() {
 	return (
 		<>
 			<CardContent>
-				<Separator className="my-3" />
+				{/* <Separator className="my-3" /> */}
 				<UpdateForm />
 			</CardContent>
 		</>
@@ -162,5 +183,7 @@ function SignedIn() {
 }
 
 function AuthPage() {
-	return <SignedOut />;
+	const { username } = useUser();
+	const isSignedIn = username !== null;
+	return isSignedIn ? <SignedIn /> : <SignedOut />;
 }

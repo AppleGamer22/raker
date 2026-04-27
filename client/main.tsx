@@ -10,6 +10,7 @@ import { StrictMode } from "react";
 import ReactDOM from "react-dom/client";
 
 import { ThemeProvider } from "@/hooks/theme-provider";
+import { UserProvider } from "@/hooks/user-provider";
 
 import { queryClient, transport, router } from "./router";
 
@@ -22,7 +23,9 @@ if (!rootElement || !rootElement.innerHTML) {
 			<ThemeProvider storageKey="raker-ui-theme">
 				<TransportProvider transport={transport}>
 					<QueryClientProvider client={queryClient}>
-						<RouterProvider router={router} />
+						<UserProvider>
+							<RouterProvider router={router} />
+						</UserProvider>
 						<TanStackDevtools
 							config={{
 								position: "bottom-right",

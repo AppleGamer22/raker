@@ -21,6 +21,7 @@ import { InstagramIcon } from "@/components/ui/svgs/instagram";
 import { SnapchatIcon } from "@/components/ui/svgs/snapchat";
 import { TikTokIcon } from "@/components/ui/svgs/tiktok";
 import { VSCOIcon } from "@/components/ui/svgs/vsco";
+import { useUser } from "@/hooks/user-provider";
 
 type MenuMode = "default" | "mobile-sheet";
 
@@ -31,6 +32,8 @@ export function Menu({
 }: { mode?: MenuMode; onNavigate?: () => void; children?: ReactNode } = {}) {
 	const isMobileSheet = mode === "mobile-sheet";
 	const { pathname } = useLocation();
+	const { username } = useUser();
+	const isSignedIn = username !== null;
 
 	const isActiveRoute = (route: string) => pathname === route;
 
@@ -71,9 +74,11 @@ export function Menu({
 						<SidebarMenu className="gap-1">
 							<SidebarMenuItem>
 								<SidebarMenuButton
+									disabled={isSignedIn}
 									isActive={isActiveRoute("/instagram")}
 									render={
 										<Link
+											disabled={!isSignedIn}
 											to="/instagram"
 											search={{ post: "", incognito: false }}
 											onClick={() => onNavigate?.()}
@@ -86,9 +91,11 @@ export function Menu({
 							</SidebarMenuItem>
 							<SidebarMenuItem>
 								<SidebarMenuButton
+									disabled={!isSignedIn}
 									isActive={isActiveRoute("/highlight")}
 									render={
 										<Link
+											disabled={!isSignedIn}
 											to="/highlight"
 											search={{ highlight: "" }}
 											onClick={() => onNavigate?.()}
@@ -101,8 +108,16 @@ export function Menu({
 							</SidebarMenuItem>
 							<SidebarMenuItem>
 								<SidebarMenuButton
+									disabled={!isSignedIn}
 									isActive={isActiveRoute("/story")}
-									render={<Link to="/story" search={{ owner: "" }} onClick={() => onNavigate?.()} />}
+									render={
+										<Link
+											disabled={!isSignedIn}
+											to="/story"
+											search={{ owner: "" }}
+											onClick={() => onNavigate?.()}
+										/>
+									}
 								>
 									<InstagramIcon className="h-4 w-4" />
 									Instagram Story
@@ -110,9 +125,11 @@ export function Menu({
 							</SidebarMenuItem>
 							<SidebarMenuItem>
 								<SidebarMenuButton
+									disabled={!isSignedIn}
 									isActive={isActiveRoute("/tiktok")}
 									render={
 										<Link
+											disabled={!isSignedIn}
 											to="/tiktok"
 											search={{ owner: "", post: "", incognito: false }}
 											onClick={() => onNavigate?.()}
@@ -125,9 +142,15 @@ export function Menu({
 							</SidebarMenuItem>
 							<SidebarMenuItem>
 								<SidebarMenuButton
+									disabled={!isSignedIn}
 									isActive={isActiveRoute("/snapchat")}
 									render={
-										<Link to="/snapchat" search={{ owner: "" }} onClick={() => onNavigate?.()} />
+										<Link
+											disabled={!isSignedIn}
+											to="/snapchat"
+											search={{ owner: "" }}
+											onClick={() => onNavigate?.()}
+										/>
 									}
 								>
 									<SnapchatIcon className="h-40 w-40" />
@@ -136,9 +159,11 @@ export function Menu({
 							</SidebarMenuItem>
 							<SidebarMenuItem>
 								<SidebarMenuButton
+									disabled={!isSignedIn}
 									isActive={isActiveRoute("/vsco")}
 									render={
 										<Link
+											disabled={!isSignedIn}
 											to="/vsco"
 											search={{ owner: "", post: "" }}
 											onClick={() => onNavigate?.()}
@@ -156,8 +181,11 @@ export function Menu({
 						<SidebarMenu className="gap-1">
 							<SidebarMenuItem>
 								<SidebarMenuButton
+									disabled={isSignedIn}
 									isActive={isActiveRoute("/history")}
-									render={<Link to="/history" onClick={() => onNavigate?.()} />}
+									render={
+										<Link disabled={!isSignedIn} to="/history" onClick={() => onNavigate?.()} />
+									}
 								>
 									<DatabaseSearchIcon className="w-4" />
 									History

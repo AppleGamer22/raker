@@ -86,7 +86,7 @@ func (server *RakerServer) SignInInstagram(ctx context.Context, request *v1.Sign
 		Path:     "/",
 		Expires:  expiry,
 		Secure:   server.Configuration.SecureCookie,
-		HttpOnly: true,
+		HttpOnly: false,
 	}
 
 	// Based on https://connectrpc.com/docs/go/headers-and-trailers/#headers
