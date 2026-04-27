@@ -1,4 +1,3 @@
-import { CheckboxGroup } from "@base-ui/react";
 import { useQuery } from "@connectrpc/connect-query";
 import { useForm } from "@tanstack/react-form";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
@@ -6,6 +5,7 @@ import { useEffect } from "react";
 import z from "zod";
 
 import { getUserCategories } from "@/buf/raker/v1/raker-RakerServer_connectquery";
+import { PostType } from "@/buf/raker/v1/raker_pb";
 import { CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { FieldGroup, FieldLegend, Field, FieldSet, FieldLabel, FieldContent, FieldTitle } from "@/components/ui/field";
@@ -22,84 +22,165 @@ export const Route = createFileRoute("/history")({
 });
 
 function HistoryPostTypeForm() {
-	// const categoriesQuery = useQuery(getUserCategories, {});
-	// const categories = categoriesQuery.data?.categories ?? [];
+	const form = useForm({
+		defaultValues: {
+			types: [] as number[],
+		},
+		validators: {
+			onChange: z.object({
+				types: z.array(z.number()),
+			}),
+		},
+	});
 
 	return (
-		<form>
+		<form
+			onSubmit={(e) => {
+				e.preventDefault();
+			}}
+		>
 			<FieldGroup>
 				<FieldSet>
 					<FieldLegend>Post Types</FieldLegend>
-					<FieldGroup data-slot="checkbox-group">
-						<CheckboxGroup className="flex flex-row flex-wrap gap-1 *:w-auto">
-							<FieldLabel htmlFor="post-type-instagram" className="max-w-fit">
-								<Field orientation="horizontal">
-									<Checkbox id="post-type-instagram" />
-									<FieldContent>
+					<form.Field name="types" mode="array">
+						{(field) => (
+							<FieldGroup className="flex flex-row flex-wrap gap-1 *:w-auto">
+								<FieldLabel htmlFor="post-type-instagram" className="max-w-fit">
+									<Field orientation="horizontal">
+										<Checkbox
+											id="post-type-instagram"
+											onCheckedChange={(checked) => {
+												if (checked) {
+													field.pushValue(PostType.Instagram);
+												} else {
+													const index = field.state.value.indexOf(PostType.Instagram);
+													if (index > -1) {
+														field.removeValue(index);
+													}
+												}
+											}}
+										/>
+										<FieldContent>
+											<FieldTitle>
+												<InstagramIcon className="w-4" />
+												Post
+											</FieldTitle>
+										</FieldContent>
+									</Field>
+								</FieldLabel>
+								<FieldLabel htmlFor="post-type-highlight" className="max-w-fit">
+									<Field orientation="horizontal">
+										<Checkbox
+											id="post-type-highlight"
+											onCheckedChange={(checked) => {
+												if (checked) {
+													field.pushValue(PostType.Highlight);
+												} else {
+													const index = field.state.value.indexOf(PostType.Highlight);
+													if (index > -1) {
+														field.removeValue(index);
+													}
+												}
+											}}
+										/>
 										<FieldTitle>
 											<InstagramIcon className="w-4" />
+											Highlight
+										</FieldTitle>
+									</Field>
+								</FieldLabel>
+								<FieldLabel htmlFor="post-type-story" className="max-w-fit">
+									<Field orientation="horizontal">
+										<Checkbox
+											id="post-type-story"
+											onCheckedChange={(checked) => {
+												if (checked) {
+													field.pushValue(PostType.Story);
+												} else {
+													const index = field.state.value.indexOf(PostType.Story);
+													if (index > -1) {
+														field.removeValue(index);
+													}
+												}
+											}}
+										/>
+										<FieldTitle>
+											<InstagramIcon className="w-4" />
+											Story
+										</FieldTitle>
+									</Field>
+								</FieldLabel>
+								<FieldLabel htmlFor="post-type-tiktok" className="max-w-fit">
+									<Field orientation="horizontal">
+										<Checkbox
+											id="post-type-tiktok"
+											onCheckedChange={(checked) => {
+												if (checked) {
+													field.pushValue(PostType.TikTok);
+												} else {
+													const index = field.state.value.indexOf(PostType.TikTok);
+													if (index > -1) {
+														field.removeValue(index);
+													}
+												}
+											}}
+										/>
+										<FieldTitle>
+											<TikTokIcon className="w-4" />
 											Post
 										</FieldTitle>
-									</FieldContent>
-								</Field>
-							</FieldLabel>
-							<FieldLabel htmlFor="post-type-highlight" className="max-w-fit">
-								<Field orientation="horizontal">
-									<Checkbox id="post-type-highlight" />
-									<FieldTitle>
-										<InstagramIcon className="w-4" />
-										Highlight
-									</FieldTitle>
-								</Field>
-							</FieldLabel>
-							<FieldLabel htmlFor="post-type-story" className="max-w-fit">
-								<Field orientation="horizontal">
-									<Checkbox id="post-type-story" />
-									<FieldTitle>
-										<InstagramIcon className="w-4" />
-										Story
-									</FieldTitle>
-								</Field>
-							</FieldLabel>
-							<FieldLabel htmlFor="post-type-tiktok" className="max-w-fit">
-								<Field orientation="horizontal">
-									<Checkbox id="post-type-tiktok" />
-									<FieldTitle>
-										<TikTokIcon className="w-4" />
-										Post
-									</FieldTitle>
-								</Field>
-							</FieldLabel>
-							<FieldLabel htmlFor="post-type-snapchat" className="max-w-fit">
-								<Field orientation="horizontal">
-									<Checkbox id="post-type-snapchat" />
-									<FieldTitle>
-										<SnapchatIcon className="w-4" />
-										Highlight
-									</FieldTitle>
-								</Field>
-							</FieldLabel>
-							<FieldLabel htmlFor="post-type-vsco" className="max-w-fit">
-								<Field orientation="horizontal">
-									<Checkbox id="post-type-vsco" />
-									<FieldTitle>
-										<VSCOIcon className="w-4" />
-										Post
-									</FieldTitle>
-								</Field>
-							</FieldLabel>
-						</CheckboxGroup>
-					</FieldGroup>
+									</Field>
+								</FieldLabel>
+								<FieldLabel htmlFor="post-type-snapchat" className="max-w-fit">
+									<Field orientation="horizontal">
+										<Checkbox
+											id="post-type-snapchat"
+											onCheckedChange={(checked) => {
+												if (checked) {
+													field.pushValue(PostType.Snapchat);
+												} else {
+													const index = field.state.value.indexOf(PostType.Snapchat);
+													if (index > -1) {
+														field.removeValue(index);
+													}
+												}
+											}}
+										/>
+										<FieldTitle>
+											<SnapchatIcon className="w-4" />
+											Highlight
+										</FieldTitle>
+									</Field>
+								</FieldLabel>
+								<FieldLabel htmlFor="post-type-vsco" className="max-w-fit">
+									<Field orientation="horizontal">
+										<Checkbox
+											id="post-type-vsco"
+											onCheckedChange={(checked) => {
+												if (checked) {
+													field.pushValue(PostType.VSCO);
+												} else {
+													const index = field.state.value.indexOf(PostType.VSCO);
+													if (index > -1) {
+														field.removeValue(index);
+													}
+												}
+											}}
+										/>
+										<FieldTitle>
+											<VSCOIcon className="w-4" />
+											Post
+										</FieldTitle>
+									</Field>
+								</FieldLabel>
+							</FieldGroup>
+						)}
+					</form.Field>
 				</FieldSet>
 			</FieldGroup>
 		</form>
 	);
 }
-
-const historyPostCategorySchema = z.object({
-	exclusive: z.boolean().catch(false),
-	categories: z.array(z.string()),
-});
 
 function HistoryPostCategoryForm() {
 	const categoriesQuery = useQuery(getUserCategories, {});
@@ -110,12 +191,19 @@ function HistoryPostCategoryForm() {
 			categories: [] as string[],
 		},
 		validators: {
-			onChange: historyPostCategorySchema,
+			onChange: z.object({
+				exclusive: z.boolean().catch(false),
+				categories: z.array(z.string()),
+			}),
 		},
 	});
 
 	return (
-		<form>
+		<form
+			onSubmit={(e) => {
+				e.preventDefault();
+			}}
+		>
 			<FieldGroup>
 				<FieldSet>
 					<FieldLegend>Post Categories</FieldLegend>
