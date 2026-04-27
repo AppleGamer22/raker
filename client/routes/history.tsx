@@ -1,3 +1,4 @@
+import { timestampDate } from "@bufbuild/protobuf/wkt";
 import { useMutation } from "@connectrpc/connect-query";
 import { useForm } from "@tanstack/react-form";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
@@ -6,10 +7,12 @@ import { Fragment, useEffect, useState } from "react";
 import { toast } from "sonner";
 import z from "zod";
 
-import { searchHistoryOwners } from "@/buf/raker/v1/raker-RakerServer_connectquery";
-import { PostType } from "@/buf/raker/v1/raker_pb";
+import { searchHistory, searchHistoryOwners } from "@/buf/raker/v1/raker-RakerServer_connectquery";
+import { PostType, type ScrapeResponse } from "@/buf/raker/v1/raker_pb";
+import { PostCarousel } from "@/components/post-carousel";
 import { Badge } from "@/components/ui/badge";
-import { CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
@@ -28,6 +31,8 @@ import {
 } from "@/components/ui/combobox";
 import { FieldGroup, FieldLegend, Field, FieldSet, FieldLabel, FieldContent, FieldTitle } from "@/components/ui/field";
 import { InputGroupAddon } from "@/components/ui/input-group";
+import { Label } from "@/components/ui/label";
+import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { InstagramIcon } from "@/components/ui/svgs/instagram";
 import { SnapchatIcon } from "@/components/ui/svgs/snapchat";
@@ -44,45 +49,45 @@ function PostTypeIconLabel({ type }: { type: PostType }) {
 	switch (type) {
 		case PostType.Instagram:
 			return (
-				<>
+				<span className="inline-flex items-center gap-1 whitespace-nowrap">
 					<InstagramIcon className="w-4" />
 					Post
-				</>
+				</span>
 			);
 		case PostType.Highlight:
 			return (
-				<>
+				<span className="inline-flex items-center gap-1 whitespace-nowrap">
 					<InstagramIcon className="w-4" />
 					Highlight
-				</>
+				</span>
 			);
 		case PostType.Story:
 			return (
-				<>
+				<span className="inline-flex items-center gap-1 whitespace-nowrap">
 					<InstagramIcon className="w-4" />
 					Story
-				</>
+				</span>
 			);
 		case PostType.TikTok:
 			return (
-				<>
+				<span className="inline-flex items-center gap-1 whitespace-nowrap">
 					<TikTokIcon className="w-4" />
 					Post
-				</>
+				</span>
 			);
 		case PostType.Snapchat:
 			return (
-				<>
+				<span className="inline-flex items-center gap-1 whitespace-nowrap">
 					<SnapchatIcon className="w-4" />
 					Highlight
-				</>
+				</span>
 			);
 		case PostType.VSCO:
 			return (
-				<>
+				<span className="inline-flex items-center gap-1 whitespace-nowrap">
 					<VSCOIcon className="w-4" />
 					Post
-				</>
+				</span>
 			);
 	}
 }
@@ -405,6 +410,7 @@ interface OwnerPostType {
 function History() {
 	const navigate = useNavigate({ from: Route.fullPath });
 	const { username, categories: availableCategories } = useUser();
+
 	const [types, setTypes] = useState([
 		PostType.Instagram,
 		PostType.Highlight,
@@ -419,9 +425,13 @@ function History() {
 	const [isOpen, setIsOpen] = useState(false);
 	const [ownerSearchTerm, setOwnerSearchTerm] = useState("");
 	const [ownersSearchValue, setOwnersSearchValue] = useState<OwnerPostType[]>([]);
-	const comboboxItems = ownerSearchTerm.length > 0 ? [ownerSearchTerm, ...ownersSearchOptions] : ownersSearchOptions;
+	const [totalCount, setTotalCount] = useState(BigInt(0));
+	const [histories, setHistories] = useState<ScrapeResponse[]>([]);
+
 	const anchor = useComboboxAnchor();
+
 	const ownersMutation = useMutation(searchHistoryOwners);
+	const searchHistoryMutation = useMutation(searchHistory);
 
 	useEffect(() => {
 		setCategories(availableCategories);
@@ -476,7 +486,7 @@ function History() {
 			</Collapsible>
 			<Combobox
 				multiple
-				items={comboboxItems}
+				items={ownerSearchTerm.length > 0 ? [ownerSearchTerm, ...ownersSearchOptions] : ownersSearchOptions}
 				value={ownersSearchValue}
 				onValueChange={(value) => (value !== null ? setOwnersSearchValue(value) : null)}
 			>
@@ -551,6 +561,69 @@ function History() {
 					</ComboboxContent>
 				)}
 			</Combobox>
+			<Button
+				className="w-full"
+				onClick={async () => {
+					try {
+						const { histories, totalCount } = await searchHistoryMutation.mutateAsync({
+							categories,
+							exclusive,
+							types,
+							owners: ownersSearchValue.map(({ owner }) => owner),
+							page: BigInt(1),
+							pageSize: 30,
+						});
+						setTotalCount(totalCount);
+						setHistories(histories);
+					} catch (err) {
+						toast.error((err as Error).message, {
+							position: "top-center",
+						});
+					}
+				}}
+			>
+				Search
+			</Button>
+			{searchHistoryMutation.isPending && <Progress className="pt-2" value={null} />}
+			{totalCount > 0 && <Label className="my-2 justify-center">{totalCount} results</Label>}
+			<div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+				{histories.map(({ postType, postOwner, post, postDate, categories, files }) => (
+					<Card key={`post-${postType}-${postOwner}-${post}`}>
+						<CardHeader>
+							<span className="inline-flex items-center gap-1 leading-none whitespace-nowrap">
+								<Badge variant="secondary">
+									<PostTypeIconLabel type={postType} />
+								</Badge>
+								<span>/</span>
+								<Badge variant="secondary">
+									<code className="leading-none">{postOwner}</code>
+								</Badge>
+								<span>/</span>
+								<Badge variant="secondary">
+									<code className="leading-none">{post}</code>
+								</Badge>
+							</span>
+							{postDate !== undefined && <span>{timestampDate(postDate).toString()}</span>}
+							<span>
+								{categories.map((category) => (
+									<Badge
+										key={`category-${postType}-${postOwner}-${post}-${category}`}
+										variant="secondary"
+									>
+										{category}
+									</Badge>
+								))}
+							</span>
+						</CardHeader>
+						<CardContent>
+							<PostCarousel
+								post={{ postType, postOwner, post, files } as ScrapeResponse}
+								username={username!}
+							/>
+						</CardContent>
+					</Card>
+				))}
+			</div>
 		</CardContent>
 	);
 }
