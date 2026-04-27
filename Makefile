@@ -25,8 +25,7 @@ test:
 	go test -v -race -cover ./shared/... ./server/...
 
 debug:
-	# stalk watch -c "go run ./server" server/** shared/** templates/*
-	CI=1 CLICOLOR_FORCE=1 air
+	CI=1 CLICOLOR_FORCE=1 air & npm run dev
 
 completion:
 	go run ./cli completion bash > raker.bash
