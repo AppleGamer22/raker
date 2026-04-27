@@ -11,13 +11,13 @@ plugins:
       - paths=source_relative
       - simple
 managed:
-  enabled: false
+  enabled: true
   # override:
   #   - file_option: go_package
   #     value: github.com/AppleGamer22/raker/server/buf/proto/raker/v1
   #   - file_option: go_package
   #     module: buf.build/googleapis/googleapis
   #     value: google.golang.org/genproto/googleapis/type/latlng
-  # disable:
-  #   - file_option: go_package
-  #     module: buf.build/bufbuild/protovalidate
+  disable:
+    - file_option: go_package
+      module: buf.build/bufbuild/protovalidate

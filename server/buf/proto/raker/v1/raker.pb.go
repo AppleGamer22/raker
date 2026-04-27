@@ -805,7 +805,9 @@ const file_raker_v1_raker_proto_rawDesc = "" +
 	"\n" +
 	"RemoveFile\x12\x1b.raker.v1.RemoveFileRequest\x1a\x18.raker.v1.ScrapeResponse\x12O\n" +
 	"\x10UpdateCategories\x12!.raker.v1.UpdateCategoriesRequest\x1a\x18.raker.v1.ScrapeResponse\x12D\n" +
-	"\rSearchHistory\x12\x18.raker.v1.HistoryRequest\x1a\x19.raker.v1.HistoryResponseB9Z7github.com/AppleGamer22/raker/server/buf/proto/raker/v1b\x06proto3"
+	"\rSearchHistory\x12\x18.raker.v1.HistoryRequest\x1a\x19.raker.v1.HistoryResponseB\x94\x01\n" +
+	"\fcom.raker.v1B\n" +
+	"RakerProtoP\x01Z7github.com/AppleGamer22/raker/server/buf/proto/raker/v1\xa2\x02\x03RXX\xaa\x02\bRaker.V1\xca\x02\bRaker\\V1\xe2\x02\x14Raker\\V1\\GPBMetadata\xea\x02\tRaker::V1b\x06proto3"
 
 var (
 	file_raker_v1_raker_proto_rawDescOnce sync.Once

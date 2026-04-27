@@ -15,6 +15,7 @@ lint:
     - RPC_RESPONSE_STANDARD_NAME
     - RPC_REQUEST_RESPONSE_UNIQUE
 deps:
+  - buf.build/bufbuild/protovalidate
   - buf.build/googleapis/googleapis
 modules:
   - path: proto
