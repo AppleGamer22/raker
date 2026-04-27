@@ -12,6 +12,7 @@ import { CardContent } from "@/components/ui/card";
 import { Field, FieldContent, FieldError, FieldGroup, FieldLabel, FieldLegend, FieldSet } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from "@/components/ui/input-group";
+import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { useConfirmationDialog } from "@/hooks/use-confirmation-dialog";
 import { useUser } from "@/hooks/user-provider";
@@ -196,174 +197,162 @@ function Categories() {
 	const { confirm, DialogComponent } = useConfirmationDialog();
 
 	return (
-		<>
-			<form
-				onSubmit={(e) => {
-					e.preventDefault();
-				}}
-			>
-				<FieldLegend>Categories</FieldLegend>
-				<FieldGroup>
-					{categoriesQuery.isPending ? <FieldLegend>Loading categories...</FieldLegend> : null}
-					{categoriesQuery.isError ? <FieldError>{categoriesQuery.error.message}</FieldError> : null}
-					<form.Field name="categories" mode="array">
-						{(field) => {
-							const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
-							return (
-								<FieldSet>
-									<FieldGroup>
-										{field.state.value.map((_, i) => (
-											<form.Field key={i} name={`categories[${i}]`}>
-												{(subField) => {
-													const isSubFieldInvalid =
-														subField.state.meta.isTouched && !subField.state.meta.isValid;
-													return (
-														<Field
-															orientation="horizontal"
-															data-invalid={isSubFieldInvalid}
-														>
-															<FieldContent>
-																<InputGroup>
-																	<InputGroupInput
-																		name={subField.name}
-																		value={subField.state.value}
-																		onBlur={subField.handleBlur}
-																		onChange={(e) =>
-																			subField.handleChange(e.target.value)
-																		}
-																		aria-invalid={isSubFieldInvalid}
-																		placeholder={
-																			i < categories.length
-																				? categories[i]
-																				: "New Category Name"
-																		}
-																	></InputGroupInput>
+		<form
+			onSubmit={(e) => {
+				e.preventDefault();
+			}}
+		>
+			<FieldLegend>Categories</FieldLegend>
+			<FieldGroup>
+				{categoriesQuery.isPending ? <FieldLegend>Loading categories...</FieldLegend> : null}
+				{categoriesQuery.isError ? <FieldError>{categoriesQuery.error.message}</FieldError> : null}
+				<form.Field name="categories" mode="array">
+					{(field) => {
+						const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
+						return (
+							<FieldSet>
+								<FieldGroup>
+									{field.state.value.map((_, i) => (
+										<form.Field key={i} name={`categories[${i}]`}>
+											{(subField) => {
+												const isSubFieldInvalid =
+													subField.state.meta.isTouched && !subField.state.meta.isValid;
+												return (
+													<Field orientation="horizontal" data-invalid={isSubFieldInvalid}>
+														<FieldContent>
+															<InputGroup>
+																<InputGroupInput
+																	name={subField.name}
+																	value={subField.state.value}
+																	onBlur={subField.handleBlur}
+																	onChange={(e) =>
+																		subField.handleChange(e.target.value)
+																	}
+																	aria-invalid={isSubFieldInvalid}
+																	placeholder={
+																		i < categories.length
+																			? categories[i]
+																			: "New Category Name"
+																	}
+																></InputGroupInput>
 
-																	<InputGroupAddon align="inline-end">
-																		<InputGroupButton
-																			type="button"
-																			variant="ghost"
-																			size="icon-xs"
-																			onClick={async () => {
-																				const confirmed = await confirm({
-																					title: "Delete Category",
-																					description: `Are you sure you want to delete the category "${subField.state.value}"? This action cannot be undone.`,
-																					confirmText: "Delete",
-																					cancelText: "Cancel",
-																					isDestructive: true,
+																<InputGroupAddon align="inline-end">
+																	<InputGroupButton
+																		type="button"
+																		variant="ghost"
+																		size="icon-xs"
+																		onClick={async () => {
+																			const confirmed = await confirm({
+																				title: "Delete Category",
+																				description: `Are you sure you want to delete the category "${subField.state.value}"? This action cannot be undone.`,
+																				confirmText: "Delete",
+																				cancelText: "Cancel",
+																				isDestructive: true,
+																			});
+
+																			if (!confirmed) return;
+
+																			try {
+																				await editCategoryMutation.mutateAsync({
+																					oldCategory: subField.state.value,
+																					newCategory: "",
 																				});
-
-																				if (!confirmed) return;
-
-																				try {
-																					await editCategoryMutation.mutateAsync(
-																						{
-																							oldCategory:
-																								subField.state.value,
-																							newCategory: "",
-																						},
-																					);
-																					field.removeValue(i);
-																				} catch (err) {
-																					toast.error(
-																						(err as Error).message,
-																						{
-																							position: "top-center",
-																						},
-																					);
-																				}
-																			}}
-																			aria-label={`Remove Category ${i + 1}`}
-																		>
-																			<XIcon />
-																		</InputGroupButton>
-																	</InputGroupAddon>
-																</InputGroup>
-																{isSubFieldInvalid && (
-																	<FieldError errors={subField.state.meta.errors} />
-																)}
-															</FieldContent>
-														</Field>
-													);
+																				field.removeValue(i);
+																			} catch (err) {
+																				toast.error((err as Error).message, {
+																					position: "top-center",
+																				});
+																			}
+																		}}
+																		aria-label={`Remove Category ${i + 1}`}
+																	>
+																		<XIcon />
+																	</InputGroupButton>
+																</InputGroupAddon>
+															</InputGroup>
+															{isSubFieldInvalid && (
+																<FieldError errors={subField.state.meta.errors} />
+															)}
+														</FieldContent>
+													</Field>
+												);
+											}}
+										</form.Field>
+									))}
+								</FieldGroup>
+								<Field orientation="horizontal">
+									<FieldContent>
+										<InputGroup>
+											<InputGroupInput
+												value={newCategory}
+												onChange={(e) => {
+													setNewCategory(e.target.value);
 												}}
-											</form.Field>
-										))}
-									</FieldGroup>
-									<Field orientation="horizontal">
-										<FieldContent>
-											<InputGroup>
-												<InputGroupInput
-													value={newCategory}
-													onChange={(e) => {
-														setNewCategory(e.target.value);
-													}}
-													placeholder="New Category Name"
-												/>
-												<InputGroupAddon align="inline-end">
-													<InputGroupButton
-														type="button"
-														variant="ghost"
-														size="icon-xs"
-														onClick={() => setNewCategory("")}
-														aria-label={`Reset New Category Name`}
-														disabled={!newCategory.trim()}
-													>
-														<XIcon />
-														<span className="sr-only">Remove category</span>
-													</InputGroupButton>
-													<InputGroupButton
-														type="button"
-														onClick={async () => {
-															const trimmedNewCategoryName = newCategory.trim();
-															if (!newCategory) {
-																return;
-															} else if (
-																field.state.value.includes(trimmedNewCategoryName)
-															) {
-																toast.error(
-																	<label>
-																		Category name <b>{trimmedNewCategoryName}</b> is
-																		already part of the categories list
-																	</label>,
-																	{
-																		position: "top-center",
-																	},
-																);
-																return;
-															}
-
-															try {
-																await editCategoryMutation.mutateAsync({
-																	oldCategory: trimmedNewCategoryName,
-																	newCategory: trimmedNewCategoryName,
-																});
-
-																field.pushValue(trimmedNewCategoryName);
-																setNewCategory("");
-															} catch (err) {
-																toast.error((err as Error).message, {
+												placeholder="New Category Name"
+											/>
+											<InputGroupAddon align="inline-end">
+												<InputGroupButton
+													type="button"
+													variant="ghost"
+													size="icon-xs"
+													onClick={() => setNewCategory("")}
+													aria-label={`Reset New Category Name`}
+													disabled={!newCategory.trim()}
+												>
+													<XIcon />
+													<span className="sr-only">Remove category</span>
+												</InputGroupButton>
+												<InputGroupButton
+													type="button"
+													onClick={async () => {
+														const trimmedNewCategoryName = newCategory.trim();
+														if (!newCategory) {
+															return;
+														} else if (field.state.value.includes(trimmedNewCategoryName)) {
+															toast.error(
+																<label>
+																	Category name <b>{trimmedNewCategoryName}</b> is
+																	already part of the categories list
+																</label>,
+																{
 																	position: "top-center",
-																});
-															}
-														}}
-														disabled={!newCategory.trim()}
-													>
-														<PlusIcon />
-														<span className="sr-only">Add category</span>
-													</InputGroupButton>
-												</InputGroupAddon>
-											</InputGroup>
-										</FieldContent>
-									</Field>
-									{isInvalid && <FieldError errors={field.state.meta.errors} />}
-								</FieldSet>
-							);
-						}}
-					</form.Field>
-				</FieldGroup>
-			</form>
+																},
+															);
+															return;
+														}
+
+														try {
+															await editCategoryMutation.mutateAsync({
+																oldCategory: trimmedNewCategoryName,
+																newCategory: trimmedNewCategoryName,
+															});
+
+															field.pushValue(trimmedNewCategoryName);
+															setNewCategory("");
+														} catch (err) {
+															toast.error((err as Error).message, {
+																position: "top-center",
+															});
+														}
+													}}
+													disabled={!newCategory.trim()}
+												>
+													<PlusIcon />
+													<span className="sr-only">Add category</span>
+												</InputGroupButton>
+											</InputGroupAddon>
+										</InputGroup>
+									</FieldContent>
+								</Field>
+								{isInvalid && <FieldError errors={field.state.meta.errors} />}
+							</FieldSet>
+						);
+					}}
+				</form.Field>
+			</FieldGroup>
+			{editCategoryMutation.isPending && <Progress value={null} className="pt-2" />}
 			<DialogComponent />
-		</>
+		</form>
 	);
 }
 

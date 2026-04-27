@@ -129,6 +129,21 @@
 	}
 }
 
+@keyframes progress-indeterminate {
+	0% {
+		transform: translateX(-120%);
+	}
+	100% {
+		transform: translateX(280%);
+	}
+}
+
+@layer utilities {
+	.animate-progress-indeterminate {
+		animation: progress-indeterminate 1.2s ease-in-out infinite;
+	}
+}
+
 /* non-shadcn styles */
 * {
 	/* Use Tailwind’s  utilities to re-enable selection: select-text, select-auto, select-all */
