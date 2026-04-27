@@ -377,6 +377,10 @@ function History() {
 	const [isOpen, setIsOpen] = useState(false);
 
 	useEffect(() => {
+		setCategories(availableCategories);
+	}, [availableCategories]);
+
+	useEffect(() => {
 		if (username === null) {
 			navigate({ to: "/", replace: true });
 		}
