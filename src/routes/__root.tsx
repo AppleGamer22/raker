@@ -13,7 +13,7 @@ import {
 	SidebarMenuItem,
 	SidebarProvider,
 } from "#/components/ui/sidebar";
-import { InstagramIcon } from "#/components/ui/svgs/instagramIcon";
+// import { InstagramIcon } from "#/components/ui/svgs/instagramIcon";
 import { ModeToggle } from "#/components/ui/theme-toggle";
 import { queryClient, router } from "#/router";
 
@@ -28,12 +28,12 @@ function Root() {
 			<ThemeProvider storageKey="raker-ui-theme">
 				<QueryClientProvider client={queryClient}>
 					<header className="sticky top-0 z-50 flex w-full items-center border-b bg-background">
-						<div className="flex w-full items-center gap-2 px-4">
+						<div className="flex h-(--header-height) w-full items-center gap-2 px-4">
 							<ModeToggle />
 						</div>
 					</header>
 					<SidebarProvider className="flex flex-col">
-						<Sidebar>
+						<Sidebar className="top-(--header-height) h-[calc(100svh-var(--header-height))]!">
 							<SidebarGroup>
 								<SidebarMenu>
 									<SidebarMenuItem>
