@@ -1,7 +1,20 @@
 # yaml-language-server: $schema=https://json.schemastore.org/buf.gen.json
 version: v2
 plugins:
-  - remote: buf.build/connectrpc/go:v1.19.1
-    out: server/connectrpc
+  - remote: buf.build/protocolbuffers/go:v1.36.11
+    out: server/buf/proto
     opt:
       - paths=source_relative
+  - remote: buf.build/connectrpc/go:v1.19.1
+    out: server/buf/connect
+    opt:
+      - paths=source_relative
+      - simple
+# managed:
+#   enabled: true
+#   override:
+#     - file_option: go_package
+#       value: github.com/AppleGamer22/raker/server/buf/proto/raker/v1
+#   disable:
+#     - file_option: go_package
+#       module: buf.build/bufbuild/protovalidate

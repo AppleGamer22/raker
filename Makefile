@@ -13,8 +13,12 @@ server:
 	-go run ./server || true
 	docker stop database
 
-cli:
-	go build -race $(LDFLAGS) -o raker ./cli
+buf:
+	rm -rf server/buf
+	buf dep update
+	buf generate
+	go mod tidy
+	go mod vendor
 
 test:
 	go clean -testcache

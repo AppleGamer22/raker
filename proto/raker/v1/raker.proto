@@ -6,7 +6,7 @@ import "google/protobuf/empty.proto";
 import "google/type/datetime.proto";
 import "google/type/latlng.proto";
 
-option go_package = "github.com/AppleGamer22/raker/server/connectrpc";
+option go_package = "github.com/AppleGamer22/raker/server/buf/proto/raker/v1";
 
 // enum NetworkType {
 //   Instagram = 0;

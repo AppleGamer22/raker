@@ -4,6 +4,8 @@ go 1.25.0
 
 require (
 	github.com/bep/imagemeta v0.17.2
+	connectrpc.com/connect v1.19.1
+	github.com/bep/imagemeta v0.17.0
 	github.com/charmbracelet/log v1.0.0
 	github.com/go-webauthn/webauthn v0.17.0
 	github.com/golang-jwt/jwt/v5 v5.3.1
@@ -15,6 +17,8 @@ require (
 	go.mongodb.org/mongo-driver v1.17.9
 	golang.org/x/crypto v0.50.0
 	golang.org/x/net v0.53.0
+	google.golang.org/genproto v0.0.0-20260414002931-afd174a4e478
+	google.golang.org/protobuf v1.36.11
 )
 
 require (
