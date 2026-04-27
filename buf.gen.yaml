@@ -11,7 +11,7 @@ plugins:
       - paths=source_relative
       - simple
   - remote: buf.build/bufbuild/es:v2.11.0
-    out: src/buf
+    out: client/buf
     include_imports: true
     opt: target=ts
 managed:

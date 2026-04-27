@@ -7,7 +7,7 @@
 	"sortImports": true,
 	"sortTailwindcss": {
 		"functions": ["clsx", "cn"],
-		"stylesheet": "./src/styles.css"
+		"stylesheet": "./client/styles.css"
 	},
 	"sortPackageJson": true,
 	"useTabs": true
