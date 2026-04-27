@@ -75,7 +75,7 @@ const (
 // RakerServerClient is a client for the raker.v1.RakerServer service.
 type RakerServerClient interface {
 	SignUpInstagram(context.Context, *v1.SignUpRequest) (*emptypb.Empty, error)
-	SignInInstagram(context.Context, *v1.SignUpRequest) (*emptypb.Empty, error)
+	SignInInstagram(context.Context, *v1.SignInRequest) (*emptypb.Empty, error)
 	EditCategory(context.Context, *v1.EditCategoryRequest) (*emptypb.Empty, error)
 	ScrapeInstagram(context.Context, *v1.UnaryScrapeRequest) (*v1.ScrapeResponse, error)
 	ScrapeHighlight(context.Context, *v1.UnaryScrapeRequest) (*v1.ScrapeResponse, error)
@@ -106,7 +106,7 @@ func NewRakerServerClient(httpClient connect.HTTPClient, baseURL string, opts ..
 			connect.WithSchema(rakerServerMethods.ByName("SignUpInstagram")),
 			connect.WithClientOptions(opts...),
 		),
-		signInInstagram: connect.NewClient[v1.SignUpRequest, emptypb.Empty](
+		signInInstagram: connect.NewClient[v1.SignInRequest, emptypb.Empty](
 			httpClient,
 			baseURL+RakerServerSignInInstagramProcedure,
 			connect.WithSchema(rakerServerMethods.ByName("SignInInstagram")),
@@ -184,7 +184,7 @@ func NewRakerServerClient(httpClient connect.HTTPClient, baseURL string, opts ..
 // rakerServerClient implements RakerServerClient.
 type rakerServerClient struct {
 	signUpInstagram     *connect.Client[v1.SignUpRequest, emptypb.Empty]
-	signInInstagram     *connect.Client[v1.SignUpRequest, emptypb.Empty]
+	signInInstagram     *connect.Client[v1.SignInRequest, emptypb.Empty]
 	editCategory        *connect.Client[v1.EditCategoryRequest, emptypb.Empty]
 	scrapeInstagram     *connect.Client[v1.UnaryScrapeRequest, v1.ScrapeResponse]
 	scrapeHighlight     *connect.Client[v1.UnaryScrapeRequest, v1.ScrapeResponse]
@@ -208,7 +208,7 @@ func (c *rakerServerClient) SignUpInstagram(ctx context.Context, req *v1.SignUpR
 }
 
 // SignInInstagram calls raker.v1.RakerServer.SignInInstagram.
-func (c *rakerServerClient) SignInInstagram(ctx context.Context, req *v1.SignUpRequest) (*emptypb.Empty, error) {
+func (c *rakerServerClient) SignInInstagram(ctx context.Context, req *v1.SignInRequest) (*emptypb.Empty, error) {
 	response, err := c.signInInstagram.CallUnary(ctx, connect.NewRequest(req))
 	if response != nil {
 		return response.Msg, err
@@ -318,7 +318,7 @@ func (c *rakerServerClient) SearchHistoryOwners(ctx context.Context, req *v1.His
 // RakerServerHandler is an implementation of the raker.v1.RakerServer service.
 type RakerServerHandler interface {
 	SignUpInstagram(context.Context, *v1.SignUpRequest) (*emptypb.Empty, error)
-	SignInInstagram(context.Context, *v1.SignUpRequest) (*emptypb.Empty, error)
+	SignInInstagram(context.Context, *v1.SignInRequest) (*emptypb.Empty, error)
 	EditCategory(context.Context, *v1.EditCategoryRequest) (*emptypb.Empty, error)
 	ScrapeInstagram(context.Context, *v1.UnaryScrapeRequest) (*v1.ScrapeResponse, error)
 	ScrapeHighlight(context.Context, *v1.UnaryScrapeRequest) (*v1.ScrapeResponse, error)
@@ -458,7 +458,7 @@ func (UnimplementedRakerServerHandler) SignUpInstagram(context.Context, *v1.Sign
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raker.v1.RakerServer.SignUpInstagram is not implemented"))
 }
 
-func (UnimplementedRakerServerHandler) SignInInstagram(context.Context, *v1.SignUpRequest) (*emptypb.Empty, error) {
+func (UnimplementedRakerServerHandler) SignInInstagram(context.Context, *v1.SignInRequest) (*emptypb.Empty, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raker.v1.RakerServer.SignInInstagram is not implemented"))
 }
 

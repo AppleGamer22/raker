@@ -840,7 +840,7 @@ const file_raker_v1_raker_proto_rawDesc = "" +
 	"\x04VSCO\x10\x042\xc1\a\n" +
 	"\vRakerServer\x12B\n" +
 	"\x0fSignUpInstagram\x12\x17.raker.v1.SignUpRequest\x1a\x16.google.protobuf.Empty\x12B\n" +
-	"\x0fSignInInstagram\x12\x17.raker.v1.SignUpRequest\x1a\x16.google.protobuf.Empty\x12E\n" +
+	"\x0fSignInInstagram\x12\x17.raker.v1.SignInRequest\x1a\x16.google.protobuf.Empty\x12E\n" +
 	"\fEditCategory\x12\x1d.raker.v1.EditCategoryRequest\x1a\x16.google.protobuf.Empty\x12I\n" +
 	"\x0fScrapeInstagram\x12\x1c.raker.v1.UnaryScrapeRequest\x1a\x18.raker.v1.ScrapeResponse\x12I\n" +
 	"\x0fScrapeHighlight\x12\x1c.raker.v1.UnaryScrapeRequest\x1a\x18.raker.v1.ScrapeResponse\x12E\n" +
@@ -897,7 +897,7 @@ var file_raker_v1_raker_proto_depIdxs = []int32{
 	0,  // 5: raker.v1.HistoryRequest.types:type_name -> raker.v1.MediaType
 	6,  // 6: raker.v1.HistoryResponse.histories:type_name -> raker.v1.ScrapeResponse
 	1,  // 7: raker.v1.RakerServer.SignUpInstagram:input_type -> raker.v1.SignUpRequest
-	1,  // 8: raker.v1.RakerServer.SignInInstagram:input_type -> raker.v1.SignUpRequest
+	2,  // 8: raker.v1.RakerServer.SignInInstagram:input_type -> raker.v1.SignInRequest
 	3,  // 9: raker.v1.RakerServer.EditCategory:input_type -> raker.v1.EditCategoryRequest
 	4,  // 10: raker.v1.RakerServer.ScrapeInstagram:input_type -> raker.v1.UnaryScrapeRequest
 	4,  // 11: raker.v1.RakerServer.ScrapeHighlight:input_type -> raker.v1.UnaryScrapeRequest

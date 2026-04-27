@@ -42,6 +42,21 @@ type RakerServer struct {
 	HTTPServer    http.Server
 }
 
+// type rakerServerHandlerAdapter struct {
+// 	*RakerServer
+// }
+
+// func (a *rakerServerHandlerAdapter) SignInInstagram(ctx context.Context, req *v1.SignInRequest) (*emptypb.Empty, error) {
+// 	resp, err := a.RakerServer.SignInInstagram(ctx, req)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	if resp == nil || resp.Msg == nil {
+// 		return &emptypb.Empty{}, nil
+// 	}
+// 	return resp.Msg, nil
+// }
+
 func NewRakerServer() (*RakerServer, error) {
 	rakerServer := RakerServer{
 		Configuration: Configuration{

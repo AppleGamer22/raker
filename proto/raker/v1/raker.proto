@@ -94,7 +94,7 @@ message HistoryOwnersResponse {
 service RakerServer {
   rpc SignUpInstagram(SignUpRequest) returns (google.protobuf.Empty);
 
-  rpc SignInInstagram(SignUpRequest) returns (google.protobuf.Empty);
+  rpc SignInInstagram(SignInRequest) returns (google.protobuf.Empty);
 
   rpc EditCategory(EditCategoryRequest) returns (google.protobuf.Empty);
 
