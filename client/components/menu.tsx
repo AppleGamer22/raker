@@ -74,7 +74,7 @@ export function Menu({
 						<SidebarMenu className="gap-1">
 							<SidebarMenuItem>
 								<SidebarMenuButton
-									disabled={isSignedIn}
+									disabled={!isSignedIn}
 									isActive={isActiveRoute("/instagram")}
 									render={
 										<Link
@@ -181,7 +181,7 @@ export function Menu({
 						<SidebarMenu className="gap-1">
 							<SidebarMenuItem>
 								<SidebarMenuButton
-									disabled={isSignedIn}
+									disabled={!isSignedIn}
 									isActive={isActiveRoute("/history")}
 									render={
 										<Link disabled={!isSignedIn} to="/history" onClick={() => onNavigate?.()} />

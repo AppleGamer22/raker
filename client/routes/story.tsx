@@ -1,11 +1,13 @@
 import { useForm } from "@tanstack/react-form";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useEffect } from "react";
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
 import { CardContent } from "@/components/ui/card";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { useUser } from "@/hooks/user-provider";
 
 const storySearchSchema = z.object({
 	owner: z.string().catch(""),
@@ -20,6 +22,13 @@ export const Route = createFileRoute("/story")({
 function Story() {
 	const { owner } = Route.useSearch();
 	const navigate = useNavigate({ from: Route.fullPath });
+	const { username } = useUser();
+
+	useEffect(() => {
+		if (username === null) {
+			navigate({ to: "/", replace: true });
+		}
+	}, [navigate, username]);
 
 	const form = useForm({
 		defaultValues: {
