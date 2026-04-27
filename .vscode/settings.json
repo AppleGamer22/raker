@@ -1,9 +1,5 @@
 {
-	"cSpell.words": [
-		"bson",
-		"chromedp",
-		"VSCO"
-	],
+	"cSpell.words": ["bson", "chromedp", "VSCO"],
 	"sqltools.connections": [
 		{
 			"ssh": "Disabled",
@@ -15,5 +11,31 @@
 			"database": "raker",
 			"username": "applegamer22"
 		}
-	]
+	],
+	"files.watcherExclude": {
+		"**/routeTree.gen.ts": true
+	},
+	"search.exclude": {
+		"**/routeTree.gen.ts": true
+	},
+	"files.readonlyInclude": {
+		"**/routeTree.gen.ts": true
+	},
+	"oxc.path.oxfmt": "node_modules/oxfmt/bin/oxfmt",
+	"[typescript]": {
+		"editor.defaultFormatter": "oxc.oxc-vscode",
+		"editor.formatOnSave": true
+	},
+	"[typescriptreact]": {
+		"editor.defaultFormatter": "oxc.oxc-vscode",
+		"editor.formatOnSave": true
+	},
+	"[json]": {
+		"editor.defaultFormatter": "oxc.oxc-vscode",
+		"editor.formatOnSave": true
+	},
+	"[jsonc]": {
+		"editor.defaultFormatter": "oxc.oxc-vscode",
+		"editor.formatOnSave": true
+	}
 }
