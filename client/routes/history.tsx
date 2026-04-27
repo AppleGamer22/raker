@@ -480,7 +480,7 @@ function History() {
 				value={ownersSearchValue}
 				onValueChange={(value) => (value !== null ? setOwnersSearchValue(value) : null)}
 			>
-				<ComboboxChips ref={anchor} className="w-full max-w-xs">
+				<ComboboxChips className="my-2" ref={anchor}>
 					<ComboboxValue>
 						{(values) => (
 							<Fragment>
@@ -491,7 +491,6 @@ function History() {
 									</ComboboxChip>
 								))}
 								<ComboboxChipsInput
-									className="my-2"
 									placeholder="post owner search"
 									onChange={async (e) => {
 										setOwnerSearchTerm(e.target.value);
@@ -514,6 +513,9 @@ function History() {
 										}
 									}}
 								></ComboboxChipsInput>
+								<InputGroupAddon>
+									<SearchIcon />
+								</InputGroupAddon>
 							</Fragment>
 						)}
 					</ComboboxValue>
