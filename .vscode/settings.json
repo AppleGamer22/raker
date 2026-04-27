@@ -25,12 +25,14 @@
 	"oxc.path.oxlint": "node_modules/oxlint/bin/oxlint",
 	"[typescript]": {
 		"editor.defaultFormatter": "oxc.oxc-vscode",
+		"js/ts.preferences.importModuleSpecifier": "non-relative",
 		"editor.formatOnSave": true,
 		"editor.detectIndentation": false,
 		"editor.tabSize": 4
 	},
 	"[typescriptreact]": {
 		"editor.defaultFormatter": "oxc.oxc-vscode",
+		"js/ts.preferences.importModuleSpecifier": "non-relative",
 		"editor.formatOnSave": true,
 		"editor.detectIndentation": false,
 		"editor.tabSize": 4

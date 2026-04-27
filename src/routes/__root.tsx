@@ -2,17 +2,7 @@ import { createRootRoute, Outlet } from "@tanstack/react-router";
 
 import Header from "@/components/header";
 import { Menu } from "@/components/menu";
-import {
-	Sidebar,
-	SidebarGroup,
-	SidebarMenu,
-	SidebarMenuButton,
-	SidebarMenuItem,
-	SidebarProvider,
-} from "@/components/ui/sidebar";
-import { InstagramIcon } from "@/components/ui/svgs/instagram";
-import { TikTokIcon } from "@/components/ui/svgs/tiktok";
-import { VSCOIcon } from "@/components/ui/svgs/vsco";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export const Route = createRootRoute({
 	component: Root,
@@ -20,10 +10,11 @@ export const Route = createRootRoute({
 });
 
 function Root() {
-	// TODO: https://ui.shadcn.com/blocks/sidebar#sidebar-16
+	const isMobile = useIsMobile();
+
 	return (
 		<>
-			<Header />
+			{isMobile ? <Header /> : null}
 			<Menu />
 			<Outlet />
 		</>

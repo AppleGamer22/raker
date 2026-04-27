@@ -7,17 +7,27 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useTheme } from "@/hooks/theme-provider";
+import { useTheme, type Theme } from "@/hooks/theme-provider";
 
-export function ModeToggle() {
-	const { setTheme } = useTheme();
+function ThemeIcon({ theme }: { theme: Theme }) {
+	switch (theme) {
+		case "light":
+			return <SunIcon className="h-[1.2rem] w-[1.2rem] scale-100 transition-all" />;
+		case "dark":
+			return <MoonIcon className="h-[1.2rem] w-[1.2rem] scale-100 transition-all" />;
+		case "system":
+			return <ComputerIcon className="h-[1.2rem] w-[1.2rem] scale-100 transition-all" />;
+	}
+}
+
+export function ThemeToggle() {
+	const { theme, setTheme } = useTheme();
 
 	return (
 		<DropdownMenu>
 			<DropdownMenuTrigger asChild>
 				<Button variant="outline" size="icon">
-					<SunIcon className="h-[1.2rem] w-[1.2rem] scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90" />
-					<MoonIcon className="absolute h-[1.2rem] w-[1.2rem] scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0" />
+					<ThemeIcon theme={theme} />
 					<span className="sr-only">Toggle theme</span>
 				</Button>
 			</DropdownMenuTrigger>
