@@ -12,7 +12,15 @@ import { Badge } from "@/components/ui/badge";
 import { CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Combobox, ComboboxContent, ComboboxInput, ComboboxItem, ComboboxList } from "@/components/ui/combobox";
+import {
+	Combobox,
+	ComboboxContent,
+	ComboboxGroup,
+	ComboboxInput,
+	ComboboxItem,
+	ComboboxLabel,
+	ComboboxList,
+} from "@/components/ui/combobox";
 import { FieldGroup, FieldLegend, Field, FieldSet, FieldLabel, FieldContent, FieldTitle } from "@/components/ui/field";
 import { InputGroupAddon } from "@/components/ui/input-group";
 import { Separator } from "@/components/ui/separator";
@@ -383,6 +391,7 @@ function History() {
 	const [exclusive, setExclusive] = useState(false);
 	const [isOpen, setIsOpen] = useState(false);
 	const [ownerSearchTerm, setOwnerSearchTerm] = useState("");
+	const comboboxItems = ownerSearchTerm.length > 0 ? [ownerSearchTerm, ...ownersSearchOptions] : ownersSearchOptions;
 
 	const ownersMutation = useMutation(searchHistoryOwners);
 
@@ -437,11 +446,11 @@ function History() {
 					/>
 				</CollapsibleContent>
 			</Collapsible>
-			<Combobox items={ownersSearchOptions}>
+			<Combobox items={comboboxItems}>
 				<ComboboxInput
 					className="my-2"
-					placeholder="post owner"
-					value={ownerSearchTerm}
+					placeholder="post owner search"
+					showClear
 					onChange={async (e) => {
 						setOwnerSearchTerm(e.target.value);
 						if (e.target.value.length === 4) {
@@ -467,17 +476,29 @@ function History() {
 						<SearchIcon />
 					</InputGroupAddon>
 				</ComboboxInput>
-				{ownersSearchOptions.length > 0 && (
-					<ComboboxContent>
-						<ComboboxList>
-							{(item) => (
-								<ComboboxItem key={`search-${item}`} value={item}>
-									{item}
+
+				<ComboboxContent>
+					<ComboboxList>
+						{ownerSearchTerm.length > 0 && (
+							<ComboboxGroup>
+								<ComboboxLabel>Search Term</ComboboxLabel>
+								<ComboboxItem key="search-term" value={ownerSearchTerm}>
+									{ownerSearchTerm}
 								</ComboboxItem>
-							)}
-						</ComboboxList>
-					</ComboboxContent>
-				)}
+							</ComboboxGroup>
+						)}
+						{ownersSearchOptions.length > 0 && (
+							<ComboboxGroup>
+								<ComboboxLabel>Owners</ComboboxLabel>
+								{ownersSearchOptions.map((item) => (
+									<ComboboxItem key={`search-${item}`} value={item}>
+										{item}
+									</ComboboxItem>
+								))}
+							</ComboboxGroup>
+						)}
+					</ComboboxList>
+				</ComboboxContent>
 			</Combobox>
 		</CardContent>
 	);
