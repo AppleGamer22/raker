@@ -1,7 +1,7 @@
 import { useQuery } from "@connectrpc/connect-query";
 import { useForm } from "@tanstack/react-form";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import z from "zod";
 
 import { getUserCategories } from "@/buf/raker/v1/raker-RakerServer_connectquery";
@@ -21,24 +21,27 @@ export const Route = createFileRoute("/history")({
 	component: History,
 });
 
-function HistoryPostTypeForm() {
+function HistoryPostTypeForm({
+	types,
+	onChangeTypes,
+}: {
+	types: PostType[];
+	onChangeTypes: (types: PostType[]) => void;
+}) {
 	const form = useForm({
 		defaultValues: {
-			types: [] as number[],
+			types,
 		},
 		validators: {
 			onChange: z.object({
 				types: z.array(z.number()),
 			}),
 		},
+		onSubmit: ({ value }) => onChangeTypes(value.types),
 	});
 
 	return (
-		<form
-			onSubmit={(e) => {
-				e.preventDefault();
-			}}
-		>
+		<form>
 			<FieldGroup>
 				<FieldSet>
 					<FieldLegend>Post Types</FieldLegend>
@@ -58,6 +61,7 @@ function HistoryPostTypeForm() {
 														field.removeValue(index);
 													}
 												}
+												form.handleSubmit();
 											}}
 										/>
 										<FieldContent>
@@ -81,6 +85,7 @@ function HistoryPostTypeForm() {
 														field.removeValue(index);
 													}
 												}
+												form.handleSubmit();
 											}}
 										/>
 										<FieldTitle>
@@ -102,6 +107,7 @@ function HistoryPostTypeForm() {
 														field.removeValue(index);
 													}
 												}
+												form.handleSubmit();
 											}}
 										/>
 										<FieldTitle>
@@ -123,6 +129,7 @@ function HistoryPostTypeForm() {
 														field.removeValue(index);
 													}
 												}
+												form.handleSubmit();
 											}}
 										/>
 										<FieldTitle>
@@ -144,6 +151,7 @@ function HistoryPostTypeForm() {
 														field.removeValue(index);
 													}
 												}
+												form.handleSubmit();
 											}}
 										/>
 										<FieldTitle>
@@ -165,6 +173,7 @@ function HistoryPostTypeForm() {
 														field.removeValue(index);
 													}
 												}
+												form.handleSubmit();
 											}}
 										/>
 										<FieldTitle>
@@ -270,6 +279,14 @@ function HistoryPostCategoryForm() {
 function History() {
 	const navigate = useNavigate({ from: Route.fullPath });
 	const { username } = useUser();
+	const [types, setTypes] = useState([
+		PostType.Instagram,
+		PostType.Highlight,
+		PostType.Story,
+		PostType.TikTok,
+		PostType.Snapchat,
+		PostType.VSCO,
+	]);
 
 	useEffect(() => {
 		if (username === null) {
@@ -279,7 +296,7 @@ function History() {
 
 	return (
 		<CardContent>
-			<HistoryPostTypeForm />
+			<HistoryPostTypeForm types={types} onChangeTypes={setTypes} />
 			<Separator className="my-2" />
 			<HistoryPostCategoryForm />
 		</CardContent>
