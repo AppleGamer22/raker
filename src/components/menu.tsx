@@ -1,3 +1,4 @@
+import { useLocation, useRouter } from "@tanstack/react-router";
 import { UserKeyIcon, DatabaseSearchIcon } from "lucide-react";
 
 import {
@@ -25,8 +26,22 @@ import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 type MenuMode = "default" | "mobile-sheet";
 
-export function Menu({ mode = "default" }: { mode?: MenuMode } = {}) {
+export function Menu({
+	mode = "default",
+	onNavigate,
+}: { mode?: MenuMode; onNavigate?: () => void } = {}) {
 	const isMobileSheet = mode === "mobile-sheet";
+	const router = useRouter();
+	const location = useLocation();
+
+	const handleNavigate = (route: string) => {
+		router.navigate({ to: route as any });
+		onNavigate?.();
+	};
+
+	const isActiveRoute = (route: string) => {
+		return location.pathname === route;
+	};
 
 	// TODO: https://ui.shadcn.com/blocks/sidebar#sidebar-16
 	return (
@@ -52,9 +67,12 @@ export function Menu({ mode = "default" }: { mode?: MenuMode } = {}) {
 				<SidebarContent>
 					<SidebarGroup>
 						<SidebarGroupLabel>Settings</SidebarGroupLabel>
-						<SidebarMenu>
+						<SidebarMenu className="gap-1">
 							<SidebarMenuItem>
-								<SidebarMenuButton>
+								<SidebarMenuButton
+									onClick={() => handleNavigate("/")}
+									isActive={isActiveRoute("/")}
+								>
 									<UserKeyIcon className="h-4 w-4" />
 									Authentication
 								</SidebarMenuButton>
@@ -63,33 +81,48 @@ export function Menu({ mode = "default" }: { mode?: MenuMode } = {}) {
 					</SidebarGroup>
 					<SidebarGroup>
 						<SidebarGroupLabel>Extractors</SidebarGroupLabel>
-						<SidebarMenu>
+						<SidebarMenu className="gap-1">
 							<SidebarMenuItem>
-								<SidebarMenuButton>
+								<SidebarMenuButton
+									onClick={() => handleNavigate("/instagram")}
+									isActive={isActiveRoute("/instagram")}
+								>
 									<InstagramIcon className="h-4 w-4" />
 									Instagram Post
 								</SidebarMenuButton>
 							</SidebarMenuItem>
 							<SidebarMenuItem>
-								<SidebarMenuButton>
+								<SidebarMenuButton
+									onClick={() => handleNavigate("/highlight")}
+									isActive={isActiveRoute("/highlight")}
+								>
 									<InstagramIcon className="h-4 w-4" />
 									Instagram Highlight
 								</SidebarMenuButton>
 							</SidebarMenuItem>
 							<SidebarMenuItem>
-								<SidebarMenuButton>
+								<SidebarMenuButton
+									onClick={() => handleNavigate("/story")}
+									isActive={isActiveRoute("/story")}
+								>
 									<InstagramIcon className="h-4 w-4" />
 									Instagram Story
 								</SidebarMenuButton>
 							</SidebarMenuItem>
 							<SidebarMenuItem>
-								<SidebarMenuButton>
+								<SidebarMenuButton
+									onClick={() => handleNavigate("/tiktok")}
+									isActive={isActiveRoute("/tiktok")}
+								>
 									<TikTokIcon className="h-40 w-40" />
 									TikTok Post
 								</SidebarMenuButton>
 							</SidebarMenuItem>
 							<SidebarMenuItem>
-								<SidebarMenuButton>
+								<SidebarMenuButton
+									onClick={() => handleNavigate("/vsco")}
+									isActive={isActiveRoute("/vsco")}
+								>
 									<VSCOIcon className="w-4" />
 									VSCO Post
 								</SidebarMenuButton>
@@ -98,9 +131,12 @@ export function Menu({ mode = "default" }: { mode?: MenuMode } = {}) {
 					</SidebarGroup>
 					<SidebarGroup>
 						<SidebarGroupLabel>Search</SidebarGroupLabel>
-						<SidebarMenu>
+						<SidebarMenu className="gap-1">
 							<SidebarMenuItem>
-								<SidebarMenuButton>
+								<SidebarMenuButton
+									onClick={() => handleNavigate("/history")}
+									isActive={isActiveRoute("/history")}
+								>
 									<DatabaseSearchIcon className="w-4" />
 									History
 								</SidebarMenuButton>
