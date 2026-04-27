@@ -53,13 +53,7 @@ export function PostCarousel({
 
 	return (
 		<>
-			<Carousel
-				opts={{
-					loop: true,
-				}}
-				setApi={setApi}
-				className="w-full"
-			>
+			<Carousel setApi={setApi} className="w-full">
 				<CarouselContent>
 					{files.map((file, i) => (
 						<CarouselItem key={`file-${postType}-${postOwner}-${post}-${i}`}>
@@ -67,8 +61,8 @@ export function PostCarousel({
 						</CarouselItem>
 					))}
 				</CarouselContent>
-				<CarouselPrevious />
-				<CarouselNext />
+				<CarouselPrevious className="top-1/2 left-2 z-10 -translate-y-1/2" />
+				<CarouselNext className="top-1/2 right-2 z-10 -translate-y-1/2" />
 			</Carousel>
 			<div className="py-2 text-center text-sm text-muted-foreground">
 				Slide {current} of {count}
