@@ -14,7 +14,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file raker/v1/raker.proto.
  */
 export const file_raker_v1_raker: GenFile = /*@__PURE__*/
-  fileDesc("ChRyYWtlci92MS9yYWtlci5wcm90bxIIcmFrZXIudjEifQoNU2lnblVwUmVxdWVzdBIQCgh1c2VybmFtZRgBIAEoCRIQCghwYXNzd29yZBgCIAEoCRIXCgpzZXNzaW9uX2lkGAMgASgJSACIAQESFAoHdXNlcl9pZBgEIAEoCUgBiAEBQg0KC19zZXNzaW9uX2lkQgoKCF91c2VyX2lkIjMKDVNpZ25JblJlcXVlc3QSEAoIdXNlcm5hbWUYASABKAkSEAoIcGFzc3dvcmQYAiABKAkiLAoWVXNlckNhdGVnb3JpZXNSZXNwb25zZRISCgpjYXRlZ29yaWVzGAEgAygJIkEKE0VkaXRDYXRlZ29yeVJlcXVlc3QSFAoMb2xkX2NhdGVnb3J5GAEgASgJEhQKDG5ld19jYXRlZ29yeRgCIAEoCSKKAQoaRWRpdFVzZXJDcmVkZW50aWFsc1JlcXVlc3QSFQoIcGFzc3dvcmQYASABKAlIAIgBARIXCgpzZXNzaW9uX2lkGAIgASgJSAGIAQESFAoHdXNlcl9pZBgDIAEoCUgCiAEBQgsKCV9wYXNzd29yZEINCgtfc2Vzc2lvbl9pZEIKCghfdXNlcl9pZCJIChJVbmFyeVNjcmFwZVJlcXVlc3QSDAoEcG9zdBgBIAEoCRIWCglpbmNvZ25pdG8YAiABKAhIAIgBAUIMCgpfaW5jb2duaXRvIlgKE0JpbmFyeVNjcmFwZVJlcXVlc3QSDQoFb3duZXIYASABKAkSDAoEcG9zdBgCIAEoCRIWCglpbmNvZ25pdG8YAyABKAhIAIgBAUIMCgpfaW5jb2duaXRvIpACCg5TY3JhcGVSZXNwb25zZRIQCgh1c2VybmFtZRgBIAEoCRImCglwb3N0X3R5cGUYAiABKA4yEy5yYWtlci52MS5NZWRpYVR5cGUSEgoKcG9zdF9vd25lchgDIAEoCRIMCgRwb3N0GAQgASgJEi0KCXBvc3RfZGF0ZRgFIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASDQoFZmlsZXMYBiADKAkSEgoKY2F0ZWdvcmllcxgHIAMoCRIRCglpbmNvZ25pdG8YCCABKAgSLQoLY29vcmRpbmF0ZXMYCSABKAsyEy5nb29nbGUudHlwZS5MYXRMbmdIAIgBAUIOCgxfY29vcmRpbmF0ZXMiYQoRUmVtb3ZlRmlsZVJlcXVlc3QSIQoEdHlwZRgBIAEoDjITLnJha2VyLnYxLk1lZGlhVHlwZRINCgVvd25lchgCIAEoCRIMCgRwb3N0GAMgASgJEgwKBHBhdGgYBCABKAkibQoXVXBkYXRlQ2F0ZWdvcmllc1JlcXVlc3QSIQoEdHlwZRgBIAEoDjITLnJha2VyLnYxLk1lZGlhVHlwZRINCgVvd25lchgCIAEoCRIMCgRwb3N0GAMgASgJEhIKCmNhdGVnb3JpZXMYBCADKAkiagoOSGlzdG9yeVJlcXVlc3QSDQoFb3duZXIYASABKAkSEQoJZXhjbHVzaXZlGAIgASgIEhIKCmNhdGVnb3JpZXMYAyADKAkSIgoFdHlwZXMYBCADKA4yEy5yYWtlci52MS5NZWRpYVR5cGUiPgoPSGlzdG9yeVJlc3BvbnNlEisKCWhpc3RvcmllcxgBIAMoCzIYLnJha2VyLnYxLlNjcmFwZVJlc3BvbnNlIicKFUhpc3RvcnlPd25lcnNSZXNwb25zZRIOCgZvd25lcnMYASADKAkqSgoJTWVkaWFUeXBlEg0KCUluc3RhZ3JhbRAAEg0KCUhpZ2hsaWdodBABEgkKBVN0b3J5EAISCgoGVGlrVG9rEAMSCAoEVlNDTxAEMuUICgtSYWtlclNlcnZlchJCCg9TaWduVXBJbnN0YWdyYW0SFy5yYWtlci52MS5TaWduVXBSZXF1ZXN0GhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5EkIKD1NpZ25Jbkluc3RhZ3JhbRIXLnJha2VyLnYxLlNpZ25JblJlcXVlc3QaFi5nb29nbGUucHJvdG9idWYuRW1wdHkSRQoMRWRpdENhdGVnb3J5Eh0ucmFrZXIudjEuRWRpdENhdGVnb3J5UmVxdWVzdBoWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRJTChNFZGl0VXNlckNyZWRlbnRpYWxzEiQucmFrZXIudjEuRWRpdFVzZXJDcmVkZW50aWFsc1JlcXVlc3QaFi5nb29nbGUucHJvdG9idWYuRW1wdHkSTQoRR2V0VXNlckNhdGVnb3JpZXMSFi5nb29nbGUucHJvdG9idWYuRW1wdHkaIC5yYWtlci52MS5Vc2VyQ2F0ZWdvcmllc1Jlc3BvbnNlEkkKD1NjcmFwZUluc3RhZ3JhbRIcLnJha2VyLnYxLlVuYXJ5U2NyYXBlUmVxdWVzdBoYLnJha2VyLnYxLlNjcmFwZVJlc3BvbnNlEkkKD1NjcmFwZUhpZ2hsaWdodBIcLnJha2VyLnYxLlVuYXJ5U2NyYXBlUmVxdWVzdBoYLnJha2VyLnYxLlNjcmFwZVJlc3BvbnNlEkUKC1NjcmFwZVN0b3J5EhwucmFrZXIudjEuVW5hcnlTY3JhcGVSZXF1ZXN0GhgucmFrZXIudjEuU2NyYXBlUmVzcG9uc2USRwoMU2NyYXBlVGlrVG9rEh0ucmFrZXIudjEuQmluYXJ5U2NyYXBlUmVxdWVzdBoYLnJha2VyLnYxLlNjcmFwZVJlc3BvbnNlEkgKDlNjcmFwZVNuYXBjaGF0EhwucmFrZXIudjEuVW5hcnlTY3JhcGVSZXF1ZXN0GhgucmFrZXIudjEuU2NyYXBlUmVzcG9uc2USRQoKU2NyYXBlVlNDTxIdLnJha2VyLnYxLkJpbmFyeVNjcmFwZVJlcXVlc3QaGC5yYWtlci52MS5TY3JhcGVSZXNwb25zZRJDCgpSZW1vdmVGaWxlEhsucmFrZXIudjEuUmVtb3ZlRmlsZVJlcXVlc3QaGC5yYWtlci52MS5TY3JhcGVSZXNwb25zZRJPChBVcGRhdGVDYXRlZ29yaWVzEiEucmFrZXIudjEuVXBkYXRlQ2F0ZWdvcmllc1JlcXVlc3QaGC5yYWtlci52MS5TY3JhcGVSZXNwb25zZRJECg1TZWFyY2hIaXN0b3J5EhgucmFrZXIudjEuSGlzdG9yeVJlcXVlc3QaGS5yYWtlci52MS5IaXN0b3J5UmVzcG9uc2USUAoTU2VhcmNoSGlzdG9yeU93bmVycxIYLnJha2VyLnYxLkhpc3RvcnlSZXF1ZXN0Gh8ucmFrZXIudjEuSGlzdG9yeU93bmVyc1Jlc3BvbnNlQpQBCgxjb20ucmFrZXIudjFCClJha2VyUHJvdG9QAVo3Z2l0aHViLmNvbS9BcHBsZUdhbWVyMjIvcmFrZXIvc2VydmVyL2J1Zi9wcm90by9yYWtlci92MaICA1JYWKoCCFJha2VyLlYxygIIUmFrZXJcVjHiAhRSYWtlclxWMVxHUEJNZXRhZGF0YeoCCVJha2VyOjpWMWIGcHJvdG8z", [file_google_protobuf_empty, file_google_protobuf_timestamp, file_google_type_latlng]);
+  fileDesc("ChRyYWtlci92MS9yYWtlci5wcm90bxIIcmFrZXIudjEifQoNU2lnblVwUmVxdWVzdBIQCgh1c2VybmFtZRgBIAEoCRIQCghwYXNzd29yZBgCIAEoCRIXCgpzZXNzaW9uX2lkGAMgASgJSACIAQESFAoHdXNlcl9pZBgEIAEoCUgBiAEBQg0KC19zZXNzaW9uX2lkQgoKCF91c2VyX2lkIjMKDVNpZ25JblJlcXVlc3QSEAoIdXNlcm5hbWUYASABKAkSEAoIcGFzc3dvcmQYAiABKAkiLAoWVXNlckNhdGVnb3JpZXNSZXNwb25zZRISCgpjYXRlZ29yaWVzGAEgAygJIkEKE0VkaXRDYXRlZ29yeVJlcXVlc3QSFAoMb2xkX2NhdGVnb3J5GAEgASgJEhQKDG5ld19jYXRlZ29yeRgCIAEoCSKKAQoaRWRpdFVzZXJDcmVkZW50aWFsc1JlcXVlc3QSFQoIcGFzc3dvcmQYASABKAlIAIgBARIXCgpzZXNzaW9uX2lkGAIgASgJSAGIAQESFAoHdXNlcl9pZBgDIAEoCUgCiAEBQgsKCV9wYXNzd29yZEINCgtfc2Vzc2lvbl9pZEIKCghfdXNlcl9pZCJIChJVbmFyeVNjcmFwZVJlcXVlc3QSDAoEcG9zdBgBIAEoCRIWCglpbmNvZ25pdG8YAiABKAhIAIgBAUIMCgpfaW5jb2duaXRvIlgKE0JpbmFyeVNjcmFwZVJlcXVlc3QSDQoFb3duZXIYASABKAkSDAoEcG9zdBgCIAEoCRIWCglpbmNvZ25pdG8YAyABKAhIAIgBAUIMCgpfaW5jb2duaXRvIv0BCg5TY3JhcGVSZXNwb25zZRIlCglwb3N0X3R5cGUYASABKA4yEi5yYWtlci52MS5Qb3N0VHlwZRISCgpwb3N0X293bmVyGAIgASgJEgwKBHBvc3QYAyABKAkSLQoJcG9zdF9kYXRlGAQgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBINCgVmaWxlcxgFIAMoCRISCgpjYXRlZ29yaWVzGAYgAygJEhEKCWluY29nbml0bxgHIAEoCBItCgtjb29yZGluYXRlcxgIIAEoCzITLmdvb2dsZS50eXBlLkxhdExuZ0gAiAEBQg4KDF9jb29yZGluYXRlcyJgChFSZW1vdmVGaWxlUmVxdWVzdBIgCgR0eXBlGAEgASgOMhIucmFrZXIudjEuUG9zdFR5cGUSDQoFb3duZXIYAiABKAkSDAoEcG9zdBgDIAEoCRIMCgRwYXRoGAQgASgJImwKF1VwZGF0ZUNhdGVnb3JpZXNSZXF1ZXN0EiAKBHR5cGUYASABKA4yEi5yYWtlci52MS5Qb3N0VHlwZRINCgVvd25lchgCIAEoCRIMCgRwb3N0GAMgASgJEhIKCmNhdGVnb3JpZXMYBCADKAkiigEKDkhpc3RvcnlSZXF1ZXN0Eg0KBW93bmVyGAEgASgJEhEKCWV4Y2x1c2l2ZRgCIAEoCBIMCgRwYWdlGAMgASgDEhEKCXBhZ2Vfc2l6ZRgEIAEoBRISCgpjYXRlZ29yaWVzGAUgAygJEiEKBXR5cGVzGAYgAygOMhIucmFrZXIudjEuUG9zdFR5cGUiUwoPSGlzdG9yeVJlc3BvbnNlEhMKC3RvdGFsX2NvdW50GAEgASgDEisKCWhpc3RvcmllcxgDIAMoCzIYLnJha2VyLnYxLlNjcmFwZVJlc3BvbnNlIicKFUhpc3RvcnlPd25lcnNSZXNwb25zZRIOCgZvd25lcnMYASADKAkqVwoIUG9zdFR5cGUSDQoJSW5zdGFncmFtEAASDQoJSGlnaGxpZ2h0EAESCQoFU3RvcnkQAhIKCgZUaWtUb2sQAxIMCghTbmFwY2hhdBAEEggKBFZTQ08QBTLlCAoLUmFrZXJTZXJ2ZXISQgoPU2lnblVwSW5zdGFncmFtEhcucmFrZXIudjEuU2lnblVwUmVxdWVzdBoWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRJCCg9TaWduSW5JbnN0YWdyYW0SFy5yYWtlci52MS5TaWduSW5SZXF1ZXN0GhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5EkUKDEVkaXRDYXRlZ29yeRIdLnJha2VyLnYxLkVkaXRDYXRlZ29yeVJlcXVlc3QaFi5nb29nbGUucHJvdG9idWYuRW1wdHkSUwoTRWRpdFVzZXJDcmVkZW50aWFscxIkLnJha2VyLnYxLkVkaXRVc2VyQ3JlZGVudGlhbHNSZXF1ZXN0GhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5Ek0KEUdldFVzZXJDYXRlZ29yaWVzEhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5GiAucmFrZXIudjEuVXNlckNhdGVnb3JpZXNSZXNwb25zZRJJCg9TY3JhcGVJbnN0YWdyYW0SHC5yYWtlci52MS5VbmFyeVNjcmFwZVJlcXVlc3QaGC5yYWtlci52MS5TY3JhcGVSZXNwb25zZRJJCg9TY3JhcGVIaWdobGlnaHQSHC5yYWtlci52MS5VbmFyeVNjcmFwZVJlcXVlc3QaGC5yYWtlci52MS5TY3JhcGVSZXNwb25zZRJFCgtTY3JhcGVTdG9yeRIcLnJha2VyLnYxLlVuYXJ5U2NyYXBlUmVxdWVzdBoYLnJha2VyLnYxLlNjcmFwZVJlc3BvbnNlEkcKDFNjcmFwZVRpa1RvaxIdLnJha2VyLnYxLkJpbmFyeVNjcmFwZVJlcXVlc3QaGC5yYWtlci52MS5TY3JhcGVSZXNwb25zZRJICg5TY3JhcGVTbmFwY2hhdBIcLnJha2VyLnYxLlVuYXJ5U2NyYXBlUmVxdWVzdBoYLnJha2VyLnYxLlNjcmFwZVJlc3BvbnNlEkUKClNjcmFwZVZTQ08SHS5yYWtlci52MS5CaW5hcnlTY3JhcGVSZXF1ZXN0GhgucmFrZXIudjEuU2NyYXBlUmVzcG9uc2USQwoKUmVtb3ZlRmlsZRIbLnJha2VyLnYxLlJlbW92ZUZpbGVSZXF1ZXN0GhgucmFrZXIudjEuU2NyYXBlUmVzcG9uc2USTwoQVXBkYXRlQ2F0ZWdvcmllcxIhLnJha2VyLnYxLlVwZGF0ZUNhdGVnb3JpZXNSZXF1ZXN0GhgucmFrZXIudjEuU2NyYXBlUmVzcG9uc2USRAoNU2VhcmNoSGlzdG9yeRIYLnJha2VyLnYxLkhpc3RvcnlSZXF1ZXN0GhkucmFrZXIudjEuSGlzdG9yeVJlc3BvbnNlElAKE1NlYXJjaEhpc3RvcnlPd25lcnMSGC5yYWtlci52MS5IaXN0b3J5UmVxdWVzdBofLnJha2VyLnYxLkhpc3RvcnlPd25lcnNSZXNwb25zZUKUAQoMY29tLnJha2VyLnYxQgpSYWtlclByb3RvUAFaN2dpdGh1Yi5jb20vQXBwbGVHYW1lcjIyL3Jha2VyL3NlcnZlci9idWYvcHJvdG8vcmFrZXIvdjGiAgNSWFiqAghSYWtlci5WMcoCCFJha2VyXFYx4gIUUmFrZXJcVjFcR1BCTWV0YWRhdGHqAglSYWtlcjo6VjFiBnByb3RvMw", [file_google_protobuf_empty, file_google_protobuf_timestamp, file_google_type_latlng]);
 
 /**
  * @generated from message raker.v1.SignUpRequest
@@ -190,47 +190,42 @@ export const BinaryScrapeRequestSchema: GenMessage<BinaryScrapeRequest> = /*@__P
  */
 export type ScrapeResponse = Message<"raker.v1.ScrapeResponse"> & {
   /**
-   * @generated from field: string username = 1;
+   * @generated from field: raker.v1.PostType post_type = 1;
    */
-  username: string;
+  postType: PostType;
 
   /**
-   * @generated from field: raker.v1.MediaType post_type = 2;
-   */
-  postType: MediaType;
-
-  /**
-   * @generated from field: string post_owner = 3;
+   * @generated from field: string post_owner = 2;
    */
   postOwner: string;
 
   /**
-   * @generated from field: string post = 4;
+   * @generated from field: string post = 3;
    */
   post: string;
 
   /**
-   * @generated from field: google.protobuf.Timestamp post_date = 5;
+   * @generated from field: google.protobuf.Timestamp post_date = 4;
    */
   postDate?: Timestamp;
 
   /**
-   * @generated from field: repeated string files = 6;
+   * @generated from field: repeated string files = 5;
    */
   files: string[];
 
   /**
-   * @generated from field: repeated string categories = 7;
+   * @generated from field: repeated string categories = 6;
    */
   categories: string[];
 
   /**
-   * @generated from field: bool incognito = 8;
+   * @generated from field: bool incognito = 7;
    */
   incognito: boolean;
 
   /**
-   * @generated from field: optional google.type.LatLng coordinates = 9;
+   * @generated from field: optional google.type.LatLng coordinates = 8;
    */
   coordinates?: LatLng;
 };
@@ -247,9 +242,9 @@ export const ScrapeResponseSchema: GenMessage<ScrapeResponse> = /*@__PURE__*/
  */
 export type RemoveFileRequest = Message<"raker.v1.RemoveFileRequest"> & {
   /**
-   * @generated from field: raker.v1.MediaType type = 1;
+   * @generated from field: raker.v1.PostType type = 1;
    */
-  type: MediaType;
+  type: PostType;
 
   /**
    * @generated from field: string owner = 2;
@@ -279,9 +274,9 @@ export const RemoveFileRequestSchema: GenMessage<RemoveFileRequest> = /*@__PURE_
  */
 export type UpdateCategoriesRequest = Message<"raker.v1.UpdateCategoriesRequest"> & {
   /**
-   * @generated from field: raker.v1.MediaType type = 1;
+   * @generated from field: raker.v1.PostType type = 1;
    */
-  type: MediaType;
+  type: PostType;
 
   /**
    * @generated from field: string owner = 2;
@@ -321,14 +316,24 @@ export type HistoryRequest = Message<"raker.v1.HistoryRequest"> & {
   exclusive: boolean;
 
   /**
-   * @generated from field: repeated string categories = 3;
+   * @generated from field: int64 page = 3;
+   */
+  page: bigint;
+
+  /**
+   * @generated from field: int32 page_size = 4;
+   */
+  pageSize: number;
+
+  /**
+   * @generated from field: repeated string categories = 5;
    */
   categories: string[];
 
   /**
-   * @generated from field: repeated raker.v1.MediaType types = 4;
+   * @generated from field: repeated raker.v1.PostType types = 6;
    */
-  types: MediaType[];
+  types: PostType[];
 };
 
 /**
@@ -343,7 +348,12 @@ export const HistoryRequestSchema: GenMessage<HistoryRequest> = /*@__PURE__*/
  */
 export type HistoryResponse = Message<"raker.v1.HistoryResponse"> & {
   /**
-   * @generated from field: repeated raker.v1.ScrapeResponse histories = 1;
+   * @generated from field: int64 total_count = 1;
+   */
+  totalCount: bigint;
+
+  /**
+   * @generated from field: repeated raker.v1.ScrapeResponse histories = 3;
    */
   histories: ScrapeResponse[];
 };
@@ -373,9 +383,9 @@ export const HistoryOwnersResponseSchema: GenMessage<HistoryOwnersResponse> = /*
   messageDesc(file_raker_v1_raker, 12);
 
 /**
- * @generated from enum raker.v1.MediaType
+ * @generated from enum raker.v1.PostType
  */
-export enum MediaType {
+export enum PostType {
   /**
    * @generated from enum value: Instagram = 0;
    */
@@ -397,15 +407,20 @@ export enum MediaType {
   TikTok = 3,
 
   /**
-   * @generated from enum value: VSCO = 4;
+   * @generated from enum value: Snapchat = 4;
    */
-  VSCO = 4,
+  Snapchat = 4,
+
+  /**
+   * @generated from enum value: VSCO = 5;
+   */
+  VSCO = 5,
 }
 
 /**
- * Describes the enum raker.v1.MediaType.
+ * Describes the enum raker.v1.PostType.
  */
-export const MediaTypeSchema: GenEnum<MediaType> = /*@__PURE__*/
+export const PostTypeSchema: GenEnum<PostType> = /*@__PURE__*/
   enumDesc(file_raker_v1_raker, 0);
 
 /**

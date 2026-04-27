@@ -24,58 +24,61 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-type MediaType int32
+type PostType int32
 
 const (
-	MediaType_Instagram MediaType = 0
-	MediaType_Highlight MediaType = 1
-	MediaType_Story     MediaType = 2
-	MediaType_TikTok    MediaType = 3
-	MediaType_VSCO      MediaType = 4
+	PostType_Instagram PostType = 0
+	PostType_Highlight PostType = 1
+	PostType_Story     PostType = 2
+	PostType_TikTok    PostType = 3
+	PostType_Snapchat  PostType = 4
+	PostType_VSCO      PostType = 5
 )
 
-// Enum value maps for MediaType.
+// Enum value maps for PostType.
 var (
-	MediaType_name = map[int32]string{
+	PostType_name = map[int32]string{
 		0: "Instagram",
 		1: "Highlight",
 		2: "Story",
 		3: "TikTok",
-		4: "VSCO",
+		4: "Snapchat",
+		5: "VSCO",
 	}
-	MediaType_value = map[string]int32{
+	PostType_value = map[string]int32{
 		"Instagram": 0,
 		"Highlight": 1,
 		"Story":     2,
 		"TikTok":    3,
-		"VSCO":      4,
+		"Snapchat":  4,
+		"VSCO":      5,
 	}
 )
 
-func (x MediaType) Enum() *MediaType {
-	p := new(MediaType)
+func (x PostType) Enum() *PostType {
+	p := new(PostType)
 	*p = x
 	return p
 }
 
-func (x MediaType) String() string {
+func (x PostType) String() string {
 	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
 }
 
-func (MediaType) Descriptor() protoreflect.EnumDescriptor {
+func (PostType) Descriptor() protoreflect.EnumDescriptor {
 	return file_raker_v1_raker_proto_enumTypes[0].Descriptor()
 }
 
-func (MediaType) Type() protoreflect.EnumType {
+func (PostType) Type() protoreflect.EnumType {
 	return &file_raker_v1_raker_proto_enumTypes[0]
 }
 
-func (x MediaType) Number() protoreflect.EnumNumber {
+func (x PostType) Number() protoreflect.EnumNumber {
 	return protoreflect.EnumNumber(x)
 }
 
-// Deprecated: Use MediaType.Descriptor instead.
-func (MediaType) EnumDescriptor() ([]byte, []int) {
+// Deprecated: Use PostType.Descriptor instead.
+func (PostType) EnumDescriptor() ([]byte, []int) {
 	return file_raker_v1_raker_proto_rawDescGZIP(), []int{0}
 }
 
@@ -469,15 +472,14 @@ func (x *BinaryScrapeRequest) GetIncognito() bool {
 
 type ScrapeResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Username      string                 `protobuf:"bytes,1,opt,name=username,proto3" json:"username,omitempty"`
-	PostType      MediaType              `protobuf:"varint,2,opt,name=post_type,json=postType,proto3,enum=raker.v1.MediaType" json:"post_type,omitempty"`
-	PostOwner     string                 `protobuf:"bytes,3,opt,name=post_owner,json=postOwner,proto3" json:"post_owner,omitempty"`
-	Post          string                 `protobuf:"bytes,4,opt,name=post,proto3" json:"post,omitempty"`
-	PostDate      *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=post_date,json=postDate,proto3" json:"post_date,omitempty"`
-	Files         []string               `protobuf:"bytes,6,rep,name=files,proto3" json:"files,omitempty"`
-	Categories    []string               `protobuf:"bytes,7,rep,name=categories,proto3" json:"categories,omitempty"`
-	Incognito     bool                   `protobuf:"varint,8,opt,name=incognito,proto3" json:"incognito,omitempty"`
-	Coordinates   *latlng.LatLng         `protobuf:"bytes,9,opt,name=coordinates,proto3,oneof" json:"coordinates,omitempty"`
+	PostType      PostType               `protobuf:"varint,1,opt,name=post_type,json=postType,proto3,enum=raker.v1.PostType" json:"post_type,omitempty"`
+	PostOwner     string                 `protobuf:"bytes,2,opt,name=post_owner,json=postOwner,proto3" json:"post_owner,omitempty"`
+	Post          string                 `protobuf:"bytes,3,opt,name=post,proto3" json:"post,omitempty"`
+	PostDate      *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=post_date,json=postDate,proto3" json:"post_date,omitempty"`
+	Files         []string               `protobuf:"bytes,5,rep,name=files,proto3" json:"files,omitempty"`
+	Categories    []string               `protobuf:"bytes,6,rep,name=categories,proto3" json:"categories,omitempty"`
+	Incognito     bool                   `protobuf:"varint,7,opt,name=incognito,proto3" json:"incognito,omitempty"`
+	Coordinates   *latlng.LatLng         `protobuf:"bytes,8,opt,name=coordinates,proto3,oneof" json:"coordinates,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -512,18 +514,11 @@ func (*ScrapeResponse) Descriptor() ([]byte, []int) {
 	return file_raker_v1_raker_proto_rawDescGZIP(), []int{7}
 }
 
-func (x *ScrapeResponse) GetUsername() string {
-	if x != nil {
-		return x.Username
-	}
-	return ""
-}
-
-func (x *ScrapeResponse) GetPostType() MediaType {
+func (x *ScrapeResponse) GetPostType() PostType {
 	if x != nil {
 		return x.PostType
 	}
-	return MediaType_Instagram
+	return PostType_Instagram
 }
 
 func (x *ScrapeResponse) GetPostOwner() string {
@@ -577,7 +572,7 @@ func (x *ScrapeResponse) GetCoordinates() *latlng.LatLng {
 
 type RemoveFileRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Type          MediaType              `protobuf:"varint,1,opt,name=type,proto3,enum=raker.v1.MediaType" json:"type,omitempty"`
+	Type          PostType               `protobuf:"varint,1,opt,name=type,proto3,enum=raker.v1.PostType" json:"type,omitempty"`
 	Owner         string                 `protobuf:"bytes,2,opt,name=owner,proto3" json:"owner,omitempty"`
 	Post          string                 `protobuf:"bytes,3,opt,name=post,proto3" json:"post,omitempty"`
 	Path          string                 `protobuf:"bytes,4,opt,name=path,proto3" json:"path,omitempty"`
@@ -615,11 +610,11 @@ func (*RemoveFileRequest) Descriptor() ([]byte, []int) {
 	return file_raker_v1_raker_proto_rawDescGZIP(), []int{8}
 }
 
-func (x *RemoveFileRequest) GetType() MediaType {
+func (x *RemoveFileRequest) GetType() PostType {
 	if x != nil {
 		return x.Type
 	}
-	return MediaType_Instagram
+	return PostType_Instagram
 }
 
 func (x *RemoveFileRequest) GetOwner() string {
@@ -645,7 +640,7 @@ func (x *RemoveFileRequest) GetPath() string {
 
 type UpdateCategoriesRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Type          MediaType              `protobuf:"varint,1,opt,name=type,proto3,enum=raker.v1.MediaType" json:"type,omitempty"`
+	Type          PostType               `protobuf:"varint,1,opt,name=type,proto3,enum=raker.v1.PostType" json:"type,omitempty"`
 	Owner         string                 `protobuf:"bytes,2,opt,name=owner,proto3" json:"owner,omitempty"`
 	Post          string                 `protobuf:"bytes,3,opt,name=post,proto3" json:"post,omitempty"`
 	Categories    []string               `protobuf:"bytes,4,rep,name=categories,proto3" json:"categories,omitempty"`
@@ -683,11 +678,11 @@ func (*UpdateCategoriesRequest) Descriptor() ([]byte, []int) {
 	return file_raker_v1_raker_proto_rawDescGZIP(), []int{9}
 }
 
-func (x *UpdateCategoriesRequest) GetType() MediaType {
+func (x *UpdateCategoriesRequest) GetType() PostType {
 	if x != nil {
 		return x.Type
 	}
-	return MediaType_Instagram
+	return PostType_Instagram
 }
 
 func (x *UpdateCategoriesRequest) GetOwner() string {
@@ -715,8 +710,10 @@ type HistoryRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Owner         string                 `protobuf:"bytes,1,opt,name=owner,proto3" json:"owner,omitempty"`
 	Exclusive     bool                   `protobuf:"varint,2,opt,name=exclusive,proto3" json:"exclusive,omitempty"`
-	Categories    []string               `protobuf:"bytes,3,rep,name=categories,proto3" json:"categories,omitempty"`
-	Types         []MediaType            `protobuf:"varint,4,rep,packed,name=types,proto3,enum=raker.v1.MediaType" json:"types,omitempty"`
+	Page          int64                  `protobuf:"varint,3,opt,name=page,proto3" json:"page,omitempty"`
+	PageSize      int32                  `protobuf:"varint,4,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	Categories    []string               `protobuf:"bytes,5,rep,name=categories,proto3" json:"categories,omitempty"`
+	Types         []PostType             `protobuf:"varint,6,rep,packed,name=types,proto3,enum=raker.v1.PostType" json:"types,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -765,6 +762,20 @@ func (x *HistoryRequest) GetExclusive() bool {
 	return false
 }
 
+func (x *HistoryRequest) GetPage() int64 {
+	if x != nil {
+		return x.Page
+	}
+	return 0
+}
+
+func (x *HistoryRequest) GetPageSize() int32 {
+	if x != nil {
+		return x.PageSize
+	}
+	return 0
+}
+
 func (x *HistoryRequest) GetCategories() []string {
 	if x != nil {
 		return x.Categories
@@ -772,7 +783,7 @@ func (x *HistoryRequest) GetCategories() []string {
 	return nil
 }
 
-func (x *HistoryRequest) GetTypes() []MediaType {
+func (x *HistoryRequest) GetTypes() []PostType {
 	if x != nil {
 		return x.Types
 	}
@@ -781,7 +792,8 @@ func (x *HistoryRequest) GetTypes() []MediaType {
 
 type HistoryResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Histories     []*ScrapeResponse      `protobuf:"bytes,1,rep,name=histories,proto3" json:"histories,omitempty"`
+	TotalCount    int64                  `protobuf:"varint,1,opt,name=total_count,json=totalCount,proto3" json:"total_count,omitempty"`
+	Histories     []*ScrapeResponse      `protobuf:"bytes,3,rep,name=histories,proto3" json:"histories,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -814,6 +826,13 @@ func (x *HistoryResponse) ProtoReflect() protoreflect.Message {
 // Deprecated: Use HistoryResponse.ProtoReflect.Descriptor instead.
 func (*HistoryResponse) Descriptor() ([]byte, []int) {
 	return file_raker_v1_raker_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *HistoryResponse) GetTotalCount() int64 {
+	if x != nil {
+		return x.TotalCount
+	}
+	return 0
 }
 
 func (x *HistoryResponse) GetHistories() []*ScrapeResponse {
@@ -910,51 +929,55 @@ const file_raker_v1_raker_proto_rawDesc = "" +
 	"\x04post\x18\x02 \x01(\tR\x04post\x12!\n" +
 	"\tincognito\x18\x03 \x01(\bH\x00R\tincognito\x88\x01\x01B\f\n" +
 	"\n" +
-	"_incognito\"\xea\x02\n" +
-	"\x0eScrapeResponse\x12\x1a\n" +
-	"\busername\x18\x01 \x01(\tR\busername\x120\n" +
-	"\tpost_type\x18\x02 \x01(\x0e2\x13.raker.v1.MediaTypeR\bpostType\x12\x1d\n" +
+	"_incognito\"\xcd\x02\n" +
+	"\x0eScrapeResponse\x12/\n" +
+	"\tpost_type\x18\x01 \x01(\x0e2\x12.raker.v1.PostTypeR\bpostType\x12\x1d\n" +
 	"\n" +
-	"post_owner\x18\x03 \x01(\tR\tpostOwner\x12\x12\n" +
-	"\x04post\x18\x04 \x01(\tR\x04post\x127\n" +
-	"\tpost_date\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\bpostDate\x12\x14\n" +
-	"\x05files\x18\x06 \x03(\tR\x05files\x12\x1e\n" +
+	"post_owner\x18\x02 \x01(\tR\tpostOwner\x12\x12\n" +
+	"\x04post\x18\x03 \x01(\tR\x04post\x127\n" +
+	"\tpost_date\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\bpostDate\x12\x14\n" +
+	"\x05files\x18\x05 \x03(\tR\x05files\x12\x1e\n" +
 	"\n" +
-	"categories\x18\a \x03(\tR\n" +
+	"categories\x18\x06 \x03(\tR\n" +
 	"categories\x12\x1c\n" +
-	"\tincognito\x18\b \x01(\bR\tincognito\x12:\n" +
-	"\vcoordinates\x18\t \x01(\v2\x13.google.type.LatLngH\x00R\vcoordinates\x88\x01\x01B\x0e\n" +
-	"\f_coordinates\"z\n" +
-	"\x11RemoveFileRequest\x12'\n" +
-	"\x04type\x18\x01 \x01(\x0e2\x13.raker.v1.MediaTypeR\x04type\x12\x14\n" +
+	"\tincognito\x18\a \x01(\bR\tincognito\x12:\n" +
+	"\vcoordinates\x18\b \x01(\v2\x13.google.type.LatLngH\x00R\vcoordinates\x88\x01\x01B\x0e\n" +
+	"\f_coordinates\"y\n" +
+	"\x11RemoveFileRequest\x12&\n" +
+	"\x04type\x18\x01 \x01(\x0e2\x12.raker.v1.PostTypeR\x04type\x12\x14\n" +
 	"\x05owner\x18\x02 \x01(\tR\x05owner\x12\x12\n" +
 	"\x04post\x18\x03 \x01(\tR\x04post\x12\x12\n" +
-	"\x04path\x18\x04 \x01(\tR\x04path\"\x8c\x01\n" +
-	"\x17UpdateCategoriesRequest\x12'\n" +
-	"\x04type\x18\x01 \x01(\x0e2\x13.raker.v1.MediaTypeR\x04type\x12\x14\n" +
+	"\x04path\x18\x04 \x01(\tR\x04path\"\x8b\x01\n" +
+	"\x17UpdateCategoriesRequest\x12&\n" +
+	"\x04type\x18\x01 \x01(\x0e2\x12.raker.v1.PostTypeR\x04type\x12\x14\n" +
 	"\x05owner\x18\x02 \x01(\tR\x05owner\x12\x12\n" +
 	"\x04post\x18\x03 \x01(\tR\x04post\x12\x1e\n" +
 	"\n" +
 	"categories\x18\x04 \x03(\tR\n" +
-	"categories\"\x8f\x01\n" +
+	"categories\"\xbf\x01\n" +
 	"\x0eHistoryRequest\x12\x14\n" +
 	"\x05owner\x18\x01 \x01(\tR\x05owner\x12\x1c\n" +
-	"\texclusive\x18\x02 \x01(\bR\texclusive\x12\x1e\n" +
+	"\texclusive\x18\x02 \x01(\bR\texclusive\x12\x12\n" +
+	"\x04page\x18\x03 \x01(\x03R\x04page\x12\x1b\n" +
+	"\tpage_size\x18\x04 \x01(\x05R\bpageSize\x12\x1e\n" +
 	"\n" +
-	"categories\x18\x03 \x03(\tR\n" +
-	"categories\x12)\n" +
-	"\x05types\x18\x04 \x03(\x0e2\x13.raker.v1.MediaTypeR\x05types\"I\n" +
-	"\x0fHistoryResponse\x126\n" +
-	"\thistories\x18\x01 \x03(\v2\x18.raker.v1.ScrapeResponseR\thistories\"/\n" +
+	"categories\x18\x05 \x03(\tR\n" +
+	"categories\x12(\n" +
+	"\x05types\x18\x06 \x03(\x0e2\x12.raker.v1.PostTypeR\x05types\"j\n" +
+	"\x0fHistoryResponse\x12\x1f\n" +
+	"\vtotal_count\x18\x01 \x01(\x03R\n" +
+	"totalCount\x126\n" +
+	"\thistories\x18\x03 \x03(\v2\x18.raker.v1.ScrapeResponseR\thistories\"/\n" +
 	"\x15HistoryOwnersResponse\x12\x16\n" +
-	"\x06owners\x18\x01 \x03(\tR\x06owners*J\n" +
-	"\tMediaType\x12\r\n" +
+	"\x06owners\x18\x01 \x03(\tR\x06owners*W\n" +
+	"\bPostType\x12\r\n" +
 	"\tInstagram\x10\x00\x12\r\n" +
 	"\tHighlight\x10\x01\x12\t\n" +
 	"\x05Story\x10\x02\x12\n" +
 	"\n" +
-	"\x06TikTok\x10\x03\x12\b\n" +
-	"\x04VSCO\x10\x042\xe5\b\n" +
+	"\x06TikTok\x10\x03\x12\f\n" +
+	"\bSnapchat\x10\x04\x12\b\n" +
+	"\x04VSCO\x10\x052\xe5\b\n" +
 	"\vRakerServer\x12B\n" +
 	"\x0fSignUpInstagram\x12\x17.raker.v1.SignUpRequest\x1a\x16.google.protobuf.Empty\x12B\n" +
 	"\x0fSignInInstagram\x12\x17.raker.v1.SignInRequest\x1a\x16.google.protobuf.Empty\x12E\n" +
@@ -991,7 +1014,7 @@ func file_raker_v1_raker_proto_rawDescGZIP() []byte {
 var file_raker_v1_raker_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
 var file_raker_v1_raker_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
 var file_raker_v1_raker_proto_goTypes = []any{
-	(MediaType)(0),                     // 0: raker.v1.MediaType
+	(PostType)(0),                      // 0: raker.v1.PostType
 	(*SignUpRequest)(nil),              // 1: raker.v1.SignUpRequest
 	(*SignInRequest)(nil),              // 2: raker.v1.SignInRequest
 	(*UserCategoriesResponse)(nil),     // 3: raker.v1.UserCategoriesResponse
@@ -1010,12 +1033,12 @@ var file_raker_v1_raker_proto_goTypes = []any{
 	(*emptypb.Empty)(nil),              // 16: google.protobuf.Empty
 }
 var file_raker_v1_raker_proto_depIdxs = []int32{
-	0,  // 0: raker.v1.ScrapeResponse.post_type:type_name -> raker.v1.MediaType
+	0,  // 0: raker.v1.ScrapeResponse.post_type:type_name -> raker.v1.PostType
 	14, // 1: raker.v1.ScrapeResponse.post_date:type_name -> google.protobuf.Timestamp
 	15, // 2: raker.v1.ScrapeResponse.coordinates:type_name -> google.type.LatLng
-	0,  // 3: raker.v1.RemoveFileRequest.type:type_name -> raker.v1.MediaType
-	0,  // 4: raker.v1.UpdateCategoriesRequest.type:type_name -> raker.v1.MediaType
-	0,  // 5: raker.v1.HistoryRequest.types:type_name -> raker.v1.MediaType
+	0,  // 3: raker.v1.RemoveFileRequest.type:type_name -> raker.v1.PostType
+	0,  // 4: raker.v1.UpdateCategoriesRequest.type:type_name -> raker.v1.PostType
+	0,  // 5: raker.v1.HistoryRequest.types:type_name -> raker.v1.PostType
 	8,  // 6: raker.v1.HistoryResponse.histories:type_name -> raker.v1.ScrapeResponse
 	1,  // 7: raker.v1.RakerServer.SignUpInstagram:input_type -> raker.v1.SignUpRequest
 	2,  // 8: raker.v1.RakerServer.SignInInstagram:input_type -> raker.v1.SignInRequest

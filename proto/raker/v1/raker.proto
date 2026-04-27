@@ -14,12 +14,13 @@ option go_package = "github.com/AppleGamer22/raker/server/buf/proto/raker/v1";
 //   VSCO = 2;
 // }
 
-enum MediaType {
+enum PostType {
   Instagram = 0;
   Highlight = 1;
   Story = 2;
   TikTok = 3;
-  VSCO = 4;
+  Snapchat = 4;
+  VSCO = 5;
 }
 
 message SignUpRequest {
@@ -61,26 +62,25 @@ message BinaryScrapeRequest {
 }
 
 message ScrapeResponse {
-  string username = 1;
-  MediaType post_type = 2;
-  string post_owner = 3;
-  string post = 4;
-  google.protobuf.Timestamp post_date = 5;
-  repeated string files = 6;
-  repeated string categories = 7;
-  bool incognito = 8;
-  optional google.type.LatLng coordinates = 9;
+  PostType post_type = 1;
+  string post_owner = 2;
+  string post = 3;
+  google.protobuf.Timestamp post_date = 4;
+  repeated string files = 5;
+  repeated string categories = 6;
+  bool incognito = 7;
+  optional google.type.LatLng coordinates = 8;
 }
 
 message RemoveFileRequest {
-  MediaType type = 1;
+  PostType type = 1;
   string owner = 2;
   string post = 3;
   string path = 4;
 }
 
 message UpdateCategoriesRequest {
-  MediaType type = 1;
+  PostType type = 1;
   string owner = 2;
   string post = 3;
   repeated string categories = 4;
@@ -89,12 +89,15 @@ message UpdateCategoriesRequest {
 message HistoryRequest {
   string owner = 1;
   bool exclusive = 2;
-  repeated string categories = 3;
-  repeated MediaType types = 4;
+  int64 page = 3;
+  int32 page_size = 4;
+  repeated string categories = 5;
+  repeated PostType types = 6;
 }
 
 message HistoryResponse {
-  repeated ScrapeResponse histories = 1;
+  int64 total_count = 1;
+  repeated ScrapeResponse histories = 3;
 }
 
 message HistoryOwnersResponse {
