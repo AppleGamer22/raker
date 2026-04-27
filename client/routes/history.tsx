@@ -87,7 +87,7 @@ function PostTypeIconLabel({ type }: { type: PostType }) {
 	}
 }
 
-function PlatformIcon({ type }: { type: PostType }) {
+function PlatformIcon({ type }: { type: PostType | -1 }) {
 	switch (type) {
 		case PostType.Instagram:
 		case PostType.Highlight:
@@ -99,6 +99,8 @@ function PlatformIcon({ type }: { type: PostType }) {
 			return <SnapchatIcon className="w-4" />;
 		case PostType.VSCO:
 			return <VSCOIcon className="w-4" />;
+		default:
+			return <></>;
 	}
 }
 
@@ -397,7 +399,7 @@ function HistoryPostCategoryForm({
 
 interface OwnerPostType {
 	owner: string;
-	type: PostType;
+	type: PostType | -1;
 }
 
 function History() {
@@ -489,7 +491,7 @@ function History() {
 									</ComboboxChip>
 								))}
 								<ComboboxChipsInput
-									className="my-4"
+									className="my-2"
 									placeholder="post owner search"
 									onChange={async (e) => {
 										setOwnerSearchTerm(e.target.value);
@@ -519,14 +521,17 @@ function History() {
 				{ownerSearchTerm.length > 0 && (
 					<ComboboxContent>
 						<ComboboxList>
-							{/* {ownerSearchTerm.length > 0 && (
+							{ownerSearchTerm.length > 0 && (
 								<ComboboxGroup>
 									<ComboboxLabel>Search Term</ComboboxLabel>
-									<ComboboxItem key="search-term" value={ownerSearchTerm}>
+									<ComboboxItem
+										key="search-term"
+										value={{ owner: ownerSearchTerm, type: -1 } as OwnerPostType}
+									>
 										{ownerSearchTerm}
 									</ComboboxItem>
 								</ComboboxGroup>
-							)} */}
+							)}
 							{ownersSearchOptions.length > 0 && (
 								<ComboboxGroup>
 									<ComboboxLabel>Owners</ComboboxLabel>
