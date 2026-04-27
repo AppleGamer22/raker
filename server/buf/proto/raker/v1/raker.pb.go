@@ -1125,7 +1125,7 @@ const file_raker_v1_raker_proto_rawDesc = "" +
 	"\n" +
 	"\x06TikTok\x10\x03\x12\f\n" +
 	"\bSnapchat\x10\x04\x12\b\n" +
-	"\x04VSCO\x10\x052\xeb\b\n" +
+	"\x04VSCO\x10\x052\xec\b\n" +
 	"\vRakerServer\x12B\n" +
 	"\x0fSignUpInstagram\x12\x17.raker.v1.SignUpRequest\x1a\x16.google.protobuf.Empty\x12B\n" +
 	"\x0fSignInInstagram\x12\x17.raker.v1.SignInRequest\x1a\x16.google.protobuf.Empty\x12E\n" +
@@ -1135,8 +1135,8 @@ const file_raker_v1_raker_proto_rawDesc = "" +
 	"\x0fScrapeInstagram\x12\x1c.raker.v1.UnaryScrapeRequest\x1a\x18.raker.v1.ScrapeResponse\x12I\n" +
 	"\x0fScrapeHighlight\x12\x1c.raker.v1.UnaryScrapeRequest\x1a\x18.raker.v1.ScrapeResponse\x12E\n" +
 	"\vScrapeStory\x12\x1c.raker.v1.UnaryScrapeRequest\x1a\x18.raker.v1.ScrapeResponse\x12G\n" +
-	"\fScrapeTikTok\x12\x1d.raker.v1.BinaryScrapeRequest\x1a\x18.raker.v1.ScrapeResponse\x12H\n" +
-	"\x0eScrapeSnapchat\x12\x1c.raker.v1.UnaryScrapeRequest\x1a\x18.raker.v1.ScrapeResponse\x12E\n" +
+	"\fScrapeTikTok\x12\x1d.raker.v1.BinaryScrapeRequest\x1a\x18.raker.v1.ScrapeResponse\x12I\n" +
+	"\x0eScrapeSnapchat\x12\x1d.raker.v1.BinaryScrapeRequest\x1a\x18.raker.v1.ScrapeResponse\x12E\n" +
 	"\n" +
 	"ScrapeVSCO\x12\x1d.raker.v1.BinaryScrapeRequest\x1a\x18.raker.v1.ScrapeResponse\x12C\n" +
 	"\n" +
@@ -1202,7 +1202,7 @@ var file_raker_v1_raker_proto_depIdxs = []int32{
 	6,  // 16: raker.v1.RakerServer.ScrapeHighlight:input_type -> raker.v1.UnaryScrapeRequest
 	6,  // 17: raker.v1.RakerServer.ScrapeStory:input_type -> raker.v1.UnaryScrapeRequest
 	7,  // 18: raker.v1.RakerServer.ScrapeTikTok:input_type -> raker.v1.BinaryScrapeRequest
-	6,  // 19: raker.v1.RakerServer.ScrapeSnapchat:input_type -> raker.v1.UnaryScrapeRequest
+	7,  // 19: raker.v1.RakerServer.ScrapeSnapchat:input_type -> raker.v1.BinaryScrapeRequest
 	7,  // 20: raker.v1.RakerServer.ScrapeVSCO:input_type -> raker.v1.BinaryScrapeRequest
 	9,  // 21: raker.v1.RakerServer.RemoveFile:input_type -> raker.v1.RemoveFileRequest
 	10, // 22: raker.v1.RakerServer.UpdateCategories:input_type -> raker.v1.UpdateCategoriesRequest

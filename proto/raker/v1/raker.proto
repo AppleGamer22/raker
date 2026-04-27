@@ -70,6 +70,7 @@ message ScrapeResponse {
   repeated string categories = 6;
   bool incognito = 7;
   optional google.type.LatLng coordinates = 8;
+  repeated string issue_log = 9;
 }
 
 message RemoveFileRequest {
@@ -136,7 +137,7 @@ service RakerServer {
 
   rpc ScrapeTikTok(BinaryScrapeRequest) returns (ScrapeResponse);
 
-  rpc ScrapeSnapchat(UnaryScrapeRequest) returns (ScrapeResponse);
+  rpc ScrapeSnapchat(BinaryScrapeRequest) returns (ScrapeResponse);
 
   rpc ScrapeVSCO(BinaryScrapeRequest) returns (ScrapeResponse);
 

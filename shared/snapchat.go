@@ -75,7 +75,7 @@ func Snapchat(owner, highlight string) (SnapchatHighlightResult, []*http.Cookie,
 		return SnapchatHighlightResult{}, []*http.Cookie{}, err
 	}
 
-	script := vsco_regexp.FindString(string(body))
+	script := snapchatRegex.FindString(string(body))
 	if script == "" {
 		return SnapchatHighlightResult{}, []*http.Cookie{}, errors.New("could not find JSON")
 	}

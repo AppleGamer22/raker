@@ -80,12 +80,8 @@ func (handler storageHandler) ServeHTTP(writer http.ResponseWriter, request *htt
 	}
 }
 
-func (handler *storageHandler) Save(user db.User, media, owner, fileName, URL string, cookies []*http.Cookie) error {
-	if !types.ValidMediaType(media) {
-		return fmt.Errorf("invalid media type: %s", media)
-	}
-
-	filePath := path.Join(user.Username, media, owner, fileName)
+func (handler *storageHandler) Save(user db.User, media db.PostType, owner, fileName, URL string, cookies []*http.Cookie) error {
+	filePath := path.Join(user.Username, string(media), owner, fileName)
 	mediaPath := path.Join(handler.root, filePath)
 	mediaPath = cleaner.Path(mediaPath)
 
@@ -161,24 +157,24 @@ func (handler *storageHandler) Save(user db.User, media, owner, fileName, URL st
 	return err
 }
 
-func (handler *storageHandler) SaveBundle(user db.User, media, owner string, fileNames, URLs []string, cookies []*http.Cookie) ([]string, []error) {
+func (handler *storageHandler) SaveBundle(user db.User, media db.PostType, owner string, fileNames, URLs []string, cookies []*http.Cookie) ([]string, error) {
 	if len(URLs) != len(fileNames) {
-		return []string{}, []error{errors.New("unequal length URLs & file names slices")}
+		return []string{}, errors.New("unequal length URLs & file names slices")
 	}
 
 	count := len(URLs)
 	var wg sync.WaitGroup
 	wg.Add(count)
 	var mutex sync.Mutex
-	errs := make([]error, 0, count)
+	var err error = nil
 
 	for i := 0; i < count; i++ {
 		URL := URLs[i]
 		fileName := fileNames[i]
 		go func(fileName, URL string, i int) {
-			if err := handler.Save(user, media, owner, fileName, URL, cookies); err != nil {
+			if err2 := handler.Save(user, media, owner, fileName, URL, cookies); err != nil {
 				mutex.Lock()
-				errs = append(errs, err)
+				err = errors.Join(err, err2)
 				fileNames[i] = ""
 				mutex.Unlock()
 			}
@@ -195,7 +191,7 @@ func (handler *storageHandler) SaveBundle(user db.User, media, owner string, fil
 		}
 	}
 
-	return sucessfulFileNames, errs
+	return sucessfulFileNames, err
 }
 
 func (handler *storageHandler) Delete(user db.User, media, owner, fileName string) error {
