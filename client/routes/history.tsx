@@ -1,3 +1,4 @@
+import { CheckboxGroup } from "@base-ui/react";
 import { useQuery } from "@connectrpc/connect-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
@@ -5,7 +6,16 @@ import { useEffect } from "react";
 import { getUserCategories } from "@/buf/raker/v1/raker-RakerServer_connectquery";
 import { CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { FieldGroup, FieldLegend, Field, FieldSet, FieldLabel } from "@/components/ui/field";
+import {
+	FieldGroup,
+	FieldLegend,
+	Field,
+	FieldSet,
+	FieldLabel,
+	FieldContent,
+	FieldTitle,
+	FieldSeparator,
+} from "@/components/ui/field";
 import { InstagramIcon } from "@/components/ui/svgs/instagram";
 import { SnapchatIcon } from "@/components/ui/svgs/snapchat";
 import { TikTokIcon } from "@/components/ui/svgs/tiktok";
@@ -16,7 +26,7 @@ export const Route = createFileRoute("/history")({
 	component: History,
 });
 
-function HistorySearchForm() {
+function HistoryPostTypeForm() {
 	// const categoriesQuery = useQuery(getUserCategories, {});
 	// const categories = categoriesQuery.data?.categories ?? [];
 
@@ -25,52 +35,98 @@ function HistorySearchForm() {
 			<FieldGroup>
 				<FieldSet>
 					<FieldLegend>Post Types</FieldLegend>
-					<FieldGroup
-						data-slot="checkbox-group"
-						className="flex flex-row flex-wrap gap-1 [&>[data-slot=field]]:w-auto"
-					>
-						<Field orientation="horizontal">
-							<Checkbox id="post-type-instagram" />
-							<FieldLabel htmlFor="post-type-instagram">
-								<InstagramIcon className="w-4" />
-								Instagram Post
+					<FieldGroup data-slot="checkbox-group">
+						<CheckboxGroup className="flex flex-row flex-wrap gap-1 *:w-auto">
+							<FieldLabel htmlFor="post-type-instagram" className="max-w-fit">
+								<Field orientation="horizontal">
+									<Checkbox id="post-type-instagram" />
+									<FieldContent>
+										<FieldTitle>
+											<InstagramIcon className="w-4" />
+											Post
+										</FieldTitle>
+									</FieldContent>
+								</Field>
 							</FieldLabel>
-						</Field>
-						<Field orientation="horizontal">
-							<Checkbox id="post-type-highlight" />
-							<FieldLabel htmlFor="post-type-highlight">
-								<InstagramIcon className="w-4" />
-								Instagram Highlight
+							<FieldLabel htmlFor="post-type-highlight" className="max-w-fit">
+								<Field orientation="horizontal">
+									<Checkbox id="post-type-highlight" />
+									<FieldTitle>
+										<InstagramIcon className="w-4" />
+										Highlight
+									</FieldTitle>
+								</Field>
 							</FieldLabel>
-						</Field>
-						<Field orientation="horizontal">
-							<Checkbox id="post-type-story" />
-							<FieldLabel htmlFor="post-type-story">
-								<InstagramIcon className="w-4" />
-								Instagram Post
+							<FieldLabel htmlFor="post-type-story" className="max-w-fit">
+								<Field orientation="horizontal">
+									<Checkbox id="post-type-story" />
+									<FieldTitle>
+										<InstagramIcon className="w-4" />
+										Story
+									</FieldTitle>
+								</Field>
 							</FieldLabel>
-						</Field>
-						<Field orientation="horizontal">
-							<Checkbox id="post-type-tiktok" />
-							<FieldLabel htmlFor="post-type-tiktok">
-								<TikTokIcon className="w-4" />
-								TikTok Post
+							<FieldLabel htmlFor="post-type-tiktok" className="max-w-fit">
+								<Field orientation="horizontal">
+									<Checkbox id="post-type-tiktok" />
+									<FieldTitle>
+										<TikTokIcon className="w-4" />
+										Post
+									</FieldTitle>
+								</Field>
 							</FieldLabel>
-						</Field>
-						<Field orientation="horizontal">
-							<Checkbox id="post-type-snapchat" />
-							<FieldLabel htmlFor="post-type-snapchat">
-								<SnapchatIcon className="w-4" />
-								Instagram Post
+							<FieldLabel htmlFor="post-type-snapchat" className="max-w-fit">
+								<Field orientation="horizontal">
+									<Checkbox id="post-type-snapchat" />
+									<FieldTitle>
+										<SnapchatIcon className="w-4" />
+										Highlight
+									</FieldTitle>
+								</Field>
 							</FieldLabel>
-						</Field>
-						<Field orientation="horizontal">
-							<Checkbox id="post-type-vsco" />
-							<FieldLabel htmlFor="post-type-vsco">
-								<VSCOIcon className="w-4" />
-								VSCO Post
+							<FieldLabel htmlFor="post-type-vsco" className="max-w-fit">
+								<Field orientation="horizontal">
+									<Checkbox id="post-type-vsco" />
+									<FieldTitle>
+										<VSCOIcon className="w-4" />
+										Post
+									</FieldTitle>
+								</Field>
 							</FieldLabel>
-						</Field>
+						</CheckboxGroup>
+					</FieldGroup>
+				</FieldSet>
+			</FieldGroup>
+		</form>
+	);
+}
+
+function HistoryPostCategoryForm() {
+	const categoriesQuery = useQuery(getUserCategories, {});
+	const categories = categoriesQuery.data?.categories ?? [];
+
+	return (
+		<form>
+			<FieldGroup>
+				<FieldSet>
+					<FieldLegend>Post Types</FieldLegend>
+					<FieldGroup data-slot="checkbox-group">
+						<CheckboxGroup className="flex flex-row flex-wrap gap-1 *:w-auto">
+							{categories.map((category) => (
+								<FieldLabel
+									key={`category-${category}`}
+									htmlFor={`category-${category}`}
+									className="max-w-fit"
+								>
+									<Field orientation="horizontal">
+										<Checkbox id={`category-${category}`} />
+										<FieldContent>
+											<FieldTitle>{category}</FieldTitle>
+										</FieldContent>
+									</Field>
+								</FieldLabel>
+							))}
+						</CheckboxGroup>
 					</FieldGroup>
 				</FieldSet>
 			</FieldGroup>
@@ -90,7 +146,9 @@ function History() {
 
 	return (
 		<CardContent>
-			<HistorySearchForm />
+			<HistoryPostTypeForm />
+			<FieldSeparator />
+			<HistoryPostCategoryForm />
 		</CardContent>
 	);
 }
