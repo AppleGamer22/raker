@@ -6,7 +6,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import z from "zod";
 
-import { signInInstagram, getUserCategories } from "@/buf/raker/v1/raker-RakerServer_connectquery";
+import { signInInstagram, getUserCategories, editCategory } from "@/buf/raker/v1/raker-RakerServer_connectquery";
 import { Button } from "@/components/ui/button";
 import { CardContent } from "@/components/ui/card";
 import { Field, FieldContent, FieldError, FieldGroup, FieldLabel, FieldLegend, FieldSet } from "@/components/ui/field";
@@ -191,6 +191,7 @@ function Categories() {
 			onBlur: updateCategoriesSchema,
 		},
 	});
+	const editCategoryMutation = useMutation(editCategory);
 
 	return (
 		<form
@@ -216,7 +217,7 @@ function Categories() {
 												return (
 													<Field orientation="horizontal" data-invalid={isSubFieldInvalid}>
 														<FieldContent>
-															<InputGroup className="bg-transparent has-disabled:bg-transparent has-disabled:opacity-100">
+															<InputGroup>
 																<InputGroupInput
 																	name={subField.name}
 																	value={subField.state.value}
@@ -237,12 +238,20 @@ function Categories() {
 																		type="button"
 																		variant="ghost"
 																		size="icon-xs"
-																		onClick={() => {
-																			// TODO: call server method to remove category from user row
-																			field.removeValue(i);
+																		onClick={async () => {
+																			try {
+																				await editCategoryMutation.mutateAsync({
+																					oldCategory: subField.state.value,
+																					newCategory: "",
+																				});
+																				field.removeValue(i);
+																			} catch (err) {
+																				toast.error((err as Error).message, {
+																					position: "top-center",
+																				});
+																			}
 																		}}
 																		aria-label={`Remove Category ${i + 1}`}
-																		disabled
 																	>
 																		<XIcon />
 																	</InputGroupButton>
@@ -282,7 +291,7 @@ function Categories() {
 												</InputGroupButton>
 												<InputGroupButton
 													type="button"
-													onClick={() => {
+													onClick={async () => {
 														const trimmedNewCategoryName = newCategory.trim();
 														if (!newCategory) {
 															return;
@@ -299,8 +308,19 @@ function Categories() {
 															return;
 														}
 
-														field.pushValue(trimmedNewCategoryName);
-														setNewCategory("");
+														try {
+															await editCategoryMutation.mutateAsync({
+																oldCategory: trimmedNewCategoryName,
+																newCategory: trimmedNewCategoryName,
+															});
+
+															field.pushValue(trimmedNewCategoryName);
+															setNewCategory("");
+														} catch (err) {
+															toast.error((err as Error).message, {
+																position: "top-center",
+															});
+														}
 													}}
 													disabled={!newCategory.trim()}
 												>
