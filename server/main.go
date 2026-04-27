@@ -11,13 +11,13 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/AppleGamer22/raker/server/configuration"
+	"github.com/AppleGamer22/raker/server/handlers"
 	"github.com/AppleGamer22/raker/shared"
 	"github.com/charmbracelet/log"
 )
 
 func main() {
-	rakerServer, err := configuration.NewRakerServer()
+	rakerServer, err := handlers.NewRakerServer()
 	if err != nil {
 		log.Fatal(err)
 	}
