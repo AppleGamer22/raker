@@ -9,7 +9,7 @@ import z from "zod";
 
 import { searchHistory, searchHistoryOwners } from "@/buf/raker/v1/raker-RakerServer_connectquery";
 import { PostType, type ScrapeResponse } from "@/buf/raker/v1/raker_pb";
-import { PostCarousel } from "@/components/file-display";
+import { FilesCarousel } from "@/components/file-display";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -616,7 +616,7 @@ function History() {
 							</span>
 						</CardHeader>
 						<CardContent>
-							<PostCarousel
+							<FilesCarousel
 								post={{ postType, postOwner, post, files } as ScrapeResponse}
 								username={username!}
 							/>
