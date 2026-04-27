@@ -23,6 +23,23 @@ func (server *RakerServer) ScrapeSnapchat(ctx context.Context, request *v1.Binar
 		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("not authenticated"))
 	}
 
+	history, err := server.DBClient.HistoryGet(context.Background(), db.HistoryGetParams{
+		PostType: db.PostTypeSnapchat,
+		Post:     request.Post,
+		Username: user.Username,
+	})
+	if err == nil {
+		return &v1.ScrapeResponse{
+			PostType:   v1.PostType_Snapchat,
+			PostOwner:  history.PostOwner,
+			Post:       history.Post,
+			PostDate:   timestamppb.New(history.PostDate),
+			Files:      history.Files,
+			Categories: history.Categories,
+			Incognito:  history.Incognito,
+		}, nil
+	}
+
 	result, _, err := shared.Snapchat(request.Owner, request.Post)
 	if err != nil {
 		log.Error(err)
@@ -43,7 +60,6 @@ func (server *RakerServer) ScrapeSnapchat(ctx context.Context, request *v1.Binar
 		} else {
 			fileName = fmt.Sprintf("%s.jpg", fileName)
 		}
-		fmt.Println(fileName)
 		localURLs = append(localURLs, fileName)
 		remoteURLs = append(remoteURLs, u.URL)
 	}
@@ -57,7 +73,7 @@ func (server *RakerServer) ScrapeSnapchat(ctx context.Context, request *v1.Binar
 		return nil, connect.NewError(connect.CodeInternal, errors.New("no files could be saved"))
 	}
 
-	addedHistory, err2 := server.DBClient.HistoryAdd(context.Background(), db.HistoryAddParams{
+	history, err2 = server.DBClient.HistoryAdd(context.Background(), db.HistoryAddParams{
 		Username:   user.Username,
 		PostType:   db.PostTypeSnapchat,
 		PostOwner:  result.Username,
@@ -72,11 +88,11 @@ func (server *RakerServer) ScrapeSnapchat(ctx context.Context, request *v1.Binar
 
 	return &v1.ScrapeResponse{
 		PostType:   v1.PostType_Snapchat,
-		PostOwner:  addedHistory.PostOwner,
-		Post:       addedHistory.Post,
-		PostDate:   timestamppb.New(addedHistory.PostDate),
-		Files:      addedHistory.Files,
-		Categories: addedHistory.Categories,
-		Incognito:  addedHistory.Incognito,
+		PostOwner:  history.PostOwner,
+		Post:       history.Post,
+		PostDate:   timestamppb.New(history.PostDate),
+		Files:      history.Files,
+		Categories: history.Categories,
+		Incognito:  history.Incognito,
 	}, nil
 }
