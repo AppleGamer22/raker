@@ -1,7 +1,7 @@
 import { timestampDate } from "@bufbuild/protobuf/wkt";
 import { useMutation } from "@connectrpc/connect-query";
 import { useForm } from "@tanstack/react-form";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { SearchIcon } from "lucide-react";
 import { Fragment, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -129,42 +129,42 @@ function PostTypeIconLabel({ type }: { type: PostType }) {
 	switch (type) {
 		case PostType.Instagram:
 			return (
-				<span className="inline-flex items-center gap-1 whitespace-nowrap">
+				<span className="inline-flex items-center gap-1 align-middle leading-none whitespace-nowrap">
 					<InstagramIcon className="w-4" />
 					Post
 				</span>
 			);
 		case PostType.Highlight:
 			return (
-				<span className="inline-flex items-center gap-1 whitespace-nowrap">
+				<span className="inline-flex items-center gap-1 align-middle leading-none whitespace-nowrap">
 					<InstagramIcon className="w-4" />
 					Highlight
 				</span>
 			);
 		case PostType.Story:
 			return (
-				<span className="inline-flex items-center gap-1 whitespace-nowrap">
+				<span className="inline-flex items-center gap-1 align-middle leading-none whitespace-nowrap">
 					<InstagramIcon className="w-4" />
 					Story
 				</span>
 			);
 		case PostType.TikTok:
 			return (
-				<span className="inline-flex items-center gap-1 whitespace-nowrap">
+				<span className="inline-flex items-center gap-1 align-middle leading-none whitespace-nowrap">
 					<TikTokIcon className="w-4" />
 					Post
 				</span>
 			);
 		case PostType.Snapchat:
 			return (
-				<span className="inline-flex items-center gap-1 whitespace-nowrap">
+				<span className="inline-flex items-center gap-1 align-middle leading-none whitespace-nowrap">
 					<SnapchatIcon className="w-4" />
 					Highlight
 				</span>
 			);
 		case PostType.VSCO:
 			return (
-				<span className="inline-flex items-center gap-1 whitespace-nowrap">
+				<span className="inline-flex items-center gap-1 align-middle leading-none whitespace-nowrap">
 					<VSCOIcon className="w-4" />
 					Post
 				</span>
@@ -640,15 +640,37 @@ function History() {
 						<CardHeader className="w-full wrap-break-word">
 							<span className="inline-block space-x-1 leading-none *:my-0.5 *:align-middle">
 								<Badge variant="secondary">
-									<PostTypeIconLabel type={postType} />
+									<Link
+										to="/history"
+										search={{
+											categories: form.getFieldValue("categories"),
+											exclusive: form.getFieldValue("exclusive"),
+											owners: [],
+											types: [postType],
+										}}
+										target="_blank"
+									>
+										<PostTypeIconLabel type={postType} />
+									</Link>
 								</Badge>
 								<span>/</span>
 								<Badge variant="secondary">
-									<code className="leading-none select-text!">{postOwner}</code>
+									<Link
+										to="/history"
+										search={{
+											categories: form.getFieldValue("categories"),
+											exclusive: form.getFieldValue("exclusive"),
+											owners: [{ owner: postOwner, type: -1 }],
+											types: defaultPostTypes,
+										}}
+										target="_blank"
+									>
+										<code className="align-middle leading-none select-text!">{postOwner}</code>
+									</Link>
 								</Badge>
 								<span>/</span>
 								<Badge variant="secondary">
-									<code className="leading-none select-text!">{post}</code>
+									<code className="align-middle leading-none select-text!">{post}</code>
 								</Badge>
 							</span>
 							{postDate !== undefined && <p>{timestampDate(postDate).toString()}</p>}
