@@ -1,5 +1,6 @@
 import { useLocation, useRouter } from "@tanstack/react-router";
 import { UserKeyIcon, DatabaseSearchIcon } from "lucide-react";
+import type { ReactNode } from "react";
 
 import {
 	Sheet,
@@ -17,6 +18,7 @@ import {
 	SidebarHeader,
 	SidebarContent,
 	SidebarProvider,
+	SidebarInset,
 	SidebarGroupLabel,
 } from "@/components/ui/sidebar";
 import { InstagramIcon } from "@/components/ui/svgs/instagram";
@@ -29,7 +31,8 @@ type MenuMode = "default" | "mobile-sheet";
 export function Menu({
 	mode = "default",
 	onNavigate,
-}: { mode?: MenuMode; onNavigate?: () => void } = {}) {
+	children,
+}: { mode?: MenuMode; onNavigate?: () => void; children?: ReactNode } = {}) {
 	const isMobileSheet = mode === "mobile-sheet";
 	const router = useRouter();
 	const location = useLocation();
@@ -46,9 +49,7 @@ export function Menu({
 	// TODO: https://ui.shadcn.com/blocks/sidebar#sidebar-16
 	return (
 		<SidebarProvider
-			className={
-				isMobileSheet ? "flex h-full min-h-0! w-full flex-col" : "flex min-h-0! flex-col"
-			}
+			className={isMobileSheet ? "flex h-full min-h-0! w-full flex-col" : "min-h-svh w-full"}
 		>
 			<Sidebar
 				className={isMobileSheet ? "h-full w-full" : undefined}
@@ -145,6 +146,7 @@ export function Menu({
 					</SidebarGroup>
 				</SidebarContent>
 			</Sidebar>
+			{!isMobileSheet && children ? <SidebarInset>{children}</SidebarInset> : null}
 		</SidebarProvider>
 	);
 }

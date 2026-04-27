@@ -17,8 +17,14 @@ function Root() {
 	return (
 		<>
 			{isMobile ? <Header toggleMenu={() => setOpen(true)} /> : null}
-			{isMobile ? <MobileMenu open={open} onOpenChange={setOpen} /> : <Menu />}
-			<Outlet />
+			{isMobile ? (
+				<MobileMenu open={open} onOpenChange={setOpen} />
+			) : (
+				<Menu>
+					<Outlet />
+				</Menu>
+			)}
+			{isMobile ? <Outlet /> : null}
 		</>
 	);
 }
