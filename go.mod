@@ -3,10 +3,9 @@ module github.com/AppleGamer22/raker
 go 1.25.0
 
 require (
-	github.com/bep/imagemeta v0.17.2
 	connectrpc.com/connect v1.19.1
 	connectrpc.com/validate v0.6.0
-	github.com/bep/imagemeta v0.17.0
+	github.com/bep/imagemeta v0.17.2
 	github.com/charmbracelet/log v1.0.0
 	github.com/go-webauthn/webauthn v0.17.0
 	github.com/golang-jwt/jwt/v5 v5.3.1
@@ -23,10 +22,10 @@ require (
 )
 
 require (
-	github.com/andybalholm/brotli v1.0.6 // indirect
 	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.36.9-20250912141014-52f32327d4b0.1 // indirect
 	buf.build/go/protovalidate v1.0.0 // indirect
 	cel.dev/expr v0.24.0 // indirect
+	github.com/andybalholm/brotli v1.0.6 // indirect
 	github.com/antlr4-go/antlr/v4 v4.13.1 // indirect
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
 	github.com/charmbracelet/colorprofile v0.2.3-0.20250311203215-f60798e515dc // indirect
