@@ -9,8 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 
 const instagramSearchSchema = z.object({
-	post: z.string(),
-	incognito: z.boolean(),
+	post: z.string().catch(""),
+	incognito: z.boolean().catch(false),
 });
 
 export const Route = createFileRoute("/instagram")({
@@ -75,14 +75,12 @@ function Instagram() {
 							</Field>
 						)}
 					</form.Field>
+					<Field orientation="horizontal">
+						<Button type="submit">Submit</Button>
+					</Field>
 				</FieldGroup>
 			</CardContent>
-			<CardFooter>
-				<Field orientation="horizontal">
-					<Button type="submit">Submit</Button>
-				</Field>
-				{/* TODO: results */}
-			</CardFooter>
+			<CardFooter>{/* TODO: results */}</CardFooter>
 		</form>
 	);
 }
