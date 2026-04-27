@@ -503,14 +503,17 @@ function History() {
 								<ComboboxChipsInput
 									placeholder="post owner search"
 									onChange={async (e) => {
-										setOwnerSearchTerm(e.target.value);
-										if (e.target.value.length === 4) {
+										let ownerSearchQuery = e.target.value;
+										if (ownerSearchTerm.substring(0, 4) !== ownerSearchQuery.substring(0, 4)) {
+											ownerSearchQuery = ownerSearchQuery.substring(0, 4);
+										}
+										if (ownerSearchQuery.length === 4) {
 											try {
 												const { owners } = await ownersMutation.mutateAsync({
 													categories,
 													exclusive,
 													types,
-													owner: e.target.value,
+													owner: ownerSearchQuery,
 												});
 												setOwnersSearchOptions(owners);
 											} catch (err) {
@@ -518,9 +521,10 @@ function History() {
 													position: "top-center",
 												});
 											}
-										} else if (e.target.value.length === 0) {
+										} else if (ownerSearchQuery.length === 0) {
 											setOwnersSearchOptions([]);
 										}
+										setOwnerSearchTerm(e.target.value);
 									}}
 								></ComboboxChipsInput>
 								<InputGroupAddon>
