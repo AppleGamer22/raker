@@ -1,8 +1,9 @@
 import { useMutation, useQuery } from "@connectrpc/connect-query";
 import { useForm } from "@tanstack/react-form";
 import { createFileRoute } from "@tanstack/react-router";
-import { XIcon } from "lucide-react";
+import { PlusIcon, XIcon } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 import z from "zod";
 
 import { signInInstagram, getUserCategories } from "@/buf/raker/v1/raker-RakerServer_connectquery";
@@ -274,8 +275,10 @@ function Categories() {
 													size="icon-xs"
 													onClick={() => setNewCategory("")}
 													aria-label={`Reset New Category Name`}
+													disabled={!newCategory.trim()}
 												>
 													<XIcon />
+													<span className="sr-only">Remove category</span>
 												</InputGroupButton>
 												<InputGroupButton
 													type="button"
@@ -284,6 +287,15 @@ function Categories() {
 														if (!newCategory) {
 															return;
 														} else if (field.state.value.includes(trimmedNewCategoryName)) {
+															toast.error(
+																<label>
+																	Category name <b>{trimmedNewCategoryName}</b> is
+																	already part of the categories list
+																</label>,
+																{
+																	position: "top-center",
+																},
+															);
 															return;
 														}
 
@@ -292,7 +304,8 @@ function Categories() {
 													}}
 													disabled={!newCategory.trim()}
 												>
-													Add
+													<PlusIcon />
+													<span className="sr-only">Add category</span>
 												</InputGroupButton>
 											</InputGroupAddon>
 										</InputGroup>
