@@ -21,6 +21,7 @@ type Querier interface {
 	// https://docs.sqlc.dev/en/stable/howto/named_parameters.html
 	HistoryGetInclusive(ctx context.Context, arg HistoryGetInclusiveParams) ([]History, error)
 	HistoryGetPage(ctx context.Context, arg HistoryGetPageParams) ([]History, error)
+	HistoryOwners(ctx context.Context, arg HistoryOwnersParams) ([]string, error)
 	HistoryRemove(ctx context.Context, arg HistoryRemoveParams) error
 	HistoryUpdateCategories(ctx context.Context, arg HistoryUpdateCategoriesParams) (History, error)
 	HistoryUpdateOwner(ctx context.Context, arg HistoryUpdateOwnerParams) error

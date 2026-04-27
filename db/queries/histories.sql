@@ -162,6 +162,23 @@ WHERE post_type = ANY (sqlc.slice(post_types)::post_type [])
 	AND post_owner LIKE FORMAT('%%%s%%', sqlc.arg(post_owner)::text)
 	AND username = sqlc.arg(username)::text;
 
+-- name: HistoryOwners :many
+select distinct post_owner
+from Histories
+WHERE post_type = ANY (sqlc.slice(post_types)::post_type [])
+	AND (
+		(
+			sqlc.arg(exclusive)::boolean
+			and categories = sqlc.slice(categories)::text []
+		)
+		or (
+			not sqlc.arg(exclusive)::boolean
+			and categories <@ sqlc.slice(categories)::text []
+		)
+	)
+	AND post_owner LIKE FORMAT('%%%s%%', sqlc.arg(post_owner)::text)
+	AND username = sqlc.arg(username)::text;
+
 -- name: HistoryRemove :exec
 DELETE FROM Histories
 WHERE post_type = sqlc.arg(post_type)::post_type

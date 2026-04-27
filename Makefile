@@ -13,7 +13,8 @@ server:
 	-go run ./server || true
 	docker stop database
 
-buf:
+generate:
+	sqlc generate
 	# rm -rf server/buf
 	buf dep update
 	buf generate

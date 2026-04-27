@@ -70,8 +70,8 @@ func (server *RakerServer) SearchHistory(ctx context.Context, request *v1.Histor
 	}
 
 	postTypes := make([]db.PostType, 0, len(request.Types))
-	for i, postType := range request.Types {
-		postTypes[i] = PostTypePB2DB(postType)
+	for _, postType := range request.Types {
+		postTypes = append(postTypes, PostTypePB2DB(postType))
 	}
 
 	count, err := server.DBClient.HistoryCount(context.Background(), db.HistoryCountParams{
@@ -125,6 +125,30 @@ func (server *RakerServer) SearchHistory(ctx context.Context, request *v1.Histor
 }
 
 // SearchHistoryOwners implements [v1connect.RakerServerHandler].
-func (r *RakerServer) SearchHistoryOwners(context.Context, *v1.HistoryRequest) (*v1.HistoryOwnersResponse, error) {
-	panic("unimplemented")
+func (server *RakerServer) SearchHistoryOwners(ctx context.Context, request *v1.HistoryRequest) (*v1.HistoryOwnersResponse, error) {
+	user, ok := ctx.Value(authenticatedUserKey).(db.User)
+	if !ok {
+		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("not authenticated"))
+	}
+
+	postTypes := make([]db.PostType, 0, len(request.Types))
+	for _, postType := range request.Types {
+		postTypes = append(postTypes, PostTypePB2DB(postType))
+	}
+
+	owners, err := server.DBClient.HistoryOwners(ctx, db.HistoryOwnersParams{
+		PostTypes:  postTypes,
+		Exclusive:  request.Exclusive,
+		Categories: request.Categories,
+		PostOwner:  request.Owner,
+		Username:   user.Username,
+	})
+
+	if err != nil {
+		return &v1.HistoryOwnersResponse{}, connect.NewError(connect.CodeInternal, err)
+	}
+
+	return &v1.HistoryOwnersResponse{
+		Owners: owners,
+	}, nil
 }

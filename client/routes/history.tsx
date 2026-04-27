@@ -1,14 +1,20 @@
+import { useMutation } from "@connectrpc/connect-query";
 import { useForm } from "@tanstack/react-form";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { SearchIcon } from "lucide-react";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import z from "zod";
 
+import { searchHistoryOwners } from "@/buf/raker/v1/raker-RakerServer_connectquery";
 import { PostType } from "@/buf/raker/v1/raker_pb";
 import { Badge } from "@/components/ui/badge";
 import { CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Combobox, ComboboxContent, ComboboxInput, ComboboxItem, ComboboxList } from "@/components/ui/combobox";
 import { FieldGroup, FieldLegend, Field, FieldSet, FieldLabel, FieldContent, FieldTitle } from "@/components/ui/field";
+import { InputGroupAddon } from "@/components/ui/input-group";
 import { Separator } from "@/components/ui/separator";
 import { InstagramIcon } from "@/components/ui/svgs/instagram";
 import { SnapchatIcon } from "@/components/ui/svgs/snapchat";
@@ -373,8 +379,12 @@ function History() {
 		PostType.VSCO,
 	]);
 	const [categories, setCategories] = useState<string[]>(availableCategories);
+	const [ownersSearchOptions, setOwnersSearchOptions] = useState<string[]>([]);
 	const [exclusive, setExclusive] = useState(false);
 	const [isOpen, setIsOpen] = useState(false);
+	const [ownerSearchTerm, setOwnerSearchTerm] = useState("");
+
+	const ownersMutation = useMutation(searchHistoryOwners);
 
 	useEffect(() => {
 		setCategories(availableCategories);
@@ -427,6 +437,48 @@ function History() {
 					/>
 				</CollapsibleContent>
 			</Collapsible>
+			<Combobox items={ownersSearchOptions}>
+				<ComboboxInput
+					className="my-2"
+					placeholder="post owner"
+					value={ownerSearchTerm}
+					onChange={async (e) => {
+						setOwnerSearchTerm(e.target.value);
+						if (e.target.value.length === 4) {
+							try {
+								const { owners } = await ownersMutation.mutateAsync({
+									categories,
+									exclusive,
+									types,
+									owner: e.target.value,
+								});
+								setOwnersSearchOptions(owners);
+							} catch (err) {
+								toast.error((err as Error).message, {
+									position: "top-center",
+								});
+							}
+						} else if (e.target.value.length < 4) {
+							setOwnersSearchOptions([]);
+						}
+					}}
+				>
+					<InputGroupAddon>
+						<SearchIcon />
+					</InputGroupAddon>
+				</ComboboxInput>
+				{ownersSearchOptions.length > 0 && (
+					<ComboboxContent>
+						<ComboboxList>
+							{(item) => (
+								<ComboboxItem key={`search-${item}`} value={item}>
+									{item}
+								</ComboboxItem>
+							)}
+						</ComboboxList>
+					</ComboboxContent>
+				)}
+			</Combobox>
 		</CardContent>
 	);
 }

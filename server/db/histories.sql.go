@@ -474,6 +474,61 @@ func (q *Queries) HistoryGetPage(ctx context.Context, arg HistoryGetPageParams) 
 	return items, nil
 }
 
+const historyOwners = `-- name: HistoryOwners :many
+select distinct post_owner
+from Histories
+WHERE post_type = ANY ($1::post_type [])
+	AND (
+		(
+			$2::boolean
+			and categories = $3::text []
+		)
+		or (
+			not $2::boolean
+			and categories <@ $3::text []
+		)
+	)
+	AND post_owner LIKE FORMAT('%%%s%%', $4::text)
+	AND username = $5::text
+`
+
+type HistoryOwnersParams struct {
+	PostTypes  []PostType `json:"post_types"`
+	Exclusive  bool       `json:"exclusive"`
+	Categories []string   `json:"categories"`
+	PostOwner  string     `json:"post_owner"`
+	Username   string     `json:"username"`
+}
+
+func (q *Queries) HistoryOwners(ctx context.Context, arg HistoryOwnersParams) ([]string, error) {
+	rows, err := q.query(ctx, q.historyOwnersStmt, historyOwners,
+		pq.Array(arg.PostTypes),
+		arg.Exclusive,
+		pq.Array(arg.Categories),
+		arg.PostOwner,
+		arg.Username,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []string
+	for rows.Next() {
+		var post_owner string
+		if err := rows.Scan(&post_owner); err != nil {
+			return nil, err
+		}
+		items = append(items, post_owner)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const historyRemove = `-- name: HistoryRemove :exec
 DELETE FROM Histories
 WHERE post_type = $1::post_type
