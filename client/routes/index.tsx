@@ -64,16 +64,16 @@ function SignInForm() {
 
 	return (
 		<form
-			onSubmit={(e) => {
+			onSubmit={async (e) => {
 				e.preventDefault();
-				signInMutation.mutate(
-					{ username, password },
-					{
-						onSuccess: () => {
-							location.reload();
-						},
-					},
-				);
+				try {
+					await signInMutation.mutateAsync({ username, password });
+					location.reload();
+				} catch (err) {
+					toast.error((err as Error).message, {
+						position: "top-center",
+					});
+				}
 			}}
 		>
 			<FieldGroup>
@@ -103,10 +103,6 @@ function SignInForm() {
 								}}
 							/>
 						</Field>
-						{signInMutation.isError ? (
-							<p className="text-sm text-destructive">{signInMutation.error.message}</p>
-						) : null}
-						{signInMutation.isSuccess ? <p className="text-sm text-green-600">Signed in.</p> : null}
 						<Field orientation="horizontal">
 							<Button disabled={signInMutation.isPending} type="submit">
 								{signInMutation.isPending ? "Signing in..." : "Sign-in"}
@@ -163,7 +159,9 @@ function UpdateForm() {
 										await cookieStore.delete("jwt");
 										location.reload();
 									} catch (err) {
-										console.error(err);
+										toast.error((err as Error).message, {
+											position: "top-center",
+										});
 									}
 								}}
 							>
