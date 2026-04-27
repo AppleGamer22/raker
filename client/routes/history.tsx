@@ -80,6 +80,37 @@ const historyFormSchema = z.object({
 
 type HistoryFormValues = z.infer<typeof historyFormSchema>;
 
+type HistoryPostCategoryFormProps = {
+	availableCategories: string[];
+	exclusiveField: {
+		name: string;
+		value: HistoryFormValues["exclusive"];
+		onChange: (checked: boolean) => void;
+	};
+	categoriesField: {
+		name: string;
+		value: HistoryFormValues["categories"];
+		onToggleCategory: (category: string, checked: boolean) => void;
+	};
+};
+
+type HistoryPostTypeFormProps = {
+	typesField: {
+		name: string;
+		value: HistoryFormValues["types"];
+		onToggleType: (type: PostType, checked: boolean) => void;
+	};
+};
+
+const postTypeOptions = [
+	{ id: "post-type-instagram", value: PostType.Instagram, label: "Post", Icon: InstagramIcon },
+	{ id: "post-type-highlight", value: PostType.Highlight, label: "Highlight", Icon: InstagramIcon },
+	{ id: "post-type-story", value: PostType.Story, label: "Story", Icon: InstagramIcon },
+	{ id: "post-type-tiktok", value: PostType.TikTok, label: "Post", Icon: TikTokIcon },
+	{ id: "post-type-snapchat", value: PostType.Snapchat, label: "Highlight", Icon: SnapchatIcon },
+	{ id: "post-type-vsco", value: PostType.VSCO, label: "Post", Icon: VSCOIcon },
+] as const;
+
 function PostTypeIconLabel({ type }: { type: PostType }) {
 	switch (type) {
 		case PostType.Instagram:
@@ -172,6 +203,87 @@ function HistoryPagination({
 	);
 }
 
+function HistoryPostCategoryForm({
+	availableCategories,
+	exclusiveField,
+	categoriesField,
+}: HistoryPostCategoryFormProps) {
+	return (
+		<FieldGroup>
+			<FieldSet>
+				<FieldLegend>Post Categories</FieldLegend>
+				<FieldGroup className="flex flex-row flex-wrap gap-1 *:w-auto">
+					<FieldLabel htmlFor="category-exclusive" className="max-w-fit">
+						<Field orientation="horizontal">
+							<Switch
+								id="category-exclusive"
+								name={exclusiveField.name}
+								checked={exclusiveField.value}
+								onCheckedChange={(checked) => {
+									exclusiveField.onChange(checked);
+								}}
+							/>
+							<FieldContent>
+								<FieldTitle>Exclusive</FieldTitle>
+							</FieldContent>
+						</Field>
+					</FieldLabel>
+					<Separator orientation="vertical" />
+					{availableCategories.map((category) => (
+						<FieldLabel key={`category-${category}`} htmlFor={`category-${category}`} className="max-w-fit">
+							<Field orientation="horizontal">
+								<Checkbox
+									id={`category-${category}`}
+									name={categoriesField.name}
+									checked={categoriesField.value.includes(category)}
+									onCheckedChange={(checked) => {
+										categoriesField.onToggleCategory(category, !!checked);
+									}}
+								/>
+								<FieldContent>
+									<FieldTitle>{category}</FieldTitle>
+								</FieldContent>
+							</Field>
+						</FieldLabel>
+					))}
+				</FieldGroup>
+			</FieldSet>
+		</FieldGroup>
+	);
+}
+
+function HistoryPostTypeForm({ typesField }: HistoryPostTypeFormProps) {
+	return (
+		<FieldGroup>
+			<FieldSet>
+				<FieldLegend>Post Types</FieldLegend>
+				<FieldGroup className="flex flex-row flex-wrap gap-1 *:w-auto">
+					{postTypeOptions.map(({ id, value, label, Icon }) => (
+						<FieldLabel key={id} htmlFor={id} className="max-w-fit">
+							<Field orientation="horizontal">
+								<Checkbox
+									id={id}
+									name={typesField.name}
+									checked={typesField.value.includes(value)}
+									onCheckedChange={(checked) => {
+										typesField.onToggleType(value, !!checked);
+									}}
+								/>
+								<FieldContent>
+									<FieldTitle>
+										<Icon className="w-4" />
+										{label}
+									</FieldTitle>
+								</FieldContent>
+							</Field>
+						</FieldLabel>
+					))}
+				</FieldGroup>
+			</FieldSet>
+		</FieldGroup>
+	);
+}
+
 function History() {
 	const navigate = useNavigate({ from: Route.fullPath });
 	const { username, categories: availableCategories } = useUser();
@@ -217,125 +329,6 @@ function History() {
 			}
 		},
 	});
-
-	const HistoryPostTypeForm = () => {
-		const typeOptions = [
-			{ id: "post-type-instagram", value: PostType.Instagram, label: "Post", Icon: InstagramIcon },
-			{ id: "post-type-highlight", value: PostType.Highlight, label: "Highlight", Icon: InstagramIcon },
-			{ id: "post-type-story", value: PostType.Story, label: "Story", Icon: InstagramIcon },
-			{ id: "post-type-tiktok", value: PostType.TikTok, label: "Post", Icon: TikTokIcon },
-			{ id: "post-type-snapchat", value: PostType.Snapchat, label: "Highlight", Icon: SnapchatIcon },
-			{ id: "post-type-vsco", value: PostType.VSCO, label: "Post", Icon: VSCOIcon },
-		] as const;
-
-		return (
-			<FieldGroup>
-				<FieldSet>
-					<FieldLegend>Post Types</FieldLegend>
-					<form.Field name="types" mode="array">
-						{(field) => (
-							<FieldGroup className="flex flex-row flex-wrap gap-1 *:w-auto">
-								{typeOptions.map(({ id, value, label, Icon }) => (
-									<FieldLabel key={id} htmlFor={id} className="max-w-fit">
-										<Field orientation="horizontal">
-											<Checkbox
-												id={id}
-												checked={field.state.value.includes(value)}
-												onCheckedChange={(checked) => {
-													if (checked) {
-														if (!field.state.value.includes(value)) {
-															field.pushValue(value);
-														}
-													} else {
-														const index = field.state.value.indexOf(value);
-														if (index > -1) {
-															field.removeValue(index);
-														}
-													}
-												}}
-											/>
-											<FieldContent>
-												<FieldTitle>
-													<Icon className="w-4" />
-													{label}
-												</FieldTitle>
-											</FieldContent>
-										</Field>
-									</FieldLabel>
-								))}
-							</FieldGroup>
-						)}
-					</form.Field>
-				</FieldSet>
-			</FieldGroup>
-		);
-	};
-
-	const HistoryPostCategoryForm = () => (
-		<FieldGroup>
-			<FieldSet>
-				<FieldLegend>Post Categories</FieldLegend>
-				<FieldGroup className="flex flex-row flex-wrap gap-1 *:w-auto">
-					<form.Field name="exclusive">
-						{(field) => (
-							<FieldLabel htmlFor="category-exclusive" className="max-w-fit">
-								<Field orientation="horizontal">
-									<Switch
-										id="category-exclusive"
-										name={field.name}
-										checked={field.state.value}
-										onCheckedChange={(checked) => {
-											field.handleChange(checked);
-										}}
-									/>
-									<FieldContent>
-										<FieldTitle>Exclusive</FieldTitle>
-									</FieldContent>
-								</Field>
-							</FieldLabel>
-						)}
-					</form.Field>
-					<Separator orientation="vertical" />
-					<form.Field name="categories" mode="array">
-						{(field) => (
-							<>
-								{availableCategories.map((category) => (
-									<FieldLabel
-										key={`category-${category}`}
-										htmlFor={`category-${category}`}
-										className="max-w-fit"
-									>
-										<Field orientation="horizontal">
-											<Checkbox
-												id={`category-${category}`}
-												name={field.name}
-												checked={field.state.value.includes(category)}
-												onCheckedChange={(checked) => {
-													if (checked) {
-														if (!field.state.value.includes(category)) {
-															field.pushValue(category);
-														}
-													} else {
-														const index = field.state.value.indexOf(category);
-														if (index > -1) {
-															field.removeValue(index);
-														}
-													}
-												}}
-											/>
-											<FieldContent>
-												<FieldTitle>{category}</FieldTitle>
-											</FieldContent>
-										</Field>
-									</FieldLabel>
-								))}
-							</>
-						)}
-					</form.Field>
-				</FieldGroup>
-			</FieldSet>
-		</FieldGroup>
-	);
 
 	useEffect(() => {
 		form.setFieldValue("categories", availableCategories);
@@ -390,9 +383,61 @@ function History() {
 						)}
 					</form.Subscribe>
 					<CollapsibleContent className="mt-1">
-						<HistoryPostTypeForm />
+						<form.Field name="types" mode="array">
+							{(typesField) => (
+								<HistoryPostTypeForm
+									typesField={{
+										name: typesField.name,
+										value: typesField.state.value,
+										onToggleType: (type, checked) => {
+											if (checked) {
+												if (!typesField.state.value.includes(type)) {
+													typesField.pushValue(type);
+												}
+											} else {
+												const index = typesField.state.value.indexOf(type);
+												if (index > -1) {
+													typesField.removeValue(index);
+												}
+											}
+										},
+									}}
+								/>
+							)}
+						</form.Field>
 						<Separator className="my-2" />
-						<HistoryPostCategoryForm />
+						<form.Field name="exclusive">
+							{(exclusiveField) => (
+								<form.Field name="categories" mode="array">
+									{(categoriesField) => (
+										<HistoryPostCategoryForm
+											availableCategories={availableCategories}
+											exclusiveField={{
+												name: exclusiveField.name,
+												value: exclusiveField.state.value,
+												onChange: exclusiveField.handleChange,
+											}}
+											categoriesField={{
+												name: categoriesField.name,
+												value: categoriesField.state.value,
+												onToggleCategory: (category, checked) => {
+													if (checked) {
+														if (!categoriesField.state.value.includes(category)) {
+															categoriesField.pushValue(category);
+														}
+													} else {
+														const index = categoriesField.state.value.indexOf(category);
+														if (index > -1) {
+															categoriesField.removeValue(index);
+														}
+													}
+												},
+											}}
+										/>
+									)}
+								</form.Field>
+							)}
+						</form.Field>
 					</CollapsibleContent>
 				</Collapsible>
 
