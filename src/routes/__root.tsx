@@ -3,6 +3,7 @@ import { useState } from "react";
 
 import Header from "@/components/header";
 import { Menu, MobileMenu } from "@/components/menu";
+import { Card } from "@/components/ui/card";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 export const Route = createRootRoute({
@@ -18,17 +19,21 @@ function Root() {
 		<main className="w-full max-w-full overflow-x-hidden">
 			{isMobile ? <Header toggleMenu={() => setOpen(true)} /> : null}
 			{isMobile ? (
-				<MobileMenu open={open} onOpenChange={setOpen} />
+				<>
+					<MobileMenu open={open} onOpenChange={setOpen} />
+					<div className="w-full max-w-full overflow-x-hidden">
+						<Card className="m-2 min-h-[calc(100dvh-var(--header-height)-1.1rem)] md:min-h-[calc(100dvh-1rem)]">
+							<Outlet />
+						</Card>
+					</div>
+				</>
 			) : (
 				<Menu>
-					<Outlet />
+					<Card className="m-2 min-h-[calc(100dvh-var(--header-height)-1.1rem)] md:min-h-[calc(100dvh-1rem)]">
+						<Outlet />
+					</Card>
 				</Menu>
 			)}
-			{isMobile ? (
-				<div className="w-full max-w-full overflow-x-hidden">
-					<Outlet />
-				</div>
-			) : null}
 		</main>
 	);
 }
