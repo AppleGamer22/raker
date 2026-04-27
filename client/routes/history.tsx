@@ -63,6 +63,7 @@ export const Route = createFileRoute("/history")({
 		types: z.array(z.enum(PostType)).catch(defaultPostTypes),
 		exclusive: z.boolean().catch(false),
 		categories: z.array(z.string()).catch([]),
+		page: z.bigint().min(1n).catch(1n),
 		owners: z
 			.array(
 				z.object({
@@ -313,13 +314,14 @@ function HistoryPostTypeForm({ typesField }: HistoryPostTypeFormProps) {
 }
 
 function History() {
-	const { types, exclusive, categories, owners } = Route.useSearch();
+	const { types, exclusive, categories, owners, page } = Route.useSearch();
 	const navigate = useNavigate({ from: Route.fullPath });
 	const { username, categories: availableCategories, isCategoriesPending } = useUser();
 	const [ownersSearchOptions, setOwnersSearchOptions] = useState<OwnerPostType[]>([]);
 	const [isOpen, setIsOpen] = useState(false);
 	const [totalCount, setTotalCount] = useState(0n);
-	const [currentPage, setCurrentPage] = useState(1n);
+	const [currentPage, setCurrentPage] = useState(BigInt(page));
+	const currentPageRef = useRef(BigInt(page));
 	const [histories, setHistories] = useState<ScrapeResponse[]>([]);
 	const hasInitializedCategories = useRef(false);
 	const hasSubmittedInitialSearch = useRef(false);
@@ -347,7 +349,7 @@ function History() {
 					exclusive: exclusive,
 					types: types,
 					owners: ownersSearchValue.map(({ owner }) => owner),
-					page: currentPage,
+					page: currentPageRef.current,
 					pageSize: 30,
 				});
 				setTotalCount(totalCount);
@@ -357,6 +359,7 @@ function History() {
 						types,
 						exclusive,
 						categories,
+						page: currentPageRef.current,
 						owners: ownersSearchValue,
 					},
 					replace: true,
@@ -387,6 +390,12 @@ function History() {
 	}, [availableCategories, categories, form, isCategoriesPending, username]);
 
 	useEffect(() => {
+		const normalizedPage = BigInt(page);
+		setCurrentPage(normalizedPage);
+		currentPageRef.current = normalizedPage;
+	}, [page]);
+
+	useEffect(() => {
 		if (username === null) {
 			navigate({ to: "/", replace: true });
 		}
@@ -398,6 +407,7 @@ function History() {
 			total={totalCount / 30n + (totalCount % 30n ? 1n : 0n)}
 			onChange={(current) => {
 				setCurrentPage(current);
+				currentPageRef.current = current;
 				form.handleSubmit();
 			}}
 		/>
@@ -645,6 +655,7 @@ function History() {
 										search={{
 											categories: form.getFieldValue("categories"),
 											exclusive: form.getFieldValue("exclusive"),
+											page: 1n,
 											owners: [],
 											types: [postType],
 										}}
@@ -654,16 +665,18 @@ function History() {
 									</Link>
 								</Badge>
 								<span>/</span>
-								<Badge variant="secondary">
+								<Badge variant="secondary" className="select-text!">
 									<Link
 										to="/history"
 										search={{
 											categories: form.getFieldValue("categories"),
 											exclusive: form.getFieldValue("exclusive"),
+											page: 1n,
 											owners: [{ owner: postOwner, type: -1 }],
 											types: defaultPostTypes,
 										}}
 										target="_blank"
+										className="select-text!"
 									>
 										<code className="align-middle leading-none select-text!">{postOwner}</code>
 									</Link>
@@ -680,7 +693,19 @@ function History() {
 										key={`category-${postType}-${postOwner}-${post}-${category}`}
 										variant="secondary"
 									>
-										{category}
+										<Link
+											to="/history"
+											search={{
+												categories: [category],
+												exclusive: form.getFieldValue("exclusive"),
+												page: 1n,
+												owners: [],
+												types: defaultPostTypes,
+											}}
+											target="_blank"
+										>
+											{category}
+										</Link>
 									</Badge>
 								))}
 							</span>
