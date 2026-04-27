@@ -9,7 +9,7 @@ import z from "zod";
 
 import { searchHistory, searchHistoryOwners } from "@/buf/raker/v1/raker-RakerServer_connectquery";
 import { PostType, type ScrapeResponse } from "@/buf/raker/v1/raker_pb";
-import { PostCarousel } from "@/components/post-carousel";
+import { PostCarousel } from "@/components/file-display";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
