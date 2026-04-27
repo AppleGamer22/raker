@@ -178,25 +178,39 @@ function HistoryPagination({
 	total,
 	onChange,
 }: {
-	current: number;
-	total: number;
-	onChange: (n: number) => void;
+	current: bigint;
+	total: bigint;
+	onChange: (n: bigint) => void;
 }) {
-	return total <= 1 ? null : (
+	return total <= 1n ? null : (
 		<Pagination>
 			<PaginationContent>
-				{current > 0 && (
-					<PaginationItem>
-						<PaginationPrevious onClick={() => onChange(current - 1)} />
-					</PaginationItem>
+				{current > 1n && (
+					<>
+						{current > 2n && (
+							<PaginationItem>
+								<PaginationLink onClick={() => onChange(1n)}>1</PaginationLink>
+							</PaginationItem>
+						)}
+						<PaginationItem>
+							<PaginationPrevious onClick={() => onChange(current - 1n)} />
+						</PaginationItem>
+					</>
 				)}
 				<PaginationItem>
 					<PaginationLink>{current}</PaginationLink>
 				</PaginationItem>
-				{current < total - 1 && (
-					<PaginationItem>
-						<PaginationNext onClick={() => onChange(current + 1)} />
-					</PaginationItem>
+				{current < total && (
+					<>
+						<PaginationItem>
+							<PaginationNext onClick={() => onChange(current + 1n)} />
+						</PaginationItem>
+						{current < total - 1n && (
+							<PaginationItem>
+								<PaginationLink onClick={() => onChange(total)}>{total}</PaginationLink>
+							</PaginationItem>
+						)}
+					</>
 				)}
 			</PaginationContent>
 		</Pagination>
@@ -289,9 +303,8 @@ function History() {
 	const { username, categories: availableCategories } = useUser();
 	const [ownersSearchOptions, setOwnersSearchOptions] = useState<OwnerPostType[]>([]);
 	const [isOpen, setIsOpen] = useState(false);
-	const [totalCount, setTotalCount] = useState(BigInt(0));
-	const [currentPage, setCurrentPage] = useState(0);
-	const [pageCount] = useState(0);
+	const [totalCount, setTotalCount] = useState(0n);
+	const [currentPage, setCurrentPage] = useState(1n);
 	const [histories, setHistories] = useState<ScrapeResponse[]>([]);
 
 	const anchor = useComboboxAnchor();
@@ -317,7 +330,7 @@ function History() {
 					exclusive: exclusive,
 					types: types,
 					owners: ownersSearchValue.map(({ owner }) => owner),
-					page: BigInt(1),
+					page: currentPage,
 					pageSize: 30,
 				});
 				setTotalCount(totalCount);
@@ -339,6 +352,17 @@ function History() {
 			navigate({ to: "/", replace: true });
 		}
 	}, [navigate, username]);
+
+	const HistoryPageinationButtons = () => (
+		<HistoryPagination
+			current={currentPage}
+			total={totalCount / 30n + (totalCount % 30n ? 1n : 0n)}
+			onChange={(current) => {
+				setCurrentPage(current);
+				form.handleSubmit();
+			}}
+		/>
+	);
 
 	return (
 		<CardContent>
@@ -570,7 +594,7 @@ function History() {
 			</form>
 			{searchHistoryMutation.isPending && <Progress className="pt-2" value={null} />}
 			{totalCount > 0 && <Label className="my-2 justify-center">{totalCount} results</Label>}
-			<HistoryPagination current={currentPage} total={pageCount} onChange={setCurrentPage} />
+			<HistoryPageinationButtons />
 			<div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
 				{histories.map(({ postType, postOwner, post, postDate, categories, files }) => (
 					<Card key={`post-${postType}-${postOwner}-${post}`}>
@@ -609,7 +633,7 @@ function History() {
 					</Card>
 				))}
 			</div>
-			<HistoryPagination current={currentPage} total={pageCount} onChange={setCurrentPage} />
+			<HistoryPageinationButtons />
 		</CardContent>
 	);
 }
