@@ -15,7 +15,7 @@ function Root() {
 	const isMobile = useIsMobile();
 
 	return (
-		<>
+		<main className="w-full max-w-full overflow-x-hidden">
 			{isMobile ? <Header toggleMenu={() => setOpen(true)} /> : null}
 			{isMobile ? (
 				<MobileMenu open={open} onOpenChange={setOpen} />
@@ -24,7 +24,11 @@ function Root() {
 					<Outlet />
 				</Menu>
 			)}
-			{isMobile ? <Outlet /> : null}
-		</>
+			{isMobile ? (
+				<div className="w-full max-w-full overflow-x-hidden">
+					<Outlet />
+				</div>
+			) : null}
+		</main>
 	);
 }

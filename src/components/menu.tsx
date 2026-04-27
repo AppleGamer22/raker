@@ -131,7 +131,9 @@ export function Menu({
 					</SidebarGroup>
 				</SidebarContent>
 			</Sidebar>
-			{!isMobileSheet && children ? <SidebarInset>{children}</SidebarInset> : null}
+			{!isMobileSheet && children ? (
+				<SidebarInset className="min-w-0 overflow-x-hidden">{children}</SidebarInset>
+			) : null}
 		</SidebarProvider>
 	);
 }
