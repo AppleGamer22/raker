@@ -9,14 +9,50 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as AboutRouteImport } from './routes/about'
+import { Route as VscoRouteImport } from './routes/vsco'
+import { Route as TiktokRouteImport } from './routes/tiktok'
+import { Route as StoryRouteImport } from './routes/story'
+import { Route as InstagramRouteImport } from './routes/instagram'
+import { Route as HistoryRouteImport } from './routes/history'
+import { Route as HighlightRouteImport } from './routes/highlight'
+import { Route as IndexRouteImport } from './routes/index'
 import { Route as DemoTanstackQueryRouteImport } from './routes/demo/tanstack-query'
 import { Route as DemoFormSimpleRouteImport } from './routes/demo/form.simple'
 import { Route as DemoFormAddressRouteImport } from './routes/demo/form.address'
 
-const AboutRoute = AboutRouteImport.update({
-  id: '/about',
-  path: '/about',
+const VscoRoute = VscoRouteImport.update({
+  id: '/vsco',
+  path: '/vsco',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TiktokRoute = TiktokRouteImport.update({
+  id: '/tiktok',
+  path: '/tiktok',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StoryRoute = StoryRouteImport.update({
+  id: '/story',
+  path: '/story',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InstagramRoute = InstagramRouteImport.update({
+  id: '/instagram',
+  path: '/instagram',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HistoryRoute = HistoryRouteImport.update({
+  id: '/history',
+  path: '/history',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HighlightRoute = HighlightRouteImport.update({
+  id: '/highlight',
+  path: '/highlight',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DemoTanstackQueryRoute = DemoTanstackQueryRouteImport.update({
@@ -36,20 +72,38 @@ const DemoFormAddressRoute = DemoFormAddressRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/about': typeof AboutRoute
+  '/': typeof IndexRoute
+  '/highlight': typeof HighlightRoute
+  '/history': typeof HistoryRoute
+  '/instagram': typeof InstagramRoute
+  '/story': typeof StoryRoute
+  '/tiktok': typeof TiktokRoute
+  '/vsco': typeof VscoRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
   '/demo/form/address': typeof DemoFormAddressRoute
   '/demo/form/simple': typeof DemoFormSimpleRoute
 }
 export interface FileRoutesByTo {
-  '/about': typeof AboutRoute
+  '/': typeof IndexRoute
+  '/highlight': typeof HighlightRoute
+  '/history': typeof HistoryRoute
+  '/instagram': typeof InstagramRoute
+  '/story': typeof StoryRoute
+  '/tiktok': typeof TiktokRoute
+  '/vsco': typeof VscoRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
   '/demo/form/address': typeof DemoFormAddressRoute
   '/demo/form/simple': typeof DemoFormSimpleRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/about': typeof AboutRoute
+  '/': typeof IndexRoute
+  '/highlight': typeof HighlightRoute
+  '/history': typeof HistoryRoute
+  '/instagram': typeof InstagramRoute
+  '/story': typeof StoryRoute
+  '/tiktok': typeof TiktokRoute
+  '/vsco': typeof VscoRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
   '/demo/form/address': typeof DemoFormAddressRoute
   '/demo/form/simple': typeof DemoFormSimpleRoute
@@ -57,26 +111,50 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    | '/about'
+    | '/'
+    | '/highlight'
+    | '/history'
+    | '/instagram'
+    | '/story'
+    | '/tiktok'
+    | '/vsco'
     | '/demo/tanstack-query'
     | '/demo/form/address'
     | '/demo/form/simple'
   fileRoutesByTo: FileRoutesByTo
   to:
-    | '/about'
+    | '/'
+    | '/highlight'
+    | '/history'
+    | '/instagram'
+    | '/story'
+    | '/tiktok'
+    | '/vsco'
     | '/demo/tanstack-query'
     | '/demo/form/address'
     | '/demo/form/simple'
   id:
     | '__root__'
-    | '/about'
+    | '/'
+    | '/highlight'
+    | '/history'
+    | '/instagram'
+    | '/story'
+    | '/tiktok'
+    | '/vsco'
     | '/demo/tanstack-query'
     | '/demo/form/address'
     | '/demo/form/simple'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  AboutRoute: typeof AboutRoute
+  IndexRoute: typeof IndexRoute
+  HighlightRoute: typeof HighlightRoute
+  HistoryRoute: typeof HistoryRoute
+  InstagramRoute: typeof InstagramRoute
+  StoryRoute: typeof StoryRoute
+  TiktokRoute: typeof TiktokRoute
+  VscoRoute: typeof VscoRoute
   DemoTanstackQueryRoute: typeof DemoTanstackQueryRoute
   DemoFormAddressRoute: typeof DemoFormAddressRoute
   DemoFormSimpleRoute: typeof DemoFormSimpleRoute
@@ -84,11 +162,53 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/about': {
-      id: '/about'
-      path: '/about'
-      fullPath: '/about'
-      preLoaderRoute: typeof AboutRouteImport
+    '/vsco': {
+      id: '/vsco'
+      path: '/vsco'
+      fullPath: '/vsco'
+      preLoaderRoute: typeof VscoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tiktok': {
+      id: '/tiktok'
+      path: '/tiktok'
+      fullPath: '/tiktok'
+      preLoaderRoute: typeof TiktokRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/story': {
+      id: '/story'
+      path: '/story'
+      fullPath: '/story'
+      preLoaderRoute: typeof StoryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/instagram': {
+      id: '/instagram'
+      path: '/instagram'
+      fullPath: '/instagram'
+      preLoaderRoute: typeof InstagramRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/history': {
+      id: '/history'
+      path: '/history'
+      fullPath: '/history'
+      preLoaderRoute: typeof HistoryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/highlight': {
+      id: '/highlight'
+      path: '/highlight'
+      fullPath: '/highlight'
+      preLoaderRoute: typeof HighlightRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/demo/tanstack-query': {
@@ -116,7 +236,13 @@ declare module '@tanstack/react-router' {
 }
 
 const rootRouteChildren: RootRouteChildren = {
-  AboutRoute: AboutRoute,
+  IndexRoute: IndexRoute,
+  HighlightRoute: HighlightRoute,
+  HistoryRoute: HistoryRoute,
+  InstagramRoute: InstagramRoute,
+  StoryRoute: StoryRoute,
+  TiktokRoute: TiktokRoute,
+  VscoRoute: VscoRoute,
   DemoTanstackQueryRoute: DemoTanstackQueryRoute,
   DemoFormAddressRoute: DemoFormAddressRoute,
   DemoFormSimpleRoute: DemoFormSimpleRoute,
