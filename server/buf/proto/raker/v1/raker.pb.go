@@ -719,6 +719,50 @@ func (x *HistoryResponse) GetHistories() []*ScrapeResponse {
 	return nil
 }
 
+type HistoryOwnersResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Owners        []string               `protobuf:"bytes,1,rep,name=owners,proto3" json:"owners,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *HistoryOwnersResponse) Reset() {
+	*x = HistoryOwnersResponse{}
+	mi := &file_raker_v1_raker_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *HistoryOwnersResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*HistoryOwnersResponse) ProtoMessage() {}
+
+func (x *HistoryOwnersResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_raker_v1_raker_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use HistoryOwnersResponse.ProtoReflect.Descriptor instead.
+func (*HistoryOwnersResponse) Descriptor() ([]byte, []int) {
+	return file_raker_v1_raker_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *HistoryOwnersResponse) GetOwners() []string {
+	if x != nil {
+		return x.Owners
+	}
+	return nil
+}
+
 var File_raker_v1_raker_proto protoreflect.FileDescriptor
 
 const file_raker_v1_raker_proto_rawDesc = "" +
@@ -784,14 +828,16 @@ const file_raker_v1_raker_proto_rawDesc = "" +
 	"categories\x12)\n" +
 	"\x05types\x18\x04 \x03(\x0e2\x13.raker.v1.MediaTypeR\x05types\"I\n" +
 	"\x0fHistoryResponse\x126\n" +
-	"\thistories\x18\x01 \x03(\v2\x18.raker.v1.ScrapeResponseR\thistories*J\n" +
+	"\thistories\x18\x01 \x03(\v2\x18.raker.v1.ScrapeResponseR\thistories\"/\n" +
+	"\x15HistoryOwnersResponse\x12\x16\n" +
+	"\x06owners\x18\x01 \x03(\tR\x06owners*J\n" +
 	"\tMediaType\x12\r\n" +
 	"\tInstagram\x10\x00\x12\r\n" +
 	"\tHighlight\x10\x01\x12\t\n" +
 	"\x05Story\x10\x02\x12\n" +
 	"\n" +
 	"\x06TikTok\x10\x03\x12\b\n" +
-	"\x04VSCO\x10\x042\xef\x06\n" +
+	"\x04VSCO\x10\x042\xc1\a\n" +
 	"\vRakerServer\x12B\n" +
 	"\x0fSignUpInstagram\x12\x17.raker.v1.SignUpRequest\x1a\x16.google.protobuf.Empty\x12B\n" +
 	"\x0fSignInInstagram\x12\x17.raker.v1.SignUpRequest\x1a\x16.google.protobuf.Empty\x12E\n" +
@@ -806,7 +852,8 @@ const file_raker_v1_raker_proto_rawDesc = "" +
 	"\n" +
 	"RemoveFile\x12\x1b.raker.v1.RemoveFileRequest\x1a\x18.raker.v1.ScrapeResponse\x12O\n" +
 	"\x10UpdateCategories\x12!.raker.v1.UpdateCategoriesRequest\x1a\x18.raker.v1.ScrapeResponse\x12D\n" +
-	"\rSearchHistory\x12\x18.raker.v1.HistoryRequest\x1a\x19.raker.v1.HistoryResponseB\x94\x01\n" +
+	"\rSearchHistory\x12\x18.raker.v1.HistoryRequest\x1a\x19.raker.v1.HistoryResponse\x12P\n" +
+	"\x13SearchHistoryOwners\x12\x18.raker.v1.HistoryRequest\x1a\x1f.raker.v1.HistoryOwnersResponseB\x94\x01\n" +
 	"\fcom.raker.v1B\n" +
 	"RakerProtoP\x01Z7github.com/AppleGamer22/raker/server/buf/proto/raker/v1\xa2\x02\x03RXX\xaa\x02\bRaker.V1\xca\x02\bRaker\\V1\xe2\x02\x14Raker\\V1\\GPBMetadata\xea\x02\tRaker::V1b\x06proto3"
 
@@ -823,7 +870,7 @@ func file_raker_v1_raker_proto_rawDescGZIP() []byte {
 }
 
 var file_raker_v1_raker_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_raker_v1_raker_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
+var file_raker_v1_raker_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
 var file_raker_v1_raker_proto_goTypes = []any{
 	(MediaType)(0),                  // 0: raker.v1.MediaType
 	(*SignUpRequest)(nil),           // 1: raker.v1.SignUpRequest
@@ -836,14 +883,15 @@ var file_raker_v1_raker_proto_goTypes = []any{
 	(*UpdateCategoriesRequest)(nil), // 8: raker.v1.UpdateCategoriesRequest
 	(*HistoryRequest)(nil),          // 9: raker.v1.HistoryRequest
 	(*HistoryResponse)(nil),         // 10: raker.v1.HistoryResponse
-	(*timestamppb.Timestamp)(nil),   // 11: google.protobuf.Timestamp
-	(*latlng.LatLng)(nil),           // 12: google.type.LatLng
-	(*emptypb.Empty)(nil),           // 13: google.protobuf.Empty
+	(*HistoryOwnersResponse)(nil),   // 11: raker.v1.HistoryOwnersResponse
+	(*timestamppb.Timestamp)(nil),   // 12: google.protobuf.Timestamp
+	(*latlng.LatLng)(nil),           // 13: google.type.LatLng
+	(*emptypb.Empty)(nil),           // 14: google.protobuf.Empty
 }
 var file_raker_v1_raker_proto_depIdxs = []int32{
 	0,  // 0: raker.v1.ScrapeResponse.post_type:type_name -> raker.v1.MediaType
-	11, // 1: raker.v1.ScrapeResponse.post_date:type_name -> google.protobuf.Timestamp
-	12, // 2: raker.v1.ScrapeResponse.coordinates:type_name -> google.type.LatLng
+	12, // 1: raker.v1.ScrapeResponse.post_date:type_name -> google.protobuf.Timestamp
+	13, // 2: raker.v1.ScrapeResponse.coordinates:type_name -> google.type.LatLng
 	0,  // 3: raker.v1.RemoveFileRequest.type:type_name -> raker.v1.MediaType
 	0,  // 4: raker.v1.UpdateCategoriesRequest.type:type_name -> raker.v1.MediaType
 	0,  // 5: raker.v1.HistoryRequest.types:type_name -> raker.v1.MediaType
@@ -860,20 +908,22 @@ var file_raker_v1_raker_proto_depIdxs = []int32{
 	7,  // 16: raker.v1.RakerServer.RemoveFile:input_type -> raker.v1.RemoveFileRequest
 	8,  // 17: raker.v1.RakerServer.UpdateCategories:input_type -> raker.v1.UpdateCategoriesRequest
 	9,  // 18: raker.v1.RakerServer.SearchHistory:input_type -> raker.v1.HistoryRequest
-	13, // 19: raker.v1.RakerServer.SignUpInstagram:output_type -> google.protobuf.Empty
-	13, // 20: raker.v1.RakerServer.SignInInstagram:output_type -> google.protobuf.Empty
-	13, // 21: raker.v1.RakerServer.EditCategory:output_type -> google.protobuf.Empty
-	6,  // 22: raker.v1.RakerServer.ScrapeInstagram:output_type -> raker.v1.ScrapeResponse
-	6,  // 23: raker.v1.RakerServer.ScrapeHighlight:output_type -> raker.v1.ScrapeResponse
-	6,  // 24: raker.v1.RakerServer.ScrapeStory:output_type -> raker.v1.ScrapeResponse
-	6,  // 25: raker.v1.RakerServer.ScrapeTikTok:output_type -> raker.v1.ScrapeResponse
-	6,  // 26: raker.v1.RakerServer.ScrapeSnapchat:output_type -> raker.v1.ScrapeResponse
-	6,  // 27: raker.v1.RakerServer.ScrapeVSCO:output_type -> raker.v1.ScrapeResponse
-	6,  // 28: raker.v1.RakerServer.RemoveFile:output_type -> raker.v1.ScrapeResponse
-	6,  // 29: raker.v1.RakerServer.UpdateCategories:output_type -> raker.v1.ScrapeResponse
-	10, // 30: raker.v1.RakerServer.SearchHistory:output_type -> raker.v1.HistoryResponse
-	19, // [19:31] is the sub-list for method output_type
-	7,  // [7:19] is the sub-list for method input_type
+	9,  // 19: raker.v1.RakerServer.SearchHistoryOwners:input_type -> raker.v1.HistoryRequest
+	14, // 20: raker.v1.RakerServer.SignUpInstagram:output_type -> google.protobuf.Empty
+	14, // 21: raker.v1.RakerServer.SignInInstagram:output_type -> google.protobuf.Empty
+	14, // 22: raker.v1.RakerServer.EditCategory:output_type -> google.protobuf.Empty
+	6,  // 23: raker.v1.RakerServer.ScrapeInstagram:output_type -> raker.v1.ScrapeResponse
+	6,  // 24: raker.v1.RakerServer.ScrapeHighlight:output_type -> raker.v1.ScrapeResponse
+	6,  // 25: raker.v1.RakerServer.ScrapeStory:output_type -> raker.v1.ScrapeResponse
+	6,  // 26: raker.v1.RakerServer.ScrapeTikTok:output_type -> raker.v1.ScrapeResponse
+	6,  // 27: raker.v1.RakerServer.ScrapeSnapchat:output_type -> raker.v1.ScrapeResponse
+	6,  // 28: raker.v1.RakerServer.ScrapeVSCO:output_type -> raker.v1.ScrapeResponse
+	6,  // 29: raker.v1.RakerServer.RemoveFile:output_type -> raker.v1.ScrapeResponse
+	6,  // 30: raker.v1.RakerServer.UpdateCategories:output_type -> raker.v1.ScrapeResponse
+	10, // 31: raker.v1.RakerServer.SearchHistory:output_type -> raker.v1.HistoryResponse
+	11, // 32: raker.v1.RakerServer.SearchHistoryOwners:output_type -> raker.v1.HistoryOwnersResponse
+	20, // [20:33] is the sub-list for method output_type
+	7,  // [7:20] is the sub-list for method input_type
 	7,  // [7:7] is the sub-list for extension type_name
 	7,  // [7:7] is the sub-list for extension extendee
 	0,  // [0:7] is the sub-list for field type_name
@@ -894,7 +944,7 @@ func file_raker_v1_raker_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_raker_v1_raker_proto_rawDesc), len(file_raker_v1_raker_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   10,
+			NumMessages:   11,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

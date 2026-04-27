@@ -87,6 +87,10 @@ message HistoryResponse {
   repeated ScrapeResponse histories = 1;
 }
 
+message HistoryOwnersResponse {
+  repeated string owners = 1;
+}
+
 service RakerServer {
   rpc SignUpInstagram(SignUpRequest) returns (google.protobuf.Empty);
 
@@ -111,4 +115,6 @@ service RakerServer {
   rpc UpdateCategories(UpdateCategoriesRequest) returns (ScrapeResponse);
 
   rpc SearchHistory(HistoryRequest) returns (HistoryResponse);
+
+  rpc SearchHistoryOwners(HistoryRequest) returns (HistoryOwnersResponse);
 }

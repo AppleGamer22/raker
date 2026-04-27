@@ -67,6 +67,9 @@ const (
 	// RakerServerSearchHistoryProcedure is the fully-qualified name of the RakerServer's SearchHistory
 	// RPC.
 	RakerServerSearchHistoryProcedure = "/raker.v1.RakerServer/SearchHistory"
+	// RakerServerSearchHistoryOwnersProcedure is the fully-qualified name of the RakerServer's
+	// SearchHistoryOwners RPC.
+	RakerServerSearchHistoryOwnersProcedure = "/raker.v1.RakerServer/SearchHistoryOwners"
 )
 
 // RakerServerClient is a client for the raker.v1.RakerServer service.
@@ -83,6 +86,7 @@ type RakerServerClient interface {
 	RemoveFile(context.Context, *v1.RemoveFileRequest) (*v1.ScrapeResponse, error)
 	UpdateCategories(context.Context, *v1.UpdateCategoriesRequest) (*v1.ScrapeResponse, error)
 	SearchHistory(context.Context, *v1.HistoryRequest) (*v1.HistoryResponse, error)
+	SearchHistoryOwners(context.Context, *v1.HistoryRequest) (*v1.HistoryOwnersResponse, error)
 }
 
 // NewRakerServerClient constructs a client for the raker.v1.RakerServer service. By default, it
@@ -168,23 +172,30 @@ func NewRakerServerClient(httpClient connect.HTTPClient, baseURL string, opts ..
 			connect.WithSchema(rakerServerMethods.ByName("SearchHistory")),
 			connect.WithClientOptions(opts...),
 		),
+		searchHistoryOwners: connect.NewClient[v1.HistoryRequest, v1.HistoryOwnersResponse](
+			httpClient,
+			baseURL+RakerServerSearchHistoryOwnersProcedure,
+			connect.WithSchema(rakerServerMethods.ByName("SearchHistoryOwners")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
 // rakerServerClient implements RakerServerClient.
 type rakerServerClient struct {
-	signUpInstagram  *connect.Client[v1.SignUpRequest, emptypb.Empty]
-	signInInstagram  *connect.Client[v1.SignUpRequest, emptypb.Empty]
-	editCategory     *connect.Client[v1.EditCategoryRequest, emptypb.Empty]
-	scrapeInstagram  *connect.Client[v1.UnaryScrapeRequest, v1.ScrapeResponse]
-	scrapeHighlight  *connect.Client[v1.UnaryScrapeRequest, v1.ScrapeResponse]
-	scrapeStory      *connect.Client[v1.UnaryScrapeRequest, v1.ScrapeResponse]
-	scrapeTikTok     *connect.Client[v1.BinaryScrapeRequest, v1.ScrapeResponse]
-	scrapeSnapchat   *connect.Client[v1.UnaryScrapeRequest, v1.ScrapeResponse]
-	scrapeVSCO       *connect.Client[v1.BinaryScrapeRequest, v1.ScrapeResponse]
-	removeFile       *connect.Client[v1.RemoveFileRequest, v1.ScrapeResponse]
-	updateCategories *connect.Client[v1.UpdateCategoriesRequest, v1.ScrapeResponse]
-	searchHistory    *connect.Client[v1.HistoryRequest, v1.HistoryResponse]
+	signUpInstagram     *connect.Client[v1.SignUpRequest, emptypb.Empty]
+	signInInstagram     *connect.Client[v1.SignUpRequest, emptypb.Empty]
+	editCategory        *connect.Client[v1.EditCategoryRequest, emptypb.Empty]
+	scrapeInstagram     *connect.Client[v1.UnaryScrapeRequest, v1.ScrapeResponse]
+	scrapeHighlight     *connect.Client[v1.UnaryScrapeRequest, v1.ScrapeResponse]
+	scrapeStory         *connect.Client[v1.UnaryScrapeRequest, v1.ScrapeResponse]
+	scrapeTikTok        *connect.Client[v1.BinaryScrapeRequest, v1.ScrapeResponse]
+	scrapeSnapchat      *connect.Client[v1.UnaryScrapeRequest, v1.ScrapeResponse]
+	scrapeVSCO          *connect.Client[v1.BinaryScrapeRequest, v1.ScrapeResponse]
+	removeFile          *connect.Client[v1.RemoveFileRequest, v1.ScrapeResponse]
+	updateCategories    *connect.Client[v1.UpdateCategoriesRequest, v1.ScrapeResponse]
+	searchHistory       *connect.Client[v1.HistoryRequest, v1.HistoryResponse]
+	searchHistoryOwners *connect.Client[v1.HistoryRequest, v1.HistoryOwnersResponse]
 }
 
 // SignUpInstagram calls raker.v1.RakerServer.SignUpInstagram.
@@ -295,6 +306,15 @@ func (c *rakerServerClient) SearchHistory(ctx context.Context, req *v1.HistoryRe
 	return nil, err
 }
 
+// SearchHistoryOwners calls raker.v1.RakerServer.SearchHistoryOwners.
+func (c *rakerServerClient) SearchHistoryOwners(ctx context.Context, req *v1.HistoryRequest) (*v1.HistoryOwnersResponse, error) {
+	response, err := c.searchHistoryOwners.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
+}
+
 // RakerServerHandler is an implementation of the raker.v1.RakerServer service.
 type RakerServerHandler interface {
 	SignUpInstagram(context.Context, *v1.SignUpRequest) (*emptypb.Empty, error)
@@ -309,6 +329,7 @@ type RakerServerHandler interface {
 	RemoveFile(context.Context, *v1.RemoveFileRequest) (*v1.ScrapeResponse, error)
 	UpdateCategories(context.Context, *v1.UpdateCategoriesRequest) (*v1.ScrapeResponse, error)
 	SearchHistory(context.Context, *v1.HistoryRequest) (*v1.HistoryResponse, error)
+	SearchHistoryOwners(context.Context, *v1.HistoryRequest) (*v1.HistoryOwnersResponse, error)
 }
 
 // NewRakerServerHandler builds an HTTP handler from the service implementation. It returns the path
@@ -390,6 +411,12 @@ func NewRakerServerHandler(svc RakerServerHandler, opts ...connect.HandlerOption
 		connect.WithSchema(rakerServerMethods.ByName("SearchHistory")),
 		connect.WithHandlerOptions(opts...),
 	)
+	rakerServerSearchHistoryOwnersHandler := connect.NewUnaryHandlerSimple(
+		RakerServerSearchHistoryOwnersProcedure,
+		svc.SearchHistoryOwners,
+		connect.WithSchema(rakerServerMethods.ByName("SearchHistoryOwners")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/raker.v1.RakerServer/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case RakerServerSignUpInstagramProcedure:
@@ -416,6 +443,8 @@ func NewRakerServerHandler(svc RakerServerHandler, opts ...connect.HandlerOption
 			rakerServerUpdateCategoriesHandler.ServeHTTP(w, r)
 		case RakerServerSearchHistoryProcedure:
 			rakerServerSearchHistoryHandler.ServeHTTP(w, r)
+		case RakerServerSearchHistoryOwnersProcedure:
+			rakerServerSearchHistoryOwnersHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -471,4 +500,8 @@ func (UnimplementedRakerServerHandler) UpdateCategories(context.Context, *v1.Upd
 
 func (UnimplementedRakerServerHandler) SearchHistory(context.Context, *v1.HistoryRequest) (*v1.HistoryResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raker.v1.RakerServer.SearchHistory is not implemented"))
+}
+
+func (UnimplementedRakerServerHandler) SearchHistoryOwners(context.Context, *v1.HistoryRequest) (*v1.HistoryOwnersResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raker.v1.RakerServer.SearchHistoryOwners is not implemented"))
 }
