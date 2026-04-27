@@ -13,7 +13,8 @@ import {
 	SidebarMenuItem,
 	SidebarProvider,
 } from "#/components/ui/sidebar";
-// import { InstagramIcon } from "#/components/ui/svgs/instagramIcon";
+import { InstagramIcon } from "#/components/ui/svgs/instagram";
+import { TikTokIcon } from "#/components/ui/svgs/tiktok";
 import { ModeToggle } from "#/components/ui/theme-toggle";
 import { queryClient, router } from "#/router";
 
@@ -37,17 +38,28 @@ function Root() {
 							<SidebarGroup>
 								<SidebarMenu>
 									<SidebarMenuItem>
-										{/* <InstagramIcon className="w-1 h-1" /> */}
-										<SidebarMenuButton>Instagram Post</SidebarMenuButton>
+										<SidebarMenuButton>
+											<InstagramIcon className="w-4 h-4" />
+											Instagram Post
+										</SidebarMenuButton>
 									</SidebarMenuItem>
 									<SidebarMenuItem>
-										<SidebarMenuButton>Instagram Highlight</SidebarMenuButton>
+										<SidebarMenuButton>
+											<InstagramIcon className="w-4 h-4" />
+											Instagram Highlight
+										</SidebarMenuButton>
 									</SidebarMenuItem>
 									<SidebarMenuItem>
-										<SidebarMenuButton>Instagram Story</SidebarMenuButton>
+										<SidebarMenuButton>
+											<InstagramIcon className="w-4 h-4" />
+											Instagram Story
+										</SidebarMenuButton>
 									</SidebarMenuItem>
 									<SidebarMenuItem>
-										<SidebarMenuButton>TikTok Post</SidebarMenuButton>
+										<SidebarMenuButton>
+											<TikTokIcon className="w-4" />
+											TikTok Post
+										</SidebarMenuButton>
 									</SidebarMenuItem>
 									<SidebarMenuItem>
 										<SidebarMenuButton>VSCO Post</SidebarMenuButton>
