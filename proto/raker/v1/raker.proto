@@ -102,6 +102,8 @@ service RakerServer {
 
   rpc ScrapeTikTok(BinaryScrapeRequest) returns (ScrapeResponse);
 
+  rpc ScrapeSnapchat(UnaryScrapeRequest) returns (ScrapeResponse);
+
   rpc ScrapeVSCO(BinaryScrapeRequest) returns (ScrapeResponse);
 
   rpc RemoveFile(RemoveFileRequest) returns (ScrapeResponse);

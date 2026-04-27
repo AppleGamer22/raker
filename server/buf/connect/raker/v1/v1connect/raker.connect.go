@@ -54,6 +54,9 @@ const (
 	// RakerServerScrapeTikTokProcedure is the fully-qualified name of the RakerServer's ScrapeTikTok
 	// RPC.
 	RakerServerScrapeTikTokProcedure = "/raker.v1.RakerServer/ScrapeTikTok"
+	// RakerServerScrapeSnapchatProcedure is the fully-qualified name of the RakerServer's
+	// ScrapeSnapchat RPC.
+	RakerServerScrapeSnapchatProcedure = "/raker.v1.RakerServer/ScrapeSnapchat"
 	// RakerServerScrapeVSCOProcedure is the fully-qualified name of the RakerServer's ScrapeVSCO RPC.
 	RakerServerScrapeVSCOProcedure = "/raker.v1.RakerServer/ScrapeVSCO"
 	// RakerServerRemoveFileProcedure is the fully-qualified name of the RakerServer's RemoveFile RPC.
@@ -75,6 +78,7 @@ type RakerServerClient interface {
 	ScrapeHighlight(context.Context, *v1.UnaryScrapeRequest) (*v1.ScrapeResponse, error)
 	ScrapeStory(context.Context, *v1.UnaryScrapeRequest) (*v1.ScrapeResponse, error)
 	ScrapeTikTok(context.Context, *v1.BinaryScrapeRequest) (*v1.ScrapeResponse, error)
+	ScrapeSnapchat(context.Context, *v1.UnaryScrapeRequest) (*v1.ScrapeResponse, error)
 	ScrapeVSCO(context.Context, *v1.BinaryScrapeRequest) (*v1.ScrapeResponse, error)
 	RemoveFile(context.Context, *v1.RemoveFileRequest) (*v1.ScrapeResponse, error)
 	UpdateCategories(context.Context, *v1.UpdateCategoriesRequest) (*v1.ScrapeResponse, error)
@@ -134,6 +138,12 @@ func NewRakerServerClient(httpClient connect.HTTPClient, baseURL string, opts ..
 			connect.WithSchema(rakerServerMethods.ByName("ScrapeTikTok")),
 			connect.WithClientOptions(opts...),
 		),
+		scrapeSnapchat: connect.NewClient[v1.UnaryScrapeRequest, v1.ScrapeResponse](
+			httpClient,
+			baseURL+RakerServerScrapeSnapchatProcedure,
+			connect.WithSchema(rakerServerMethods.ByName("ScrapeSnapchat")),
+			connect.WithClientOptions(opts...),
+		),
 		scrapeVSCO: connect.NewClient[v1.BinaryScrapeRequest, v1.ScrapeResponse](
 			httpClient,
 			baseURL+RakerServerScrapeVSCOProcedure,
@@ -170,6 +180,7 @@ type rakerServerClient struct {
 	scrapeHighlight  *connect.Client[v1.UnaryScrapeRequest, v1.ScrapeResponse]
 	scrapeStory      *connect.Client[v1.UnaryScrapeRequest, v1.ScrapeResponse]
 	scrapeTikTok     *connect.Client[v1.BinaryScrapeRequest, v1.ScrapeResponse]
+	scrapeSnapchat   *connect.Client[v1.UnaryScrapeRequest, v1.ScrapeResponse]
 	scrapeVSCO       *connect.Client[v1.BinaryScrapeRequest, v1.ScrapeResponse]
 	removeFile       *connect.Client[v1.RemoveFileRequest, v1.ScrapeResponse]
 	updateCategories *connect.Client[v1.UpdateCategoriesRequest, v1.ScrapeResponse]
@@ -239,6 +250,15 @@ func (c *rakerServerClient) ScrapeTikTok(ctx context.Context, req *v1.BinaryScra
 	return nil, err
 }
 
+// ScrapeSnapchat calls raker.v1.RakerServer.ScrapeSnapchat.
+func (c *rakerServerClient) ScrapeSnapchat(ctx context.Context, req *v1.UnaryScrapeRequest) (*v1.ScrapeResponse, error) {
+	response, err := c.scrapeSnapchat.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
+}
+
 // ScrapeVSCO calls raker.v1.RakerServer.ScrapeVSCO.
 func (c *rakerServerClient) ScrapeVSCO(ctx context.Context, req *v1.BinaryScrapeRequest) (*v1.ScrapeResponse, error) {
 	response, err := c.scrapeVSCO.CallUnary(ctx, connect.NewRequest(req))
@@ -284,6 +304,7 @@ type RakerServerHandler interface {
 	ScrapeHighlight(context.Context, *v1.UnaryScrapeRequest) (*v1.ScrapeResponse, error)
 	ScrapeStory(context.Context, *v1.UnaryScrapeRequest) (*v1.ScrapeResponse, error)
 	ScrapeTikTok(context.Context, *v1.BinaryScrapeRequest) (*v1.ScrapeResponse, error)
+	ScrapeSnapchat(context.Context, *v1.UnaryScrapeRequest) (*v1.ScrapeResponse, error)
 	ScrapeVSCO(context.Context, *v1.BinaryScrapeRequest) (*v1.ScrapeResponse, error)
 	RemoveFile(context.Context, *v1.RemoveFileRequest) (*v1.ScrapeResponse, error)
 	UpdateCategories(context.Context, *v1.UpdateCategoriesRequest) (*v1.ScrapeResponse, error)
@@ -339,6 +360,12 @@ func NewRakerServerHandler(svc RakerServerHandler, opts ...connect.HandlerOption
 		connect.WithSchema(rakerServerMethods.ByName("ScrapeTikTok")),
 		connect.WithHandlerOptions(opts...),
 	)
+	rakerServerScrapeSnapchatHandler := connect.NewUnaryHandlerSimple(
+		RakerServerScrapeSnapchatProcedure,
+		svc.ScrapeSnapchat,
+		connect.WithSchema(rakerServerMethods.ByName("ScrapeSnapchat")),
+		connect.WithHandlerOptions(opts...),
+	)
 	rakerServerScrapeVSCOHandler := connect.NewUnaryHandlerSimple(
 		RakerServerScrapeVSCOProcedure,
 		svc.ScrapeVSCO,
@@ -379,6 +406,8 @@ func NewRakerServerHandler(svc RakerServerHandler, opts ...connect.HandlerOption
 			rakerServerScrapeStoryHandler.ServeHTTP(w, r)
 		case RakerServerScrapeTikTokProcedure:
 			rakerServerScrapeTikTokHandler.ServeHTTP(w, r)
+		case RakerServerScrapeSnapchatProcedure:
+			rakerServerScrapeSnapchatHandler.ServeHTTP(w, r)
 		case RakerServerScrapeVSCOProcedure:
 			rakerServerScrapeVSCOHandler.ServeHTTP(w, r)
 		case RakerServerRemoveFileProcedure:
@@ -422,6 +451,10 @@ func (UnimplementedRakerServerHandler) ScrapeStory(context.Context, *v1.UnaryScr
 
 func (UnimplementedRakerServerHandler) ScrapeTikTok(context.Context, *v1.BinaryScrapeRequest) (*v1.ScrapeResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raker.v1.RakerServer.ScrapeTikTok is not implemented"))
+}
+
+func (UnimplementedRakerServerHandler) ScrapeSnapchat(context.Context, *v1.UnaryScrapeRequest) (*v1.ScrapeResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raker.v1.RakerServer.ScrapeSnapchat is not implemented"))
 }
 
 func (UnimplementedRakerServerHandler) ScrapeVSCO(context.Context, *v1.BinaryScrapeRequest) (*v1.ScrapeResponse, error) {

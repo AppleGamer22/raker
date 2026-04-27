@@ -791,7 +791,7 @@ const file_raker_v1_raker_proto_rawDesc = "" +
 	"\x05Story\x10\x02\x12\n" +
 	"\n" +
 	"\x06TikTok\x10\x03\x12\b\n" +
-	"\x04VSCO\x10\x042\xa5\x06\n" +
+	"\x04VSCO\x10\x042\xef\x06\n" +
 	"\vRakerServer\x12B\n" +
 	"\x0fSignUpInstagram\x12\x17.raker.v1.SignUpRequest\x1a\x16.google.protobuf.Empty\x12B\n" +
 	"\x0fSignInInstagram\x12\x17.raker.v1.SignUpRequest\x1a\x16.google.protobuf.Empty\x12E\n" +
@@ -799,7 +799,8 @@ const file_raker_v1_raker_proto_rawDesc = "" +
 	"\x0fScrapeInstagram\x12\x1c.raker.v1.UnaryScrapeRequest\x1a\x18.raker.v1.ScrapeResponse\x12I\n" +
 	"\x0fScrapeHighlight\x12\x1c.raker.v1.UnaryScrapeRequest\x1a\x18.raker.v1.ScrapeResponse\x12E\n" +
 	"\vScrapeStory\x12\x1c.raker.v1.UnaryScrapeRequest\x1a\x18.raker.v1.ScrapeResponse\x12G\n" +
-	"\fScrapeTikTok\x12\x1d.raker.v1.BinaryScrapeRequest\x1a\x18.raker.v1.ScrapeResponse\x12E\n" +
+	"\fScrapeTikTok\x12\x1d.raker.v1.BinaryScrapeRequest\x1a\x18.raker.v1.ScrapeResponse\x12H\n" +
+	"\x0eScrapeSnapchat\x12\x1c.raker.v1.UnaryScrapeRequest\x1a\x18.raker.v1.ScrapeResponse\x12E\n" +
 	"\n" +
 	"ScrapeVSCO\x12\x1d.raker.v1.BinaryScrapeRequest\x1a\x18.raker.v1.ScrapeResponse\x12C\n" +
 	"\n" +
@@ -854,23 +855,25 @@ var file_raker_v1_raker_proto_depIdxs = []int32{
 	4,  // 11: raker.v1.RakerServer.ScrapeHighlight:input_type -> raker.v1.UnaryScrapeRequest
 	4,  // 12: raker.v1.RakerServer.ScrapeStory:input_type -> raker.v1.UnaryScrapeRequest
 	5,  // 13: raker.v1.RakerServer.ScrapeTikTok:input_type -> raker.v1.BinaryScrapeRequest
-	5,  // 14: raker.v1.RakerServer.ScrapeVSCO:input_type -> raker.v1.BinaryScrapeRequest
-	7,  // 15: raker.v1.RakerServer.RemoveFile:input_type -> raker.v1.RemoveFileRequest
-	8,  // 16: raker.v1.RakerServer.UpdateCategories:input_type -> raker.v1.UpdateCategoriesRequest
-	9,  // 17: raker.v1.RakerServer.SearchHistory:input_type -> raker.v1.HistoryRequest
-	13, // 18: raker.v1.RakerServer.SignUpInstagram:output_type -> google.protobuf.Empty
-	13, // 19: raker.v1.RakerServer.SignInInstagram:output_type -> google.protobuf.Empty
-	13, // 20: raker.v1.RakerServer.EditCategory:output_type -> google.protobuf.Empty
-	6,  // 21: raker.v1.RakerServer.ScrapeInstagram:output_type -> raker.v1.ScrapeResponse
-	6,  // 22: raker.v1.RakerServer.ScrapeHighlight:output_type -> raker.v1.ScrapeResponse
-	6,  // 23: raker.v1.RakerServer.ScrapeStory:output_type -> raker.v1.ScrapeResponse
-	6,  // 24: raker.v1.RakerServer.ScrapeTikTok:output_type -> raker.v1.ScrapeResponse
-	6,  // 25: raker.v1.RakerServer.ScrapeVSCO:output_type -> raker.v1.ScrapeResponse
-	6,  // 26: raker.v1.RakerServer.RemoveFile:output_type -> raker.v1.ScrapeResponse
-	6,  // 27: raker.v1.RakerServer.UpdateCategories:output_type -> raker.v1.ScrapeResponse
-	10, // 28: raker.v1.RakerServer.SearchHistory:output_type -> raker.v1.HistoryResponse
-	18, // [18:29] is the sub-list for method output_type
-	7,  // [7:18] is the sub-list for method input_type
+	4,  // 14: raker.v1.RakerServer.ScrapeSnapchat:input_type -> raker.v1.UnaryScrapeRequest
+	5,  // 15: raker.v1.RakerServer.ScrapeVSCO:input_type -> raker.v1.BinaryScrapeRequest
+	7,  // 16: raker.v1.RakerServer.RemoveFile:input_type -> raker.v1.RemoveFileRequest
+	8,  // 17: raker.v1.RakerServer.UpdateCategories:input_type -> raker.v1.UpdateCategoriesRequest
+	9,  // 18: raker.v1.RakerServer.SearchHistory:input_type -> raker.v1.HistoryRequest
+	13, // 19: raker.v1.RakerServer.SignUpInstagram:output_type -> google.protobuf.Empty
+	13, // 20: raker.v1.RakerServer.SignInInstagram:output_type -> google.protobuf.Empty
+	13, // 21: raker.v1.RakerServer.EditCategory:output_type -> google.protobuf.Empty
+	6,  // 22: raker.v1.RakerServer.ScrapeInstagram:output_type -> raker.v1.ScrapeResponse
+	6,  // 23: raker.v1.RakerServer.ScrapeHighlight:output_type -> raker.v1.ScrapeResponse
+	6,  // 24: raker.v1.RakerServer.ScrapeStory:output_type -> raker.v1.ScrapeResponse
+	6,  // 25: raker.v1.RakerServer.ScrapeTikTok:output_type -> raker.v1.ScrapeResponse
+	6,  // 26: raker.v1.RakerServer.ScrapeSnapchat:output_type -> raker.v1.ScrapeResponse
+	6,  // 27: raker.v1.RakerServer.ScrapeVSCO:output_type -> raker.v1.ScrapeResponse
+	6,  // 28: raker.v1.RakerServer.RemoveFile:output_type -> raker.v1.ScrapeResponse
+	6,  // 29: raker.v1.RakerServer.UpdateCategories:output_type -> raker.v1.ScrapeResponse
+	10, // 30: raker.v1.RakerServer.SearchHistory:output_type -> raker.v1.HistoryResponse
+	19, // [19:31] is the sub-list for method output_type
+	7,  // [7:19] is the sub-list for method input_type
 	7,  // [7:7] is the sub-list for extension type_name
 	7,  // [7:7] is the sub-list for extension extendee
 	0,  // [0:7] is the sub-list for field type_name

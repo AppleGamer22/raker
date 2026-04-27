@@ -10,6 +10,10 @@ plugins:
     opt:
       - paths=source_relative
       - simple
+  - remote: buf.build/bufbuild/es:v2.11.0
+    out: src/buf
+    include_imports: true
+    opt: target=ts
 managed:
   enabled: true
   # override:
