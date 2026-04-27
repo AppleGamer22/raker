@@ -45,12 +45,16 @@ func (server *RakerServer) SignUpInstagram(ctx context.Context, request *v1.Sign
 		return &emptypb.Empty{}, connect.NewError(connect.CodeInternal, err)
 	}
 
-	return &emptypb.Empty{}, nil
+	_, err = server.SignInInstagram(ctx, &v1.SignInRequest{
+		Username: request.Username,
+		Password: request.Password,
+	})
+
+	return &emptypb.Empty{}, err
 }
 
 // SignInInstagram implements [v1connect.RakerServerHandler].
 func (server *RakerServer) SignInInstagram(ctx context.Context, request *v1.SignInRequest) (*emptypb.Empty, error) {
-	response := connect.NewResponse(&emptypb.Empty{})
 	username := request.Username
 	password := request.Password
 	user, err := server.DBClient.UserGet(context.Background(), username)
@@ -80,7 +84,13 @@ func (server *RakerServer) SignInInstagram(ctx context.Context, request *v1.Sign
 		HttpOnly: true,
 	}
 
-	response.Header().Add("Set-Cookie", cookie.String())
+	// Based on https://connectrpc.com/docs/go/headers-and-trailers/#headers
+	callInfo, ok := connect.CallInfoForHandlerContext(ctx)
+	if !ok {
+		return nil, errors.New("can't access headers: no CallInfo for handler context")
+	}
+
+	callInfo.ResponseHeader().Set("Set-Cookie", cookie.String())
 
 	return &emptypb.Empty{}, nil
 }
