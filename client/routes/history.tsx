@@ -6,8 +6,10 @@ import z from "zod";
 
 import { getUserCategories } from "@/buf/raker/v1/raker-RakerServer_connectquery";
 import { PostType } from "@/buf/raker/v1/raker_pb";
+import { Badge } from "@/components/ui/badge";
 import { CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { FieldGroup, FieldLegend, Field, FieldSet, FieldLabel, FieldContent, FieldTitle } from "@/components/ui/field";
 import { Separator } from "@/components/ui/separator";
 import { InstagramIcon } from "@/components/ui/svgs/instagram";
@@ -20,6 +22,53 @@ import { useUser } from "@/hooks/user-provider";
 export const Route = createFileRoute("/history")({
 	component: History,
 });
+
+function PostTypeIconLabel({ type }: { type: PostType }) {
+	switch (type) {
+		case PostType.Instagram:
+			return (
+				<>
+					<InstagramIcon className="w-4" />
+					Post
+				</>
+			);
+		case PostType.Highlight:
+			return (
+				<>
+					<InstagramIcon className="w-4" />
+					Highlight
+				</>
+			);
+		case PostType.Story:
+			return (
+				<>
+					<InstagramIcon className="w-4" />
+					Story
+				</>
+			);
+		case PostType.TikTok:
+			return (
+				<>
+					<TikTokIcon className="w-4" />
+					Post
+				</>
+			);
+		case PostType.Snapchat:
+			return (
+				<>
+					<SnapchatIcon className="w-4" />
+					Highlight
+				</>
+			);
+		case PostType.VSCO:
+			return (
+				<>
+					<VSCOIcon className="w-4" />
+					Post
+				</>
+			);
+	}
+}
 
 function HistoryPostTypeForm({
 	types,
@@ -309,6 +358,7 @@ function History() {
 	const availableCategories = categoriesQuery.data?.categories ?? [];
 	const [categories, setCategories] = useState<string[]>(availableCategories);
 	const [exclusive, setExclusive] = useState(false);
+	const [isOpen, setIsOpen] = useState(false);
 
 	useEffect(() => {
 		if (username === null) {
@@ -318,15 +368,40 @@ function History() {
 
 	return (
 		<CardContent>
-			<HistoryPostTypeForm types={types} onChangeTypes={setTypes} />
-			<Separator className="my-2" />
-			<HistoryPostCategoryForm
-				exclusive={exclusive}
-				setExclusive={setExclusive}
-				availableCategories={availableCategories}
-				selectedCategories={categories}
-				setCategories={setCategories}
-			/>
+			<Collapsible open={isOpen} onOpenChange={setIsOpen}>
+				<CollapsibleTrigger className="w-full rounded-md border px-3 py-2 text-left hover:bg-muted/40">
+					<div className="flex flex-wrap items-center gap-2">
+						{types.map((type) => (
+							<Badge key={`type-summary-${type}`} variant="secondary">
+								<PostTypeIconLabel type={type} />
+							</Badge>
+						))}
+					</div>
+					<div className="flex flex-wrap items-center gap-2">
+						<Badge variant={exclusive ? "default" : "outline"}>Exclusive: {exclusive ? "On" : "Off"}</Badge>
+						{categories.length > 0 ? (
+							categories.map((category) => (
+								<Badge key={`category-summary-${category}`} variant="default">
+									{category}
+								</Badge>
+							))
+						) : (
+							<Badge variant="ghost">No categories selected</Badge>
+						)}
+					</div>
+				</CollapsibleTrigger>
+				<CollapsibleContent>
+					<HistoryPostTypeForm types={types} onChangeTypes={setTypes} />
+					<Separator className="my-2" />
+					<HistoryPostCategoryForm
+						exclusive={exclusive}
+						setExclusive={setExclusive}
+						availableCategories={availableCategories}
+						selectedCategories={categories}
+						setCategories={setCategories}
+					/>
+				</CollapsibleContent>
+			</Collapsible>
 		</CardContent>
 	);
 }
