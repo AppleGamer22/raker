@@ -133,11 +133,11 @@ WHERE post_type = ANY (sqlc.slice(post_types)::post_type [])
 	AND (
 		(
 			sqlc.arg(exclusive)::boolean
-			and categories = sqlc.slice(categories)::text []
+			and categories = COALESCE(sqlc.slice(categories)::text[], ARRAY[]::text[])
 		)
 		or (
 			not sqlc.arg(exclusive)::boolean
-			and categories <@ sqlc.slice(categories)::text []
+			and categories <@ COALESCE(sqlc.slice(categories)::text[], ARRAY[]::text[])
 		)
 	)
 	AND (cardinality(COALESCE(sqlc.slice(post_owners)::text[], ARRAY[]::text[])) = 0 or EXISTS(
@@ -156,11 +156,11 @@ WHERE post_type = ANY (sqlc.slice(post_types)::post_type [])
 	AND (
 		(
 			sqlc.arg(exclusive)::boolean
-			and categories = sqlc.slice(categories)::text []
+			and categories = COALESCE(sqlc.slice(categories)::text[], ARRAY[]::text[])
 		)
 		or (
 			not sqlc.arg(exclusive)::boolean
-			and categories <@ sqlc.slice(categories)::text []
+			and categories <@ COALESCE(sqlc.slice(categories)::text[], ARRAY[]::text[])
 		)
 	)
 	AND (cardinality(COALESCE(sqlc.slice(post_owners)::text[], ARRAY[]::text[])) = 0 or EXISTS(
@@ -182,11 +182,11 @@ WHERE post_type = ANY (sqlc.slice(post_types)::post_type [])
 	AND (
 		(
 			sqlc.arg(exclusive)::boolean
-			and categories = sqlc.slice(categories)::text []
+			and categories = COALESCE(sqlc.slice(categories)::text[], ARRAY[]::text[])
 		)
 		or (
 			not sqlc.arg(exclusive)::boolean
-			and categories <@ sqlc.slice(categories)::text []
+			and categories <@ COALESCE(sqlc.slice(categories)::text[], ARRAY[]::text[])
 		)
 	)
 	AND post_owner LIKE FORMAT('%%%s%%', sqlc.arg(post_owner)::text)

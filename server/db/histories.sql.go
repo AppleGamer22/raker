@@ -159,11 +159,11 @@ WHERE post_type = ANY ($1::post_type [])
 	AND (
 		(
 			$2::boolean
-			and categories = $3::text []
+			and categories = COALESCE($3::text[], ARRAY[]::text[])
 		)
 		or (
 			not $2::boolean
-			and categories <@ $3::text []
+			and categories <@ COALESCE($3::text[], ARRAY[]::text[])
 		)
 	)
 	AND (cardinality(COALESCE($4::text[], ARRAY[]::text[])) = 0 or EXISTS(
@@ -415,11 +415,11 @@ WHERE post_type = ANY ($1::post_type [])
 	AND (
 		(
 			$2::boolean
-			and categories = $3::text []
+			and categories = COALESCE($3::text[], ARRAY[]::text[])
 		)
 		or (
 			not $2::boolean
-			and categories <@ $3::text []
+			and categories <@ COALESCE($3::text[], ARRAY[]::text[])
 		)
 	)
 	AND (cardinality(COALESCE($4::text[], ARRAY[]::text[])) = 0 or EXISTS(
@@ -494,11 +494,11 @@ WHERE post_type = ANY ($1::post_type [])
 	AND (
 		(
 			$2::boolean
-			and categories = $3::text []
+			and categories = COALESCE($3::text[], ARRAY[]::text[])
 		)
 		or (
 			not $2::boolean
-			and categories <@ $3::text []
+			and categories <@ COALESCE($3::text[], ARRAY[]::text[])
 		)
 	)
 	AND post_owner LIKE FORMAT('%%%s%%', $4::text)
