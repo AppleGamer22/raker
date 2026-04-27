@@ -1,6 +1,13 @@
 import { UserKeyIcon, DatabaseSearchIcon } from "lucide-react";
 
 import {
+	Sheet,
+	SheetContent,
+	SheetDescription,
+	SheetHeader,
+	SheetTitle,
+} from "@/components/ui/sheet";
+import {
 	Sidebar,
 	SidebarGroup,
 	SidebarMenu,
@@ -16,11 +23,22 @@ import { TikTokIcon } from "@/components/ui/svgs/tiktok";
 import { VSCOIcon } from "@/components/ui/svgs/vsco";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 
-export function Menu() {
+type MenuMode = "default" | "mobile-sheet";
+
+export function Menu({ mode = "default" }: { mode?: MenuMode } = {}) {
+	const isMobileSheet = mode === "mobile-sheet";
+
 	// TODO: https://ui.shadcn.com/blocks/sidebar#sidebar-16
 	return (
-		<SidebarProvider className="flex min-h-0! flex-col">
-			<Sidebar>
+		<SidebarProvider
+			className={
+				isMobileSheet ? "flex h-full min-h-0! w-full flex-col" : "flex min-h-0! flex-col"
+			}
+		>
+			<Sidebar
+				className={isMobileSheet ? "h-full w-full" : undefined}
+				collapsible={isMobileSheet ? "none" : "offcanvas"}
+			>
 				<SidebarHeader>
 					<SidebarGroup className="grid grid-cols-[1fr_auto_1fr] items-center">
 						<div className="justify-self-center">
@@ -92,5 +110,25 @@ export function Menu() {
 				</SidebarContent>
 			</Sidebar>
 		</SidebarProvider>
+	);
+}
+
+export function MobileMenu({
+	open,
+	onOpenChange,
+}: {
+	open: boolean | undefined;
+	onOpenChange: (open: boolean) => void;
+}) {
+	return (
+		<Sheet open={open} onOpenChange={onOpenChange}>
+			<SheetContent side="left" className="h-full gap-0 p-0">
+				<SheetHeader className="hidden">
+					<SheetTitle />
+					<SheetDescription />
+				</SheetHeader>
+				<Menu mode="mobile-sheet" />
+			</SheetContent>
+		</Sheet>
 	);
 }

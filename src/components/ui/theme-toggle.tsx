@@ -7,31 +7,42 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useTheme, type Theme } from "@/hooks/theme-provider";
+import { useTheme } from "@/hooks/theme-provider";
 
-function ThemeIcon({ theme }: { theme: Theme }) {
+function ThemeIcon() {
+	const { theme, computedTheme } = useTheme();
 	switch (theme) {
 		case "light":
 			return <SunIcon className="h-[1.2rem] w-[1.2rem] scale-100 transition-all" />;
 		case "dark":
 			return <MoonIcon className="h-[1.2rem] w-[1.2rem] scale-100 transition-all" />;
 		case "system":
-			return <ComputerIcon className="h-[1.2rem] w-[1.2rem] scale-100 transition-all" />;
+			return (
+				<>
+					<ComputerIcon className="h-[1.2rem] w-[1.2rem] scale-100 transition-all" />(
+					{computedTheme === "light" ? (
+						<SunIcon className="h-[1.2rem] w-[1.2rem] scale-100 transition-all" />
+					) : (
+						<MoonIcon className="h-[1.2rem] w-[1.2rem] scale-100 transition-all" />
+					)}
+					)
+				</>
+			);
 	}
 }
 
 export function ThemeToggle() {
-	const { theme, setTheme } = useTheme();
+	const { setTheme } = useTheme();
 
 	return (
 		<DropdownMenu>
 			<DropdownMenuTrigger asChild>
-				<Button variant="outline" size="icon">
-					<ThemeIcon theme={theme} />
+				<Button variant="outline">
+					<ThemeIcon />
 					<span className="sr-only">Toggle theme</span>
 				</Button>
 			</DropdownMenuTrigger>
-			<DropdownMenuContent align="end">
+			<DropdownMenuContent className="mt-1" align="end">
 				<DropdownMenuItem onClick={() => setTheme("light")}>
 					<SunIcon className="h-[1.2rem] w-[1.2rem] scale-100 transition-all" />
 					Light

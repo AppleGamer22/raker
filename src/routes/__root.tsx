@@ -1,7 +1,8 @@
 import { createRootRoute, Outlet } from "@tanstack/react-router";
+import { useState } from "react";
 
 import Header from "@/components/header";
-import { Menu } from "@/components/menu";
+import { Menu, MobileMenu } from "@/components/menu";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 export const Route = createRootRoute({
@@ -10,12 +11,13 @@ export const Route = createRootRoute({
 });
 
 function Root() {
+	const [open, setOpen] = useState(false);
 	const isMobile = useIsMobile();
 
 	return (
 		<>
-			{isMobile ? <Header /> : null}
-			<Menu />
+			{isMobile ? <Header toggleMenu={() => setOpen(true)} /> : null}
+			{isMobile ? <MobileMenu open={open} onOpenChange={setOpen} /> : <Menu />}
 			<Outlet />
 		</>
 	);
