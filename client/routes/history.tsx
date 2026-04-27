@@ -5,6 +5,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { SearchIcon } from "lucide-react";
 import { Fragment, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { z } from "zod";
 
 import { searchHistory, searchHistoryOwners } from "@/buf/raker/v1/raker-RakerServer_connectquery";
 import { PostType, type ScrapeResponse } from "@/buf/raker/v1/raker_pb";
@@ -64,15 +65,20 @@ type OwnerPostType = {
 	type: PostType | -1;
 };
 
-type HistoryFormValues = {
-	types: PostType[];
-	exclusive: boolean;
-	categories: string[];
-	ownerSearchTerm: string;
-	ownersSearchValue: OwnerPostType[];
-};
+const historyFormSchema = z.object({
+	types: z.array(z.enum(PostType)),
+	exclusive: z.boolean(),
+	categories: z.array(z.string()),
+	ownerSearchTerm: z.string(),
+	ownersSearchValue: z.array(
+		z.object({
+			owner: z.string(),
+			type: z.union([z.enum(PostType), z.literal(-1)]),
+		}),
+	),
+});
 
-type HistoryFormApi = any;
+type HistoryFormValues = z.infer<typeof historyFormSchema>;
 
 function PostTypeIconLabel({ type }: { type: PostType }) {
 	switch (type) {
@@ -136,133 +142,6 @@ function PlatformIcon({ type }: { type: PostType | -1 }) {
 	}
 }
 
-function HistoryPostTypeForm({ form }: { form: HistoryFormApi }) {
-	const typeOptions = [
-		{ id: "post-type-instagram", value: PostType.Instagram, label: "Post", Icon: InstagramIcon },
-		{ id: "post-type-highlight", value: PostType.Highlight, label: "Highlight", Icon: InstagramIcon },
-		{ id: "post-type-story", value: PostType.Story, label: "Story", Icon: InstagramIcon },
-		{ id: "post-type-tiktok", value: PostType.TikTok, label: "Post", Icon: TikTokIcon },
-		{ id: "post-type-snapchat", value: PostType.Snapchat, label: "Highlight", Icon: SnapchatIcon },
-		{ id: "post-type-vsco", value: PostType.VSCO, label: "Post", Icon: VSCOIcon },
-	] as const;
-
-	return (
-		<FieldGroup>
-			<FieldSet>
-				<FieldLegend>Post Types</FieldLegend>
-				<form.Field name="types" mode="array">
-					{(field: any) => (
-						<FieldGroup className="flex flex-row flex-wrap gap-1 *:w-auto">
-							{typeOptions.map(({ id, value, label, Icon }) => (
-								<FieldLabel key={id} htmlFor={id} className="max-w-fit">
-									<Field orientation="horizontal">
-										<Checkbox
-											id={id}
-											checked={field.state.value.includes(value)}
-											onCheckedChange={(checked) => {
-												if (checked) {
-													if (!field.state.value.includes(value)) {
-														field.pushValue(value);
-													}
-												} else {
-													const index = field.state.value.indexOf(value);
-													if (index > -1) {
-														field.removeValue(index);
-													}
-												}
-											}}
-										/>
-										<FieldContent>
-											<FieldTitle>
-												<Icon className="w-4" />
-												{label}
-											</FieldTitle>
-										</FieldContent>
-									</Field>
-								</FieldLabel>
-							))}
-						</FieldGroup>
-					)}
-				</form.Field>
-			</FieldSet>
-		</FieldGroup>
-	);
-}
-
-function HistoryPostCategoryForm({
-	form,
-	availableCategories,
-}: {
-	form: HistoryFormApi;
-	availableCategories: string[];
-}) {
-	return (
-		<FieldGroup>
-			<FieldSet>
-				<FieldLegend>Post Categories</FieldLegend>
-				<FieldGroup className="flex flex-row flex-wrap gap-1 *:w-auto">
-					<form.Field name="exclusive">
-						{(field: any) => (
-							<FieldLabel htmlFor="category-exclusive" className="max-w-fit">
-								<Field orientation="horizontal">
-									<Switch
-										id="category-exclusive"
-										name={field.name}
-										checked={field.state.value}
-										onCheckedChange={(checked) => {
-											field.handleChange(checked);
-										}}
-									/>
-									<FieldContent>
-										<FieldTitle>Exclusive</FieldTitle>
-									</FieldContent>
-								</Field>
-							</FieldLabel>
-						)}
-					</form.Field>
-					<Separator orientation="vertical" />
-					<form.Field name="categories" mode="array">
-						{(field: any) => (
-							<>
-								{availableCategories.map((category) => (
-									<FieldLabel
-										key={`category-${category}`}
-										htmlFor={`category-${category}`}
-										className="max-w-fit"
-									>
-										<Field orientation="horizontal">
-											<Checkbox
-												id={`category-${category}`}
-												name={field.name}
-												checked={field.state.value.includes(category)}
-												onCheckedChange={(checked) => {
-													if (checked) {
-														if (!field.state.value.includes(category)) {
-															field.pushValue(category);
-														}
-													} else {
-														const index = field.state.value.indexOf(category);
-														if (index > -1) {
-															field.removeValue(index);
-														}
-													}
-												}}
-											/>
-											<FieldContent>
-												<FieldTitle>{category}</FieldTitle>
-											</FieldContent>
-										</Field>
-									</FieldLabel>
-								))}
-							</>
-						)}
-					</form.Field>
-				</FieldGroup>
-			</FieldSet>
-		</FieldGroup>
-	);
-}
-
 function HistoryPagination({
 	current,
 	total,
@@ -315,6 +194,10 @@ function History() {
 			ownerSearchTerm: "",
 			ownersSearchValue: [],
 		} as HistoryFormValues,
+		validators: {
+			onChange: historyFormSchema,
+			onSubmit: historyFormSchema,
+		},
 		onSubmit: async ({ value: { categories, exclusive, ownersSearchValue, types } }) => {
 			try {
 				const { histories, totalCount } = await searchHistoryMutation.mutateAsync({
@@ -334,6 +217,125 @@ function History() {
 			}
 		},
 	});
+
+	const HistoryPostTypeForm = () => {
+		const typeOptions = [
+			{ id: "post-type-instagram", value: PostType.Instagram, label: "Post", Icon: InstagramIcon },
+			{ id: "post-type-highlight", value: PostType.Highlight, label: "Highlight", Icon: InstagramIcon },
+			{ id: "post-type-story", value: PostType.Story, label: "Story", Icon: InstagramIcon },
+			{ id: "post-type-tiktok", value: PostType.TikTok, label: "Post", Icon: TikTokIcon },
+			{ id: "post-type-snapchat", value: PostType.Snapchat, label: "Highlight", Icon: SnapchatIcon },
+			{ id: "post-type-vsco", value: PostType.VSCO, label: "Post", Icon: VSCOIcon },
+		] as const;
+
+		return (
+			<FieldGroup>
+				<FieldSet>
+					<FieldLegend>Post Types</FieldLegend>
+					<form.Field name="types" mode="array">
+						{(field) => (
+							<FieldGroup className="flex flex-row flex-wrap gap-1 *:w-auto">
+								{typeOptions.map(({ id, value, label, Icon }) => (
+									<FieldLabel key={id} htmlFor={id} className="max-w-fit">
+										<Field orientation="horizontal">
+											<Checkbox
+												id={id}
+												checked={field.state.value.includes(value)}
+												onCheckedChange={(checked) => {
+													if (checked) {
+														if (!field.state.value.includes(value)) {
+															field.pushValue(value);
+														}
+													} else {
+														const index = field.state.value.indexOf(value);
+														if (index > -1) {
+															field.removeValue(index);
+														}
+													}
+												}}
+											/>
+											<FieldContent>
+												<FieldTitle>
+													<Icon className="w-4" />
+													{label}
+												</FieldTitle>
+											</FieldContent>
+										</Field>
+									</FieldLabel>
+								))}
+							</FieldGroup>
+						)}
+					</form.Field>
+				</FieldSet>
+			</FieldGroup>
+		);
+	};
+
+	const HistoryPostCategoryForm = () => (
+		<FieldGroup>
+			<FieldSet>
+				<FieldLegend>Post Categories</FieldLegend>
+				<FieldGroup className="flex flex-row flex-wrap gap-1 *:w-auto">
+					<form.Field name="exclusive">
+						{(field) => (
+							<FieldLabel htmlFor="category-exclusive" className="max-w-fit">
+								<Field orientation="horizontal">
+									<Switch
+										id="category-exclusive"
+										name={field.name}
+										checked={field.state.value}
+										onCheckedChange={(checked) => {
+											field.handleChange(checked);
+										}}
+									/>
+									<FieldContent>
+										<FieldTitle>Exclusive</FieldTitle>
+									</FieldContent>
+								</Field>
+							</FieldLabel>
+						)}
+					</form.Field>
+					<Separator orientation="vertical" />
+					<form.Field name="categories" mode="array">
+						{(field) => (
+							<>
+								{availableCategories.map((category) => (
+									<FieldLabel
+										key={`category-${category}`}
+										htmlFor={`category-${category}`}
+										className="max-w-fit"
+									>
+										<Field orientation="horizontal">
+											<Checkbox
+												id={`category-${category}`}
+												name={field.name}
+												checked={field.state.value.includes(category)}
+												onCheckedChange={(checked) => {
+													if (checked) {
+														if (!field.state.value.includes(category)) {
+															field.pushValue(category);
+														}
+													} else {
+														const index = field.state.value.indexOf(category);
+														if (index > -1) {
+															field.removeValue(index);
+														}
+													}
+												}}
+											/>
+											<FieldContent>
+												<FieldTitle>{category}</FieldTitle>
+											</FieldContent>
+										</Field>
+									</FieldLabel>
+								))}
+							</>
+						)}
+					</form.Field>
+				</FieldGroup>
+			</FieldSet>
+		</FieldGroup>
+	);
 
 	useEffect(() => {
 		form.setFieldValue("categories", availableCategories);
@@ -388,16 +390,16 @@ function History() {
 						)}
 					</form.Subscribe>
 					<CollapsibleContent className="mt-1">
-						<HistoryPostTypeForm form={form} />
+						<HistoryPostTypeForm />
 						<Separator className="my-2" />
-						<HistoryPostCategoryForm form={form} availableCategories={availableCategories} />
+						<HistoryPostCategoryForm />
 					</CollapsibleContent>
 				</Collapsible>
 
 				<form.Field name="ownerSearchTerm">
-					{(searchField: any) => (
+					{(searchField) => (
 						<form.Field name="ownersSearchValue">
-							{(ownersField: any) => (
+							{(ownersField) => (
 								<Combobox
 									multiple
 									items={
@@ -491,7 +493,7 @@ function History() {
 																(item1) =>
 																	item1.owner.includes(searchField.state.value) &&
 																	ownersField.state.value.filter(
-																		(item2: any) => item2 === item1,
+																		(item2) => item2 === item1,
 																	).length === 0,
 															)
 															.map((item) => (
