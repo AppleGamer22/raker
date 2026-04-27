@@ -51,10 +51,9 @@ function Snapchat() {
 		},
 		onSubmit: async ({ value: { owner, highlight } }) => {
 			try {
-				await navigate({ search: { owner, highlight }, replace: true });
 				const result = await snapchatMutation.mutateAsync({ owner, post: highlight });
 				setResult(result);
-				console.log(result);
+				await navigate({ search: { owner, highlight }, replace: true });
 			} catch (err) {
 				toast.error((err as Error).message, {
 					position: "top-center",
