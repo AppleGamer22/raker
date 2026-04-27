@@ -79,7 +79,7 @@ export function FileDisplay({
 	if (/\.(jpg)|(jpeg)|(webp)|(heic)$/.test(file)) {
 		return <img src={url} />;
 	} else if (/\.(mp4)|(webm)$/.test(file)) {
-		return <video src={url} />;
+		return <video src={url} loop controls muted />;
 	} else {
 		return <a href={url}>{url}</a>;
 	}
