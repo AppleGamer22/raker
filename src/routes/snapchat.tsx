@@ -7,31 +7,31 @@ import { CardContent } from "@/components/ui/card";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 
-const highlightSearchSchema = z.object({
-	highlight: z.string().catch(""),
+const snapchatSearchSchema = z.object({
+	owner: z.string().catch(""),
 });
 
-export const Route = createFileRoute("/highlight")({
-	component: Highlight,
-	validateSearch: highlightSearchSchema,
+export const Route = createFileRoute("/snapchat")({
+	component: Snapchat,
+	validateSearch: snapchatSearchSchema,
 });
 
-function Highlight() {
-	const { highlight } = Route.useSearch();
+function Snapchat() {
+	const { owner } = Route.useSearch();
 	const navigate = useNavigate({ from: Route.fullPath });
 
 	const form = useForm({
 		defaultValues: {
-			highlight,
+			owner,
 		},
 		validators: {
-			onChange: highlightSearchSchema,
-			onSubmit: highlightSearchSchema.extend({
-				highlight: z.string().min(1, "highlight ID is required"),
+			onChange: snapchatSearchSchema,
+			onSubmit: snapchatSearchSchema.extend({
+				owner: z.string().min(1, "post owner is required"),
 			}),
 		},
-		onSubmit: async ({ value: { highlight } }) => {
-			await navigate({ search: { highlight }, replace: true });
+		onSubmit: async ({ value: { owner } }) => {
+			await navigate({ search: { owner }, replace: true });
 		},
 	});
 
@@ -44,19 +44,19 @@ function Highlight() {
 		>
 			<CardContent>
 				<FieldGroup>
-					<form.Field name="highlight">
+					<form.Field name="owner">
 						{(field) => {
 							const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
 							return (
 								<Field>
-									<FieldLabel htmlFor={field.name}>highlight ID</FieldLabel>
+									<FieldLabel htmlFor={field.name}>owner</FieldLabel>
 									<Input
 										name={field.name}
 										value={field.state.value}
 										onBlur={field.handleBlur}
 										aria-invalid={isInvalid}
 										onChange={(e) => field.handleChange(e.target.value)}
-										placeholder="https://www.instagram.com/stories/find/highlights/ID"
+										placeholder="https://www.snapchat.com/@OWNER"
 									/>
 									{isInvalid && <FieldError errors={field.state.meta.errors} />}
 								</Field>

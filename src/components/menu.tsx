@@ -3,6 +3,7 @@ import { UserKeyIcon, DatabaseSearchIcon } from "lucide-react";
 import type { ReactNode } from "react";
 
 import { RakerLogo } from "@/components/logo";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import {
 	Sidebar,
@@ -17,9 +18,9 @@ import {
 	SidebarGroupLabel,
 } from "@/components/ui/sidebar";
 import { InstagramIcon } from "@/components/ui/svgs/instagram";
+import { SnapchatIcon } from "@/components/ui/svgs/snapchat";
 import { TikTokIcon } from "@/components/ui/svgs/tiktok";
 import { VSCOIcon } from "@/components/ui/svgs/vsco";
-import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 type MenuMode = "default" | "mobile-sheet";
 
@@ -120,6 +121,17 @@ export function Menu({
 								>
 									<TikTokIcon className="h-40 w-40" />
 									TikTok Post
+								</SidebarMenuButton>
+							</SidebarMenuItem>
+							<SidebarMenuItem>
+								<SidebarMenuButton
+									isActive={isActiveRoute("/snapchat")}
+									render={
+										<Link to="/snapchat" search={{ owner: "" }} onClick={() => onNavigate?.()} />
+									}
+								>
+									<SnapchatIcon className="h-40 w-40" />
+									Snapchat Highlight
 								</SidebarMenuButton>
 							</SidebarMenuItem>
 							<SidebarMenuItem>

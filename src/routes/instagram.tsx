@@ -3,7 +3,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
-import { CardContent, CardFooter } from "@/components/ui/card";
+import { CardContent } from "@/components/ui/card";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -83,7 +83,8 @@ function Instagram() {
 					</Field>
 				</FieldGroup>
 			</CardContent>
-			<CardFooter>{/* TODO: results */}</CardFooter>
+			{/* TODO: results */}
+			{/* <CardFooter></CardFooter> */}
 		</form>
 	);
 }
