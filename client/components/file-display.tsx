@@ -80,9 +80,12 @@ export function FilesCarousel({
 
 	return files.length > 1 ? (
 		<Carousel opts={{ loop: true }} setApi={setApi}>
-			<CarouselContent className="items-start">
+			<CarouselContent className="items-center">
 				{files.map((file, i) => (
-					<CarouselItem key={`file-${postType}-${postOwner}-${post}-${i}`} className="self-start">
+					<CarouselItem
+						key={`file-${postType}-${postOwner}-${post}-${i}`}
+						className="flex items-center justify-center self-center"
+					>
 						<FileDisplay
 							username={username}
 							post={{ postType, postOwner } as ScrapeResponse}
