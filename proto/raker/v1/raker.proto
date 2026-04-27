@@ -101,7 +101,11 @@ message HistoryResponse {
 }
 
 message HistoryOwnersResponse {
-  repeated string owners = 1;
+  message HistoryOwner {
+    string owner = 1;
+    PostType type = 2;
+  }
+  repeated HistoryOwner owners = 1;
 }
 
 service RakerServer {

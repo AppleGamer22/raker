@@ -2,7 +2,7 @@ import { useMutation } from "@connectrpc/connect-query";
 import { useForm } from "@tanstack/react-form";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { SearchIcon } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { toast } from "sonner";
 import z from "zod";
 
@@ -14,12 +14,17 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
 	Combobox,
+	ComboboxChip,
+	ComboboxChips,
+	ComboboxChipsInput,
 	ComboboxContent,
 	ComboboxGroup,
-	ComboboxInput,
+	// ComboboxInput,
 	ComboboxItem,
 	ComboboxLabel,
 	ComboboxList,
+	ComboboxValue,
+	useComboboxAnchor,
 } from "@/components/ui/combobox";
 import { FieldGroup, FieldLegend, Field, FieldSet, FieldLabel, FieldContent, FieldTitle } from "@/components/ui/field";
 import { InputGroupAddon } from "@/components/ui/input-group";
@@ -79,6 +84,21 @@ function PostTypeIconLabel({ type }: { type: PostType }) {
 					Post
 				</>
 			);
+	}
+}
+
+function PlatformIcon({ type }: { type: PostType }) {
+	switch (type) {
+		case PostType.Instagram:
+		case PostType.Highlight:
+		case PostType.Story:
+			return <InstagramIcon className="w-4" />;
+		case PostType.TikTok:
+			return <TikTokIcon className="w-4" />;
+		case PostType.Snapchat:
+			return <SnapchatIcon className="w-4" />;
+		case PostType.VSCO:
+			return <VSCOIcon className="w-4" />;
 	}
 }
 
@@ -375,6 +395,11 @@ function HistoryPostCategoryForm({
 	);
 }
 
+interface OwnerPostType {
+	owner: string;
+	type: PostType;
+}
+
 function History() {
 	const navigate = useNavigate({ from: Route.fullPath });
 	const { username, categories: availableCategories } = useUser();
@@ -387,13 +412,13 @@ function History() {
 		PostType.VSCO,
 	]);
 	const [categories, setCategories] = useState<string[]>(availableCategories);
-	const [ownersSearchOptions, setOwnersSearchOptions] = useState<string[]>([]);
+	const [ownersSearchOptions, setOwnersSearchOptions] = useState<OwnerPostType[]>([]);
 	const [exclusive, setExclusive] = useState(false);
 	const [isOpen, setIsOpen] = useState(false);
 	const [ownerSearchTerm, setOwnerSearchTerm] = useState("");
-	const [ownerSearchValue, setOwnerSearchValue] = useState("");
+	const [ownersSearchValue, setOwnersSearchValue] = useState<OwnerPostType[]>([]);
 	const comboboxItems = ownerSearchTerm.length > 0 ? [ownerSearchTerm, ...ownersSearchOptions] : ownersSearchOptions;
-
+	const anchor = useComboboxAnchor();
 	const ownersMutation = useMutation(searchHistoryOwners);
 
 	useEffect(() => {
@@ -448,58 +473,69 @@ function History() {
 				</CollapsibleContent>
 			</Collapsible>
 			<Combobox
+				multiple
 				items={comboboxItems}
-				value={ownerSearchValue}
-				onValueChange={(value) => (value !== null ? setOwnerSearchValue(value) : null)}
+				value={ownersSearchValue}
+				onValueChange={(value) => (value !== null ? setOwnersSearchValue(value) : null)}
 			>
-				<ComboboxInput
-					className="my-2"
-					placeholder="post owner search"
-					showClear
-					onChange={async (e) => {
-						setOwnerSearchTerm(e.target.value);
-						if (e.target.value.length === 4) {
-							try {
-								const { owners } = await ownersMutation.mutateAsync({
-									categories,
-									exclusive,
-									types,
-									owner: e.target.value,
-								});
-								setOwnersSearchOptions(owners);
-							} catch (err) {
-								toast.error((err as Error).message, {
-									position: "top-center",
-								});
-							}
-						} else if (e.target.value.length === 0) {
-							setOwnersSearchOptions([]);
-						}
-					}}
-				>
-					<InputGroupAddon>
-						<SearchIcon />
-					</InputGroupAddon>
-				</ComboboxInput>
+				<ComboboxChips ref={anchor} className="w-full max-w-xs">
+					<ComboboxValue>
+						{(values) => (
+							<Fragment>
+								{values.map(({ owner, type }: OwnerPostType) => (
+									<ComboboxChip key={`search-chip-${type}-${owner}`}>
+										<PlatformIcon type={type} />
+										{owner}
+									</ComboboxChip>
+								))}
+								<ComboboxChipsInput
+									className="my-4"
+									placeholder="post owner search"
+									onChange={async (e) => {
+										setOwnerSearchTerm(e.target.value);
+										if (e.target.value.length === 4) {
+											try {
+												const { owners } = await ownersMutation.mutateAsync({
+													categories,
+													exclusive,
+													types,
+													owner: e.target.value,
+												});
+												setOwnersSearchOptions(owners);
+											} catch (err) {
+												toast.error((err as Error).message, {
+													position: "top-center",
+												});
+											}
+										} else if (e.target.value.length === 0) {
+											setOwnersSearchOptions([]);
+										}
+									}}
+								></ComboboxChipsInput>
+							</Fragment>
+						)}
+					</ComboboxValue>
+				</ComboboxChips>
 				{ownerSearchTerm.length > 0 && (
 					<ComboboxContent>
 						<ComboboxList>
-							{ownerSearchTerm.length > 0 && (
+							{/* {ownerSearchTerm.length > 0 && (
 								<ComboboxGroup>
 									<ComboboxLabel>Search Term</ComboboxLabel>
 									<ComboboxItem key="search-term" value={ownerSearchTerm}>
 										{ownerSearchTerm}
 									</ComboboxItem>
 								</ComboboxGroup>
-							)}
+							)} */}
 							{ownersSearchOptions.length > 0 && (
 								<ComboboxGroup>
 									<ComboboxLabel>Owners</ComboboxLabel>
 									{ownersSearchOptions
-										.filter((item) => item.includes(ownerSearchTerm))
+										.filter((item) => item.owner.includes(ownerSearchTerm))
 										.map((item) => (
-											<ComboboxItem key={`search-${item}`} value={item}>
-												{item}
+											<ComboboxItem key={`search-${item.type}-${item.owner}`} value={item}>
+												<PlatformIcon type={item.type} />
+												{item.owner}
 											</ComboboxItem>
 										))}
 								</ComboboxGroup>

@@ -136,7 +136,7 @@ func (server *RakerServer) SearchHistoryOwners(ctx context.Context, request *v1.
 		postTypes = append(postTypes, PostTypePB2DB(postType))
 	}
 
-	owners, err := server.DBClient.HistoryOwners(ctx, db.HistoryOwnersParams{
+	result, err := server.DBClient.HistoryOwners(ctx, db.HistoryOwnersParams{
 		PostTypes:  postTypes,
 		Exclusive:  request.Exclusive,
 		Categories: request.Categories,
@@ -149,6 +149,15 @@ func (server *RakerServer) SearchHistoryOwners(ctx context.Context, request *v1.
 	}
 
 	return &v1.HistoryOwnersResponse{
-		Owners: owners,
+		Owners: func() []*v1.HistoryOwnersResponse_HistoryOwner {
+			owners := make([]*v1.HistoryOwnersResponse_HistoryOwner, 0, len(result))
+			for _, historyOwner := range result {
+				owners = append(owners, &v1.HistoryOwnersResponse_HistoryOwner{
+					Owner: historyOwner.PostOwner,
+					Type:  PostTypeDB2PB(historyOwner.PostType),
+				})
+			}
+			return owners
+		}(),
 	}, nil
 }

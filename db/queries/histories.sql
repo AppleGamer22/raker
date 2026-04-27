@@ -163,7 +163,7 @@ WHERE post_type = ANY (sqlc.slice(post_types)::post_type [])
 	AND username = sqlc.arg(username)::text;
 
 -- name: HistoryOwners :many
-select distinct post_owner
+select distinct post_type, post_owner
 from Histories
 WHERE post_type = ANY (sqlc.slice(post_types)::post_type [])
 	AND (

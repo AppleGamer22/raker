@@ -475,7 +475,7 @@ func (q *Queries) HistoryGetPage(ctx context.Context, arg HistoryGetPageParams) 
 }
 
 const historyOwners = `-- name: HistoryOwners :many
-select distinct post_owner
+select distinct post_type, post_owner
 from Histories
 WHERE post_type = ANY ($1::post_type [])
 	AND (
@@ -500,7 +500,12 @@ type HistoryOwnersParams struct {
 	Username   string     `json:"username"`
 }
 
-func (q *Queries) HistoryOwners(ctx context.Context, arg HistoryOwnersParams) ([]string, error) {
+type HistoryOwnersRow struct {
+	PostType  PostType `json:"post_type"`
+	PostOwner string   `json:"post_owner"`
+}
+
+func (q *Queries) HistoryOwners(ctx context.Context, arg HistoryOwnersParams) ([]HistoryOwnersRow, error) {
 	rows, err := q.query(ctx, q.historyOwnersStmt, historyOwners,
 		pq.Array(arg.PostTypes),
 		arg.Exclusive,
@@ -512,13 +517,13 @@ func (q *Queries) HistoryOwners(ctx context.Context, arg HistoryOwnersParams) ([
 		return nil, err
 	}
 	defer rows.Close()
-	var items []string
+	var items []HistoryOwnersRow
 	for rows.Next() {
-		var post_owner string
-		if err := rows.Scan(&post_owner); err != nil {
+		var i HistoryOwnersRow
+		if err := rows.Scan(&i.PostType, &i.PostOwner); err != nil {
 			return nil, err
 		}
-		items = append(items, post_owner)
+		items = append(items, i)
 	}
 	if err := rows.Close(); err != nil {
 		return nil, err
