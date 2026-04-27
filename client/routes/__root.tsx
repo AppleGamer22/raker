@@ -18,22 +18,13 @@ function Root() {
 	return (
 		<main className="w-full max-w-full overflow-x-hidden">
 			{isMobile ? <Header toggleMenu={() => setOpen(true)} /> : null}
-			{isMobile ? (
-				<>
-					<MobileMenu open={open} onOpenChange={setOpen} />
-					<div className="w-full max-w-full overflow-x-hidden">
-						<Card className="m-2 min-h-[calc(100dvh-var(--header-height)-1.1rem)] md:min-h-[calc(100dvh-1rem)]">
-							<Outlet />
-						</Card>
-					</div>
-				</>
-			) : (
-				<Menu>
-					<Card className="m-2 min-h-[calc(100dvh-var(--header-height)-1.1rem)] md:min-h-[calc(100dvh-1rem)]">
-						<Outlet />
-					</Card>
-				</Menu>
-			)}
+			<MobileMenu open={open && isMobile} onOpenChange={setOpen} />
+
+			<Menu>
+				<Card className="m-2 min-h-[calc(100dvh-var(--header-height)-1.1rem)] md:min-h-[calc(100dvh-1rem)]">
+					<Outlet />
+				</Card>
+			</Menu>
 		</main>
 	);
 }
