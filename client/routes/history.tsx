@@ -48,10 +48,7 @@ import { VSCOIcon } from "@/components/ui/svgs/vsco";
 import { Switch } from "@/components/ui/switch";
 import { useUser } from "@/hooks/user-provider";
 
-export const Route = createFileRoute("/history")({
-	component: History,
-});
-const defaultPostTypes = [
+export const defaultPostTypes = [
 	PostType.Instagram,
 	PostType.Highlight,
 	PostType.Story,
@@ -59,6 +56,23 @@ const defaultPostTypes = [
 	PostType.Snapchat,
 	PostType.VSCO,
 ];
+
+export const Route = createFileRoute("/history")({
+	component: History,
+	validateSearch: z.object({
+		types: z.array(z.enum(PostType)).catch(defaultPostTypes),
+		exclusive: z.boolean().catch(false),
+		categories: z.array(z.string()).catch([]),
+		owners: z
+			.array(
+				z.object({
+					owner: z.string(),
+					type: z.union([z.enum(PostType), z.literal(-1)]),
+				}),
+			)
+			.catch([]),
+	}),
+});
 
 type OwnerPostType = {
 	owner: string;
@@ -299,6 +313,7 @@ function HistoryPostTypeForm({ typesField }: HistoryPostTypeFormProps) {
 }
 
 function History() {
+	const { types, exclusive, categories, owners } = Route.useSearch();
 	const navigate = useNavigate({ from: Route.fullPath });
 	const { username, categories: availableCategories, isCategoriesPending } = useUser();
 	const [ownersSearchOptions, setOwnersSearchOptions] = useState<OwnerPostType[]>([]);
@@ -306,6 +321,7 @@ function History() {
 	const [totalCount, setTotalCount] = useState(0n);
 	const [currentPage, setCurrentPage] = useState(1n);
 	const [histories, setHistories] = useState<ScrapeResponse[]>([]);
+	const hasInitializedCategories = useRef(false);
 	const hasSubmittedInitialSearch = useRef(false);
 
 	const anchor = useComboboxAnchor();
@@ -314,11 +330,11 @@ function History() {
 	const searchHistoryMutation = useMutation(searchHistory);
 	const form = useForm({
 		defaultValues: {
-			types: defaultPostTypes,
-			exclusive: false,
-			categories: availableCategories,
+			types,
+			exclusive,
+			categories,
 			ownerSearchTerm: "",
-			ownersSearchValue: [],
+			ownersSearchValue: owners,
 		} as HistoryFormValues,
 		validators: {
 			onChange: historyFormSchema,
@@ -336,6 +352,15 @@ function History() {
 				});
 				setTotalCount(totalCount);
 				setHistories(histories);
+				await navigate({
+					search: {
+						types,
+						exclusive,
+						categories,
+						owners: ownersSearchValue,
+					},
+					replace: true,
+				});
 			} catch (err) {
 				toast.error((err as Error).message, {
 					position: "top-center",
@@ -345,15 +370,21 @@ function History() {
 	});
 
 	useEffect(() => {
-		form.setFieldValue("categories", availableCategories);
+		if (isCategoriesPending || hasInitializedCategories.current) {
+			return;
+		}
 
-		if (hasSubmittedInitialSearch.current || isCategoriesPending || username === null) {
+		const validSearchCategories = categories.filter((category) => availableCategories.includes(category));
+		form.setFieldValue("categories", validSearchCategories);
+		hasInitializedCategories.current = true;
+
+		if (hasSubmittedInitialSearch.current || username === null) {
 			return;
 		}
 
 		hasSubmittedInitialSearch.current = true;
 		form.handleSubmit();
-	}, [availableCategories, form, isCategoriesPending, username]);
+	}, [availableCategories, categories, form, isCategoriesPending, username]);
 
 	useEffect(() => {
 		if (username === null) {

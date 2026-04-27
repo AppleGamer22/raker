@@ -22,6 +22,7 @@ import { SnapchatIcon } from "@/components/ui/svgs/snapchat";
 import { TikTokIcon } from "@/components/ui/svgs/tiktok";
 import { VSCOIcon } from "@/components/ui/svgs/vsco";
 import { useUser } from "@/hooks/user-provider";
+import { defaultPostTypes } from "@/routes/history";
 
 type MenuMode = "default" | "mobile-sheet";
 
@@ -32,7 +33,7 @@ export function Menu({
 }: { mode?: MenuMode; onNavigate?: () => void; children?: ReactNode } = {}) {
 	const isMobileSheet = mode === "mobile-sheet";
 	const { pathname } = useLocation();
-	const { username } = useUser();
+	const { username, categories, isCategoriesPending } = useUser();
 	const isSignedIn = username !== null;
 
 	const isActiveRoute = (route: string) => pathname === route;
@@ -184,7 +185,17 @@ export function Menu({
 									disabled={!isSignedIn}
 									isActive={isActiveRoute("/history")}
 									render={
-										<Link disabled={!isSignedIn} to="/history" onClick={() => onNavigate?.()} />
+										<Link
+											disabled={!isSignedIn}
+											to="/history"
+											search={{
+												categories: isCategoriesPending ? [] : categories,
+												exclusive: false,
+												owners: [],
+												types: defaultPostTypes,
+											}}
+											onClick={() => onNavigate?.()}
+										/>
 									}
 								>
 									<DatabaseSearchIcon className="w-4" />
