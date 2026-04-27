@@ -31,8 +31,8 @@ function TikTok() {
 		validators: {
 			onChange: tikTokSearchSchema,
 			onSubmit: tikTokSearchSchema.extend({
-				owner: z.string().min(1),
-				post: z.string().min(1),
+				owner: z.string().min(1, "post owner is required"),
+				post: z.string().min(1, "post ID is required"),
 			}),
 		},
 		onSubmit: async () => {},

@@ -26,7 +26,7 @@ function Highlight() {
 		validators: {
 			onChange: highlightSearchSchema,
 			onSubmit: highlightSearchSchema.extend({
-				highlightId: z.string().min(1),
+				highlight: z.string().min(1, "highlight ID is required"),
 			}),
 		},
 		onSubmit: async () => {},

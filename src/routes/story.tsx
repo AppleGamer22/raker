@@ -27,7 +27,7 @@ function Story() {
 		validators: {
 			onChange: storySearchSchema,
 			onSubmit: storySearchSchema.extend({
-				owner: z.string().min(1),
+				owner: z.string().min(1, "story owner is required"),
 			}),
 		},
 		onSubmit: async () => {},

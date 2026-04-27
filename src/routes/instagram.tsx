@@ -29,7 +29,7 @@ function Instagram() {
 		validators: {
 			onChange: instagramSearchSchema,
 			onSubmit: instagramSearchSchema.extend({
-				post: z.string().min(1),
+				post: z.string().min(1, "post ID is required"),
 			}),
 		},
 		onSubmit: async () => {},

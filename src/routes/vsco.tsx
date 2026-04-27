@@ -28,8 +28,8 @@ function VSCO() {
 		validators: {
 			onChange: vscoSearchSchema,
 			onSubmit: vscoSearchSchema.extend({
-				owner: z.string().min(1),
-				post: z.string().min(1),
+				owner: z.string().min(1, "post owner is required"),
+				post: z.string().min(1, "post ID is required"),
 			}),
 		},
 		onSubmit: async () => {},
