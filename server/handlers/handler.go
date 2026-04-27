@@ -98,7 +98,7 @@ func NewRakerServer() (*RakerServer, error) {
 
 	path, handler := v1connect.NewRakerServerHandler(
 		&rakerServer,
-		connect.WithInterceptors(validate.NewInterceptor()),
+		connect.WithInterceptors(rakerServer.NewAuthInterceptor(), validate.NewInterceptor()),
 	)
 
 	mux := http.NewServeMux()

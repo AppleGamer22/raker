@@ -94,3 +94,79 @@ func (server *RakerServer) SignInInstagram(ctx context.Context, request *v1.Sign
 
 	return &emptypb.Empty{}, nil
 }
+
+func (server *RakerServer) getUserFromCookie(request *http.Request) (db.User, error) {
+	jwtCookie, err := request.Cookie("jwt")
+	if err != nil {
+		return db.User{}, err
+	}
+
+	username, err := server.Authenticator.Parse(jwtCookie.Value)
+	if err != nil {
+		return db.User{}, err
+	}
+
+	user, err := server.DBClient.UserGet(context.Background(), username)
+	return user, err
+}
+
+func (server *RakerServer) VerifyMiddleware(strict bool, handler http.Handler) http.Handler {
+	return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+		user, err := server.getUserFromCookie(request)
+		if err != nil {
+			log.Error(err)
+			if strict {
+				http.Error(writer, "credential verification failed", http.StatusUnauthorized)
+				return
+			}
+		}
+		// https://drstearns.github.io/tutorials/gomiddleware/#secmiddlewareandrequestscopedvalues
+		ctxWithUser := context.WithValue(request.Context(), authenticatedUserKey, user)
+		requestWithUser := request.WithContext(ctxWithUser)
+		handler.ServeHTTP(writer, requestWithUser)
+	})
+}
+
+func (server *RakerServer) NewAuthInterceptor() connect.UnaryInterceptorFunc {
+	return func(next connect.UnaryFunc) connect.UnaryFunc {
+		return func(
+			ctx context.Context,
+			req connect.AnyRequest,
+		) (connect.AnyResponse, error) {
+			cookies, err := http.ParseCookie(req.Header().Get("Cookie"))
+
+			if err != nil {
+				log.Error(err)
+				return nil, connect.NewError(
+					connect.CodeUnauthenticated,
+					errors.New("no token provided"),
+				)
+			}
+
+			for _, cookie := range cookies {
+				if cookie.Name != "jwt" {
+					continue
+				}
+
+				username, err := server.Authenticator.Parse(cookie.Value)
+				if err != nil {
+					return nil, err
+				}
+
+				_, err = server.DBClient.UserGet(context.Background(), username)
+
+				if err != nil {
+					log.Error(err)
+					return nil, err
+				}
+
+				return next(ctx, req)
+			}
+
+			return nil, connect.NewError(
+				connect.CodeUnauthenticated,
+				errors.New("no token provided"),
+			)
+		}
+	}
+}
