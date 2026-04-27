@@ -22,4 +22,13 @@ export default defineConfig({
 			presets: [reactCompilerPreset()],
 		}),
 	],
+	server: {
+		proxy: {
+			"/api": {
+				target: "http://localhost:4100",
+				changeOrigin: true,
+				// rewrite: (path) => path.replace(/^\/api/, ""),
+			},
+		},
+	},
 });

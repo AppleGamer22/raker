@@ -1,5 +1,8 @@
+import { useMutation } from "@connectrpc/connect-query";
 import { createFileRoute } from "@tanstack/react-router";
+import { useState } from "react";
 
+import { signInInstagram } from "@/buf/raker/v1/raker-RakerServer_connectquery";
 import { Button } from "@/components/ui/button";
 import { CardContent } from "@/components/ui/card";
 import { Field, FieldGroup, FieldLabel, FieldLegend, FieldSet } from "@/components/ui/field";
@@ -47,10 +50,15 @@ function SignUpForm() {
 }
 
 function SignInForm() {
+	const [username, setUsername] = useState("");
+	const [password, setPassword] = useState("");
+	const signInMutation = useMutation(signInInstagram);
+
 	return (
 		<form
 			onSubmit={(e) => {
 				e.preventDefault();
+				signInMutation.mutate({ username, password });
 			}}
 		>
 			<FieldGroup>
@@ -59,14 +67,35 @@ function SignInForm() {
 					<FieldGroup>
 						<Field>
 							<FieldLabel>username</FieldLabel>
-							<Input placeholder="username" />
+							<Input
+								autoComplete="username"
+								placeholder="username"
+								value={username}
+								onChange={(e) => {
+									setUsername(e.target.value);
+								}}
+							/>
 						</Field>
 						<Field>
 							<FieldLabel>password</FieldLabel>
-							<Input placeholder="password" type="password" />
+							<Input
+								autoComplete="current-password"
+								placeholder="password"
+								type="password"
+								value={password}
+								onChange={(e) => {
+									setPassword(e.target.value);
+								}}
+							/>
 						</Field>
+						{signInMutation.isError ? (
+							<p className="text-sm text-destructive">{signInMutation.error.message}</p>
+						) : null}
+						{signInMutation.isSuccess ? <p className="text-sm text-green-600">Signed in.</p> : null}
 						<Field orientation="horizontal">
-							<Button type="submit">Sign-in</Button>
+							<Button disabled={signInMutation.isPending} type="submit">
+								{signInMutation.isPending ? "Signing in..." : "Sign-in"}
+							</Button>
 						</Field>
 					</FieldGroup>
 				</FieldSet>

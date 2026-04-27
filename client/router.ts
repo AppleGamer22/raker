@@ -4,7 +4,7 @@ import { createRouter } from "@tanstack/react-router";
 
 import { routeTree } from "./routeTree.gen";
 
-export const transport = createConnectTransport({ baseUrl: "/" });
+export const transport = createConnectTransport({ baseUrl: "/api" });
 
 export const queryClient = new QueryClient({
 	defaultOptions: {
