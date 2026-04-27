@@ -7,11 +7,11 @@
 package v1
 
 import (
-	datetime "google.golang.org/genproto/googleapis/type/datetime"
 	latlng "google.golang.org/genproto/googleapis/type/latlng"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
+	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -369,7 +369,7 @@ type ScrapeResponse struct {
 	PostType      MediaType              `protobuf:"varint,2,opt,name=post_type,json=postType,proto3,enum=raker.v1.MediaType" json:"post_type,omitempty"`
 	PostOwner     string                 `protobuf:"bytes,3,opt,name=post_owner,json=postOwner,proto3" json:"post_owner,omitempty"`
 	Post          string                 `protobuf:"bytes,4,opt,name=post,proto3" json:"post,omitempty"`
-	PostDate      *datetime.DateTime     `protobuf:"bytes,5,opt,name=post_date,json=postDate,proto3" json:"post_date,omitempty"`
+	PostDate      *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=post_date,json=postDate,proto3" json:"post_date,omitempty"`
 	Files         []string               `protobuf:"bytes,6,rep,name=files,proto3" json:"files,omitempty"`
 	Categories    []string               `protobuf:"bytes,7,rep,name=categories,proto3" json:"categories,omitempty"`
 	Incognito     bool                   `protobuf:"varint,8,opt,name=incognito,proto3" json:"incognito,omitempty"`
@@ -436,7 +436,7 @@ func (x *ScrapeResponse) GetPost() string {
 	return ""
 }
 
-func (x *ScrapeResponse) GetPostDate() *datetime.DateTime {
+func (x *ScrapeResponse) GetPostDate() *timestamppb.Timestamp {
 	if x != nil {
 		return x.PostDate
 	}
@@ -723,7 +723,7 @@ var File_raker_v1_raker_proto protoreflect.FileDescriptor
 
 const file_raker_v1_raker_proto_rawDesc = "" +
 	"\n" +
-	"\x14raker/v1/raker.proto\x12\braker.v1\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1agoogle/type/datetime.proto\x1a\x18google/type/latlng.proto\"\xa4\x01\n" +
+	"\x14raker/v1/raker.proto\x12\braker.v1\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x18google/type/latlng.proto\"\xa4\x01\n" +
 	"\rSignUpRequest\x12\x1a\n" +
 	"\busername\x18\x01 \x01(\tR\busername\x12\x1a\n" +
 	"\bpassword\x18\x02 \x01(\tR\bpassword\x12\"\n" +
@@ -749,14 +749,14 @@ const file_raker_v1_raker_proto_rawDesc = "" +
 	"\x04post\x18\x02 \x01(\tR\x04post\x12!\n" +
 	"\tincognito\x18\x03 \x01(\bH\x00R\tincognito\x88\x01\x01B\f\n" +
 	"\n" +
-	"_incognito\"\xe5\x02\n" +
+	"_incognito\"\xea\x02\n" +
 	"\x0eScrapeResponse\x12\x1a\n" +
 	"\busername\x18\x01 \x01(\tR\busername\x120\n" +
 	"\tpost_type\x18\x02 \x01(\x0e2\x13.raker.v1.MediaTypeR\bpostType\x12\x1d\n" +
 	"\n" +
 	"post_owner\x18\x03 \x01(\tR\tpostOwner\x12\x12\n" +
-	"\x04post\x18\x04 \x01(\tR\x04post\x122\n" +
-	"\tpost_date\x18\x05 \x01(\v2\x15.google.type.DateTimeR\bpostDate\x12\x14\n" +
+	"\x04post\x18\x04 \x01(\tR\x04post\x127\n" +
+	"\tpost_date\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\bpostDate\x12\x14\n" +
 	"\x05files\x18\x06 \x03(\tR\x05files\x12\x1e\n" +
 	"\n" +
 	"categories\x18\a \x03(\tR\n" +
@@ -833,13 +833,13 @@ var file_raker_v1_raker_proto_goTypes = []any{
 	(*UpdateCategoriesRequest)(nil), // 8: raker.v1.UpdateCategoriesRequest
 	(*HistoryRequest)(nil),          // 9: raker.v1.HistoryRequest
 	(*HistoryResponse)(nil),         // 10: raker.v1.HistoryResponse
-	(*datetime.DateTime)(nil),       // 11: google.type.DateTime
+	(*timestamppb.Timestamp)(nil),   // 11: google.protobuf.Timestamp
 	(*latlng.LatLng)(nil),           // 12: google.type.LatLng
 	(*emptypb.Empty)(nil),           // 13: google.protobuf.Empty
 }
 var file_raker_v1_raker_proto_depIdxs = []int32{
 	0,  // 0: raker.v1.ScrapeResponse.post_type:type_name -> raker.v1.MediaType
-	11, // 1: raker.v1.ScrapeResponse.post_date:type_name -> google.type.DateTime
+	11, // 1: raker.v1.ScrapeResponse.post_date:type_name -> google.protobuf.Timestamp
 	12, // 2: raker.v1.ScrapeResponse.coordinates:type_name -> google.type.LatLng
 	0,  // 3: raker.v1.RemoveFileRequest.type:type_name -> raker.v1.MediaType
 	0,  // 4: raker.v1.UpdateCategoriesRequest.type:type_name -> raker.v1.MediaType

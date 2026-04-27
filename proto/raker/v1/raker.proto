@@ -3,7 +3,7 @@ syntax = "proto3";
 package raker.v1;
 
 import "google/protobuf/empty.proto";
-import "google/type/datetime.proto";
+import "google/protobuf/timestamp.proto";
 import "google/type/latlng.proto";
 
 option go_package = "github.com/AppleGamer22/raker/server/buf/proto/raker/v1";
@@ -55,7 +55,7 @@ message ScrapeResponse {
   MediaType post_type = 2;
   string post_owner = 3;
   string post = 4;
-  google.type.DateTime post_date = 5;
+  google.protobuf.Timestamp post_date = 5;
   repeated string files = 6;
   repeated string categories = 7;
   bool incognito = 8;
