@@ -1,5 +1,5 @@
 import { useForm } from "@tanstack/react-form";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,7 @@ export const Route = createFileRoute("/instagram")({
 
 function Instagram() {
 	const { post, incognito } = Route.useSearch();
+	const navigate = useNavigate({ from: Route.fullPath });
 
 	const form = useForm({
 		defaultValues: {
@@ -32,7 +33,9 @@ function Instagram() {
 				post: z.string().min(1, "post ID is required"),
 			}),
 		},
-		onSubmit: async () => {},
+		onSubmit: async ({ value: { post, incognito } }) => {
+			await navigate({ search: { post, incognito }, replace: true });
+		},
 	});
 
 	return (

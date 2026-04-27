@@ -1,5 +1,5 @@
 import { useForm } from "@tanstack/react-form";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,7 @@ export const Route = createFileRoute("/highlight")({
 
 function Highlight() {
 	const { highlight } = Route.useSearch();
+	const navigate = useNavigate({ from: Route.fullPath });
 
 	const form = useForm({
 		defaultValues: {
@@ -29,7 +30,9 @@ function Highlight() {
 				highlight: z.string().min(1, "highlight ID is required"),
 			}),
 		},
-		onSubmit: async () => {},
+		onSubmit: async ({ value: { highlight } }) => {
+			await navigate({ search: { highlight }, replace: true });
+		},
 	});
 
 	return (

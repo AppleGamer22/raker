@@ -1,5 +1,5 @@
 import { useForm } from "@tanstack/react-form";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
@@ -21,6 +21,7 @@ export const Route = createFileRoute("/tiktok")({
 
 function TikTok() {
 	const { owner, post, incognito } = Route.useSearch();
+	const navigate = useNavigate({ from: Route.fullPath });
 
 	const form = useForm({
 		defaultValues: {
@@ -35,7 +36,9 @@ function TikTok() {
 				post: z.string().min(1, "post ID is required"),
 			}),
 		},
-		onSubmit: async () => {},
+		onSubmit: async ({ value: { owner, post, incognito } }) => {
+			await navigate({ search: { owner, post, incognito }, replace: true });
+		},
 	});
 
 	return (

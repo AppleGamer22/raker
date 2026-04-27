@@ -1,5 +1,5 @@
 import { useForm } from "@tanstack/react-form";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
@@ -19,6 +19,7 @@ export const Route = createFileRoute("/story")({
 
 function Story() {
 	const { owner } = Route.useSearch();
+	const navigate = useNavigate({ from: Route.fullPath });
 
 	const form = useForm({
 		defaultValues: {
@@ -30,7 +31,9 @@ function Story() {
 				owner: z.string().min(1, "story owner is required"),
 			}),
 		},
-		onSubmit: async () => {},
+		onSubmit: async ({ value: { owner } }) => {
+			await navigate({ search: { owner }, replace: true });
+		},
 	});
 
 	return (

@@ -1,5 +1,5 @@
 import { useForm } from "@tanstack/react-form";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
@@ -19,6 +19,7 @@ export const Route = createFileRoute("/vsco")({
 
 function VSCO() {
 	const { owner, post } = Route.useSearch();
+	const navigate = useNavigate({ from: Route.fullPath });
 
 	const form = useForm({
 		defaultValues: {
@@ -32,7 +33,9 @@ function VSCO() {
 				post: z.string().min(1, "post ID is required"),
 			}),
 		},
-		onSubmit: async () => {},
+		onSubmit: async ({ value: { owner, post } }) => {
+			await navigate({ search: { owner, post }, replace: true });
+		},
 	});
 
 	return (
