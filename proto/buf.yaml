@@ -8,6 +8,7 @@ lint:
     - DEFAULT
   except:
     - ENUM_VALUE_PREFIX
+    - ENUM_VALUE_UPPER_SNAKE_CASE
     - ENUM_ZERO_VALUE_SUFFIX
     - SERVICE_SUFFIX
     - RPC_REQUEST_STANDARD_NAME
@@ -15,4 +16,3 @@ lint:
     - RPC_REQUEST_RESPONSE_UNIQUE
 deps:
   - buf.build/googleapis/googleapis
-  - buf.build/grpc-ecosystem/grpc-gateway
