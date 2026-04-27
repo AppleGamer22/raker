@@ -103,6 +103,7 @@ func NewRakerServer() (*RakerServer, error) {
 
 	mux := http.NewServeMux()
 	mux.Handle(path, handler)
+	mux.Handle("/api/storage/", http.StripPrefix("/api/storage", rakerServer.NewStorageHandler(rakerServer.Configuration.Storage, rakerServer.Configuration.Directories)))
 
 	protocols := new(http.Protocols)
 	protocols.SetHTTP1(true)
@@ -110,7 +111,7 @@ func NewRakerServer() (*RakerServer, error) {
 
 	rakerServer.HTTPServer = http.Server{
 		Addr:      fmt.Sprintf(":%d", rakerServer.Configuration.Port),
-		Handler:   mux,
+		Handler:   NewLoggerMiddleware(mux),
 		Protocols: protocols,
 		ErrorLog: log.Default().StandardLog(log.StandardLogOptions{
 			ForceLevel: log.ErrorLevel,

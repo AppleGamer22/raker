@@ -100,36 +100,14 @@ func (server *RakerServer) SignInInstagram(ctx context.Context, request *v1.Sign
 	return &emptypb.Empty{}, nil
 }
 
-func (server *RakerServer) getUserFromCookie(request *http.Request) (db.User, error) {
-	jwtCookie, err := request.Cookie("jwt")
-	if err != nil {
-		return db.User{}, err
-	}
-
-	username, err := server.Authenticator.Parse(jwtCookie.Value)
+func (server *RakerServer) GetUserFromCookie(cookie *http.Cookie) (db.User, error) {
+	username, err := server.Authenticator.Parse(cookie.Value)
 	if err != nil {
 		return db.User{}, err
 	}
 
 	user, err := server.DBClient.UserGet(context.Background(), username)
 	return user, err
-}
-
-func (server *RakerServer) VerifyMiddleware(strict bool, handler http.Handler) http.Handler {
-	return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
-		user, err := server.getUserFromCookie(request)
-		if err != nil {
-			log.Error(err)
-			if strict {
-				http.Error(writer, "credential verification failed", http.StatusUnauthorized)
-				return
-			}
-		}
-		// https://drstearns.github.io/tutorials/gomiddleware/#secmiddlewareandrequestscopedvalues
-		ctxWithUser := context.WithValue(request.Context(), authenticatedUserKey, user)
-		requestWithUser := request.WithContext(ctxWithUser)
-		handler.ServeHTTP(writer, requestWithUser)
-	})
 }
 
 func (server *RakerServer) NewAuthInterceptor() connect.UnaryInterceptorFunc {
@@ -157,12 +135,7 @@ func (server *RakerServer) NewAuthInterceptor() connect.UnaryInterceptorFunc {
 					continue
 				}
 
-				username, err := server.Authenticator.Parse(cookie.Value)
-				if err != nil {
-					return nil, err
-				}
-
-				_, err = server.DBClient.UserGet(context.Background(), username)
+				_, err := server.GetUserFromCookie(cookie)
 
 				if err != nil {
 					log.Error(err)
