@@ -1,6 +1,8 @@
 {
-  "$schema": "./node_modules/oxfmt/configuration_schema.json",
-  "ignorePatterns": [],
-  "tabWidth": 4,
-  "useTabs": true
+	"$schema": "./node_modules/oxfmt/configuration_schema.json",
+	"ignorePatterns": [],
+	"tabWidth": 4,
+	"trailingComma": "all",
+	"sortImports": true,
+	"useTabs": true
 }

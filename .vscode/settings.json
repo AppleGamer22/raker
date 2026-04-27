@@ -25,18 +25,45 @@
 	"oxc.path.oxlint": "node_modules/oxlint/bin/oxlint",
 	"[typescript]": {
 		"editor.defaultFormatter": "oxc.oxc-vscode",
-		"editor.formatOnSave": true
+		"editor.formatOnSave": true,
+		"editor.detectIndentation": false,
+		"editor.tabSize": 4
 	},
 	"[typescriptreact]": {
 		"editor.defaultFormatter": "oxc.oxc-vscode",
-		"editor.formatOnSave": true
+		"editor.formatOnSave": true,
+		"editor.detectIndentation": false,
+		"editor.tabSize": 4
+	},
+	"[html]": {
+		"editor.defaultFormatter": "oxc.oxc-vscode",
+		"editor.formatOnSave": true,
+		"editor.detectIndentation": false,
+		"editor.tabSize": 4
+	},
+	"[css]": {
+		"editor.defaultFormatter": "oxc.oxc-vscode",
+		"editor.formatOnSave": true,
+		"editor.tabSize": 4,
+		"editor.detectIndentation": false
 	},
 	"[json]": {
 		"editor.defaultFormatter": "oxc.oxc-vscode",
-		"editor.formatOnSave": true
+		"editor.formatOnSave": true,
+		"editor.detectIndentation": false,
+		"editor.tabSize": 4
 	},
 	"[jsonc]": {
 		"editor.defaultFormatter": "oxc.oxc-vscode",
-		"editor.formatOnSave": true
+		"editor.formatOnSave": true,
+		"editor.detectIndentation": false,
+		"editor.tabSize": 4
+	},
+	"[yaml]": {
+		"editor.defaultFormatter": "redhat.vscode-yaml",
+		"editor.formatOnSave": true,
+		"editor.detectIndentation": false,
+		"editor.useTabStops": false,
+		"editor.tabSize": 2
 	}
 }
