@@ -3,7 +3,7 @@ import { useMutation } from "@connectrpc/connect-query";
 import { useForm } from "@tanstack/react-form";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { SearchIcon } from "lucide-react";
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -300,12 +300,13 @@ function HistoryPostTypeForm({ typesField }: HistoryPostTypeFormProps) {
 
 function History() {
 	const navigate = useNavigate({ from: Route.fullPath });
-	const { username, categories: availableCategories } = useUser();
+	const { username, categories: availableCategories, isCategoriesPending } = useUser();
 	const [ownersSearchOptions, setOwnersSearchOptions] = useState<OwnerPostType[]>([]);
 	const [isOpen, setIsOpen] = useState(false);
 	const [totalCount, setTotalCount] = useState(0n);
 	const [currentPage, setCurrentPage] = useState(1n);
 	const [histories, setHistories] = useState<ScrapeResponse[]>([]);
+	const hasSubmittedInitialSearch = useRef(false);
 
 	const anchor = useComboboxAnchor();
 
@@ -345,7 +346,14 @@ function History() {
 
 	useEffect(() => {
 		form.setFieldValue("categories", availableCategories);
-	}, [availableCategories, form]);
+
+		if (hasSubmittedInitialSearch.current || isCategoriesPending || username === null) {
+			return;
+		}
+
+		hasSubmittedInitialSearch.current = true;
+		form.handleSubmit();
+	}, [availableCategories, form, isCategoriesPending, username]);
 
 	useEffect(() => {
 		if (username === null) {
