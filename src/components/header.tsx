@@ -1,5 +1,5 @@
 import { MatchRoute } from "@tanstack/react-router";
-import { SidebarIcon } from "lucide-react";
+import { DatabaseSearchIcon, SidebarIcon, UserKeyIcon } from "lucide-react";
 
 import { RakerLogo } from "@/components/logo";
 import { Button } from "@/components/ui/button";
@@ -22,30 +22,32 @@ export default function Header({ toggleMenu }: { toggleMenu: () => void }) {
 				<div className="justify-self-center">
 					<div className="flex flex-row items-center *:mx-1">
 						<RakerLogo withVersion />
+						<Separator orientation="vertical" />
+						<MatchRoute to="/">
+							<UserKeyIcon className="h-4" />
+						</MatchRoute>
 						<MatchRoute to="/instagram">
-							<Separator orientation="vertical" className="" />
 							<InstagramIcon className="h-4" />
 							<Label>Post</Label>
 						</MatchRoute>
 						<MatchRoute to="/highlight">
-							<Separator orientation="vertical" className="" />
 							<InstagramIcon className="h-4" />
 							<Label>Highlight</Label>
 						</MatchRoute>
 						<MatchRoute to="/story">
-							<Separator orientation="vertical" className="" />
 							<InstagramIcon className="h-4" />
 							<Label>Story</Label>
 						</MatchRoute>
 						<MatchRoute to="/tiktok">
-							<Separator orientation="vertical" className="" />
 							<TikTokIcon className="h-4" />
 							<Label>Post</Label>
 						</MatchRoute>
 						<MatchRoute to="/vsco">
-							<Separator orientation="vertical" className="" />
 							<VSCOIcon className="h-4" />
 							<Label>Post</Label>
+						</MatchRoute>
+						<MatchRoute to="/history">
+							<DatabaseSearchIcon className="h-4" />
 						</MatchRoute>
 					</div>
 				</div>
