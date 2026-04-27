@@ -2,6 +2,7 @@ import { createContext, useContext, useState, type ReactNode } from "react";
 
 type UserProviderState = {
 	username: string | null;
+	categories: string[];
 };
 
 const UserProviderContext = createContext<UserProviderState | undefined>(undefined);
@@ -70,8 +71,7 @@ function readUsernameFromJwtCookie(): string | null {
 
 export function UserProvider({ children }: { children: ReactNode }) {
 	const [username] = useState<string | null>(() => readUsernameFromJwtCookie());
-
-	return <UserProviderContext.Provider value={{ username }}>{children}</UserProviderContext.Provider>;
+	return <UserProviderContext.Provider value={{ username, categories: [] }}>{children}</UserProviderContext.Provider>;
 }
 
 export function useUser() {
