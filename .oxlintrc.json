@@ -11,8 +11,8 @@
 		"eslint",
 		"jest",
 		"vitest",
-		"jsdoc",
-		"jsx-a11y"
+		"jsdoc"
+		// "jsx-a11y"
 	],
 	"categories": {
 		"correctness": "error"

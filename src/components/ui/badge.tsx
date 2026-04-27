@@ -1,6 +1,6 @@
+import { mergeProps } from "@base-ui/react/merge-props";
+import { useRender } from "@base-ui/react/use-render";
 import { cva, type VariantProps } from "class-variance-authority";
-import { Slot } from "radix-ui";
-import * as React from "react";
 
 import { cn } from "@/lib/utils";
 
@@ -13,8 +13,7 @@ const badgeVariants = cva(
 				secondary: "bg-secondary text-secondary-foreground [a]:hover:bg-secondary/80",
 				destructive:
 					"bg-destructive/10 text-destructive focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:focus-visible:ring-destructive/40 [a]:hover:bg-destructive/20",
-				outline:
-					"border-border text-foreground [a]:hover:bg-muted [a]:hover:text-muted-foreground",
+				outline: "border-border text-foreground [a]:hover:bg-muted [a]:hover:text-muted-foreground",
 				ghost: "hover:bg-muted hover:text-muted-foreground dark:hover:bg-muted/50",
 				link: "text-primary underline-offset-4 hover:underline",
 			},
@@ -28,19 +27,23 @@ const badgeVariants = cva(
 function Badge({
 	className,
 	variant = "default",
-	asChild = false,
+	render,
 	...props
-}: React.ComponentProps<"span"> & VariantProps<typeof badgeVariants> & { asChild?: boolean }) {
-	const Comp = asChild ? Slot.Root : "span";
-
-	return (
-		<Comp
-			data-slot="badge"
-			data-variant={variant}
-			className={cn(badgeVariants({ variant }), className)}
-			{...props}
-		/>
-	);
+}: useRender.ComponentProps<"span"> & VariantProps<typeof badgeVariants>) {
+	return useRender({
+		defaultTagName: "span",
+		props: mergeProps<"span">(
+			{
+				className: cn(badgeVariants({ variant }), className),
+			},
+			props,
+		),
+		render,
+		state: {
+			slot: "badge",
+			variant,
+		},
+	});
 }
 
 export { Badge, badgeVariants };

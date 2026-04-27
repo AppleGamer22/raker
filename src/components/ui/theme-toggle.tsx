@@ -39,19 +39,14 @@ export function ThemeToggle() {
 
 	return (
 		<DropdownMenu>
-			<DropdownMenuTrigger asChild>
-				<Button variant="outline">
-					<ThemeIcon />
-					<span className="sr-only">Toggle theme</span>
-				</Button>
+			<DropdownMenuTrigger render={<Button variant="outline" />}>
+				<ThemeIcon />
+				<span className="sr-only">Toggle theme</span>
 			</DropdownMenuTrigger>
 			<DropdownMenuContent className="mt-1" align="end">
 				<DropdownMenuGroup>
 					<DropdownMenuLabel>Theme</DropdownMenuLabel>
-					<DropdownMenuRadioGroup
-						value={theme}
-						onValueChange={(value) => setTheme(value as Theme)}
-					>
+					<DropdownMenuRadioGroup value={theme} onValueChange={(value) => setTheme(value as Theme)}>
 						<DropdownMenuRadioItem value="light">
 							<SunIcon className="h-[1.2rem] w-[1.2rem] scale-100 transition-all" />
 							Light
