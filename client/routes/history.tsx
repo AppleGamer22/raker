@@ -411,6 +411,7 @@ function History() {
 									onValueChange={(value) => {
 										if (value !== null) {
 											ownersField.handleChange(value);
+											searchField.handleChange("");
 										}
 									}}
 								>
@@ -493,7 +494,9 @@ function History() {
 																(item1) =>
 																	item1.owner.includes(searchField.state.value) &&
 																	ownersField.state.value.filter(
-																		(item2) => item2 === item1,
+																		(item2) =>
+																			item2.owner === item1.owner &&
+																			item2.type === item1.type,
 																	).length === 0,
 															)
 															.map((item) => (
