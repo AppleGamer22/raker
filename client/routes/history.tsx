@@ -462,7 +462,7 @@ function History() {
 						)}
 					</div>
 				</CollapsibleTrigger>
-				<CollapsibleContent>
+				<CollapsibleContent className="mt-1">
 					<HistoryPostTypeForm types={types} onChangeTypes={setTypes} />
 					<Separator className="my-2" />
 					<HistoryPostCategoryForm

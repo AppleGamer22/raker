@@ -94,7 +94,7 @@ type RakerServerClient interface {
 	RemoveFile(context.Context, *v1.RemoveFileRequest) (*v1.ScrapeResponse, error)
 	UpdateCategories(context.Context, *v1.UpdateCategoriesRequest) (*v1.ScrapeResponse, error)
 	SearchHistory(context.Context, *v1.HistoryRequest) (*v1.HistoryResponse, error)
-	SearchHistoryOwners(context.Context, *v1.HistoryRequest) (*v1.HistoryOwnersResponse, error)
+	SearchHistoryOwners(context.Context, *v1.HistoryOwnersRequest) (*v1.HistoryOwnersResponse, error)
 }
 
 // NewRakerServerClient constructs a client for the raker.v1.RakerServer service. By default, it
@@ -192,7 +192,7 @@ func NewRakerServerClient(httpClient connect.HTTPClient, baseURL string, opts ..
 			connect.WithSchema(rakerServerMethods.ByName("SearchHistory")),
 			connect.WithClientOptions(opts...),
 		),
-		searchHistoryOwners: connect.NewClient[v1.HistoryRequest, v1.HistoryOwnersResponse](
+		searchHistoryOwners: connect.NewClient[v1.HistoryOwnersRequest, v1.HistoryOwnersResponse](
 			httpClient,
 			baseURL+RakerServerSearchHistoryOwnersProcedure,
 			connect.WithSchema(rakerServerMethods.ByName("SearchHistoryOwners")),
@@ -217,7 +217,7 @@ type rakerServerClient struct {
 	removeFile          *connect.Client[v1.RemoveFileRequest, v1.ScrapeResponse]
 	updateCategories    *connect.Client[v1.UpdateCategoriesRequest, v1.ScrapeResponse]
 	searchHistory       *connect.Client[v1.HistoryRequest, v1.HistoryResponse]
-	searchHistoryOwners *connect.Client[v1.HistoryRequest, v1.HistoryOwnersResponse]
+	searchHistoryOwners *connect.Client[v1.HistoryOwnersRequest, v1.HistoryOwnersResponse]
 }
 
 // SignUpInstagram calls raker.v1.RakerServer.SignUpInstagram.
@@ -347,7 +347,7 @@ func (c *rakerServerClient) SearchHistory(ctx context.Context, req *v1.HistoryRe
 }
 
 // SearchHistoryOwners calls raker.v1.RakerServer.SearchHistoryOwners.
-func (c *rakerServerClient) SearchHistoryOwners(ctx context.Context, req *v1.HistoryRequest) (*v1.HistoryOwnersResponse, error) {
+func (c *rakerServerClient) SearchHistoryOwners(ctx context.Context, req *v1.HistoryOwnersRequest) (*v1.HistoryOwnersResponse, error) {
 	response, err := c.searchHistoryOwners.CallUnary(ctx, connect.NewRequest(req))
 	if response != nil {
 		return response.Msg, err
@@ -371,7 +371,7 @@ type RakerServerHandler interface {
 	RemoveFile(context.Context, *v1.RemoveFileRequest) (*v1.ScrapeResponse, error)
 	UpdateCategories(context.Context, *v1.UpdateCategoriesRequest) (*v1.ScrapeResponse, error)
 	SearchHistory(context.Context, *v1.HistoryRequest) (*v1.HistoryResponse, error)
-	SearchHistoryOwners(context.Context, *v1.HistoryRequest) (*v1.HistoryOwnersResponse, error)
+	SearchHistoryOwners(context.Context, *v1.HistoryOwnersRequest) (*v1.HistoryOwnersResponse, error)
 }
 
 // NewRakerServerHandler builds an HTTP handler from the service implementation. It returns the path
@@ -568,6 +568,6 @@ func (UnimplementedRakerServerHandler) SearchHistory(context.Context, *v1.Histor
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raker.v1.RakerServer.SearchHistory is not implemented"))
 }
 
-func (UnimplementedRakerServerHandler) SearchHistoryOwners(context.Context, *v1.HistoryRequest) (*v1.HistoryOwnersResponse, error) {
+func (UnimplementedRakerServerHandler) SearchHistoryOwners(context.Context, *v1.HistoryOwnersRequest) (*v1.HistoryOwnersResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raker.v1.RakerServer.SearchHistoryOwners is not implemented"))
 }

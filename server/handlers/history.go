@@ -78,7 +78,7 @@ func (server *RakerServer) SearchHistory(ctx context.Context, request *v1.Histor
 		PostTypes:  postTypes,
 		Exclusive:  request.Exclusive,
 		Categories: request.Categories,
-		PostOwner:  request.Owner,
+		PostOwners: request.Owners,
 		Username:   user.Username,
 	})
 	if err != nil {
@@ -102,7 +102,7 @@ func (server *RakerServer) SearchHistory(ctx context.Context, request *v1.Histor
 		PostTypes:  postTypes,
 		Exclusive:  request.Exclusive,
 		Categories: request.Categories,
-		PostOwner:  request.Owner,
+		PostOwners: request.Owners,
 		Username:   user.Username,
 		Page:       int32((page - 1) * int64(request.PageSize)),
 		PageSize:   30,
@@ -125,7 +125,7 @@ func (server *RakerServer) SearchHistory(ctx context.Context, request *v1.Histor
 }
 
 // SearchHistoryOwners implements [v1connect.RakerServerHandler].
-func (server *RakerServer) SearchHistoryOwners(ctx context.Context, request *v1.HistoryRequest) (*v1.HistoryOwnersResponse, error) {
+func (server *RakerServer) SearchHistoryOwners(ctx context.Context, request *v1.HistoryOwnersRequest) (*v1.HistoryOwnersResponse, error) {
 	user, ok := ctx.Value(authenticatedUserKey).(db.User)
 	if !ok {
 		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("not authenticated"))

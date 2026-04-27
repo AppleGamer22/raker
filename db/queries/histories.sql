@@ -127,7 +127,7 @@ WHERE post_type = ANY (sqlc.slice(post_types)::post_type [])
 LIMIT sqlc.arg(page_size)::int OFFSET sqlc.arg(page)::int;
 
 -- name: HistoryGetPage :many
-SELECT *
+SELECT DISTINCT *
 FROM Histories
 WHERE post_type = ANY (sqlc.slice(post_types)::post_type [])
 	AND (
@@ -140,7 +140,11 @@ WHERE post_type = ANY (sqlc.slice(post_types)::post_type [])
 			and categories <@ sqlc.slice(categories)::text []
 		)
 	)
-	AND post_owner LIKE FORMAT('%%%s%%', sqlc.arg(post_owner)::text)
+	AND EXISTS (
+		SELECT 1
+		FROM unnest(sqlc.slice(post_owners)::text[]) AS owner_filter(owner)
+		WHERE Histories.post_owner LIKE FORMAT('%%%s%%', owner_filter.owner)
+	)
 	AND username = sqlc.arg(username)::text
 order by post_date DESC
 LIMIT sqlc.arg(page_size)::int OFFSET sqlc.arg(page)::int;
@@ -159,11 +163,20 @@ WHERE post_type = ANY (sqlc.slice(post_types)::post_type [])
 			and categories <@ sqlc.slice(categories)::text []
 		)
 	)
-	AND post_owner LIKE FORMAT('%%%s%%', sqlc.arg(post_owner)::text)
+	AND EXISTS (
+		SELECT 1
+		FROM unnest(sqlc.slice(post_owners)::text[]) AS owner_filter(owner)
+		WHERE Histories.post_owner LIKE FORMAT('%%%s%%', owner_filter.owner)
+	)
 	AND username = sqlc.arg(username)::text;
 
 -- name: HistoryOwners :many
-select distinct post_type, post_owner
+select distinct
+post_owner,
+case 
+	when post_type in ('instagram', 'highlight', 'story') then 'instagram'::post_type
+	else post_type::post_type
+end as post_type
 from Histories
 WHERE post_type = ANY (sqlc.slice(post_types)::post_type [])
 	AND (

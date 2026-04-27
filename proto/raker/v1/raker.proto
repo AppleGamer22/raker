@@ -86,11 +86,20 @@ message UpdateCategoriesRequest {
   repeated string categories = 4;
 }
 
-message HistoryRequest {
+message HistoryOwnersRequest {
   string owner = 1;
   bool exclusive = 2;
   int64 page = 3;
   int32 page_size = 4;
+  repeated string categories = 5;
+  repeated PostType types = 6;
+}
+
+message HistoryRequest {
+  bool exclusive = 1;
+  int64 page = 2;
+  int32 page_size = 3;
+  repeated string owners = 4;
   repeated string categories = 5;
   repeated PostType types = 6;
 }
@@ -137,5 +146,5 @@ service RakerServer {
 
   rpc SearchHistory(HistoryRequest) returns (HistoryResponse);
 
-  rpc SearchHistoryOwners(HistoryRequest) returns (HistoryOwnersResponse);
+  rpc SearchHistoryOwners(HistoryOwnersRequest) returns (HistoryOwnersResponse);
 }

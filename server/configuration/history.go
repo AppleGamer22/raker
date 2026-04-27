@@ -115,7 +115,7 @@ func (server *RakerServer) filterHistories(user db.User, owner string, categorie
 		PostTypes:  postTypes,
 		Exclusive:  exclusive,
 		Categories: categories,
-		PostOwner:  owner,
+		PostOwners: []string{owner},
 		Username:   user.Username,
 	})
 	if err != nil {
@@ -138,7 +138,7 @@ func (server *RakerServer) filterHistories(user db.User, owner string, categorie
 		PostTypes:  postTypes,
 		Exclusive:  exclusive,
 		Categories: categories,
-		PostOwner:  owner,
+		PostOwners: []string{owner},
 		Username:   user.Username,
 		Page:       int32((page - 1) * 30),
 		PageSize:   30,
