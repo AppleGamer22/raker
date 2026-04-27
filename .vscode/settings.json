@@ -22,6 +22,7 @@
 		"**/routeTree.gen.ts": true
 	},
 	"oxc.path.oxfmt": "node_modules/oxfmt/bin/oxfmt",
+	"oxc.path.oxlint": "node_modules/oxlint/bin/oxlint",
 	"[typescript]": {
 		"editor.defaultFormatter": "oxc.oxc-vscode",
 		"editor.formatOnSave": true
