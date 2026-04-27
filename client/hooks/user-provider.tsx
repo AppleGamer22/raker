@@ -1,5 +1,13 @@
 import { useQuery } from "@connectrpc/connect-query";
-import { createContext, useContext, useState, type ReactNode } from "react";
+import {
+	useCallback,
+	createContext,
+	useContext,
+	useState,
+	type Dispatch,
+	type ReactNode,
+	type SetStateAction,
+} from "react";
 
 import { getUserCategories } from "@/buf/raker/v1/raker-RakerServer_connectquery";
 
@@ -8,6 +16,8 @@ type UserProviderState = {
 	categories: string[];
 	categoriesError: string | null;
 	isCategoriesPending: boolean;
+	setShouldRefetchCategories: Dispatch<SetStateAction<boolean>>;
+	refetchCategoriesIfRequested: () => Promise<void>;
 };
 
 const UserProviderContext = createContext<UserProviderState | undefined>(undefined);
@@ -76,6 +86,7 @@ function readUsernameFromJwtCookie(): string | null {
 
 export function UserProvider({ children }: { children: ReactNode }) {
 	const [username] = useState<string | null>(() => readUsernameFromJwtCookie());
+	const [shouldRefetchCategories, setShouldRefetchCategories] = useState(false);
 	const categoriesQuery = useQuery(
 		getUserCategories,
 		{},
@@ -89,6 +100,18 @@ export function UserProvider({ children }: { children: ReactNode }) {
 		},
 	);
 
+	const refetchCategoriesIfRequested = useCallback(async () => {
+		if (!shouldRefetchCategories) {
+			return;
+		}
+
+		try {
+			await categoriesQuery.refetch();
+		} finally {
+			setShouldRefetchCategories(false);
+		}
+	}, [categoriesQuery, shouldRefetchCategories]);
+
 	return (
 		<UserProviderContext.Provider
 			value={{
@@ -96,6 +119,8 @@ export function UserProvider({ children }: { children: ReactNode }) {
 				categories: categoriesQuery.data?.categories ?? [],
 				categoriesError: categoriesQuery.isError ? categoriesQuery.error.message : null,
 				isCategoriesPending: categoriesQuery.isPending,
+				setShouldRefetchCategories,
+				refetchCategoriesIfRequested,
 			}}
 		>
 			{children}

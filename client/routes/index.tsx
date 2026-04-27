@@ -2,7 +2,7 @@ import { useMutation } from "@connectrpc/connect-query";
 import { useForm } from "@tanstack/react-form";
 import { createFileRoute } from "@tanstack/react-router";
 import { PlusIcon, XIcon } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import z from "zod";
 
@@ -218,7 +218,7 @@ const updateCategoriesSchema = z.object({
 });
 
 function Categories() {
-	const { categories, categoriesError, isCategoriesPending } = useUser();
+	const { categories, categoriesError, isCategoriesPending, setShouldRefetchCategories } = useUser();
 	const [newCategory, setNewCategory] = useState("");
 	const form = useForm({
 		defaultValues: {
@@ -292,6 +292,7 @@ function Categories() {
 																					newCategory: "",
 																				});
 																				field.removeValue(i);
+																				setShouldRefetchCategories(true);
 																			} catch (err) {
 																				toast.error((err as Error).message, {
 																					position: "top-center",
@@ -361,6 +362,7 @@ function Categories() {
 																newCategory: trimmedNewCategoryName,
 															});
 
+															setShouldRefetchCategories(true);
 															field.pushValue(trimmedNewCategoryName);
 															setNewCategory("");
 														} catch (err) {
@@ -404,7 +406,14 @@ function SignedIn() {
 }
 
 function AuthPage() {
-	const { username } = useUser();
+	const { username, refetchCategoriesIfRequested } = useUser();
+
+	useEffect(() => {
+		return () => {
+			refetchCategoriesIfRequested();
+		};
+	}, [refetchCategoriesIfRequested]);
+
 	const isSignedIn = username !== null;
 	return isSignedIn ? <SignedIn /> : <SignedOut />;
 }
