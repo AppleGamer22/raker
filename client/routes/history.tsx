@@ -391,6 +391,7 @@ function History() {
 	const [exclusive, setExclusive] = useState(false);
 	const [isOpen, setIsOpen] = useState(false);
 	const [ownerSearchTerm, setOwnerSearchTerm] = useState("");
+	const [ownerSearchValue, setOwnerSearchValue] = useState("");
 	const comboboxItems = ownerSearchTerm.length > 0 ? [ownerSearchTerm, ...ownersSearchOptions] : ownersSearchOptions;
 
 	const ownersMutation = useMutation(searchHistoryOwners);
@@ -446,7 +447,11 @@ function History() {
 					/>
 				</CollapsibleContent>
 			</Collapsible>
-			<Combobox items={comboboxItems}>
+			<Combobox
+				items={comboboxItems}
+				value={ownerSearchValue}
+				onValueChange={(value) => (value !== null ? setOwnerSearchValue(value) : null)}
+			>
 				<ComboboxInput
 					className="my-2"
 					placeholder="post owner search"
@@ -467,7 +472,7 @@ function History() {
 									position: "top-center",
 								});
 							}
-						} else if (e.target.value.length < 4) {
+						} else if (e.target.value.length === 0) {
 							setOwnersSearchOptions([]);
 						}
 					}}
@@ -476,29 +481,32 @@ function History() {
 						<SearchIcon />
 					</InputGroupAddon>
 				</ComboboxInput>
-
-				<ComboboxContent>
-					<ComboboxList>
-						{ownerSearchTerm.length > 0 && (
-							<ComboboxGroup>
-								<ComboboxLabel>Search Term</ComboboxLabel>
-								<ComboboxItem key="search-term" value={ownerSearchTerm}>
-									{ownerSearchTerm}
-								</ComboboxItem>
-							</ComboboxGroup>
-						)}
-						{ownersSearchOptions.length > 0 && (
-							<ComboboxGroup>
-								<ComboboxLabel>Owners</ComboboxLabel>
-								{ownersSearchOptions.map((item) => (
-									<ComboboxItem key={`search-${item}`} value={item}>
-										{item}
+				{ownerSearchTerm.length > 0 && (
+					<ComboboxContent>
+						<ComboboxList>
+							{ownerSearchTerm.length > 0 && (
+								<ComboboxGroup>
+									<ComboboxLabel>Search Term</ComboboxLabel>
+									<ComboboxItem key="search-term" value={ownerSearchTerm}>
+										{ownerSearchTerm}
 									</ComboboxItem>
-								))}
-							</ComboboxGroup>
-						)}
-					</ComboboxList>
-				</ComboboxContent>
+								</ComboboxGroup>
+							)}
+							{ownersSearchOptions.length > 0 && (
+								<ComboboxGroup>
+									<ComboboxLabel>Owners</ComboboxLabel>
+									{ownersSearchOptions
+										.filter((item) => item.includes(ownerSearchTerm))
+										.map((item) => (
+											<ComboboxItem key={`search-${item}`} value={item}>
+												{item}
+											</ComboboxItem>
+										))}
+								</ComboboxGroup>
+							)}
+						</ComboboxList>
+					</ComboboxContent>
+				)}
 			</Combobox>
 		</CardContent>
 	);
