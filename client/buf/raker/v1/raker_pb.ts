@@ -14,7 +14,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file raker/v1/raker.proto.
  */
 export const file_raker_v1_raker: GenFile = /*@__PURE__*/
-  fileDesc("ChRyYWtlci92MS9yYWtlci5wcm90bxIIcmFrZXIudjEifQoNU2lnblVwUmVxdWVzdBIQCgh1c2VybmFtZRgBIAEoCRIQCghwYXNzd29yZBgCIAEoCRIXCgpzZXNzaW9uX2lkGAMgASgJSACIAQESFAoHdXNlcl9pZBgEIAEoCUgBiAEBQg0KC19zZXNzaW9uX2lkQgoKCF91c2VyX2lkIjMKDVNpZ25JblJlcXVlc3QSEAoIdXNlcm5hbWUYASABKAkSEAoIcGFzc3dvcmQYAiABKAkiLAoWVXNlckNhdGVnb3JpZXNSZXNwb25zZRISCgpjYXRlZ29yaWVzGAEgAygJIkEKE0VkaXRDYXRlZ29yeVJlcXVlc3QSFAoMb2xkX2NhdGVnb3J5GAEgASgJEhQKDG5ld19jYXRlZ29yeRgCIAEoCSJIChJVbmFyeVNjcmFwZVJlcXVlc3QSDAoEcG9zdBgBIAEoCRIWCglpbmNvZ25pdG8YAiABKAhIAIgBAUIMCgpfaW5jb2duaXRvIlgKE0JpbmFyeVNjcmFwZVJlcXVlc3QSDQoFb3duZXIYASABKAkSDAoEcG9zdBgCIAEoCRIWCglpbmNvZ25pdG8YAyABKAhIAIgBAUIMCgpfaW5jb2duaXRvIpACCg5TY3JhcGVSZXNwb25zZRIQCgh1c2VybmFtZRgBIAEoCRImCglwb3N0X3R5cGUYAiABKA4yEy5yYWtlci52MS5NZWRpYVR5cGUSEgoKcG9zdF9vd25lchgDIAEoCRIMCgRwb3N0GAQgASgJEi0KCXBvc3RfZGF0ZRgFIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASDQoFZmlsZXMYBiADKAkSEgoKY2F0ZWdvcmllcxgHIAMoCRIRCglpbmNvZ25pdG8YCCABKAgSLQoLY29vcmRpbmF0ZXMYCSABKAsyEy5nb29nbGUudHlwZS5MYXRMbmdIAIgBAUIOCgxfY29vcmRpbmF0ZXMiYQoRUmVtb3ZlRmlsZVJlcXVlc3QSIQoEdHlwZRgBIAEoDjITLnJha2VyLnYxLk1lZGlhVHlwZRINCgVvd25lchgCIAEoCRIMCgRwb3N0GAMgASgJEgwKBHBhdGgYBCABKAkibQoXVXBkYXRlQ2F0ZWdvcmllc1JlcXVlc3QSIQoEdHlwZRgBIAEoDjITLnJha2VyLnYxLk1lZGlhVHlwZRINCgVvd25lchgCIAEoCRIMCgRwb3N0GAMgASgJEhIKCmNhdGVnb3JpZXMYBCADKAkiagoOSGlzdG9yeVJlcXVlc3QSDQoFb3duZXIYASABKAkSEQoJZXhjbHVzaXZlGAIgASgIEhIKCmNhdGVnb3JpZXMYAyADKAkSIgoFdHlwZXMYBCADKA4yEy5yYWtlci52MS5NZWRpYVR5cGUiPgoPSGlzdG9yeVJlc3BvbnNlEisKCWhpc3RvcmllcxgBIAMoCzIYLnJha2VyLnYxLlNjcmFwZVJlc3BvbnNlIicKFUhpc3RvcnlPd25lcnNSZXNwb25zZRIOCgZvd25lcnMYASADKAkqSgoJTWVkaWFUeXBlEg0KCUluc3RhZ3JhbRAAEg0KCUhpZ2hsaWdodBABEgkKBVN0b3J5EAISCgoGVGlrVG9rEAMSCAoEVlNDTxAEMpAICgtSYWtlclNlcnZlchJCCg9TaWduVXBJbnN0YWdyYW0SFy5yYWtlci52MS5TaWduVXBSZXF1ZXN0GhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5EkIKD1NpZ25Jbkluc3RhZ3JhbRIXLnJha2VyLnYxLlNpZ25JblJlcXVlc3QaFi5nb29nbGUucHJvdG9idWYuRW1wdHkSRQoMRWRpdENhdGVnb3J5Eh0ucmFrZXIudjEuRWRpdENhdGVnb3J5UmVxdWVzdBoWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRJNChFHZXRVc2VyQ2F0ZWdvcmllcxIWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRogLnJha2VyLnYxLlVzZXJDYXRlZ29yaWVzUmVzcG9uc2USSQoPU2NyYXBlSW5zdGFncmFtEhwucmFrZXIudjEuVW5hcnlTY3JhcGVSZXF1ZXN0GhgucmFrZXIudjEuU2NyYXBlUmVzcG9uc2USSQoPU2NyYXBlSGlnaGxpZ2h0EhwucmFrZXIudjEuVW5hcnlTY3JhcGVSZXF1ZXN0GhgucmFrZXIudjEuU2NyYXBlUmVzcG9uc2USRQoLU2NyYXBlU3RvcnkSHC5yYWtlci52MS5VbmFyeVNjcmFwZVJlcXVlc3QaGC5yYWtlci52MS5TY3JhcGVSZXNwb25zZRJHCgxTY3JhcGVUaWtUb2sSHS5yYWtlci52MS5CaW5hcnlTY3JhcGVSZXF1ZXN0GhgucmFrZXIudjEuU2NyYXBlUmVzcG9uc2USSAoOU2NyYXBlU25hcGNoYXQSHC5yYWtlci52MS5VbmFyeVNjcmFwZVJlcXVlc3QaGC5yYWtlci52MS5TY3JhcGVSZXNwb25zZRJFCgpTY3JhcGVWU0NPEh0ucmFrZXIudjEuQmluYXJ5U2NyYXBlUmVxdWVzdBoYLnJha2VyLnYxLlNjcmFwZVJlc3BvbnNlEkMKClJlbW92ZUZpbGUSGy5yYWtlci52MS5SZW1vdmVGaWxlUmVxdWVzdBoYLnJha2VyLnYxLlNjcmFwZVJlc3BvbnNlEk8KEFVwZGF0ZUNhdGVnb3JpZXMSIS5yYWtlci52MS5VcGRhdGVDYXRlZ29yaWVzUmVxdWVzdBoYLnJha2VyLnYxLlNjcmFwZVJlc3BvbnNlEkQKDVNlYXJjaEhpc3RvcnkSGC5yYWtlci52MS5IaXN0b3J5UmVxdWVzdBoZLnJha2VyLnYxLkhpc3RvcnlSZXNwb25zZRJQChNTZWFyY2hIaXN0b3J5T3duZXJzEhgucmFrZXIudjEuSGlzdG9yeVJlcXVlc3QaHy5yYWtlci52MS5IaXN0b3J5T3duZXJzUmVzcG9uc2VClAEKDGNvbS5yYWtlci52MUIKUmFrZXJQcm90b1ABWjdnaXRodWIuY29tL0FwcGxlR2FtZXIyMi9yYWtlci9zZXJ2ZXIvYnVmL3Byb3RvL3Jha2VyL3YxogIDUlhYqgIIUmFrZXIuVjHKAghSYWtlclxWMeICFFJha2VyXFYxXEdQQk1ldGFkYXRh6gIJUmFrZXI6OlYxYgZwcm90bzM", [file_google_protobuf_empty, file_google_protobuf_timestamp, file_google_type_latlng]);
+  fileDesc("ChRyYWtlci92MS9yYWtlci5wcm90bxIIcmFrZXIudjEifQoNU2lnblVwUmVxdWVzdBIQCgh1c2VybmFtZRgBIAEoCRIQCghwYXNzd29yZBgCIAEoCRIXCgpzZXNzaW9uX2lkGAMgASgJSACIAQESFAoHdXNlcl9pZBgEIAEoCUgBiAEBQg0KC19zZXNzaW9uX2lkQgoKCF91c2VyX2lkIjMKDVNpZ25JblJlcXVlc3QSEAoIdXNlcm5hbWUYASABKAkSEAoIcGFzc3dvcmQYAiABKAkiLAoWVXNlckNhdGVnb3JpZXNSZXNwb25zZRISCgpjYXRlZ29yaWVzGAEgAygJIkEKE0VkaXRDYXRlZ29yeVJlcXVlc3QSFAoMb2xkX2NhdGVnb3J5GAEgASgJEhQKDG5ld19jYXRlZ29yeRgCIAEoCSKKAQoaRWRpdFVzZXJDcmVkZW50aWFsc1JlcXVlc3QSFQoIcGFzc3dvcmQYASABKAlIAIgBARIXCgpzZXNzaW9uX2lkGAIgASgJSAGIAQESFAoHdXNlcl9pZBgDIAEoCUgCiAEBQgsKCV9wYXNzd29yZEINCgtfc2Vzc2lvbl9pZEIKCghfdXNlcl9pZCJIChJVbmFyeVNjcmFwZVJlcXVlc3QSDAoEcG9zdBgBIAEoCRIWCglpbmNvZ25pdG8YAiABKAhIAIgBAUIMCgpfaW5jb2duaXRvIlgKE0JpbmFyeVNjcmFwZVJlcXVlc3QSDQoFb3duZXIYASABKAkSDAoEcG9zdBgCIAEoCRIWCglpbmNvZ25pdG8YAyABKAhIAIgBAUIMCgpfaW5jb2duaXRvIpACCg5TY3JhcGVSZXNwb25zZRIQCgh1c2VybmFtZRgBIAEoCRImCglwb3N0X3R5cGUYAiABKA4yEy5yYWtlci52MS5NZWRpYVR5cGUSEgoKcG9zdF9vd25lchgDIAEoCRIMCgRwb3N0GAQgASgJEi0KCXBvc3RfZGF0ZRgFIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASDQoFZmlsZXMYBiADKAkSEgoKY2F0ZWdvcmllcxgHIAMoCRIRCglpbmNvZ25pdG8YCCABKAgSLQoLY29vcmRpbmF0ZXMYCSABKAsyEy5nb29nbGUudHlwZS5MYXRMbmdIAIgBAUIOCgxfY29vcmRpbmF0ZXMiYQoRUmVtb3ZlRmlsZVJlcXVlc3QSIQoEdHlwZRgBIAEoDjITLnJha2VyLnYxLk1lZGlhVHlwZRINCgVvd25lchgCIAEoCRIMCgRwb3N0GAMgASgJEgwKBHBhdGgYBCABKAkibQoXVXBkYXRlQ2F0ZWdvcmllc1JlcXVlc3QSIQoEdHlwZRgBIAEoDjITLnJha2VyLnYxLk1lZGlhVHlwZRINCgVvd25lchgCIAEoCRIMCgRwb3N0GAMgASgJEhIKCmNhdGVnb3JpZXMYBCADKAkiagoOSGlzdG9yeVJlcXVlc3QSDQoFb3duZXIYASABKAkSEQoJZXhjbHVzaXZlGAIgASgIEhIKCmNhdGVnb3JpZXMYAyADKAkSIgoFdHlwZXMYBCADKA4yEy5yYWtlci52MS5NZWRpYVR5cGUiPgoPSGlzdG9yeVJlc3BvbnNlEisKCWhpc3RvcmllcxgBIAMoCzIYLnJha2VyLnYxLlNjcmFwZVJlc3BvbnNlIicKFUhpc3RvcnlPd25lcnNSZXNwb25zZRIOCgZvd25lcnMYASADKAkqSgoJTWVkaWFUeXBlEg0KCUluc3RhZ3JhbRAAEg0KCUhpZ2hsaWdodBABEgkKBVN0b3J5EAISCgoGVGlrVG9rEAMSCAoEVlNDTxAEMuUICgtSYWtlclNlcnZlchJCCg9TaWduVXBJbnN0YWdyYW0SFy5yYWtlci52MS5TaWduVXBSZXF1ZXN0GhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5EkIKD1NpZ25Jbkluc3RhZ3JhbRIXLnJha2VyLnYxLlNpZ25JblJlcXVlc3QaFi5nb29nbGUucHJvdG9idWYuRW1wdHkSRQoMRWRpdENhdGVnb3J5Eh0ucmFrZXIudjEuRWRpdENhdGVnb3J5UmVxdWVzdBoWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRJTChNFZGl0VXNlckNyZWRlbnRpYWxzEiQucmFrZXIudjEuRWRpdFVzZXJDcmVkZW50aWFsc1JlcXVlc3QaFi5nb29nbGUucHJvdG9idWYuRW1wdHkSTQoRR2V0VXNlckNhdGVnb3JpZXMSFi5nb29nbGUucHJvdG9idWYuRW1wdHkaIC5yYWtlci52MS5Vc2VyQ2F0ZWdvcmllc1Jlc3BvbnNlEkkKD1NjcmFwZUluc3RhZ3JhbRIcLnJha2VyLnYxLlVuYXJ5U2NyYXBlUmVxdWVzdBoYLnJha2VyLnYxLlNjcmFwZVJlc3BvbnNlEkkKD1NjcmFwZUhpZ2hsaWdodBIcLnJha2VyLnYxLlVuYXJ5U2NyYXBlUmVxdWVzdBoYLnJha2VyLnYxLlNjcmFwZVJlc3BvbnNlEkUKC1NjcmFwZVN0b3J5EhwucmFrZXIudjEuVW5hcnlTY3JhcGVSZXF1ZXN0GhgucmFrZXIudjEuU2NyYXBlUmVzcG9uc2USRwoMU2NyYXBlVGlrVG9rEh0ucmFrZXIudjEuQmluYXJ5U2NyYXBlUmVxdWVzdBoYLnJha2VyLnYxLlNjcmFwZVJlc3BvbnNlEkgKDlNjcmFwZVNuYXBjaGF0EhwucmFrZXIudjEuVW5hcnlTY3JhcGVSZXF1ZXN0GhgucmFrZXIudjEuU2NyYXBlUmVzcG9uc2USRQoKU2NyYXBlVlNDTxIdLnJha2VyLnYxLkJpbmFyeVNjcmFwZVJlcXVlc3QaGC5yYWtlci52MS5TY3JhcGVSZXNwb25zZRJDCgpSZW1vdmVGaWxlEhsucmFrZXIudjEuUmVtb3ZlRmlsZVJlcXVlc3QaGC5yYWtlci52MS5TY3JhcGVSZXNwb25zZRJPChBVcGRhdGVDYXRlZ29yaWVzEiEucmFrZXIudjEuVXBkYXRlQ2F0ZWdvcmllc1JlcXVlc3QaGC5yYWtlci52MS5TY3JhcGVSZXNwb25zZRJECg1TZWFyY2hIaXN0b3J5EhgucmFrZXIudjEuSGlzdG9yeVJlcXVlc3QaGS5yYWtlci52MS5IaXN0b3J5UmVzcG9uc2USUAoTU2VhcmNoSGlzdG9yeU93bmVycxIYLnJha2VyLnYxLkhpc3RvcnlSZXF1ZXN0Gh8ucmFrZXIudjEuSGlzdG9yeU93bmVyc1Jlc3BvbnNlQpQBCgxjb20ucmFrZXIudjFCClJha2VyUHJvdG9QAVo3Z2l0aHViLmNvbS9BcHBsZUdhbWVyMjIvcmFrZXIvc2VydmVyL2J1Zi9wcm90by9yYWtlci92MaICA1JYWKoCCFJha2VyLlYxygIIUmFrZXJcVjHiAhRSYWtlclxWMVxHUEJNZXRhZGF0YeoCCVJha2VyOjpWMWIGcHJvdG8z", [file_google_protobuf_empty, file_google_protobuf_timestamp, file_google_type_latlng]);
 
 /**
  * @generated from message raker.v1.SignUpRequest
@@ -110,6 +110,33 @@ export const EditCategoryRequestSchema: GenMessage<EditCategoryRequest> = /*@__P
   messageDesc(file_raker_v1_raker, 3);
 
 /**
+ * @generated from message raker.v1.EditUserCredentialsRequest
+ */
+export type EditUserCredentialsRequest = Message<"raker.v1.EditUserCredentialsRequest"> & {
+  /**
+   * @generated from field: optional string password = 1;
+   */
+  password?: string;
+
+  /**
+   * @generated from field: optional string session_id = 2;
+   */
+  sessionId?: string;
+
+  /**
+   * @generated from field: optional string user_id = 3;
+   */
+  userId?: string;
+};
+
+/**
+ * Describes the message raker.v1.EditUserCredentialsRequest.
+ * Use `create(EditUserCredentialsRequestSchema)` to create a new message.
+ */
+export const EditUserCredentialsRequestSchema: GenMessage<EditUserCredentialsRequest> = /*@__PURE__*/
+  messageDesc(file_raker_v1_raker, 4);
+
+/**
  * @generated from message raker.v1.UnaryScrapeRequest
  */
 export type UnaryScrapeRequest = Message<"raker.v1.UnaryScrapeRequest"> & {
@@ -129,7 +156,7 @@ export type UnaryScrapeRequest = Message<"raker.v1.UnaryScrapeRequest"> & {
  * Use `create(UnaryScrapeRequestSchema)` to create a new message.
  */
 export const UnaryScrapeRequestSchema: GenMessage<UnaryScrapeRequest> = /*@__PURE__*/
-  messageDesc(file_raker_v1_raker, 4);
+  messageDesc(file_raker_v1_raker, 5);
 
 /**
  * @generated from message raker.v1.BinaryScrapeRequest
@@ -156,7 +183,7 @@ export type BinaryScrapeRequest = Message<"raker.v1.BinaryScrapeRequest"> & {
  * Use `create(BinaryScrapeRequestSchema)` to create a new message.
  */
 export const BinaryScrapeRequestSchema: GenMessage<BinaryScrapeRequest> = /*@__PURE__*/
-  messageDesc(file_raker_v1_raker, 5);
+  messageDesc(file_raker_v1_raker, 6);
 
 /**
  * @generated from message raker.v1.ScrapeResponse
@@ -213,7 +240,7 @@ export type ScrapeResponse = Message<"raker.v1.ScrapeResponse"> & {
  * Use `create(ScrapeResponseSchema)` to create a new message.
  */
 export const ScrapeResponseSchema: GenMessage<ScrapeResponse> = /*@__PURE__*/
-  messageDesc(file_raker_v1_raker, 6);
+  messageDesc(file_raker_v1_raker, 7);
 
 /**
  * @generated from message raker.v1.RemoveFileRequest
@@ -245,7 +272,7 @@ export type RemoveFileRequest = Message<"raker.v1.RemoveFileRequest"> & {
  * Use `create(RemoveFileRequestSchema)` to create a new message.
  */
 export const RemoveFileRequestSchema: GenMessage<RemoveFileRequest> = /*@__PURE__*/
-  messageDesc(file_raker_v1_raker, 7);
+  messageDesc(file_raker_v1_raker, 8);
 
 /**
  * @generated from message raker.v1.UpdateCategoriesRequest
@@ -277,7 +304,7 @@ export type UpdateCategoriesRequest = Message<"raker.v1.UpdateCategoriesRequest"
  * Use `create(UpdateCategoriesRequestSchema)` to create a new message.
  */
 export const UpdateCategoriesRequestSchema: GenMessage<UpdateCategoriesRequest> = /*@__PURE__*/
-  messageDesc(file_raker_v1_raker, 8);
+  messageDesc(file_raker_v1_raker, 9);
 
 /**
  * @generated from message raker.v1.HistoryRequest
@@ -309,7 +336,7 @@ export type HistoryRequest = Message<"raker.v1.HistoryRequest"> & {
  * Use `create(HistoryRequestSchema)` to create a new message.
  */
 export const HistoryRequestSchema: GenMessage<HistoryRequest> = /*@__PURE__*/
-  messageDesc(file_raker_v1_raker, 9);
+  messageDesc(file_raker_v1_raker, 10);
 
 /**
  * @generated from message raker.v1.HistoryResponse
@@ -326,7 +353,7 @@ export type HistoryResponse = Message<"raker.v1.HistoryResponse"> & {
  * Use `create(HistoryResponseSchema)` to create a new message.
  */
 export const HistoryResponseSchema: GenMessage<HistoryResponse> = /*@__PURE__*/
-  messageDesc(file_raker_v1_raker, 10);
+  messageDesc(file_raker_v1_raker, 11);
 
 /**
  * @generated from message raker.v1.HistoryOwnersResponse
@@ -343,7 +370,7 @@ export type HistoryOwnersResponse = Message<"raker.v1.HistoryOwnersResponse"> & 
  * Use `create(HistoryOwnersResponseSchema)` to create a new message.
  */
 export const HistoryOwnersResponseSchema: GenMessage<HistoryOwnersResponse> = /*@__PURE__*/
-  messageDesc(file_raker_v1_raker, 11);
+  messageDesc(file_raker_v1_raker, 12);
 
 /**
  * @generated from enum raker.v1.MediaType
@@ -407,6 +434,14 @@ export const RakerServer: GenService<{
   editCategory: {
     methodKind: "unary";
     input: typeof EditCategoryRequestSchema;
+    output: typeof EmptySchema;
+  },
+  /**
+   * @generated from rpc raker.v1.RakerServer.EditUserCredentials
+   */
+  editUserCredentials: {
+    methodKind: "unary";
+    input: typeof EditUserCredentialsRequestSchema;
     output: typeof EmptySchema;
   },
   /**

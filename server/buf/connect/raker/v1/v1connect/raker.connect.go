@@ -43,6 +43,9 @@ const (
 	// RakerServerEditCategoryProcedure is the fully-qualified name of the RakerServer's EditCategory
 	// RPC.
 	RakerServerEditCategoryProcedure = "/raker.v1.RakerServer/EditCategory"
+	// RakerServerEditUserCredentialsProcedure is the fully-qualified name of the RakerServer's
+	// EditUserCredentials RPC.
+	RakerServerEditUserCredentialsProcedure = "/raker.v1.RakerServer/EditUserCredentials"
 	// RakerServerGetUserCategoriesProcedure is the fully-qualified name of the RakerServer's
 	// GetUserCategories RPC.
 	RakerServerGetUserCategoriesProcedure = "/raker.v1.RakerServer/GetUserCategories"
@@ -80,6 +83,7 @@ type RakerServerClient interface {
 	SignUpInstagram(context.Context, *v1.SignUpRequest) (*emptypb.Empty, error)
 	SignInInstagram(context.Context, *v1.SignInRequest) (*emptypb.Empty, error)
 	EditCategory(context.Context, *v1.EditCategoryRequest) (*emptypb.Empty, error)
+	EditUserCredentials(context.Context, *v1.EditUserCredentialsRequest) (*emptypb.Empty, error)
 	GetUserCategories(context.Context, *emptypb.Empty) (*v1.UserCategoriesResponse, error)
 	ScrapeInstagram(context.Context, *v1.UnaryScrapeRequest) (*v1.ScrapeResponse, error)
 	ScrapeHighlight(context.Context, *v1.UnaryScrapeRequest) (*v1.ScrapeResponse, error)
@@ -120,6 +124,12 @@ func NewRakerServerClient(httpClient connect.HTTPClient, baseURL string, opts ..
 			httpClient,
 			baseURL+RakerServerEditCategoryProcedure,
 			connect.WithSchema(rakerServerMethods.ByName("EditCategory")),
+			connect.WithClientOptions(opts...),
+		),
+		editUserCredentials: connect.NewClient[v1.EditUserCredentialsRequest, emptypb.Empty](
+			httpClient,
+			baseURL+RakerServerEditUserCredentialsProcedure,
+			connect.WithSchema(rakerServerMethods.ByName("EditUserCredentials")),
 			connect.WithClientOptions(opts...),
 		),
 		getUserCategories: connect.NewClient[emptypb.Empty, v1.UserCategoriesResponse](
@@ -196,6 +206,7 @@ type rakerServerClient struct {
 	signUpInstagram     *connect.Client[v1.SignUpRequest, emptypb.Empty]
 	signInInstagram     *connect.Client[v1.SignInRequest, emptypb.Empty]
 	editCategory        *connect.Client[v1.EditCategoryRequest, emptypb.Empty]
+	editUserCredentials *connect.Client[v1.EditUserCredentialsRequest, emptypb.Empty]
 	getUserCategories   *connect.Client[emptypb.Empty, v1.UserCategoriesResponse]
 	scrapeInstagram     *connect.Client[v1.UnaryScrapeRequest, v1.ScrapeResponse]
 	scrapeHighlight     *connect.Client[v1.UnaryScrapeRequest, v1.ScrapeResponse]
@@ -230,6 +241,15 @@ func (c *rakerServerClient) SignInInstagram(ctx context.Context, req *v1.SignInR
 // EditCategory calls raker.v1.RakerServer.EditCategory.
 func (c *rakerServerClient) EditCategory(ctx context.Context, req *v1.EditCategoryRequest) (*emptypb.Empty, error) {
 	response, err := c.editCategory.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
+}
+
+// EditUserCredentials calls raker.v1.RakerServer.EditUserCredentials.
+func (c *rakerServerClient) EditUserCredentials(ctx context.Context, req *v1.EditUserCredentialsRequest) (*emptypb.Empty, error) {
+	response, err := c.editUserCredentials.CallUnary(ctx, connect.NewRequest(req))
 	if response != nil {
 		return response.Msg, err
 	}
@@ -340,6 +360,7 @@ type RakerServerHandler interface {
 	SignUpInstagram(context.Context, *v1.SignUpRequest) (*emptypb.Empty, error)
 	SignInInstagram(context.Context, *v1.SignInRequest) (*emptypb.Empty, error)
 	EditCategory(context.Context, *v1.EditCategoryRequest) (*emptypb.Empty, error)
+	EditUserCredentials(context.Context, *v1.EditUserCredentialsRequest) (*emptypb.Empty, error)
 	GetUserCategories(context.Context, *emptypb.Empty) (*v1.UserCategoriesResponse, error)
 	ScrapeInstagram(context.Context, *v1.UnaryScrapeRequest) (*v1.ScrapeResponse, error)
 	ScrapeHighlight(context.Context, *v1.UnaryScrapeRequest) (*v1.ScrapeResponse, error)
@@ -376,6 +397,12 @@ func NewRakerServerHandler(svc RakerServerHandler, opts ...connect.HandlerOption
 		RakerServerEditCategoryProcedure,
 		svc.EditCategory,
 		connect.WithSchema(rakerServerMethods.ByName("EditCategory")),
+		connect.WithHandlerOptions(opts...),
+	)
+	rakerServerEditUserCredentialsHandler := connect.NewUnaryHandlerSimple(
+		RakerServerEditUserCredentialsProcedure,
+		svc.EditUserCredentials,
+		connect.WithSchema(rakerServerMethods.ByName("EditUserCredentials")),
 		connect.WithHandlerOptions(opts...),
 	)
 	rakerServerGetUserCategoriesHandler := connect.NewUnaryHandlerSimple(
@@ -452,6 +479,8 @@ func NewRakerServerHandler(svc RakerServerHandler, opts ...connect.HandlerOption
 			rakerServerSignInInstagramHandler.ServeHTTP(w, r)
 		case RakerServerEditCategoryProcedure:
 			rakerServerEditCategoryHandler.ServeHTTP(w, r)
+		case RakerServerEditUserCredentialsProcedure:
+			rakerServerEditUserCredentialsHandler.ServeHTTP(w, r)
 		case RakerServerGetUserCategoriesProcedure:
 			rakerServerGetUserCategoriesHandler.ServeHTTP(w, r)
 		case RakerServerScrapeInstagramProcedure:
@@ -493,6 +522,10 @@ func (UnimplementedRakerServerHandler) SignInInstagram(context.Context, *v1.Sign
 
 func (UnimplementedRakerServerHandler) EditCategory(context.Context, *v1.EditCategoryRequest) (*emptypb.Empty, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raker.v1.RakerServer.EditCategory is not implemented"))
+}
+
+func (UnimplementedRakerServerHandler) EditUserCredentials(context.Context, *v1.EditUserCredentialsRequest) (*emptypb.Empty, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raker.v1.RakerServer.EditUserCredentials is not implemented"))
 }
 
 func (UnimplementedRakerServerHandler) GetUserCategories(context.Context, *emptypb.Empty) (*v1.UserCategoriesResponse, error) {

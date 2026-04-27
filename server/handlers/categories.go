@@ -12,6 +12,16 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
+// GetUserCategories implements [v1connect.RakerServerHandler].
+func (server *RakerServer) GetUserCategories(ctx context.Context, request *emptypb.Empty) (*v1.UserCategoriesResponse, error) {
+	user, ok := ctx.Value(authenticatedUserKey).(db.User)
+	if !ok {
+		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("not authenticated"))
+	}
+
+	return &v1.UserCategoriesResponse{Categories: user.Categories}, nil
+}
+
 func (server *RakerServer) updateCategory(ctx context.Context, user db.User, oldCategoryName, newCategoryName string) error {
 	tx, err := server.DBConnection.Begin()
 	if err != nil {

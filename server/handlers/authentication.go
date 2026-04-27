@@ -154,12 +154,47 @@ func (server *RakerServer) NewAuthInterceptor() connect.UnaryInterceptorFunc {
 	}
 }
 
-// GetUserCategories implements [v1connect.RakerServerHandler].
-func (server *RakerServer) GetUserCategories(ctx context.Context, request *emptypb.Empty) (*v1.UserCategoriesResponse, error) {
+// EditUserCredentials implements [v1connect.RakerServerHandler].
+func (server *RakerServer) EditUserCredentials(ctx context.Context, request *v1.EditUserCredentialsRequest) (*emptypb.Empty, error) {
 	user, ok := ctx.Value(authenticatedUserKey).(db.User)
 	if !ok {
 		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("not authenticated"))
 	}
+	passwordHash := user.PasswordHash
+	shouldUpdateHash := request.Password != nil && len(*request.Password) > 0
+	if shouldUpdateHash {
+		hashed, err := authenticator.Hash(*request.Password)
+		if err != nil {
+			log.Error(err)
+			return &emptypb.Empty{}, connect.NewError(connect.CodeInternal, errors.New("failed to store credentials securely"))
+		}
+		passwordHash = hashed
+	}
 
-	return &v1.UserCategoriesResponse{Categories: user.Categories}, nil
+	sessionID := user.InstagramSessionID
+	shouldUpdateSessionID := request.SessionId != nil && len(*request.SessionId) > 0
+	if shouldUpdateSessionID {
+		sessionID = *request.SessionId
+	}
+
+	userID := user.InstagramUserID
+	shouldUpdateUserID := request.UserId != nil && len(*request.UserId) > 0
+	if shouldUpdateUserID {
+		sessionID = *request.UserId
+	}
+
+	if shouldUpdateHash || shouldUpdateSessionID || shouldUpdateUserID {
+		err := server.DBClient.UserUpdateInstagramSession(ctx, db.UserUpdateInstagramSessionParams{
+			Username:           user.Username,
+			PasswordHash:       passwordHash,
+			InstagramSessionID: sessionID,
+			InstagramUserID:    userID,
+		})
+		if err != nil {
+			log.Error(err)
+			return &emptypb.Empty{}, connect.NewError(connect.CodeInternal, err)
+		}
+	}
+
+	return &emptypb.Empty{}, nil
 }

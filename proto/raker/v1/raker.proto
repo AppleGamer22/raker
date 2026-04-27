@@ -43,6 +43,12 @@ message EditCategoryRequest {
   string new_category = 2;
 }
 
+message EditUserCredentialsRequest {
+  optional string password = 1;
+  optional string session_id = 2;
+  optional string user_id = 3;
+}
+
 message UnaryScrapeRequest {
   string post = 1;
   optional bool incognito = 2;
@@ -101,6 +107,8 @@ service RakerServer {
   rpc SignInInstagram(SignInRequest) returns (google.protobuf.Empty);
 
   rpc EditCategory(EditCategoryRequest) returns (google.protobuf.Empty);
+
+  rpc EditUserCredentials(EditUserCredentialsRequest) returns (google.protobuf.Empty);
 
   rpc GetUserCategories(google.protobuf.Empty) returns (UserCategoriesResponse);
 

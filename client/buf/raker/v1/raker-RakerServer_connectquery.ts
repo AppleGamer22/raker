@@ -20,6 +20,11 @@ export const signInInstagram = RakerServer.method.signInInstagram;
 export const editCategory = RakerServer.method.editCategory;
 
 /**
+ * @generated from rpc raker.v1.RakerServer.EditUserCredentials
+ */
+export const editUserCredentials = RakerServer.method.editUserCredentials;
+
+/**
  * @generated from rpc raker.v1.RakerServer.GetUserCategories
  */
 export const getUserCategories = RakerServer.method.getUserCategories;

@@ -6,7 +6,12 @@ import { useState } from "react";
 import { toast } from "sonner";
 import z from "zod";
 
-import { signInInstagram, getUserCategories, editCategory } from "@/buf/raker/v1/raker-RakerServer_connectquery";
+import {
+	signInInstagram,
+	getUserCategories,
+	editCategory,
+	editUserCredentials,
+} from "@/buf/raker/v1/raker-RakerServer_connectquery";
 import { Button } from "@/components/ui/button";
 import { CardContent } from "@/components/ui/card";
 import { Field, FieldContent, FieldError, FieldGroup, FieldLabel, FieldLegend, FieldSet } from "@/components/ui/field";
@@ -86,9 +91,7 @@ function SignInForm() {
 								autoComplete="username"
 								placeholder="username"
 								value={username}
-								onChange={(e) => {
-									setUsername(e.target.value);
-								}}
+								onChange={(e) => setUsername(e.target.value)}
 							/>
 						</Field>
 						<Field>
@@ -98,9 +101,7 @@ function SignInForm() {
 								placeholder="password"
 								type="password"
 								value={password}
-								onChange={(e) => {
-									setPassword(e.target.value);
-								}}
+								onChange={(e) => setPassword(e.target.value)}
 							/>
 						</Field>
 						<Field orientation="horizontal">
@@ -128,6 +129,11 @@ function SignedOut() {
 }
 
 function UpdateForm() {
+	const editUserCredentialsMutation = useMutation(editUserCredentials);
+	const [password, setPassword] = useState("");
+	const [sessionID, setSessionID] = useState("");
+	const [userID, setUserID] = useState("");
+
 	return (
 		<form
 			onSubmit={(e) => {
@@ -140,18 +146,54 @@ function UpdateForm() {
 					<FieldGroup>
 						<Field>
 							<FieldLabel>password</FieldLabel>
-							<Input placeholder="password" type="password" />
+							<Input
+								placeholder="new password"
+								type="password"
+								value={password}
+								onChange={(e) => setPassword(e.target.value)}
+							/>
 						</Field>
 						<Field>
 							<FieldLabel>session ID</FieldLabel>
-							<Input placeholder="session ID cookie value" />
+							<Input
+								placeholder="session ID cookie value"
+								value={sessionID}
+								onChange={(e) => setSessionID(e.target.value)}
+							/>
 						</Field>
 						<Field>
 							<FieldLabel>user ID</FieldLabel>
-							<Input placeholder="user ID cookie value" />
+							<Input
+								placeholder="user ID cookie value"
+								value={userID}
+								onChange={(e) => setUserID(e.target.value)}
+							/>
 						</Field>
 						<Field orientation="horizontal">
-							<Button type="submit">Update</Button>
+							<Button
+								type="submit"
+								onClick={async () => {
+									try {
+										await editUserCredentialsMutation.mutateAsync({
+											password,
+											sessionId: sessionID,
+											userId: userID,
+										});
+										setPassword("");
+										setSessionID("");
+										setUserID("");
+										toast.success("Updated credentials", {
+											position: "top-center",
+										});
+									} catch (err) {
+										toast.error((err as Error).message, {
+											position: "top-center",
+										});
+									}
+								}}
+							>
+								Update
+							</Button>
 							<Button
 								variant="destructive"
 								onClick={async () => {
@@ -171,6 +213,7 @@ function UpdateForm() {
 					</FieldGroup>
 				</FieldSet>
 			</FieldGroup>
+			{editUserCredentialsMutation.isPending && <Progress value={null} className="pt-2" />}
 		</form>
 	);
 }
@@ -202,7 +245,6 @@ function Categories() {
 		>
 			<FieldLegend>Categories</FieldLegend>
 			<FieldGroup>
-				{categoriesQuery.isPending ? <FieldLegend>Loading categories...</FieldLegend> : null}
 				{categoriesQuery.isError ? <FieldError>{categoriesQuery.error.message}</FieldError> : null}
 				<form.Field name="categories" mode="array">
 					{(field) => {
@@ -348,7 +390,8 @@ function Categories() {
 					}}
 				</form.Field>
 			</FieldGroup>
-			{editCategoryMutation.isPending && <Progress value={null} className="pt-2" />}
+			{categoriesQuery.isPending ||
+				(editCategoryMutation.isPending && <Progress value={null} className="pt-2" />)}
 			<DialogComponent />
 		</form>
 	);
