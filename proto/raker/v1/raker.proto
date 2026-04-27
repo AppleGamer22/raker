@@ -73,11 +73,11 @@ message ScrapeResponse {
   repeated string issue_log = 9;
 }
 
-message RemoveFileRequest {
+message RemoveFilesRequest {
   PostType type = 1;
   string owner = 2;
   string post = 3;
-  string path = 4;
+  repeated string paths = 4;
 }
 
 message UpdateCategoriesRequest {
@@ -141,7 +141,7 @@ service RakerServer {
 
   rpc ScrapeVSCO(BinaryScrapeRequest) returns (ScrapeResponse);
 
-  rpc RemoveFile(RemoveFileRequest) returns (ScrapeResponse);
+  rpc RemoveFiles(RemoveFilesRequest) returns (ScrapeResponse);
 
   rpc UpdateCategories(UpdateCategoriesRequest) returns (ScrapeResponse);
 

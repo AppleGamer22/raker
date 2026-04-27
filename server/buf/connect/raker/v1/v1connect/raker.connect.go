@@ -65,8 +65,8 @@ const (
 	RakerServerScrapeSnapchatProcedure = "/raker.v1.RakerServer/ScrapeSnapchat"
 	// RakerServerScrapeVSCOProcedure is the fully-qualified name of the RakerServer's ScrapeVSCO RPC.
 	RakerServerScrapeVSCOProcedure = "/raker.v1.RakerServer/ScrapeVSCO"
-	// RakerServerRemoveFileProcedure is the fully-qualified name of the RakerServer's RemoveFile RPC.
-	RakerServerRemoveFileProcedure = "/raker.v1.RakerServer/RemoveFile"
+	// RakerServerRemoveFilesProcedure is the fully-qualified name of the RakerServer's RemoveFiles RPC.
+	RakerServerRemoveFilesProcedure = "/raker.v1.RakerServer/RemoveFiles"
 	// RakerServerUpdateCategoriesProcedure is the fully-qualified name of the RakerServer's
 	// UpdateCategories RPC.
 	RakerServerUpdateCategoriesProcedure = "/raker.v1.RakerServer/UpdateCategories"
@@ -91,7 +91,7 @@ type RakerServerClient interface {
 	ScrapeTikTok(context.Context, *v1.BinaryScrapeRequest) (*v1.ScrapeResponse, error)
 	ScrapeSnapchat(context.Context, *v1.BinaryScrapeRequest) (*v1.ScrapeResponse, error)
 	ScrapeVSCO(context.Context, *v1.BinaryScrapeRequest) (*v1.ScrapeResponse, error)
-	RemoveFile(context.Context, *v1.RemoveFileRequest) (*v1.ScrapeResponse, error)
+	RemoveFiles(context.Context, *v1.RemoveFilesRequest) (*v1.ScrapeResponse, error)
 	UpdateCategories(context.Context, *v1.UpdateCategoriesRequest) (*v1.ScrapeResponse, error)
 	SearchHistory(context.Context, *v1.HistoryRequest) (*v1.HistoryResponse, error)
 	SearchHistoryOwners(context.Context, *v1.HistoryOwnersRequest) (*v1.HistoryOwnersResponse, error)
@@ -174,10 +174,10 @@ func NewRakerServerClient(httpClient connect.HTTPClient, baseURL string, opts ..
 			connect.WithSchema(rakerServerMethods.ByName("ScrapeVSCO")),
 			connect.WithClientOptions(opts...),
 		),
-		removeFile: connect.NewClient[v1.RemoveFileRequest, v1.ScrapeResponse](
+		removeFiles: connect.NewClient[v1.RemoveFilesRequest, v1.ScrapeResponse](
 			httpClient,
-			baseURL+RakerServerRemoveFileProcedure,
-			connect.WithSchema(rakerServerMethods.ByName("RemoveFile")),
+			baseURL+RakerServerRemoveFilesProcedure,
+			connect.WithSchema(rakerServerMethods.ByName("RemoveFiles")),
 			connect.WithClientOptions(opts...),
 		),
 		updateCategories: connect.NewClient[v1.UpdateCategoriesRequest, v1.ScrapeResponse](
@@ -214,7 +214,7 @@ type rakerServerClient struct {
 	scrapeTikTok        *connect.Client[v1.BinaryScrapeRequest, v1.ScrapeResponse]
 	scrapeSnapchat      *connect.Client[v1.BinaryScrapeRequest, v1.ScrapeResponse]
 	scrapeVSCO          *connect.Client[v1.BinaryScrapeRequest, v1.ScrapeResponse]
-	removeFile          *connect.Client[v1.RemoveFileRequest, v1.ScrapeResponse]
+	removeFiles         *connect.Client[v1.RemoveFilesRequest, v1.ScrapeResponse]
 	updateCategories    *connect.Client[v1.UpdateCategoriesRequest, v1.ScrapeResponse]
 	searchHistory       *connect.Client[v1.HistoryRequest, v1.HistoryResponse]
 	searchHistoryOwners *connect.Client[v1.HistoryOwnersRequest, v1.HistoryOwnersResponse]
@@ -319,9 +319,9 @@ func (c *rakerServerClient) ScrapeVSCO(ctx context.Context, req *v1.BinaryScrape
 	return nil, err
 }
 
-// RemoveFile calls raker.v1.RakerServer.RemoveFile.
-func (c *rakerServerClient) RemoveFile(ctx context.Context, req *v1.RemoveFileRequest) (*v1.ScrapeResponse, error) {
-	response, err := c.removeFile.CallUnary(ctx, connect.NewRequest(req))
+// RemoveFiles calls raker.v1.RakerServer.RemoveFiles.
+func (c *rakerServerClient) RemoveFiles(ctx context.Context, req *v1.RemoveFilesRequest) (*v1.ScrapeResponse, error) {
+	response, err := c.removeFiles.CallUnary(ctx, connect.NewRequest(req))
 	if response != nil {
 		return response.Msg, err
 	}
@@ -368,7 +368,7 @@ type RakerServerHandler interface {
 	ScrapeTikTok(context.Context, *v1.BinaryScrapeRequest) (*v1.ScrapeResponse, error)
 	ScrapeSnapchat(context.Context, *v1.BinaryScrapeRequest) (*v1.ScrapeResponse, error)
 	ScrapeVSCO(context.Context, *v1.BinaryScrapeRequest) (*v1.ScrapeResponse, error)
-	RemoveFile(context.Context, *v1.RemoveFileRequest) (*v1.ScrapeResponse, error)
+	RemoveFiles(context.Context, *v1.RemoveFilesRequest) (*v1.ScrapeResponse, error)
 	UpdateCategories(context.Context, *v1.UpdateCategoriesRequest) (*v1.ScrapeResponse, error)
 	SearchHistory(context.Context, *v1.HistoryRequest) (*v1.HistoryResponse, error)
 	SearchHistoryOwners(context.Context, *v1.HistoryOwnersRequest) (*v1.HistoryOwnersResponse, error)
@@ -447,10 +447,10 @@ func NewRakerServerHandler(svc RakerServerHandler, opts ...connect.HandlerOption
 		connect.WithSchema(rakerServerMethods.ByName("ScrapeVSCO")),
 		connect.WithHandlerOptions(opts...),
 	)
-	rakerServerRemoveFileHandler := connect.NewUnaryHandlerSimple(
-		RakerServerRemoveFileProcedure,
-		svc.RemoveFile,
-		connect.WithSchema(rakerServerMethods.ByName("RemoveFile")),
+	rakerServerRemoveFilesHandler := connect.NewUnaryHandlerSimple(
+		RakerServerRemoveFilesProcedure,
+		svc.RemoveFiles,
+		connect.WithSchema(rakerServerMethods.ByName("RemoveFiles")),
 		connect.WithHandlerOptions(opts...),
 	)
 	rakerServerUpdateCategoriesHandler := connect.NewUnaryHandlerSimple(
@@ -495,8 +495,8 @@ func NewRakerServerHandler(svc RakerServerHandler, opts ...connect.HandlerOption
 			rakerServerScrapeSnapchatHandler.ServeHTTP(w, r)
 		case RakerServerScrapeVSCOProcedure:
 			rakerServerScrapeVSCOHandler.ServeHTTP(w, r)
-		case RakerServerRemoveFileProcedure:
-			rakerServerRemoveFileHandler.ServeHTTP(w, r)
+		case RakerServerRemoveFilesProcedure:
+			rakerServerRemoveFilesHandler.ServeHTTP(w, r)
 		case RakerServerUpdateCategoriesProcedure:
 			rakerServerUpdateCategoriesHandler.ServeHTTP(w, r)
 		case RakerServerSearchHistoryProcedure:
@@ -556,8 +556,8 @@ func (UnimplementedRakerServerHandler) ScrapeVSCO(context.Context, *v1.BinaryScr
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raker.v1.RakerServer.ScrapeVSCO is not implemented"))
 }
 
-func (UnimplementedRakerServerHandler) RemoveFile(context.Context, *v1.RemoveFileRequest) (*v1.ScrapeResponse, error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raker.v1.RakerServer.RemoveFile is not implemented"))
+func (UnimplementedRakerServerHandler) RemoveFiles(context.Context, *v1.RemoveFilesRequest) (*v1.ScrapeResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raker.v1.RakerServer.RemoveFiles is not implemented"))
 }
 
 func (UnimplementedRakerServerHandler) UpdateCategories(context.Context, *v1.UpdateCategoriesRequest) (*v1.ScrapeResponse, error) {

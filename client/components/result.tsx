@@ -46,7 +46,7 @@ export function Result({ result }: { result: ScrapeResponse }) {
 						))}
 					</Accordion>
 				</TabsContent>
-				<TabsContent value="grid" className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+				<TabsContent value="grid" className="grid grid-cols-2 gap-3 lg:grid-cols-3">
 					{result.files.map((file) => (
 						<FileDisplay
 							key={`grid-file-${result.postType}-${result.postOwner}-${result.post}-${file}`}

@@ -480,6 +480,7 @@ type ScrapeResponse struct {
 	Categories    []string               `protobuf:"bytes,6,rep,name=categories,proto3" json:"categories,omitempty"`
 	Incognito     bool                   `protobuf:"varint,7,opt,name=incognito,proto3" json:"incognito,omitempty"`
 	Coordinates   *latlng.LatLng         `protobuf:"bytes,8,opt,name=coordinates,proto3,oneof" json:"coordinates,omitempty"`
+	IssueLog      []string               `protobuf:"bytes,9,rep,name=issue_log,json=issueLog,proto3" json:"issue_log,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -570,30 +571,37 @@ func (x *ScrapeResponse) GetCoordinates() *latlng.LatLng {
 	return nil
 }
 
-type RemoveFileRequest struct {
+func (x *ScrapeResponse) GetIssueLog() []string {
+	if x != nil {
+		return x.IssueLog
+	}
+	return nil
+}
+
+type RemoveFilesRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Type          PostType               `protobuf:"varint,1,opt,name=type,proto3,enum=raker.v1.PostType" json:"type,omitempty"`
 	Owner         string                 `protobuf:"bytes,2,opt,name=owner,proto3" json:"owner,omitempty"`
 	Post          string                 `protobuf:"bytes,3,opt,name=post,proto3" json:"post,omitempty"`
-	Path          string                 `protobuf:"bytes,4,opt,name=path,proto3" json:"path,omitempty"`
+	Paths         []string               `protobuf:"bytes,4,rep,name=paths,proto3" json:"paths,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *RemoveFileRequest) Reset() {
-	*x = RemoveFileRequest{}
+func (x *RemoveFilesRequest) Reset() {
+	*x = RemoveFilesRequest{}
 	mi := &file_raker_v1_raker_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *RemoveFileRequest) String() string {
+func (x *RemoveFilesRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*RemoveFileRequest) ProtoMessage() {}
+func (*RemoveFilesRequest) ProtoMessage() {}
 
-func (x *RemoveFileRequest) ProtoReflect() protoreflect.Message {
+func (x *RemoveFilesRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_raker_v1_raker_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -605,37 +613,37 @@ func (x *RemoveFileRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use RemoveFileRequest.ProtoReflect.Descriptor instead.
-func (*RemoveFileRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use RemoveFilesRequest.ProtoReflect.Descriptor instead.
+func (*RemoveFilesRequest) Descriptor() ([]byte, []int) {
 	return file_raker_v1_raker_proto_rawDescGZIP(), []int{8}
 }
 
-func (x *RemoveFileRequest) GetType() PostType {
+func (x *RemoveFilesRequest) GetType() PostType {
 	if x != nil {
 		return x.Type
 	}
 	return PostType_Instagram
 }
 
-func (x *RemoveFileRequest) GetOwner() string {
+func (x *RemoveFilesRequest) GetOwner() string {
 	if x != nil {
 		return x.Owner
 	}
 	return ""
 }
 
-func (x *RemoveFileRequest) GetPost() string {
+func (x *RemoveFilesRequest) GetPost() string {
 	if x != nil {
 		return x.Post
 	}
 	return ""
 }
 
-func (x *RemoveFileRequest) GetPath() string {
+func (x *RemoveFilesRequest) GetPaths() []string {
 	if x != nil {
-		return x.Path
+		return x.Paths
 	}
-	return ""
+	return nil
 }
 
 type UpdateCategoriesRequest struct {
@@ -1065,7 +1073,7 @@ const file_raker_v1_raker_proto_rawDesc = "" +
 	"\x04post\x18\x02 \x01(\tR\x04post\x12!\n" +
 	"\tincognito\x18\x03 \x01(\bH\x00R\tincognito\x88\x01\x01B\f\n" +
 	"\n" +
-	"_incognito\"\xcd\x02\n" +
+	"_incognito\"\xea\x02\n" +
 	"\x0eScrapeResponse\x12/\n" +
 	"\tpost_type\x18\x01 \x01(\x0e2\x12.raker.v1.PostTypeR\bpostType\x12\x1d\n" +
 	"\n" +
@@ -1077,13 +1085,14 @@ const file_raker_v1_raker_proto_rawDesc = "" +
 	"categories\x18\x06 \x03(\tR\n" +
 	"categories\x12\x1c\n" +
 	"\tincognito\x18\a \x01(\bR\tincognito\x12:\n" +
-	"\vcoordinates\x18\b \x01(\v2\x13.google.type.LatLngH\x00R\vcoordinates\x88\x01\x01B\x0e\n" +
-	"\f_coordinates\"y\n" +
-	"\x11RemoveFileRequest\x12&\n" +
+	"\vcoordinates\x18\b \x01(\v2\x13.google.type.LatLngH\x00R\vcoordinates\x88\x01\x01\x12\x1b\n" +
+	"\tissue_log\x18\t \x03(\tR\bissueLogB\x0e\n" +
+	"\f_coordinates\"|\n" +
+	"\x12RemoveFilesRequest\x12&\n" +
 	"\x04type\x18\x01 \x01(\x0e2\x12.raker.v1.PostTypeR\x04type\x12\x14\n" +
 	"\x05owner\x18\x02 \x01(\tR\x05owner\x12\x12\n" +
-	"\x04post\x18\x03 \x01(\tR\x04post\x12\x12\n" +
-	"\x04path\x18\x04 \x01(\tR\x04path\"\x8b\x01\n" +
+	"\x04post\x18\x03 \x01(\tR\x04post\x12\x14\n" +
+	"\x05paths\x18\x04 \x03(\tR\x05paths\"\x8b\x01\n" +
 	"\x17UpdateCategoriesRequest\x12&\n" +
 	"\x04type\x18\x01 \x01(\x0e2\x12.raker.v1.PostTypeR\x04type\x12\x14\n" +
 	"\x05owner\x18\x02 \x01(\tR\x05owner\x12\x12\n" +
@@ -1125,7 +1134,7 @@ const file_raker_v1_raker_proto_rawDesc = "" +
 	"\n" +
 	"\x06TikTok\x10\x03\x12\f\n" +
 	"\bSnapchat\x10\x04\x12\b\n" +
-	"\x04VSCO\x10\x052\xec\b\n" +
+	"\x04VSCO\x10\x052\xee\b\n" +
 	"\vRakerServer\x12B\n" +
 	"\x0fSignUpInstagram\x12\x17.raker.v1.SignUpRequest\x1a\x16.google.protobuf.Empty\x12B\n" +
 	"\x0fSignInInstagram\x12\x17.raker.v1.SignInRequest\x1a\x16.google.protobuf.Empty\x12E\n" +
@@ -1138,9 +1147,8 @@ const file_raker_v1_raker_proto_rawDesc = "" +
 	"\fScrapeTikTok\x12\x1d.raker.v1.BinaryScrapeRequest\x1a\x18.raker.v1.ScrapeResponse\x12I\n" +
 	"\x0eScrapeSnapchat\x12\x1d.raker.v1.BinaryScrapeRequest\x1a\x18.raker.v1.ScrapeResponse\x12E\n" +
 	"\n" +
-	"ScrapeVSCO\x12\x1d.raker.v1.BinaryScrapeRequest\x1a\x18.raker.v1.ScrapeResponse\x12C\n" +
-	"\n" +
-	"RemoveFile\x12\x1b.raker.v1.RemoveFileRequest\x1a\x18.raker.v1.ScrapeResponse\x12O\n" +
+	"ScrapeVSCO\x12\x1d.raker.v1.BinaryScrapeRequest\x1a\x18.raker.v1.ScrapeResponse\x12E\n" +
+	"\vRemoveFiles\x12\x1c.raker.v1.RemoveFilesRequest\x1a\x18.raker.v1.ScrapeResponse\x12O\n" +
 	"\x10UpdateCategories\x12!.raker.v1.UpdateCategoriesRequest\x1a\x18.raker.v1.ScrapeResponse\x12D\n" +
 	"\rSearchHistory\x12\x18.raker.v1.HistoryRequest\x1a\x19.raker.v1.HistoryResponse\x12V\n" +
 	"\x13SearchHistoryOwners\x12\x1e.raker.v1.HistoryOwnersRequest\x1a\x1f.raker.v1.HistoryOwnersResponseB\x94\x01\n" +
@@ -1171,7 +1179,7 @@ var file_raker_v1_raker_proto_goTypes = []any{
 	(*UnaryScrapeRequest)(nil),                 // 6: raker.v1.UnaryScrapeRequest
 	(*BinaryScrapeRequest)(nil),                // 7: raker.v1.BinaryScrapeRequest
 	(*ScrapeResponse)(nil),                     // 8: raker.v1.ScrapeResponse
-	(*RemoveFileRequest)(nil),                  // 9: raker.v1.RemoveFileRequest
+	(*RemoveFilesRequest)(nil),                 // 9: raker.v1.RemoveFilesRequest
 	(*UpdateCategoriesRequest)(nil),            // 10: raker.v1.UpdateCategoriesRequest
 	(*HistoryOwnersRequest)(nil),               // 11: raker.v1.HistoryOwnersRequest
 	(*HistoryRequest)(nil),                     // 12: raker.v1.HistoryRequest
@@ -1186,7 +1194,7 @@ var file_raker_v1_raker_proto_depIdxs = []int32{
 	0,  // 0: raker.v1.ScrapeResponse.post_type:type_name -> raker.v1.PostType
 	16, // 1: raker.v1.ScrapeResponse.post_date:type_name -> google.protobuf.Timestamp
 	17, // 2: raker.v1.ScrapeResponse.coordinates:type_name -> google.type.LatLng
-	0,  // 3: raker.v1.RemoveFileRequest.type:type_name -> raker.v1.PostType
+	0,  // 3: raker.v1.RemoveFilesRequest.type:type_name -> raker.v1.PostType
 	0,  // 4: raker.v1.UpdateCategoriesRequest.type:type_name -> raker.v1.PostType
 	0,  // 5: raker.v1.HistoryOwnersRequest.types:type_name -> raker.v1.PostType
 	0,  // 6: raker.v1.HistoryRequest.types:type_name -> raker.v1.PostType
@@ -1204,7 +1212,7 @@ var file_raker_v1_raker_proto_depIdxs = []int32{
 	7,  // 18: raker.v1.RakerServer.ScrapeTikTok:input_type -> raker.v1.BinaryScrapeRequest
 	7,  // 19: raker.v1.RakerServer.ScrapeSnapchat:input_type -> raker.v1.BinaryScrapeRequest
 	7,  // 20: raker.v1.RakerServer.ScrapeVSCO:input_type -> raker.v1.BinaryScrapeRequest
-	9,  // 21: raker.v1.RakerServer.RemoveFile:input_type -> raker.v1.RemoveFileRequest
+	9,  // 21: raker.v1.RakerServer.RemoveFiles:input_type -> raker.v1.RemoveFilesRequest
 	10, // 22: raker.v1.RakerServer.UpdateCategories:input_type -> raker.v1.UpdateCategoriesRequest
 	12, // 23: raker.v1.RakerServer.SearchHistory:input_type -> raker.v1.HistoryRequest
 	11, // 24: raker.v1.RakerServer.SearchHistoryOwners:input_type -> raker.v1.HistoryOwnersRequest
@@ -1219,7 +1227,7 @@ var file_raker_v1_raker_proto_depIdxs = []int32{
 	8,  // 33: raker.v1.RakerServer.ScrapeTikTok:output_type -> raker.v1.ScrapeResponse
 	8,  // 34: raker.v1.RakerServer.ScrapeSnapchat:output_type -> raker.v1.ScrapeResponse
 	8,  // 35: raker.v1.RakerServer.ScrapeVSCO:output_type -> raker.v1.ScrapeResponse
-	8,  // 36: raker.v1.RakerServer.RemoveFile:output_type -> raker.v1.ScrapeResponse
+	8,  // 36: raker.v1.RakerServer.RemoveFiles:output_type -> raker.v1.ScrapeResponse
 	8,  // 37: raker.v1.RakerServer.UpdateCategories:output_type -> raker.v1.ScrapeResponse
 	13, // 38: raker.v1.RakerServer.SearchHistory:output_type -> raker.v1.HistoryResponse
 	14, // 39: raker.v1.RakerServer.SearchHistoryOwners:output_type -> raker.v1.HistoryOwnersResponse

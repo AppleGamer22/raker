@@ -60,9 +60,9 @@ export const scrapeSnapchat = RakerServer.method.scrapeSnapchat;
 export const scrapeVSCO = RakerServer.method.scrapeVSCO;
 
 /**
- * @generated from rpc raker.v1.RakerServer.RemoveFile
+ * @generated from rpc raker.v1.RakerServer.RemoveFiles
  */
-export const removeFile = RakerServer.method.removeFile;
+export const removeFiles = RakerServer.method.removeFiles;
 
 /**
  * @generated from rpc raker.v1.RakerServer.UpdateCategories

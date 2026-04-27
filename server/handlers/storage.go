@@ -11,12 +11,14 @@ import (
 	"strings"
 	"sync"
 
+	"connectrpc.com/connect"
 	"github.com/AppleGamer22/raker/server/cleaner"
 	"github.com/AppleGamer22/raker/server/db"
 	"github.com/AppleGamer22/raker/shared"
 	"github.com/AppleGamer22/raker/shared/types"
 	"github.com/bep/imagemeta"
 	"github.com/charmbracelet/log"
+	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"context"
 
@@ -24,8 +26,40 @@ import (
 )
 
 // RemoveFile implements [v1connect.RakerServerHandler].
-func (r *RakerServer) RemoveFile(context.Context, *v1.RemoveFileRequest) (*v1.ScrapeResponse, error) {
-	panic("unimplemented")
+func (server *RakerServer) RemoveFiles(ctx context.Context, request *v1.RemoveFilesRequest) (*v1.ScrapeResponse, error) {
+	user, ok := ctx.Value(authenticatedUserKey).(db.User)
+	if !ok {
+		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("not authenticated"))
+	}
+
+	var result db.History
+	for _, file := range request.Paths {
+		err := StorageHandler.Delete(user, PostTypePB2DB(request.Type), request.Owner, file)
+		if err != nil {
+			return nil, connect.NewError(connect.CodeInternal, err)
+		}
+
+		result, err = server.DBClient.UpdateHistoryRemoveFile(ctx, db.UpdateHistoryRemoveFileParams{
+			File:      file,
+			PostType:  PostTypePB2DB(request.Type),
+			Post:      request.Post,
+			PostOwner: request.Owner,
+			Username:  user.Username,
+		})
+		if err != nil {
+			return nil, connect.NewError(connect.CodeInternal, err)
+		}
+	}
+
+	return &v1.ScrapeResponse{
+		Categories: result.Categories,
+		PostDate:   timestamppb.New(result.PostDate),
+		PostType:   request.Type,
+		Files:      result.Files,
+		Post:       request.Post,
+		PostOwner:  request.Owner,
+		Incognito:  result.Incognito,
+	}, nil
 }
 
 type storageHandler struct {
@@ -194,12 +228,8 @@ func (handler *storageHandler) SaveBundle(user db.User, media db.PostType, owner
 	return sucessfulFileNames, err
 }
 
-func (handler *storageHandler) Delete(user db.User, media, owner, fileName string) error {
-	if !types.ValidMediaType(media) {
-		return fmt.Errorf("invalid media type: %s", media)
-	}
-
-	filePath := path.Join(user.Username, media, owner, fileName)
+func (handler *storageHandler) Delete(user db.User, media db.PostType, owner, fileName string) error {
+	filePath := path.Join(user.Username, string(media), owner, fileName)
 	mediaPath := path.Join(handler.root, filePath)
 	mediaPath = cleaner.Path(mediaPath)
 
