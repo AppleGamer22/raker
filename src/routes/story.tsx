@@ -33,9 +33,7 @@ function Story() {
 			</CardContent>
 			<CardFooter>
 				<Field orientation="horizontal">
-					<Button type="submit" form="bug-report-form">
-						Submit
-					</Button>
+					<Button type="submit">Submit</Button>
 				</Field>
 				{/* TODO: results */}
 			</CardFooter>
