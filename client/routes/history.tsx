@@ -550,9 +550,13 @@ function History() {
 							)}
 							{ownersSearchOptions.length > 0 && (
 								<ComboboxGroup>
-									<ComboboxLabel>Owners</ComboboxLabel>
+									<ComboboxLabel>Post Owners</ComboboxLabel>
 									{ownersSearchOptions
-										.filter((item) => item.owner.includes(ownerSearchTerm))
+										.filter(
+											(item1) =>
+												item1.owner.includes(ownerSearchTerm) &&
+												ownersSearchValue.filter((item2) => item2 === item1).length === 0,
+										)
 										.map((item) => (
 											<ComboboxItem key={`search-${item.type}-${item.owner}`} value={item}>
 												<PlatformIcon type={item.type} />
