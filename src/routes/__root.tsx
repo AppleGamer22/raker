@@ -15,6 +15,7 @@ import {
 } from "#/components/ui/sidebar";
 import { InstagramIcon } from "#/components/ui/svgs/instagram";
 import { TikTokIcon } from "#/components/ui/svgs/tiktok";
+import { VSCOIcon } from "#/components/ui/svgs/vsco";
 import { ModeToggle } from "#/components/ui/theme-toggle";
 import { queryClient, router } from "#/router";
 
@@ -62,7 +63,10 @@ function Root() {
 										</SidebarMenuButton>
 									</SidebarMenuItem>
 									<SidebarMenuItem>
-										<SidebarMenuButton>VSCO Post</SidebarMenuButton>
+										<SidebarMenuButton>
+											<VSCOIcon className="w-4" />
+											VSCO Post
+										</SidebarMenuButton>
 									</SidebarMenuItem>
 								</SidebarMenu>
 							</SidebarGroup>
