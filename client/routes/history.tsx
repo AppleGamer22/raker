@@ -101,9 +101,12 @@ function HistoryPostTypeForm({
 									<Field orientation="horizontal">
 										<Checkbox
 											id="post-type-instagram"
+											checked={field.state.value.includes(PostType.Instagram)}
 											onCheckedChange={(checked) => {
 												if (checked) {
-													field.pushValue(PostType.Instagram);
+													if (!field.state.value.includes(PostType.Instagram)) {
+														field.pushValue(PostType.Instagram);
+													}
 												} else {
 													const index = field.state.value.indexOf(PostType.Instagram);
 													if (index > -1) {
@@ -125,9 +128,12 @@ function HistoryPostTypeForm({
 									<Field orientation="horizontal">
 										<Checkbox
 											id="post-type-highlight"
+											checked={field.state.value.includes(PostType.Highlight)}
 											onCheckedChange={(checked) => {
 												if (checked) {
-													field.pushValue(PostType.Highlight);
+													if (!field.state.value.includes(PostType.Highlight)) {
+														field.pushValue(PostType.Highlight);
+													}
 												} else {
 													const index = field.state.value.indexOf(PostType.Highlight);
 													if (index > -1) {
@@ -147,9 +153,12 @@ function HistoryPostTypeForm({
 									<Field orientation="horizontal">
 										<Checkbox
 											id="post-type-story"
+											checked={field.state.value.includes(PostType.Story)}
 											onCheckedChange={(checked) => {
 												if (checked) {
-													field.pushValue(PostType.Story);
+													if (!field.state.value.includes(PostType.Story)) {
+														field.pushValue(PostType.Story);
+													}
 												} else {
 													const index = field.state.value.indexOf(PostType.Story);
 													if (index > -1) {
@@ -169,9 +178,12 @@ function HistoryPostTypeForm({
 									<Field orientation="horizontal">
 										<Checkbox
 											id="post-type-tiktok"
+											checked={field.state.value.includes(PostType.TikTok)}
 											onCheckedChange={(checked) => {
 												if (checked) {
-													field.pushValue(PostType.TikTok);
+													if (!field.state.value.includes(PostType.TikTok)) {
+														field.pushValue(PostType.TikTok);
+													}
 												} else {
 													const index = field.state.value.indexOf(PostType.TikTok);
 													if (index > -1) {
@@ -191,9 +203,12 @@ function HistoryPostTypeForm({
 									<Field orientation="horizontal">
 										<Checkbox
 											id="post-type-snapchat"
+											checked={field.state.value.includes(PostType.Snapchat)}
 											onCheckedChange={(checked) => {
 												if (checked) {
-													field.pushValue(PostType.Snapchat);
+													if (!field.state.value.includes(PostType.Snapchat)) {
+														field.pushValue(PostType.Snapchat);
+													}
 												} else {
 													const index = field.state.value.indexOf(PostType.Snapchat);
 													if (index > -1) {
@@ -213,9 +228,12 @@ function HistoryPostTypeForm({
 									<Field orientation="horizontal">
 										<Checkbox
 											id="post-type-vsco"
+											checked={field.state.value.includes(PostType.VSCO)}
 											onCheckedChange={(checked) => {
 												if (checked) {
-													field.pushValue(PostType.VSCO);
+													if (!field.state.value.includes(PostType.VSCO)) {
+														field.pushValue(PostType.VSCO);
+													}
 												} else {
 													const index = field.state.value.indexOf(PostType.VSCO);
 													if (index > -1) {
@@ -317,7 +335,9 @@ function HistoryPostCategoryForm({
 													checked={field.state.value.includes(category)}
 													onCheckedChange={(checked) => {
 														if (checked) {
-															field.pushValue(category);
+															if (!field.state.value.includes(category)) {
+																field.pushValue(category);
+															}
 														} else {
 															const index = field.state.value.indexOf(category);
 															if (index > -1) {
@@ -371,17 +391,22 @@ function History() {
 			<Collapsible open={isOpen} onOpenChange={setIsOpen}>
 				<CollapsibleTrigger className="w-full rounded-md border px-3 py-2 text-left hover:bg-muted/40">
 					<div className="flex flex-wrap items-center gap-2">
-						{types.map((type) => (
-							<Badge key={`type-summary-${type}`} variant="secondary">
-								<PostTypeIconLabel type={type} />
-							</Badge>
-						))}
+						{types.length > 0 ? (
+							types.map((type, index) => (
+								<Badge key={`type-summary-${type}-${index}`} variant="secondary">
+									<PostTypeIconLabel type={type} />
+								</Badge>
+							))
+						) : (
+							<Badge variant="ghost">No post types selected</Badge>
+						)}
 					</div>
+					<Separator className="my-2" />
 					<div className="flex flex-wrap items-center gap-2">
 						<Badge variant={exclusive ? "default" : "outline"}>Exclusive: {exclusive ? "On" : "Off"}</Badge>
 						{categories.length > 0 ? (
-							categories.map((category) => (
-								<Badge key={`category-summary-${category}`} variant="default">
+							categories.map((category, index) => (
+								<Badge key={`category-summary-${category}-${index}`} variant="default">
 									{category}
 								</Badge>
 							))
