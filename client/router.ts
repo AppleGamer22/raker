@@ -1,7 +1,10 @@
+import { createConnectTransport } from "@connectrpc/connect-web";
 import { QueryClient } from "@tanstack/react-query";
 import { createRouter } from "@tanstack/react-router";
 
 import { routeTree } from "./routeTree.gen";
+
+export const transport = createConnectTransport({ baseUrl: "/" });
 
 export const queryClient = new QueryClient({
 	defaultOptions: {
