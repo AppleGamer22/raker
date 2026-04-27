@@ -1,6 +1,6 @@
 import type { SVGProps } from "react";
 
-import { useTheme } from "#/components/theme-provider";
+import { useTheme } from "@/components/theme-provider";
 
 export function TikTokIcon(props: SVGProps<SVGSVGElement>) {
 	const { computedTheme } = useTheme();

@@ -4,7 +4,7 @@ import { ReactQueryDevtoolsPanel } from "@tanstack/react-query-devtools";
 import { createRootRoute, Outlet } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 
-import { ThemeProvider } from "#/components/theme-provider";
+import { ThemeProvider } from "@/components/theme-provider";
 import {
 	Sidebar,
 	SidebarGroup,
@@ -12,12 +12,12 @@ import {
 	SidebarMenuButton,
 	SidebarMenuItem,
 	SidebarProvider,
-} from "#/components/ui/sidebar";
-import { InstagramIcon } from "#/components/ui/svgs/instagram";
-import { TikTokIcon } from "#/components/ui/svgs/tiktok";
-import { VSCOIcon } from "#/components/ui/svgs/vsco";
-import { ModeToggle } from "#/components/ui/theme-toggle";
-import { queryClient, router } from "#/router";
+} from "@/components/ui/sidebar";
+import { InstagramIcon } from "@/components/ui/svgs/instagram";
+import { TikTokIcon } from "@/components/ui/svgs/tiktok";
+import { VSCOIcon } from "@/components/ui/svgs/vsco";
+import { ModeToggle } from "@/components/ui/theme-toggle";
+import { queryClient, router } from "@/router";
 
 export const Route = createRootRoute({
 	component: Root,
