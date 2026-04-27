@@ -191,19 +191,33 @@ function HistoryPostTypeForm({
 	);
 }
 
-function HistoryPostCategoryForm() {
-	const categoriesQuery = useQuery(getUserCategories, {});
-	const categories = categoriesQuery.data?.categories ?? [];
+function HistoryPostCategoryForm({
+	exclusive,
+	setExclusive,
+	selectedCategories,
+	availableCategories,
+	setCategories,
+}: {
+	exclusive: boolean;
+	setExclusive: (b: boolean) => void;
+	selectedCategories: string[];
+	availableCategories: string[];
+	setCategories: (c: string[]) => void;
+}) {
 	const form = useForm({
 		defaultValues: {
-			exclusive: false,
-			categories: [] as string[],
+			exclusive,
+			categories: selectedCategories,
 		},
 		validators: {
 			onChange: z.object({
 				exclusive: z.boolean().catch(false),
 				categories: z.array(z.string()),
 			}),
+		},
+		onSubmit: ({ value }) => {
+			setExclusive(value.exclusive);
+			setCategories(value.categories);
 		},
 	});
 
@@ -225,7 +239,10 @@ function HistoryPostCategoryForm() {
 											id="category-exclusive"
 											name={field.name}
 											checked={field.state.value}
-											onCheckedChange={field.handleChange}
+											onCheckedChange={(checked) => {
+												field.handleChange(checked);
+												form.handleSubmit();
+											}}
 										/>
 										<FieldContent>
 											<FieldTitle>Exclusive</FieldTitle>
@@ -238,7 +255,7 @@ function HistoryPostCategoryForm() {
 						<form.Field name="categories" mode="array">
 							{(field) => (
 								<>
-									{categories.map((category) => (
+									{availableCategories.map((category) => (
 										<FieldLabel
 											key={`category-${category}`}
 											htmlFor={`category-${category}`}
@@ -258,6 +275,7 @@ function HistoryPostCategoryForm() {
 																field.removeValue(index);
 															}
 														}
+														form.handleSubmit();
 													}}
 												/>
 												<FieldContent>
@@ -287,6 +305,10 @@ function History() {
 		PostType.Snapchat,
 		PostType.VSCO,
 	]);
+	const categoriesQuery = useQuery(getUserCategories, {});
+	const availableCategories = categoriesQuery.data?.categories ?? [];
+	const [categories, setCategories] = useState<string[]>(availableCategories);
+	const [exclusive, setExclusive] = useState(false);
 
 	useEffect(() => {
 		if (username === null) {
@@ -298,7 +320,13 @@ function History() {
 		<CardContent>
 			<HistoryPostTypeForm types={types} onChangeTypes={setTypes} />
 			<Separator className="my-2" />
-			<HistoryPostCategoryForm />
+			<HistoryPostCategoryForm
+				exclusive={exclusive}
+				setExclusive={setExclusive}
+				availableCategories={availableCategories}
+				selectedCategories={categories}
+				setCategories={setCategories}
+			/>
 		</CardContent>
 	);
 }
