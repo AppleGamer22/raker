@@ -1,8 +1,13 @@
+import { useQuery } from "@connectrpc/connect-query";
 import { createContext, useContext, useState, type ReactNode } from "react";
+
+import { getUserCategories } from "@/buf/raker/v1/raker-RakerServer_connectquery";
 
 type UserProviderState = {
 	username: string | null;
 	categories: string[];
+	categoriesError: string | null;
+	isCategoriesPending: boolean;
 };
 
 const UserProviderContext = createContext<UserProviderState | undefined>(undefined);
@@ -71,7 +76,31 @@ function readUsernameFromJwtCookie(): string | null {
 
 export function UserProvider({ children }: { children: ReactNode }) {
 	const [username] = useState<string | null>(() => readUsernameFromJwtCookie());
-	return <UserProviderContext.Provider value={{ username, categories: [] }}>{children}</UserProviderContext.Provider>;
+	const categoriesQuery = useQuery(
+		getUserCategories,
+		{},
+		{
+			staleTime: Infinity,
+			gcTime: Infinity,
+			refetchOnMount: false,
+			refetchOnReconnect: false,
+			refetchOnWindowFocus: false,
+			retry: false,
+		},
+	);
+
+	return (
+		<UserProviderContext.Provider
+			value={{
+				username,
+				categories: categoriesQuery.data?.categories ?? [],
+				categoriesError: categoriesQuery.isError ? categoriesQuery.error.message : null,
+				isCategoriesPending: categoriesQuery.isPending,
+			}}
+		>
+			{children}
+		</UserProviderContext.Provider>
+	);
 }
 
 export function useUser() {

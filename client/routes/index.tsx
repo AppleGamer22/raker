@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from "@connectrpc/connect-query";
+import { useMutation } from "@connectrpc/connect-query";
 import { useForm } from "@tanstack/react-form";
 import { createFileRoute } from "@tanstack/react-router";
 import { PlusIcon, XIcon } from "lucide-react";
@@ -6,12 +6,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import z from "zod";
 
-import {
-	signInInstagram,
-	getUserCategories,
-	editCategory,
-	editUserCredentials,
-} from "@/buf/raker/v1/raker-RakerServer_connectquery";
+import { signInInstagram, editCategory, editUserCredentials } from "@/buf/raker/v1/raker-RakerServer_connectquery";
 import { Button } from "@/components/ui/button";
 import { CardContent } from "@/components/ui/card";
 import { Field, FieldContent, FieldError, FieldGroup, FieldLabel, FieldLegend, FieldSet } from "@/components/ui/field";
@@ -223,8 +218,7 @@ const updateCategoriesSchema = z.object({
 });
 
 function Categories() {
-	const categoriesQuery = useQuery(getUserCategories, {});
-	const categories = categoriesQuery.data?.categories ?? [];
+	const { categories, categoriesError, isCategoriesPending } = useUser();
 	const [newCategory, setNewCategory] = useState("");
 	const form = useForm({
 		defaultValues: {
@@ -245,7 +239,7 @@ function Categories() {
 		>
 			<FieldLegend>Categories</FieldLegend>
 			<FieldGroup>
-				{categoriesQuery.isError ? <FieldError>{categoriesQuery.error.message}</FieldError> : null}
+				{categoriesError ? <FieldError>{categoriesError}</FieldError> : null}
 				<form.Field name="categories" mode="array">
 					{(field) => {
 						const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
@@ -390,8 +384,7 @@ function Categories() {
 					}}
 				</form.Field>
 			</FieldGroup>
-			{categoriesQuery.isPending ||
-				(editCategoryMutation.isPending && <Progress value={null} className="pt-2" />)}
+			{(isCategoriesPending || editCategoryMutation.isPending) && <Progress value={null} className="pt-2" />}
 			<DialogComponent />
 		</form>
 	);

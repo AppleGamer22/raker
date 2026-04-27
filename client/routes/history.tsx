@@ -1,10 +1,8 @@
-import { useQuery } from "@connectrpc/connect-query";
 import { useForm } from "@tanstack/react-form";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import z from "zod";
 
-import { getUserCategories } from "@/buf/raker/v1/raker-RakerServer_connectquery";
 import { PostType } from "@/buf/raker/v1/raker_pb";
 import { Badge } from "@/components/ui/badge";
 import { CardContent } from "@/components/ui/card";
@@ -365,7 +363,7 @@ function HistoryPostCategoryForm({
 
 function History() {
 	const navigate = useNavigate({ from: Route.fullPath });
-	const { username } = useUser();
+	const { username, categories: availableCategories } = useUser();
 	const [types, setTypes] = useState([
 		PostType.Instagram,
 		PostType.Highlight,
@@ -374,8 +372,6 @@ function History() {
 		PostType.Snapchat,
 		PostType.VSCO,
 	]);
-	const categoriesQuery = useQuery(getUserCategories, {});
-	const availableCategories = categoriesQuery.data?.categories ?? [];
 	const [categories, setCategories] = useState<string[]>(availableCategories);
 	const [exclusive, setExclusive] = useState(false);
 	const [isOpen, setIsOpen] = useState(false);
