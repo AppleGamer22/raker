@@ -10,11 +10,13 @@ type ThemeProviderProps = {
 
 type ThemeProviderState = {
 	theme: Theme;
+	computedTheme: Exclude<Theme, "system">;
 	setTheme: (theme: Theme) => void;
 };
 
 const initialState: ThemeProviderState = {
 	theme: "system",
+	computedTheme: "light",
 	setTheme: () => null,
 };
 
@@ -26,6 +28,11 @@ export function ThemeProvider({
 	storageKey = "vite-ui-theme",
 	...props
 }: ThemeProviderProps) {
+	const getComputedTheme = (): Exclude<Theme, "system"> => {
+		if (typeof window === "undefined") return "light";
+		return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+	};
+
 	const [theme, setTheme] = useState<Theme>(() => {
 		const storedTheme = localStorage.getItem(storageKey);
 		if (storedTheme === "dark" || storedTheme === "light" || storedTheme === "system") {
@@ -34,26 +41,42 @@ export function ThemeProvider({
 
 		return defaultTheme;
 	});
+	const [computedTheme, setComputedTheme] = useState<Exclude<Theme, "system">>(getComputedTheme);
 
 	useEffect(() => {
 		const root = window.document.documentElement;
+		const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
 
-		root.classList.remove("light", "dark");
+		const applyTheme = () => {
+			root.classList.remove("light", "dark");
 
-		if (theme === "system") {
-			const systemTheme = window.matchMedia("(prefers-color-scheme: dark)").matches
-				? "dark"
-				: "light";
+			if (theme === "system") {
+				const systemTheme = mediaQuery.matches ? "dark" : "light";
+				root.classList.add(systemTheme);
+				setComputedTheme(systemTheme);
+				return;
+			}
 
-			root.classList.add(systemTheme);
+			root.classList.add(theme);
+			setComputedTheme(theme);
+		};
+
+		applyTheme();
+
+		if (theme !== "system") {
 			return;
 		}
 
-		root.classList.add(theme);
+		mediaQuery.addEventListener("change", applyTheme);
+
+		return () => {
+			mediaQuery.removeEventListener("change", applyTheme);
+		};
 	}, [theme]);
 
 	const value = {
 		theme,
+		computedTheme,
 		setTheme: (theme: Theme) => {
 			if (typeof window !== "undefined") {
 				window.localStorage.setItem(storageKey, theme);
