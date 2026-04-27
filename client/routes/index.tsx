@@ -181,9 +181,10 @@ const updateCategoriesSchema = z.object({
 function Categories() {
 	const categoriesQuery = useQuery(getUserCategories, {});
 	const categories = categoriesQuery.data?.categories ?? [];
+	const [newCategory, setNewCategory] = useState("");
 	const form = useForm({
 		defaultValues: {
-			categories: categories,
+			categories,
 		},
 		validators: {
 			onBlur: updateCategoriesSchema,
@@ -196,81 +197,112 @@ function Categories() {
 				e.preventDefault();
 			}}
 		>
+			<FieldLegend>Categories</FieldLegend>
 			<FieldGroup>
-				<FieldSet>
-					<FieldLegend>Categories</FieldLegend>
-					<FieldGroup>
-						{categoriesQuery.isPending ? <FieldLegend>Loading categories...</FieldLegend> : null}
-						{categoriesQuery.isError ? <FieldError>{categoriesQuery.error.message}</FieldError> : null}
-						<form.Field name="categories" mode="array">
-							{(field) => {
-								const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
-								return (
-									<FieldSet>
-										<FieldGroup>
-											{field.state.value.map((_, i) => (
-												<form.Field key={i} name={`categories[${i}]`}>
-													{(subField) => {
-														const isSubFieldInvalid =
-															subField.state.meta.isTouched &&
-															!subField.state.meta.isValid;
-														return (
-															<Field
-																orientation="horizontal"
-																data-invalid={isSubFieldInvalid}
-															>
-																<FieldContent>
-																	<InputGroup>
-																		<InputGroupInput
-																			name={subField.name}
-																			value={subField.state.value}
-																			onBlur={subField.handleBlur}
-																			onChange={(e) =>
-																				subField.handleChange(e.target.value)
-																			}
-																			aria-invalid={isSubFieldInvalid}
-																			placeholder={
-																				i < categories.length
-																					? categories[i]
-																					: "New Category Name"
-																			}
-																		></InputGroupInput>
+				{categoriesQuery.isPending ? <FieldLegend>Loading categories...</FieldLegend> : null}
+				{categoriesQuery.isError ? <FieldError>{categoriesQuery.error.message}</FieldError> : null}
+				<form.Field name="categories" mode="array">
+					{(field) => {
+						const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
+						return (
+							<FieldSet>
+								<FieldGroup>
+									{field.state.value.map((_, i) => (
+										<form.Field key={i} name={`categories[${i}]`}>
+											{(subField) => {
+												const isSubFieldInvalid =
+													subField.state.meta.isTouched && !subField.state.meta.isValid;
+												return (
+													<Field orientation="horizontal" data-invalid={isSubFieldInvalid}>
+														<FieldContent>
+															<InputGroup className="bg-transparent has-disabled:bg-transparent has-disabled:opacity-100">
+																<InputGroupInput
+																	name={subField.name}
+																	value={subField.state.value}
+																	onBlur={subField.handleBlur}
+																	onChange={(e) =>
+																		subField.handleChange(e.target.value)
+																	}
+																	aria-invalid={isSubFieldInvalid}
+																	placeholder={
+																		i < categories.length
+																			? categories[i]
+																			: "New Category Name"
+																	}
+																></InputGroupInput>
 
-																		<InputGroupAddon align="inline-end">
-																			<InputGroupButton
-																				type="button"
-																				variant="ghost"
-																				size="icon-xs"
-																				onClick={() => {
-																					// TODO: call server method to remove category from user row
-																					field.removeValue(i);
-																				}}
-																				aria-label={`Remove Category ${i + 1}`}
-																				disabled
-																			>
-																				<XIcon />
-																			</InputGroupButton>
-																		</InputGroupAddon>
-																	</InputGroup>
-																	{isSubFieldInvalid && (
-																		<FieldError
-																			errors={subField.state.meta.errors}
-																		/>
-																	)}
-																</FieldContent>
-															</Field>
-														);
+																<InputGroupAddon align="inline-end">
+																	<InputGroupButton
+																		type="button"
+																		variant="ghost"
+																		size="icon-xs"
+																		onClick={() => {
+																			// TODO: call server method to remove category from user row
+																			field.removeValue(i);
+																		}}
+																		aria-label={`Remove Category ${i + 1}`}
+																		disabled
+																	>
+																		<XIcon />
+																	</InputGroupButton>
+																</InputGroupAddon>
+															</InputGroup>
+															{isSubFieldInvalid && (
+																<FieldError errors={subField.state.meta.errors} />
+															)}
+														</FieldContent>
+													</Field>
+												);
+											}}
+										</form.Field>
+									))}
+								</FieldGroup>
+								<Field orientation="horizontal">
+									<FieldContent>
+										<InputGroup>
+											<InputGroupInput
+												value={newCategory}
+												onChange={(e) => {
+													setNewCategory(e.target.value);
+												}}
+												placeholder="New Category Name"
+											/>
+											<InputGroupAddon align="inline-end">
+												<InputGroupButton
+													type="button"
+													variant="ghost"
+													size="icon-xs"
+													onClick={() => setNewCategory("")}
+													aria-label={`Reset New Category Name`}
+												>
+													<XIcon />
+												</InputGroupButton>
+												<InputGroupButton
+													type="button"
+													onClick={() => {
+														const trimmedNewCategoryName = newCategory.trim();
+														if (!newCategory) {
+															return;
+														} else if (field.state.value.includes(trimmedNewCategoryName)) {
+															return;
+														}
+
+														field.pushValue(trimmedNewCategoryName);
+														setNewCategory("");
 													}}
-												</form.Field>
-											))}
-										</FieldGroup>
-										{isInvalid && <FieldError errors={field.state.meta.errors} />}
-									</FieldSet>
-								);
-							}}
-						</form.Field>
-					</FieldGroup>
-				</FieldSet>
+													disabled={!newCategory.trim()}
+												>
+													Add
+												</InputGroupButton>
+											</InputGroupAddon>
+										</InputGroup>
+									</FieldContent>
+								</Field>
+								{isInvalid && <FieldError errors={field.state.meta.errors} />}
+							</FieldSet>
+						);
+					}}
+				</form.Field>
 			</FieldGroup>
 		</form>
 	);
