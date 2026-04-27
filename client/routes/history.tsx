@@ -22,7 +22,6 @@ import {
 	ComboboxChipsInput,
 	ComboboxContent,
 	ComboboxGroup,
-	// ComboboxInput,
 	ComboboxItem,
 	ComboboxLabel,
 	ComboboxList,
@@ -32,6 +31,14 @@ import {
 import { FieldGroup, FieldLegend, Field, FieldSet, FieldLabel, FieldContent, FieldTitle } from "@/components/ui/field";
 import { InputGroupAddon } from "@/components/ui/input-group";
 import { Label } from "@/components/ui/label";
+import {
+	Pagination,
+	PaginationContent,
+	PaginationItem,
+	PaginationLink,
+	PaginationNext,
+	PaginationPrevious,
+} from "@/components/ui/pagination";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { InstagramIcon } from "@/components/ui/svgs/instagram";
@@ -104,8 +111,6 @@ function PlatformIcon({ type }: { type: PostType | -1 }) {
 			return <SnapchatIcon className="w-4" />;
 		case PostType.VSCO:
 			return <VSCOIcon className="w-4" />;
-		default:
-			return <></>;
 	}
 }
 
@@ -407,6 +412,36 @@ interface OwnerPostType {
 	type: PostType | -1;
 }
 
+function HistoryPagination({
+	current,
+	total,
+	onChange,
+}: {
+	current: number;
+	total: number;
+	onChange: (n: number) => void;
+}) {
+	return total <= 1 ? null : (
+		<Pagination>
+			<PaginationContent>
+				{current > 0 && (
+					<PaginationItem>
+						<PaginationPrevious onClick={() => onChange(current - 1)} />
+					</PaginationItem>
+				)}
+				<PaginationItem>
+					<PaginationLink>{current}</PaginationLink>
+				</PaginationItem>
+				{current < total - 1 && (
+					<PaginationItem>
+						<PaginationNext onClick={() => onChange(current + 1)} />
+					</PaginationItem>
+				)}
+			</PaginationContent>
+		</Pagination>
+	);
+}
+
 function History() {
 	const navigate = useNavigate({ from: Route.fullPath });
 	const { username, categories: availableCategories } = useUser();
@@ -426,6 +461,8 @@ function History() {
 	const [ownerSearchTerm, setOwnerSearchTerm] = useState("");
 	const [ownersSearchValue, setOwnersSearchValue] = useState<OwnerPostType[]>([]);
 	const [totalCount, setTotalCount] = useState(BigInt(0));
+	const [currentPage, setCurrentPage] = useState(0);
+	const [pageCount, setPageCount] = useState(0);
 	const [histories, setHistories] = useState<ScrapeResponse[]>([]);
 
 	const anchor = useComboboxAnchor();
@@ -594,6 +631,7 @@ function History() {
 			</Button>
 			{searchHistoryMutation.isPending && <Progress className="pt-2" value={null} />}
 			{totalCount > 0 && <Label className="my-2 justify-center">{totalCount} results</Label>}
+			<HistoryPagination current={currentPage} total={pageCount} onChange={setCurrentPage} />
 			<div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
 				{histories.map(({ postType, postOwner, post, postDate, categories, files }) => (
 					<Card key={`post-${postType}-${postOwner}-${post}`}>
@@ -632,6 +670,7 @@ function History() {
 					</Card>
 				))}
 			</div>
+			<HistoryPagination current={currentPage} total={pageCount} onChange={setCurrentPage} />
 		</CardContent>
 	);
 }
