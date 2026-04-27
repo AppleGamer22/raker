@@ -140,11 +140,11 @@ WHERE post_type = ANY (sqlc.slice(post_types)::post_type [])
 			and categories <@ sqlc.slice(categories)::text []
 		)
 	)
-	AND EXISTS (
+	AND (cardinality(COALESCE(sqlc.slice(post_owners)::text[], ARRAY[]::text[])) = 0 or EXISTS(
 		SELECT 1
 		FROM unnest(sqlc.slice(post_owners)::text[]) AS owner_filter(owner)
 		WHERE Histories.post_owner LIKE FORMAT('%%%s%%', owner_filter.owner)
-	)
+	))
 	AND username = sqlc.arg(username)::text
 order by post_date DESC
 LIMIT sqlc.arg(page_size)::int OFFSET sqlc.arg(page)::int;
@@ -163,11 +163,11 @@ WHERE post_type = ANY (sqlc.slice(post_types)::post_type [])
 			and categories <@ sqlc.slice(categories)::text []
 		)
 	)
-	AND EXISTS (
+	AND (cardinality(COALESCE(sqlc.slice(post_owners)::text[], ARRAY[]::text[])) = 0 or EXISTS(
 		SELECT 1
 		FROM unnest(sqlc.slice(post_owners)::text[]) AS owner_filter(owner)
 		WHERE Histories.post_owner LIKE FORMAT('%%%s%%', owner_filter.owner)
-	)
+	))
 	AND username = sqlc.arg(username)::text;
 
 -- name: HistoryOwners :many

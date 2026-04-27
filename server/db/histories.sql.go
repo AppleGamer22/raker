@@ -166,11 +166,11 @@ WHERE post_type = ANY ($1::post_type [])
 			and categories <@ $3::text []
 		)
 	)
-	AND EXISTS (
+	AND (cardinality(COALESCE($4::text[], ARRAY[]::text[])) = 0 or EXISTS(
 		SELECT 1
 		FROM unnest($4::text[]) AS owner_filter(owner)
 		WHERE Histories.post_owner LIKE FORMAT('%%%s%%', owner_filter.owner)
-	)
+	))
 	AND username = $5::text
 `
 
@@ -422,11 +422,11 @@ WHERE post_type = ANY ($1::post_type [])
 			and categories <@ $3::text []
 		)
 	)
-	AND EXISTS (
+	AND (cardinality(COALESCE($4::text[], ARRAY[]::text[])) = 0 or EXISTS(
 		SELECT 1
 		FROM unnest($4::text[]) AS owner_filter(owner)
 		WHERE Histories.post_owner LIKE FORMAT('%%%s%%', owner_filter.owner)
-	)
+	))
 	AND username = $5::text
 order by post_date DESC
 LIMIT $7::int OFFSET $6::int
