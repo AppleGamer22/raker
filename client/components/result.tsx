@@ -145,8 +145,8 @@ export function Result({ result }: { result: ScrapeResponse }) {
 												handleSelection(file, event);
 											}}
 										/>
-										<AccordionTrigger className="flex-1 gap-2">
-											<Label>{file}</Label>
+										<AccordionTrigger className="flex-1 gap-2 text-left">
+											<Label className="w-full wrap-anywhere whitespace-normal">{file}</Label>
 										</AccordionTrigger>
 									</div>
 									<AccordionContent className="max-w-[50vw]">
