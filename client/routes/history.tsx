@@ -3,7 +3,7 @@ import { useMutation } from "@connectrpc/connect-query";
 import { useForm } from "@tanstack/react-form";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { SearchIcon } from "lucide-react";
-import { Fragment, useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState, type ReactNode } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -173,6 +173,47 @@ function PostTypeIconLabel({ type }: { type: PostType }) {
 	}
 }
 
+function ResultLink({ result, children }: { result: ScrapeResponse; children: ReactNode }) {
+	switch (result.postType) {
+		case PostType.Instagram:
+			return (
+				<Link to="/instagram" search={{ post: result.post, incognito: result.incognito }} target="_blank">
+					{children}
+				</Link>
+			);
+		case PostType.Highlight:
+			return (
+				<Link to="/highlight" search={{ highlight: result.post }} target="_blank">
+					{children}
+				</Link>
+			);
+		case PostType.Story:
+			return <>{children}</>;
+		case PostType.TikTok:
+			return (
+				<Link
+					to="/tiktok"
+					search={{ owner: result.postOwner, post: result.post, incognito: result.incognito }}
+					target="_blank"
+				>
+					{children}
+				</Link>
+			);
+		case PostType.Snapchat:
+			return (
+				<Link to="/snapchat" search={{ owner: result.postOwner, highlight: result.post }} target="_blank">
+					{children}
+				</Link>
+			);
+		case PostType.VSCO:
+			return (
+				<Link to="/vsco" search={{ owner: result.postOwner, post: result.post }} target="_blank">
+					{children}
+				</Link>
+			);
+	}
+}
+
 function PlatformIcon({ type }: { type: PostType | -1 }) {
 	switch (type) {
 		case PostType.Instagram:
@@ -232,7 +273,7 @@ function HistoryPagination({
 	);
 }
 
-function HistoryPostCategoryForm({
+export function HistoryPostCategoryForm({
 	availableCategories,
 	exclusiveField,
 	categoriesField,
@@ -683,7 +724,13 @@ function History() {
 								</Badge>
 								<span>/</span>
 								<Badge variant="secondary">
-									<code className="align-middle leading-none select-text!">{post}</code>
+									<code className="align-middle leading-none select-text!">
+										<ResultLink
+											result={{ postType, postOwner, post, incognito: false } as ScrapeResponse}
+										>
+											{post}
+										</ResultLink>
+									</code>
 								</Badge>
 							</span>
 							{postDate !== undefined && <p>{timestampDate(postDate).toString()}</p>}
