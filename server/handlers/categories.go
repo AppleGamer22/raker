@@ -113,6 +113,30 @@ func (server *RakerServer) EditCategory(ctx context.Context, request *v1.EditCat
 }
 
 // UpdateCategories implements [v1connect.RakerServerHandler].
-func (server *RakerServer) UpdateCategories(ctx context.Context, request *v1.UpdateCategoriesRequest) (*v1.ScrapeResponse, error) {
-	panic("unimplemented")
+func (server *RakerServer) UpdateCategories(ctx context.Context, request *v1.UpdateCategoriesRequest) (*emptypb.Empty, error) {
+	user, ok := ctx.Value(authenticatedUserKey).(db.User)
+	if !ok {
+		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("not authenticated"))
+	}
+
+	sortedCategories := make([]string, 0, len(user.Categories))
+	for _, category := range user.Categories {
+		if slices.Contains(request.Categories, category) {
+			sortedCategories = append(sortedCategories, category)
+		}
+	}
+
+	_, err := server.DBClient.HistoryUpdateCategories(ctx, db.HistoryUpdateCategoriesParams{
+		Categories: sortedCategories,
+		PostType:   PostTypePB2DB(request.Type),
+		Post:       request.Post,
+		PostOwner:  request.Owner,
+		Username:   user.Username,
+	})
+
+	if err != nil {
+		return &emptypb.Empty{}, connect.NewError(connect.CodeInternal, err)
+	}
+
+	return &emptypb.Empty{}, nil
 }

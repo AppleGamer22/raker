@@ -32,15 +32,19 @@ export function Result({ result }: { result: ScrapeResponse }) {
 		},
 		onSubmit: async ({ value: { categories } }) => {
 			try {
-				const updatedResult = await updateCategoriesMutation.mutateAsync({
+				await updateCategoriesMutation.mutateAsync({
 					type: currentResult.postType,
 					owner: currentResult.postOwner,
 					post: currentResult.post,
 					categories,
 				});
 
-				setCurrentResult(updatedResult);
-				form.setFieldValue("categories", updatedResult.categories);
+				setCurrentResult((previousResult) => {
+					previousResult.categories = previousResult.categories.filter(
+						(category) => !categories.includes(category),
+					);
+					return previousResult;
+				});
 				toast.success("Categories updated", {
 					position: "top-center",
 				});

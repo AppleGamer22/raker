@@ -1134,7 +1134,7 @@ const file_raker_v1_raker_proto_rawDesc = "" +
 	"\n" +
 	"\x06TikTok\x10\x03\x12\f\n" +
 	"\bSnapchat\x10\x04\x12\b\n" +
-	"\x04VSCO\x10\x052\xee\b\n" +
+	"\x04VSCO\x10\x052\xec\b\n" +
 	"\vRakerServer\x12B\n" +
 	"\x0fSignUpInstagram\x12\x17.raker.v1.SignUpRequest\x1a\x16.google.protobuf.Empty\x12B\n" +
 	"\x0fSignInInstagram\x12\x17.raker.v1.SignInRequest\x1a\x16.google.protobuf.Empty\x12E\n" +
@@ -1148,8 +1148,8 @@ const file_raker_v1_raker_proto_rawDesc = "" +
 	"\x0eScrapeSnapchat\x12\x1d.raker.v1.BinaryScrapeRequest\x1a\x18.raker.v1.ScrapeResponse\x12E\n" +
 	"\n" +
 	"ScrapeVSCO\x12\x1d.raker.v1.BinaryScrapeRequest\x1a\x18.raker.v1.ScrapeResponse\x12E\n" +
-	"\vRemoveFiles\x12\x1c.raker.v1.RemoveFilesRequest\x1a\x18.raker.v1.ScrapeResponse\x12O\n" +
-	"\x10UpdateCategories\x12!.raker.v1.UpdateCategoriesRequest\x1a\x18.raker.v1.ScrapeResponse\x12D\n" +
+	"\vRemoveFiles\x12\x1c.raker.v1.RemoveFilesRequest\x1a\x18.raker.v1.ScrapeResponse\x12M\n" +
+	"\x10UpdateCategories\x12!.raker.v1.UpdateCategoriesRequest\x1a\x16.google.protobuf.Empty\x12D\n" +
 	"\rSearchHistory\x12\x18.raker.v1.HistoryRequest\x1a\x19.raker.v1.HistoryResponse\x12V\n" +
 	"\x13SearchHistoryOwners\x12\x1e.raker.v1.HistoryOwnersRequest\x1a\x1f.raker.v1.HistoryOwnersResponseB\x94\x01\n" +
 	"\fcom.raker.v1B\n" +
@@ -1228,7 +1228,7 @@ var file_raker_v1_raker_proto_depIdxs = []int32{
 	8,  // 34: raker.v1.RakerServer.ScrapeSnapchat:output_type -> raker.v1.ScrapeResponse
 	8,  // 35: raker.v1.RakerServer.ScrapeVSCO:output_type -> raker.v1.ScrapeResponse
 	8,  // 36: raker.v1.RakerServer.RemoveFiles:output_type -> raker.v1.ScrapeResponse
-	8,  // 37: raker.v1.RakerServer.UpdateCategories:output_type -> raker.v1.ScrapeResponse
+	18, // 37: raker.v1.RakerServer.UpdateCategories:output_type -> google.protobuf.Empty
 	13, // 38: raker.v1.RakerServer.SearchHistory:output_type -> raker.v1.HistoryResponse
 	14, // 39: raker.v1.RakerServer.SearchHistoryOwners:output_type -> raker.v1.HistoryOwnersResponse
 	25, // [25:40] is the sub-list for method output_type

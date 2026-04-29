@@ -51,6 +51,18 @@ func (server *RakerServer) RemoveFiles(ctx context.Context, request *v1.RemoveFi
 		}
 	}
 
+	if len(result.Files) == 0 {
+		err := server.DBClient.HistoryRemove(ctx, db.HistoryRemoveParams{
+			PostType:  PostTypePB2DB(request.Type),
+			Post:      request.Post,
+			PostOwner: request.Owner,
+			Username:  user.Username,
+		})
+		if err != nil {
+			return nil, connect.NewError(connect.CodeInternal, err)
+		}
+	}
+
 	return &v1.ScrapeResponse{
 		Categories: result.Categories,
 		PostDate:   timestamppb.New(result.PostDate),

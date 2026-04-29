@@ -1,7 +1,7 @@
 import { useMutation } from "@connectrpc/connect-query";
 import { useForm } from "@tanstack/react-form";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -61,6 +61,17 @@ function Snapchat() {
 			}
 		},
 	});
+
+	// submit once on initial page load if search params are present
+	const initialSubmit = useRef(true);
+	useEffect(() => {
+		if (!initialSubmit.current) return;
+		initialSubmit.current = false;
+		if (username === null) return;
+		if ((owner && owner.length > 0) || (highlight && highlight.length > 0)) {
+			form.handleSubmit();
+		}
+	}, [form, owner, highlight, username]);
 
 	return (
 		<form
