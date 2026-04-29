@@ -1,10 +1,12 @@
 import { timestampDate } from "@bufbuild/protobuf/wkt";
 import { useMutation } from "@connectrpc/connect-query";
+import { useForm } from "@tanstack/react-form";
 import { GalleryHorizontalIcon, Grid3x3Icon, TextAlignJustifyIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import z from "zod";
 
-import { removeFiles } from "@/buf/raker/v1/raker-RakerServer_connectquery";
+import { removeFiles, updateCategories } from "@/buf/raker/v1/raker-RakerServer_connectquery";
 import type { ScrapeResponse } from "@/buf/raker/v1/raker_pb";
 import { FileDisplay, FilesCarousel } from "@/components/file-display";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -15,10 +17,42 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useConfirmationDialog } from "@/hooks/use-confirmation-dialog";
 import { useUser } from "@/hooks/user-provider";
 import { cn } from "@/lib/utils";
+import { HistoryPostCategoryForm } from "@/routes/history";
 
 export function Result({ result }: { result: ScrapeResponse }) {
-	const { username } = useUser();
+	const { username, categories: availableCategories } = useUser();
+	const form = useForm({
+		defaultValues: {
+			categories: result.categories,
+		},
+		validators: {
+			onSubmit: z.object({
+				categories: z.array(z.string()).catch([]),
+			}),
+		},
+		onSubmit: async ({ value: { categories } }) => {
+			try {
+				const updatedResult = await updateCategoriesMutation.mutateAsync({
+					type: currentResult.postType,
+					owner: currentResult.postOwner,
+					post: currentResult.post,
+					categories,
+				});
+
+				setCurrentResult(updatedResult);
+				form.setFieldValue("categories", updatedResult.categories);
+				toast.success("Categories updated", {
+					position: "top-center",
+				});
+			} catch (err) {
+				toast.error((err as Error).message, {
+					position: "top-center",
+				});
+			}
+		},
+	});
 	const { confirm, DialogComponent } = useConfirmationDialog();
+	const updateCategoriesMutation = useMutation(updateCategories);
 	const removeFilesMutation = useMutation(removeFiles);
 	const [currentResult, setCurrentResult] = useState(result);
 	const [selection, setSelection] = useState<{ selectedFiles: string[]; anchorFile: string | null }>({
@@ -30,6 +64,10 @@ export function Result({ result }: { result: ScrapeResponse }) {
 	useEffect(() => {
 		setCurrentResult(result);
 	}, [result]);
+
+	useEffect(() => {
+		form.setFieldValue("categories", currentResult.categories);
+	}, [currentResult, form]);
 
 	useEffect(() => {
 		setSelection((current) => {
@@ -117,6 +155,46 @@ export function Result({ result }: { result: ScrapeResponse }) {
 	return (
 		<section className="my-3 flex w-full flex-col items-center gap-3">
 			<Label>{timestampDate(currentResult.postDate!).toString()}</Label>
+			<div className="w-full">
+				<form.Field name="categories" mode="array">
+					{(categoriesField) => (
+						<div className="flex flex-col gap-3 rounded-lg border border-border/60 bg-background/70 p-3">
+							<HistoryPostCategoryForm
+								availableCategories={availableCategories}
+								showExclusive={false}
+								categoriesField={{
+									name: categoriesField.name,
+									value: categoriesField.state.value,
+									onToggleCategory: (category, checked) => {
+										if (checked) {
+											if (!categoriesField.state.value.includes(category)) {
+												categoriesField.pushValue(category);
+											}
+										} else {
+											const index = categoriesField.state.value.indexOf(category);
+											if (index > -1) {
+												categoriesField.removeValue(index);
+											}
+										}
+									},
+								}}
+							/>
+							<div>
+								<Button
+									type="button"
+									size="sm"
+									disabled={updateCategoriesMutation.isPending}
+									onClick={() => {
+										form.handleSubmit();
+									}}
+								>
+									Save Categories
+								</Button>
+							</div>
+						</div>
+					)}
+				</form.Field>
+			</div>
 			<Tabs className="w-full">
 				<div className="mx-auto flex w-full items-center gap-2 sm:w-1/2">
 					<TabsList className="flex-1">

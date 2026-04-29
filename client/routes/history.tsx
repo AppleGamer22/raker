@@ -97,7 +97,8 @@ type HistoryFormValues = z.infer<typeof historyFormSchema>;
 
 type HistoryPostCategoryFormProps = {
 	availableCategories: string[];
-	exclusiveField: {
+	showExclusive?: boolean;
+	exclusiveField?: {
 		name: string;
 		value: HistoryFormValues["exclusive"];
 		onChange: (checked: boolean) => void;
@@ -275,6 +276,7 @@ function HistoryPagination({
 
 export function HistoryPostCategoryForm({
 	availableCategories,
+	showExclusive = true,
 	exclusiveField,
 	categoriesField,
 }: HistoryPostCategoryFormProps) {
@@ -283,22 +285,26 @@ export function HistoryPostCategoryForm({
 			<FieldSet>
 				<FieldLegend>Post Categories</FieldLegend>
 				<FieldGroup className="flex flex-row flex-wrap gap-1 *:w-auto">
-					<FieldLabel htmlFor="category-exclusive" className="max-w-fit">
-						<Field orientation="horizontal">
-							<Switch
-								id="category-exclusive"
-								name={exclusiveField.name}
-								checked={exclusiveField.value}
-								onCheckedChange={(checked) => {
-									exclusiveField.onChange(checked);
-								}}
-							/>
-							<FieldContent>
-								<FieldTitle>Exclusive</FieldTitle>
-							</FieldContent>
-						</Field>
-					</FieldLabel>
-					<Separator orientation="vertical" />
+					{showExclusive && exclusiveField ? (
+						<>
+							<FieldLabel htmlFor="category-exclusive" className="max-w-fit">
+								<Field orientation="horizontal">
+									<Switch
+										id="category-exclusive"
+										name={exclusiveField.name}
+										checked={exclusiveField.value}
+										onCheckedChange={(checked) => {
+											exclusiveField.onChange(checked);
+										}}
+									/>
+									<FieldContent>
+										<FieldTitle>Exclusive</FieldTitle>
+									</FieldContent>
+								</Field>
+							</FieldLabel>
+							<Separator orientation="vertical" />
+						</>
+					) : null}
 					{availableCategories.map((category) => (
 						<FieldLabel key={`category-${category}`} htmlFor={`category-${category}`} className="max-w-fit">
 							<Field orientation="horizontal">
@@ -386,9 +392,9 @@ function History() {
 		onSubmit: async ({ value: { categories, exclusive, ownersSearchValue, types } }) => {
 			try {
 				const { histories, totalCount } = await searchHistoryMutation.mutateAsync({
-					categories: categories,
-					exclusive: exclusive,
-					types: types,
+					categories,
+					exclusive,
+					types,
 					owners: ownersSearchValue.map(({ owner }) => owner),
 					page: currentPageRef.current,
 					pageSize: 30,
