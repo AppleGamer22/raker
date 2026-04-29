@@ -1,23 +1,35 @@
 import { timestampDate } from "@bufbuild/protobuf/wkt";
+import { useMutation } from "@connectrpc/connect-query";
 import { GalleryHorizontalIcon, Grid3x3Icon, TextAlignJustifyIcon } from "lucide-react";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
+import { removeFiles } from "@/buf/raker/v1/raker-RakerServer_connectquery";
 import type { ScrapeResponse } from "@/buf/raker/v1/raker_pb";
 import { FileDisplay, FilesCarousel } from "@/components/file-display";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useConfirmationDialog } from "@/hooks/use-confirmation-dialog";
 import { useUser } from "@/hooks/user-provider";
 import { cn } from "@/lib/utils";
 
 export function Result({ result }: { result: ScrapeResponse }) {
 	const { username } = useUser();
+	const { confirm, DialogComponent } = useConfirmationDialog();
+	const removeFilesMutation = useMutation(removeFiles);
+	const [currentResult, setCurrentResult] = useState(result);
 	const [selection, setSelection] = useState<{ selectedFiles: string[]; anchorFile: string | null }>({
 		selectedFiles: [],
 		anchorFile: null,
 	});
-	const files = result.files;
+	const files = currentResult.files;
+
+	useEffect(() => {
+		setCurrentResult(result);
+	}, [result]);
 
 	useEffect(() => {
 		setSelection((current) => {
@@ -45,10 +57,6 @@ export function Result({ result }: { result: ScrapeResponse }) {
 		window.addEventListener("keydown", onKeyDown);
 		return () => window.removeEventListener("keydown", onKeyDown);
 	}, []);
-
-	if (username === null) {
-		return null;
-	}
 
 	const isSelected = (file: string) => selection.selectedFiles.includes(file);
 
@@ -102,24 +110,73 @@ export function Result({ result }: { result: ScrapeResponse }) {
 		toggleSelection(file);
 	};
 
+	if (username === null) {
+		return null;
+	}
+
 	return (
 		<section className="my-3 flex w-full flex-col items-center gap-3">
-			<Label>{timestampDate(result.postDate!).toString()}</Label>
+			<Label>{timestampDate(currentResult.postDate!).toString()}</Label>
 			<Tabs className="w-full">
-				<TabsList className="mx-auto w-full sm:w-1/2">
-					<TabsTrigger value="list">
-						<TextAlignJustifyIcon />
-						List
-					</TabsTrigger>
-					<TabsTrigger value="grid">
-						<Grid3x3Icon />
-						Grid
-					</TabsTrigger>
-					<TabsTrigger value="carousel">
-						<GalleryHorizontalIcon />
-						Carousel
-					</TabsTrigger>
-				</TabsList>
+				<div className="mx-auto flex w-full items-center gap-2 sm:w-1/2">
+					<TabsList className="flex-1">
+						<TabsTrigger value="list">
+							<TextAlignJustifyIcon />
+							List
+						</TabsTrigger>
+						<TabsTrigger value="grid">
+							<Grid3x3Icon />
+							Grid
+						</TabsTrigger>
+						<TabsTrigger value="carousel">
+							<GalleryHorizontalIcon />
+							Carousel
+						</TabsTrigger>
+					</TabsList>
+					{selection.selectedFiles.length > 0 ? (
+						<Button
+							type="button"
+							variant="destructive"
+							size="sm"
+							className="shrink-0"
+							onClick={async () => {
+								if (selection.selectedFiles.length === 0) {
+									return;
+								}
+
+								const confirmed = await confirm({
+									title: "Delete Files",
+									description: `Delete ${selection.selectedFiles.length} selected file${selection.selectedFiles.length === 1 ? "" : "s"}? This cannot be undone.`,
+									confirmText: "Delete",
+									cancelText: "Cancel",
+									isDestructive: true,
+								});
+
+								if (!confirmed) {
+									return;
+								}
+
+								try {
+									const updatedResult = await removeFilesMutation.mutateAsync({
+										type: currentResult.postType,
+										owner: currentResult.postOwner,
+										post: currentResult.post,
+										paths: selection.selectedFiles,
+									});
+
+									setCurrentResult(updatedResult);
+									setSelection({ selectedFiles: [], anchorFile: null });
+								} catch (err) {
+									toast.error((err as Error).message, {
+										position: "top-center",
+									});
+								}
+							}}
+						>
+							Delete {selection.selectedFiles.length}
+						</Button>
+					) : null}
+				</div>
 				<TabsContent value="list">
 					<Accordion multiple>
 						{files.map((file) => {
@@ -132,7 +189,7 @@ export function Result({ result }: { result: ScrapeResponse }) {
 										"flex w-full flex-col rounded-lg border border-transparent px-2 py-1 transition",
 										selected && "border-primary/60 bg-primary/10 ring-2 ring-primary/30",
 									)}
-									key={`accordion-file-${result.postType}-${result.postOwner}-${result.post}-${file}`}
+									key={`accordion-file-${currentResult.postType}-${currentResult.postOwner}-${currentResult.post}-${file}`}
 									value={file}
 								>
 									<div className="flex w-full items-center gap-2">
@@ -150,7 +207,7 @@ export function Result({ result }: { result: ScrapeResponse }) {
 										</AccordionTrigger>
 									</div>
 									<AccordionContent className="max-w-[50vw]">
-										<FileDisplay file={file} post={result} username={username} />
+										<FileDisplay file={file} post={currentResult} username={username} />
 									</AccordionContent>
 								</AccordionItem>
 							);
@@ -168,19 +225,19 @@ export function Result({ result }: { result: ScrapeResponse }) {
 									"relative rounded-xl border border-transparent p-1 transition",
 									selected && "border-primary/60 bg-primary/10 ring-2 ring-primary/30",
 								)}
-								key={`grid-file-${result.postType}-${result.postOwner}-${result.post}-${file}`}
+								key={`grid-file-${currentResult.postType}-${currentResult.postOwner}-${currentResult.post}-${file}`}
 							>
 								<Checkbox
 									checked={selected}
 									aria-label={selected ? `Deselect ${file}` : `Select ${file}`}
-									className="absolute top-2 right-2 z-10"
+									className="absolute top-2 right-2 z-10 border-foreground/60 bg-background/95 shadow-sm dark:border-foreground/70 dark:bg-background/85"
 									onClick={(event) => {
 										event.preventDefault();
 										event.stopPropagation();
 										handleSelection(file, event);
 									}}
 								/>
-								<FileDisplay file={file} post={result} username={username} />
+								<FileDisplay file={file} post={currentResult} username={username} />
 							</div>
 						);
 					})}
@@ -189,9 +246,10 @@ export function Result({ result }: { result: ScrapeResponse }) {
 					value="carousel"
 					className="mt-2 w-full [&_img]:max-h-[50vh] [&_img]:w-auto [&_video]:max-h-[50vh] [&_video]:w-auto"
 				>
-					<FilesCarousel post={result} username={username} />
+					<FilesCarousel post={currentResult} username={username} />
 				</TabsContent>
 			</Tabs>
+			<DialogComponent />
 		</section>
 	);
 }
