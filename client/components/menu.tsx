@@ -149,7 +149,7 @@ export function Menu({
 										<Link
 											disabled={!isSignedIn}
 											to="/snapchat"
-											search={{ owner: "" }}
+											search={{ owner: "", highlight: "" }}
 											onClick={() => onNavigate?.()}
 										/>
 									}
