@@ -1,14 +1,14 @@
 import { timestampDate } from "@bufbuild/protobuf/wkt";
 import { useMutation } from "@connectrpc/connect-query";
 import { useForm } from "@tanstack/react-form";
-import { GalleryHorizontalIcon, Grid3x3Icon, TextAlignJustifyIcon } from "lucide-react";
+import { GalleryHorizontalIcon, Grid3x3Icon, TextAlignJustifyIcon, TrashIcon, ExternalLinkIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import z from "zod";
 
 import { removeFiles, updateCategories } from "@/buf/raker/v1/raker-RakerServer_connectquery";
 import type { ScrapeResponse } from "@/buf/raker/v1/raker_pb";
-import { FileDisplay, FilesCarousel } from "@/components/file-display";
+import { FileDisplay, FilesCarousel, postTypeString } from "@/components/file-display";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -152,6 +152,40 @@ export function Result({ result }: { result: ScrapeResponse }) {
 		toggleSelection(file);
 	};
 
+	const deleteFiles = async (paths: string[]) => {
+		if (paths.length === 0) {
+			return;
+		}
+
+		const confirmed = await confirm({
+			title: "Delete Files",
+			description: `Delete ${paths.length} file${paths.length === 1 ? "" : "s"}? This cannot be undone.`,
+			confirmText: "Delete",
+			cancelText: "Cancel",
+			isDestructive: true,
+		});
+
+		if (!confirmed) {
+			return;
+		}
+
+		try {
+			const updatedResult = await removeFilesMutation.mutateAsync({
+				type: currentResult.postType,
+				owner: currentResult.postOwner,
+				post: currentResult.post,
+				paths,
+			});
+
+			setCurrentResult(updatedResult);
+			setSelection({ selectedFiles: [], anchorFile: null });
+		} catch (err) {
+			toast.error((err as Error).message, {
+				position: "top-center",
+			});
+		}
+	};
+
 	if (username === null) {
 		return null;
 	}
@@ -221,39 +255,7 @@ export function Result({ result }: { result: ScrapeResponse }) {
 							variant="destructive"
 							size="sm"
 							className="shrink-0"
-							onClick={async () => {
-								if (selection.selectedFiles.length === 0) {
-									return;
-								}
-
-								const confirmed = await confirm({
-									title: "Delete Files",
-									description: `Delete ${selection.selectedFiles.length} selected file${selection.selectedFiles.length === 1 ? "" : "s"}? This cannot be undone.`,
-									confirmText: "Delete",
-									cancelText: "Cancel",
-									isDestructive: true,
-								});
-
-								if (!confirmed) {
-									return;
-								}
-
-								try {
-									const updatedResult = await removeFilesMutation.mutateAsync({
-										type: currentResult.postType,
-										owner: currentResult.postOwner,
-										post: currentResult.post,
-										paths: selection.selectedFiles,
-									});
-
-									setCurrentResult(updatedResult);
-									setSelection({ selectedFiles: [], anchorFile: null });
-								} catch (err) {
-									toast.error((err as Error).message, {
-										position: "top-center",
-									});
-								}
-							}}
+							onClick={() => deleteFiles(selection.selectedFiles)}
 						>
 							Delete {selection.selectedFiles.length}
 						</Button>
@@ -284,6 +286,33 @@ export function Result({ result }: { result: ScrapeResponse }) {
 												handleSelection(file, event);
 											}}
 										/>
+										<Button
+											type="button"
+											variant="outline"
+											size="sm"
+											className="hover:bg-blue/20 hover:text-blue shrink-0 px-2"
+											render={
+												<a
+													href={`/api/storage/${username}/${postTypeString(result.postType)}/${result.postOwner}/${file}`}
+													target="_blank"
+													rel="noopener noreferrer"
+													aria-label={`Open ${file} in new tab`}
+												/>
+											}
+										>
+											<ExternalLinkIcon className="h-4 w-4" />
+										</Button>
+										<Button
+											type="button"
+											variant="outline"
+											size="sm"
+											className="shrink-0 px-2 hover:bg-destructive/20 hover:text-destructive"
+											disabled={removeFilesMutation.isPending}
+											onClick={() => deleteFiles([file])}
+											aria-label={`Delete ${file}`}
+										>
+											<TrashIcon className="h-4 w-4" />
+										</Button>
 										<AccordionTrigger className="flex-1 gap-2 text-left">
 											<Label className="w-full wrap-anywhere whitespace-normal">{file}</Label>
 										</AccordionTrigger>
