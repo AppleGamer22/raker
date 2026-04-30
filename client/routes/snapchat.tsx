@@ -130,7 +130,7 @@ function Snapchat() {
 			{/* TODO: results */}
 			{result && (
 				<CardFooter>
-					<Result result={result} />
+					<Result result={result} setResult={setResult} />
 				</CardFooter>
 			)}
 		</form>

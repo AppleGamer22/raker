@@ -10,7 +10,7 @@ import {
 	ExternalLinkIcon,
 	CopyIcon,
 } from "lucide-react";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState, type Dispatch, type ReactNode, type SetStateAction } from "react";
 import { toast } from "sonner";
 import z from "zod";
 
@@ -273,7 +273,13 @@ export function ResultHeader({
 	);
 }
 
-export function Result({ result }: { result: ScrapeResponse }) {
+export function Result({
+	result,
+	setResult,
+}: {
+	result: ScrapeResponse;
+	setResult: Dispatch<SetStateAction<ScrapeResponse | null>>;
+}) {
 	const { username, categories: availableCategories } = useUser();
 	const form = useForm({
 		defaultValues: {
@@ -287,17 +293,21 @@ export function Result({ result }: { result: ScrapeResponse }) {
 		onSubmit: async ({ value: { categories } }) => {
 			try {
 				await updateCategoriesMutation.mutateAsync({
-					type: currentResult.postType,
-					owner: currentResult.postOwner,
-					post: currentResult.post,
+					type: result.postType,
+					owner: result.postOwner,
+					post: result.post,
 					categories,
 				});
 
-				setCurrentResult((previousResult) => {
-					previousResult.categories = previousResult.categories.filter(
-						(category) => !categories.includes(category),
-					);
-					return previousResult;
+				setResult((previousResult) => {
+					if (previousResult === null) {
+						return previousResult;
+					}
+
+					return {
+						...previousResult,
+						categories,
+					};
 				});
 				toast.success("Categories updated", {
 					position: "top-center",
@@ -312,20 +322,15 @@ export function Result({ result }: { result: ScrapeResponse }) {
 	const { confirm, DialogComponent } = useConfirmationDialog();
 	const updateCategoriesMutation = useMutation(updateCategories);
 	const removeFilesMutation = useMutation(removeFiles);
-	const [currentResult, setCurrentResult] = useState(result);
 	const [selection, setSelection] = useState<{ selectedFiles: string[]; anchorFile: string | null }>({
 		selectedFiles: [],
 		anchorFile: null,
 	});
-	const files = currentResult.files;
+	const files = result.files;
 
 	useEffect(() => {
-		setCurrentResult(result);
-	}, [result]);
-
-	useEffect(() => {
-		form.setFieldValue("categories", currentResult.categories);
-	}, [currentResult, form]);
+		form.setFieldValue("categories", result.categories);
+	}, [result, form]);
 
 	useEffect(() => {
 		setSelection((current) => {
@@ -425,13 +430,13 @@ export function Result({ result }: { result: ScrapeResponse }) {
 
 		try {
 			const updatedResult = await removeFilesMutation.mutateAsync({
-				type: currentResult.postType,
-				owner: currentResult.postOwner,
-				post: currentResult.post,
+				type: result.postType,
+				owner: result.postOwner,
+				post: result.post,
 				paths,
 			});
 
-			setCurrentResult(updatedResult);
+			setResult(updatedResult.files.length === 0 ? null : updatedResult);
 			setSelection({ selectedFiles: [], anchorFile: null });
 		} catch (err) {
 			toast.error((err as Error).message, {
@@ -447,9 +452,9 @@ export function Result({ result }: { result: ScrapeResponse }) {
 	return (
 		<section className="my-3 flex w-full flex-col items-center gap-3">
 			<div className="max-w-full">
-				<ResultHeader categories={availableCategories} exclusive={false} result={currentResult} />
+				<ResultHeader categories={availableCategories} exclusive={false} result={result} />
 			</div>
-			<Label>{timestampDate(currentResult.postDate!).toString()}</Label>
+			<Label>{timestampDate(result.postDate!).toString()}</Label>
 			<div className="w-full">
 				<form.Field name="categories" mode="array">
 					{(categoriesField) => (
@@ -530,7 +535,7 @@ export function Result({ result }: { result: ScrapeResponse }) {
 										"flex w-full flex-col rounded-lg border border-transparent px-2 py-1 transition",
 										selected && "border-primary/60 bg-primary/10 ring-2 ring-primary/30",
 									)}
-									key={`accordion-file-${currentResult.postType}-${currentResult.postOwner}-${currentResult.post}-${file}`}
+									key={`accordion-file-${result.postType}-${result.postOwner}-${result.post}-${file}`}
 									value={file}
 								>
 									<div className="flex w-full items-center gap-2">
@@ -576,7 +581,7 @@ export function Result({ result }: { result: ScrapeResponse }) {
 										</AccordionTrigger>
 									</div>
 									<AccordionContent className="max-w-[50vw]">
-										<FileDisplay file={file} post={currentResult} username={username} />
+										<FileDisplay file={file} post={result} username={username} />
 									</AccordionContent>
 								</AccordionItem>
 							);
@@ -594,7 +599,7 @@ export function Result({ result }: { result: ScrapeResponse }) {
 									"relative rounded-xl border border-transparent p-1 transition",
 									selected && "border-primary/60 bg-primary/10 ring-2 ring-primary/30",
 								)}
-								key={`grid-file-${currentResult.postType}-${currentResult.postOwner}-${currentResult.post}-${file}`}
+								key={`grid-file-${result.postType}-${result.postOwner}-${result.post}-${file}`}
 							>
 								<Checkbox
 									checked={selected}
@@ -606,7 +611,7 @@ export function Result({ result }: { result: ScrapeResponse }) {
 										handleSelection(file, event);
 									}}
 								/>
-								<FileDisplay file={file} post={currentResult} username={username} />
+								<FileDisplay file={file} post={result} username={username} />
 							</div>
 						);
 					})}
@@ -615,7 +620,7 @@ export function Result({ result }: { result: ScrapeResponse }) {
 					value="carousel"
 					className="mt-2 w-full [&_img]:max-h-[50vh] [&_img]:w-auto [&_video]:max-h-[50vh] [&_video]:w-auto"
 				>
-					<FilesCarousel post={currentResult} username={username} />
+					<FilesCarousel post={result} username={username} />
 				</TabsContent>
 			</Tabs>
 			<DialogComponent />
