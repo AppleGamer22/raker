@@ -6,7 +6,15 @@ updates:
       interval: daily
     assignees:
       - AppleGamer22
-    reviewers:
+    commit-message:
+      prefix: chore
+    labels:
+      - dependencies
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: daily
+    assignees:
       - AppleGamer22
     commit-message:
       prefix: chore
@@ -18,8 +26,6 @@ updates:
       interval: daily
     assignees:
       - AppleGamer22
-    reviewers:
-      - AppleGamer22
     commit-message:
       prefix: chore
     labels:
@@ -29,8 +35,6 @@ updates:
     schedule:
       interval: daily
     assignees:
-      - AppleGamer22
-    reviewers:
       - AppleGamer22
     commit-message:
       prefix: chore
