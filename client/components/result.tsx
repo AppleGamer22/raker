@@ -548,6 +548,7 @@ export function Result({ result }: { result: ScrapeResponse }) {
 											variant="outline"
 											size="sm"
 											className="hover:bg-blue/20 hover:text-blue shrink-0 px-2"
+											nativeButton={false}
 											render={
 												<a
 													href={`/api/storage/${username}/${postTypeString(result.postType)}/${result.postOwner}/${file}`}
