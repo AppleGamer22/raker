@@ -36,7 +36,7 @@ import { VSCOIcon } from "@/components/ui/svgs/vsco";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useConfirmationDialog } from "@/hooks/use-confirmation-dialog";
 import { useUser } from "@/hooks/user-provider";
-import { cn } from "@/lib/utils";
+import { cn, writeClipboard } from "@/lib/utils";
 import { defaultPostTypes, HistoryPostCategoryForm } from "@/routes/history";
 
 export function PlatformIcon({ type }: { type: PostType | -1 }) {
@@ -218,7 +218,7 @@ export function ResultHeader({
 								<PlatformIcon type={result.postType} /> Open Profile
 							</ContextMenuItem>
 						</a>
-						<ContextMenuItem>
+						<ContextMenuItem onClick={() => writeClipboard(result.postOwner)}>
 							<CopyIcon /> Copy
 						</ContextMenuItem>
 					</ContextMenuGroup>
