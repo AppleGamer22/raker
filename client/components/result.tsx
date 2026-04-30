@@ -506,10 +506,12 @@ export function Result({
 							<Grid3x3Icon />
 							Grid
 						</TabsTrigger>
-						<TabsTrigger value="carousel">
-							<GalleryHorizontalIcon />
-							Carousel
-						</TabsTrigger>
+						{result.files.length > 1 && (
+							<TabsTrigger value="carousel">
+								<GalleryHorizontalIcon />
+								Carousel
+							</TabsTrigger>
+						)}
 					</TabsList>
 					{selection.selectedFiles.length > 0 ? (
 						<Button
@@ -616,12 +618,14 @@ export function Result({
 						);
 					})}
 				</TabsContent>
-				<TabsContent
-					value="carousel"
-					className="mt-2 w-full [&_img]:max-h-[50vh] [&_img]:w-auto [&_video]:max-h-[50vh] [&_video]:w-auto"
-				>
-					<FilesCarousel post={result} username={username} />
-				</TabsContent>
+				{result.files.length > 1 && (
+					<TabsContent
+						value="carousel"
+						className="mt-2 w-full [&_img]:max-h-[50vh] [&_img]:w-auto [&_video]:max-h-[50vh] [&_video]:w-auto"
+					>
+						<FilesCarousel post={result} username={username} />
+					</TabsContent>
+				)}
 			</Tabs>
 			<DialogComponent />
 		</section>
