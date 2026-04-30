@@ -8,7 +8,6 @@ import {
 	TextAlignJustifyIcon,
 	TrashIcon,
 	ExternalLinkIcon,
-	ClipboardCopyIcon,
 	CopyIcon,
 } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
@@ -157,7 +156,7 @@ export function ResultHeader({
 	showPost?: boolean;
 }) {
 	return (
-		<span className="inline-block space-x-1 leading-none *:my-0.5 *:align-middle">
+		<span className="inline-flex max-w-full flex-wrap items-center gap-x-1 gap-y-1 leading-none">
 			<Badge variant="secondary">
 				<Link
 					to="/history"
@@ -256,7 +255,7 @@ export function ResultHeader({
 												case PostType.Snapchat:
 													return `https://www.snapchat.com/@${result.postOwner}/highlight/${result.post}`;
 												case PostType.VSCO:
-													return `https://vsco.co/${result.postOwner}/gallery/${result.post}`;
+													return `https://vsco.co/${result.postOwner}/media/${result.post}`;
 											}
 										})()}
 									>

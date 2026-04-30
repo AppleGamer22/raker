@@ -593,35 +593,37 @@ function History() {
 				{histories.map(({ postType, postOwner, post, postDate, categories, files }) => (
 					<Card key={`post-${postType}-${postOwner}-${post}`}>
 						<CardHeader className="w-full wrap-break-word">
-							<ResultHeader
-								result={{ postType, postOwner, post, incognito: false } as ScrapeResponse}
-								categories={form.getFieldValue("categories")}
-								exclusive={form.getFieldValue("exclusive")}
-								showPost
-							/>
-							{postDate !== undefined && <p>{timestampDate(postDate).toString()}</p>}
-							<span>
-								{categories.map((category) => (
-									<Badge
-										key={`category-${postType}-${postOwner}-${post}-${category}`}
-										variant="secondary"
-									>
-										<Link
-											to="/history"
-											search={{
-												categories: [category],
-												exclusive: form.getFieldValue("exclusive"),
-												page: 1n,
-												owners: [],
-												types: defaultPostTypes,
-											}}
-											target="_blank"
+							<div className="flex max-w-full flex-wrap items-center gap-x-1 gap-y-1 leading-none">
+								<ResultHeader
+									result={{ postType, postOwner, post, incognito: false } as ScrapeResponse}
+									categories={form.getFieldValue("categories")}
+									exclusive={form.getFieldValue("exclusive")}
+									showPost
+								/>
+								{postDate !== undefined && <p>{timestampDate(postDate).toString()}</p>}
+								<span className="inline-flex flex-wrap items-center gap-1">
+									{categories.map((category) => (
+										<Badge
+											key={`category-${postType}-${postOwner}-${post}-${category}`}
+											variant="secondary"
 										>
-											{category}
-										</Link>
-									</Badge>
-								))}
-							</span>
+											<Link
+												to="/history"
+												search={{
+													categories: [category],
+													exclusive: form.getFieldValue("exclusive"),
+													page: 1n,
+													owners: [],
+													types: defaultPostTypes,
+												}}
+												target="_blank"
+											>
+												{category}
+											</Link>
+										</Badge>
+									))}
+								</span>
+							</div>
 						</CardHeader>
 						<CardContent>
 							<FilesCarousel
