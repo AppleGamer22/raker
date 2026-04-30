@@ -20,7 +20,7 @@ export const router = createRouter({
 		queryClient,
 	},
 	scrollRestoration: true,
-	defaultPreload: "render",
+	defaultPreload: "intent",
 	defaultPreloadStaleTime: 0,
 });
 
