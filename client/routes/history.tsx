@@ -3,13 +3,14 @@ import { useMutation } from "@connectrpc/connect-query";
 import { useForm } from "@tanstack/react-form";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { SearchIcon } from "lucide-react";
-import { Fragment, useEffect, useRef, useState, type ReactNode } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 
 import { searchHistory, searchHistoryOwners } from "@/buf/raker/v1/raker-RakerServer_connectquery";
 import { PostType, type ScrapeResponse } from "@/buf/raker/v1/raker_pb";
 import { FilesCarousel } from "@/components/file-display";
+import { PlatformIcon, PostTypeIconLabel, ResultHeader } from "@/components/result";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -126,109 +127,6 @@ const postTypeOptions = [
 	{ id: "post-type-snapchat", value: PostType.Snapchat, label: "Highlight", Icon: SnapchatIcon },
 	{ id: "post-type-vsco", value: PostType.VSCO, label: "Post", Icon: VSCOIcon },
 ] as const;
-
-function PostTypeIconLabel({ type }: { type: PostType }) {
-	switch (type) {
-		case PostType.Instagram:
-			return (
-				<span className="inline-flex items-center gap-1 align-middle leading-none whitespace-nowrap">
-					<InstagramIcon className="w-4" />
-					Post
-				</span>
-			);
-		case PostType.Highlight:
-			return (
-				<span className="inline-flex items-center gap-1 align-middle leading-none whitespace-nowrap">
-					<InstagramIcon className="w-4" />
-					Highlight
-				</span>
-			);
-		case PostType.Story:
-			return (
-				<span className="inline-flex items-center gap-1 align-middle leading-none whitespace-nowrap">
-					<InstagramIcon className="w-4" />
-					Story
-				</span>
-			);
-		case PostType.TikTok:
-			return (
-				<span className="inline-flex items-center gap-1 align-middle leading-none whitespace-nowrap">
-					<TikTokIcon className="w-4" />
-					Post
-				</span>
-			);
-		case PostType.Snapchat:
-			return (
-				<span className="inline-flex items-center gap-1 align-middle leading-none whitespace-nowrap">
-					<SnapchatIcon className="w-4" />
-					Highlight
-				</span>
-			);
-		case PostType.VSCO:
-			return (
-				<span className="inline-flex items-center gap-1 align-middle leading-none whitespace-nowrap">
-					<VSCOIcon className="w-4" />
-					Post
-				</span>
-			);
-	}
-}
-
-function ResultLink({ result, children }: { result: ScrapeResponse; children: ReactNode }) {
-	switch (result.postType) {
-		case PostType.Instagram:
-			return (
-				<Link to="/instagram" search={{ post: result.post, incognito: result.incognito }} target="_blank">
-					{children}
-				</Link>
-			);
-		case PostType.Highlight:
-			return (
-				<Link to="/highlight" search={{ highlight: result.post }} target="_blank">
-					{children}
-				</Link>
-			);
-		case PostType.Story:
-			return <>{children}</>;
-		case PostType.TikTok:
-			return (
-				<Link
-					to="/tiktok"
-					search={{ owner: result.postOwner, post: result.post, incognito: result.incognito }}
-					target="_blank"
-				>
-					{children}
-				</Link>
-			);
-		case PostType.Snapchat:
-			return (
-				<Link to="/snapchat" search={{ owner: result.postOwner, highlight: result.post }} target="_blank">
-					{children}
-				</Link>
-			);
-		case PostType.VSCO:
-			return (
-				<Link to="/vsco" search={{ owner: result.postOwner, post: result.post }} target="_blank">
-					{children}
-				</Link>
-			);
-	}
-}
-
-function PlatformIcon({ type }: { type: PostType | -1 }) {
-	switch (type) {
-		case PostType.Instagram:
-		case PostType.Highlight:
-		case PostType.Story:
-			return <InstagramIcon className="w-4" />;
-		case PostType.TikTok:
-			return <TikTokIcon className="w-4" />;
-		case PostType.Snapchat:
-			return <SnapchatIcon className="w-4" />;
-		case PostType.VSCO:
-			return <VSCOIcon className="w-4" />;
-	}
-}
 
 function HistoryPagination({
 	current,
@@ -695,50 +593,12 @@ function History() {
 				{histories.map(({ postType, postOwner, post, postDate, categories, files }) => (
 					<Card key={`post-${postType}-${postOwner}-${post}`}>
 						<CardHeader className="w-full wrap-break-word">
-							<span className="inline-block space-x-1 leading-none *:my-0.5 *:align-middle">
-								<Badge variant="secondary">
-									<Link
-										to="/history"
-										search={{
-											categories: form.getFieldValue("categories"),
-											exclusive: form.getFieldValue("exclusive"),
-											page: 1n,
-											owners: [],
-											types: [postType],
-										}}
-										target="_blank"
-									>
-										<PostTypeIconLabel type={postType} />
-									</Link>
-								</Badge>
-								<span>/</span>
-								<Badge variant="secondary" className="select-text!">
-									<Link
-										to="/history"
-										search={{
-											categories: form.getFieldValue("categories"),
-											exclusive: form.getFieldValue("exclusive"),
-											page: 1n,
-											owners: [{ owner: postOwner, type: -1 }],
-											types: defaultPostTypes,
-										}}
-										target="_blank"
-										className="select-text!"
-									>
-										<code className="align-middle leading-none select-text!">{postOwner}</code>
-									</Link>
-								</Badge>
-								<span>/</span>
-								<Badge variant="secondary">
-									<code className="align-middle leading-none select-text!">
-										<ResultLink
-											result={{ postType, postOwner, post, incognito: false } as ScrapeResponse}
-										>
-											{post}
-										</ResultLink>
-									</code>
-								</Badge>
-							</span>
+							<ResultHeader
+								result={{ postType, postOwner, post, incognito: false } as ScrapeResponse}
+								categories={form.getFieldValue("categories")}
+								exclusive={form.getFieldValue("exclusive")}
+								showPost
+							/>
 							{postDate !== undefined && <p>{timestampDate(postDate).toString()}</p>}
 							<span>
 								{categories.map((category) => (

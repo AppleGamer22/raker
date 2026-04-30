@@ -1,23 +1,278 @@
 import { timestampDate } from "@bufbuild/protobuf/wkt";
 import { useMutation } from "@connectrpc/connect-query";
 import { useForm } from "@tanstack/react-form";
-import { GalleryHorizontalIcon, Grid3x3Icon, TextAlignJustifyIcon, TrashIcon, ExternalLinkIcon } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Link } from "@tanstack/react-router";
+import {
+	GalleryHorizontalIcon,
+	Grid3x3Icon,
+	TextAlignJustifyIcon,
+	TrashIcon,
+	ExternalLinkIcon,
+	ClipboardCopyIcon,
+	CopyIcon,
+} from "lucide-react";
+import { useEffect, useState, type ReactNode } from "react";
 import { toast } from "sonner";
 import z from "zod";
 
 import { removeFiles, updateCategories } from "@/buf/raker/v1/raker-RakerServer_connectquery";
-import type { ScrapeResponse } from "@/buf/raker/v1/raker_pb";
+import { PostType, type ScrapeResponse } from "@/buf/raker/v1/raker_pb";
 import { FileDisplay, FilesCarousel, postTypeString } from "@/components/file-display";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+	ContextMenu,
+	ContextMenuContent,
+	ContextMenuGroup,
+	ContextMenuItem,
+	ContextMenuTrigger,
+} from "@/components/ui/context-menu";
 import { Label } from "@/components/ui/label";
+import { InstagramIcon } from "@/components/ui/svgs/instagram";
+import { SnapchatIcon } from "@/components/ui/svgs/snapchat";
+import { TikTokIcon } from "@/components/ui/svgs/tiktok";
+import { VSCOIcon } from "@/components/ui/svgs/vsco";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useConfirmationDialog } from "@/hooks/use-confirmation-dialog";
 import { useUser } from "@/hooks/user-provider";
 import { cn } from "@/lib/utils";
-import { HistoryPostCategoryForm } from "@/routes/history";
+import { defaultPostTypes, HistoryPostCategoryForm } from "@/routes/history";
+
+export function PlatformIcon({ type }: { type: PostType | -1 }) {
+	switch (type) {
+		case PostType.Instagram:
+		case PostType.Highlight:
+		case PostType.Story:
+			return <InstagramIcon className="w-4" />;
+		case PostType.TikTok:
+			return <TikTokIcon className="w-4" />;
+		case PostType.Snapchat:
+			return <SnapchatIcon className="w-4" />;
+		case PostType.VSCO:
+			return <VSCOIcon className="w-4" />;
+		default:
+			return null;
+	}
+}
+
+export function ResultLink({ result, children }: { result: ScrapeResponse; children: ReactNode }) {
+	switch (result.postType) {
+		case PostType.Instagram:
+			return (
+				<Link to="/instagram" search={{ post: result.post, incognito: result.incognito }} target="_blank">
+					{children}
+				</Link>
+			);
+		case PostType.Highlight:
+			return (
+				<Link to="/highlight" search={{ highlight: result.post }} target="_blank">
+					{children}
+				</Link>
+			);
+		case PostType.Story:
+			return <>{children}</>;
+		case PostType.TikTok:
+			return (
+				<Link
+					to="/tiktok"
+					search={{ owner: result.postOwner, post: result.post, incognito: result.incognito }}
+					target="_blank"
+				>
+					{children}
+				</Link>
+			);
+		case PostType.Snapchat:
+			return (
+				<Link to="/snapchat" search={{ owner: result.postOwner, highlight: result.post }} target="_blank">
+					{children}
+				</Link>
+			);
+		case PostType.VSCO:
+			return (
+				<Link to="/vsco" search={{ owner: result.postOwner, post: result.post }} target="_blank">
+					{children}
+				</Link>
+			);
+	}
+}
+
+export function PostTypeIconLabel({ type }: { type: PostType }) {
+	switch (type) {
+		case PostType.Instagram:
+			return (
+				<span className="inline-flex items-center gap-1 align-middle leading-none whitespace-nowrap">
+					<InstagramIcon className="w-4" />
+					Post
+				</span>
+			);
+		case PostType.Highlight:
+			return (
+				<span className="inline-flex items-center gap-1 align-middle leading-none whitespace-nowrap">
+					<InstagramIcon className="w-4" />
+					Highlight
+				</span>
+			);
+		case PostType.Story:
+			return (
+				<span className="inline-flex items-center gap-1 align-middle leading-none whitespace-nowrap">
+					<InstagramIcon className="w-4" />
+					Story
+				</span>
+			);
+		case PostType.TikTok:
+			return (
+				<span className="inline-flex items-center gap-1 align-middle leading-none whitespace-nowrap">
+					<TikTokIcon className="w-4" />
+					Post
+				</span>
+			);
+		case PostType.Snapchat:
+			return (
+				<span className="inline-flex items-center gap-1 align-middle leading-none whitespace-nowrap">
+					<SnapchatIcon className="w-4" />
+					Highlight
+				</span>
+			);
+		case PostType.VSCO:
+			return (
+				<span className="inline-flex items-center gap-1 align-middle leading-none whitespace-nowrap">
+					<VSCOIcon className="w-4" />
+					Post
+				</span>
+			);
+	}
+}
+
+export function ResultHeader({
+	result,
+	categories,
+	exclusive,
+	showPost,
+}: {
+	result: ScrapeResponse;
+	categories: string[];
+	exclusive: boolean;
+	showPost?: boolean;
+}) {
+	return (
+		<span className="inline-block space-x-1 leading-none *:my-0.5 *:align-middle">
+			<Badge variant="secondary">
+				<Link
+					to="/history"
+					search={{
+						categories,
+						exclusive,
+						page: 1n,
+						owners: [],
+						types: [result.postType],
+					}}
+					target="_blank"
+				>
+					<PostTypeIconLabel type={result.postType} />
+				</Link>
+			</Badge>
+			<span>/</span>
+			<ContextMenu>
+				<ContextMenuTrigger>
+					<Badge variant="secondary">
+						<code className="align-middle leading-none">{result.postOwner}</code>
+					</Badge>
+				</ContextMenuTrigger>
+				<ContextMenuContent>
+					<ContextMenuGroup>
+						<Link
+							to="/history"
+							search={{
+								categories,
+								exclusive,
+								page: 1n,
+								owners: [{ owner: result.postOwner, type: -1 }],
+								types: defaultPostTypes,
+							}}
+							target="_blank"
+						>
+							<ContextMenuItem>
+								<ExternalLinkIcon /> History Results
+							</ContextMenuItem>
+						</Link>
+						<a
+							target="_blank"
+							rel="noopener noreferrer"
+							href={(() => {
+								switch (result.postType) {
+									case PostType.Instagram:
+									case PostType.Highlight:
+									case PostType.Story:
+										return `https://www.instagram.com/${result.postOwner}`;
+									case PostType.TikTok:
+										return `https://www.tiktok.com/@${result.postOwner}`;
+									case PostType.Snapchat:
+										return `https://www.snapchat.com/@${result.postOwner}`;
+									case PostType.VSCO:
+										return `https://vsco.co/${result.postOwner}/gallery`;
+								}
+							})()}
+						>
+							<ContextMenuItem>
+								<PlatformIcon type={result.postType} /> Open Profile
+							</ContextMenuItem>
+						</a>
+						<ContextMenuItem>
+							<CopyIcon /> Copy
+						</ContextMenuItem>
+					</ContextMenuGroup>
+				</ContextMenuContent>
+			</ContextMenu>
+			{showPost && (
+				<>
+					<span>/</span>
+					<ContextMenu>
+						<ContextMenuTrigger>
+							<Badge variant="secondary">
+								<code className="align-middle leading-none">{result.post}</code>
+							</Badge>
+						</ContextMenuTrigger>
+						<ContextMenuContent>
+							<ContextMenuGroup>
+								<ResultLink result={result}>
+									<ContextMenuItem>
+										<ExternalLinkIcon /> History Result
+									</ContextMenuItem>
+								</ResultLink>
+								{![PostType.Highlight, PostType.Story].includes(result.postType) && (
+									<a
+										target="_blank"
+										rel="noopener noreferrer"
+										href={(() => {
+											switch (result.postType) {
+												case PostType.Instagram:
+												case PostType.Highlight:
+												case PostType.Story:
+													return `https://www.instagram.com/p/${result.post}`;
+												case PostType.TikTok:
+													return `https://www.tiktok.com/@${result.postOwner}/video/${result.post}`;
+												case PostType.Snapchat:
+													return `https://www.snapchat.com/@${result.postOwner}/highlight/${result.post}`;
+												case PostType.VSCO:
+													return `https://vsco.co/${result.postOwner}/gallery/${result.post}`;
+											}
+										})()}
+									>
+										<ContextMenuItem>
+											<PlatformIcon type={result.postType} /> Open Original Post
+										</ContextMenuItem>
+									</a>
+								)}
+							</ContextMenuGroup>
+						</ContextMenuContent>
+					</ContextMenu>
+				</>
+			)}
+		</span>
+	);
+}
 
 export function Result({ result }: { result: ScrapeResponse }) {
 	const { username, categories: availableCategories } = useUser();
@@ -192,6 +447,9 @@ export function Result({ result }: { result: ScrapeResponse }) {
 
 	return (
 		<section className="my-3 flex w-full flex-col items-center gap-3">
+			<div className="max-w-full">
+				<ResultHeader categories={availableCategories} exclusive={false} result={currentResult} />
+			</div>
 			<Label>{timestampDate(currentResult.postDate!).toString()}</Label>
 			<div className="w-full">
 				<form.Field name="categories" mode="array">
