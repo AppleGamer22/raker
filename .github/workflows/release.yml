@@ -24,6 +24,11 @@ jobs:
         uses: actions/setup-go@v6
         with:
           go-version: stable
+      - name: Set-up Node.js
+        uses: actions/setup-nodev6.4.0
+        with:
+          node-version: lts/*
+          check-latest: true
       - name: Set-up QEMU
         uses: docker/setup-qemu-action@v4.0.0
       # - name: Install 
