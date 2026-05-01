@@ -462,107 +462,114 @@ function History() {
 				<form.Field name="ownerSearchTerm">
 					{(searchField) => (
 						<form.Field name="ownersSearchValue">
-							{(ownersField) => (
-								<Combobox
-									multiple
-									items={
-										searchField.state.value.length > 0
-											? [searchField.state.value, ...ownersSearchOptions]
-											: ownersSearchOptions
-									}
-									value={ownersField.state.value}
-									onValueChange={(value) => {
-										if (value !== null) {
-											ownersField.handleChange(value);
-											searchField.handleChange("");
+							{(ownersField) => {
+								const searchOptions = ownersSearchOptions.filter(
+									(item1) =>
+										item1.owner.includes(searchField.state.value) &&
+										ownersField.state.value.filter(
+											(item2) => item2.owner === item1.owner && item2.type === item1.type,
+										).length === 0,
+								);
+								const showTypedSearchQuery =
+									ownersField.state.value.filter(
+										({ owner, type }) => owner === searchField.state.value && type === -1,
+									).length === 0;
+								return (
+									<Combobox
+										multiple
+										items={
+											searchField.state.value.length > 0
+												? [searchField.state.value, ...ownersSearchOptions]
+												: ownersSearchOptions
 										}
-									}}
-								>
-									<ComboboxChips className="my-2" ref={anchor}>
-										<ComboboxValue>
-											{(values) => (
-												<Fragment>
-													{values.map(({ owner, type }: OwnerPostType) => (
-														<ComboboxChip
-															key={`search-chip-${type}-${owner}`}
-															className="select-text!"
-														>
-															<PlatformIcon type={type} />
-															{owner}
-														</ComboboxChip>
-													))}
-													<ComboboxChipsInput
-														placeholder="post owner search"
-														value={searchField.state.value}
-														onChange={async (e) => {
-															let ownerSearchQuery = e.target.value;
-															if (
-																searchField.state.value.substring(0, 4) !==
-																ownerSearchQuery.substring(0, 4)
-															) {
-																ownerSearchQuery = ownerSearchQuery.substring(0, 4);
-															}
-															searchField.handleChange(e.target.value);
-															if (ownerSearchQuery.length === 4) {
-																try {
-																	const { owners } = await ownersMutation.mutateAsync(
-																		{
-																			categories:
-																				form.getFieldValue("categories"),
-																			exclusive: form.getFieldValue("exclusive"),
-																			types: form.getFieldValue("types"),
-																			owner: ownerSearchQuery,
-																		},
-																	);
-																	setOwnersSearchOptions(owners);
-																} catch (err) {
-																	toast.error((err as Error).message, {
-																		position: "top-center",
-																	});
+										value={ownersField.state.value}
+										onValueChange={(value) => {
+											if (value !== null) {
+												ownersField.handleChange(value);
+												searchField.handleChange("");
+											}
+										}}
+									>
+										<ComboboxChips className="my-2" ref={anchor}>
+											<ComboboxValue>
+												{(values) => (
+													<Fragment>
+														{values.map(({ owner, type }: OwnerPostType) => (
+															<ComboboxChip
+																key={`search-chip-${type}-${owner}`}
+																className="select-text!"
+															>
+																<PlatformIcon type={type} />
+																{owner}
+															</ComboboxChip>
+														))}
+														<ComboboxChipsInput
+															placeholder="post owner search"
+															value={searchField.state.value}
+															onChange={async (e) => {
+																let ownerSearchQuery = e.target.value;
+																if (
+																	searchField.state.value.substring(0, 4) !==
+																	ownerSearchQuery.substring(0, 4)
+																) {
+																	ownerSearchQuery = ownerSearchQuery.substring(0, 4);
 																}
-															} else if (ownerSearchQuery.length === 0) {
-																setOwnersSearchOptions([]);
-															}
-														}}
-													/>
-													<InputGroupAddon>
-														<SearchIcon />
-													</InputGroupAddon>
-												</Fragment>
-											)}
-										</ComboboxValue>
-									</ComboboxChips>
-									{searchField.state.value.length > 0 && (
-										<ComboboxContent>
-											<ComboboxList>
-												<ComboboxGroup>
-													<ComboboxLabel>Search Term</ComboboxLabel>
-													<ComboboxItem
-														key="search-term"
-														value={
+																searchField.handleChange(e.target.value);
+																if (ownerSearchQuery.length === 4) {
+																	try {
+																		const { owners } =
+																			await ownersMutation.mutateAsync({
+																				categories:
+																					form.getFieldValue("categories"),
+																				exclusive:
+																					form.getFieldValue("exclusive"),
+																				types: form.getFieldValue("types"),
+																				owner: ownerSearchQuery,
+																			});
+																		setOwnersSearchOptions(owners);
+																	} catch (err) {
+																		toast.error((err as Error).message, {
+																			position: "top-center",
+																		});
+																	}
+																} else if (ownerSearchQuery.length === 0) {
+																	setOwnersSearchOptions([]);
+																}
+															}}
+														/>
+														<InputGroupAddon>
+															<SearchIcon />
+														</InputGroupAddon>
+													</Fragment>
+												)}
+											</ComboboxValue>
+										</ComboboxChips>
+										{searchField.state.value.length > 0 &&
+										(showTypedSearchQuery || searchOptions.length > 0) ? (
+											<ComboboxContent>
+												<ComboboxList>
+													{showTypedSearchQuery && (
+														<ComboboxGroup>
+															<ComboboxLabel>Search Term</ComboboxLabel>
 															{
-																owner: searchField.state.value,
-																type: -1,
-															} as OwnerPostType
-														}
-													>
-														{searchField.state.value}
-													</ComboboxItem>
-												</ComboboxGroup>
-												{ownersSearchOptions.length > 0 && (
-													<ComboboxGroup>
-														<ComboboxLabel>Post Owners</ComboboxLabel>
-														{ownersSearchOptions
-															.filter(
-																(item1) =>
-																	item1.owner.includes(searchField.state.value) &&
-																	ownersField.state.value.filter(
-																		(item2) =>
-																			item2.owner === item1.owner &&
-																			item2.type === item1.type,
-																	).length === 0,
-															)
-															.map((item) => (
+																<ComboboxItem
+																	key="search-term"
+																	value={
+																		{
+																			owner: searchField.state.value,
+																			type: -1,
+																		} as OwnerPostType
+																	}
+																>
+																	{searchField.state.value}
+																</ComboboxItem>
+															}
+														</ComboboxGroup>
+													)}
+													{searchOptions.length > 0 && (
+														<ComboboxGroup>
+															<ComboboxLabel>Post Owners</ComboboxLabel>
+															{searchOptions.map((item) => (
 																<ComboboxItem
 																	key={`search-${item.type}-${item.owner}`}
 																	value={item}
@@ -571,13 +578,14 @@ function History() {
 																	{item.owner}
 																</ComboboxItem>
 															))}
-													</ComboboxGroup>
-												)}
-											</ComboboxList>
-										</ComboboxContent>
-									)}
-								</Combobox>
-							)}
+														</ComboboxGroup>
+													)}
+												</ComboboxList>
+											</ComboboxContent>
+										) : null}
+									</Combobox>
+								);
+							}}
 						</form.Field>
 					)}
 				</form.Field>
