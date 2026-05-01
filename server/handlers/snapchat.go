@@ -66,7 +66,7 @@ func (server *RakerServer) ScrapeSnapchat(ctx context.Context, request *v1.Binar
 
 	localURLs, err2 := StorageHandler.SaveBundle(user, db.PostTypeSnapchat, result.Username, localURLs, remoteURLs, []*http.Cookie{})
 	if err2 != nil {
-		err = errors.Join(err, err2)
+		return nil, connect.NewError(connect.CodeInternal, errors.Join(err, err2))
 	}
 
 	if len(localURLs) == 0 {

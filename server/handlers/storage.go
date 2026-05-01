@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"crypto/tls"
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -10,19 +10,17 @@ import (
 	"path"
 	"strings"
 	"sync"
+	"time"
 
 	"connectrpc.com/connect"
+	v1 "github.com/AppleGamer22/raker/server/buf/proto/raker/v1"
 	"github.com/AppleGamer22/raker/server/cleaner"
 	"github.com/AppleGamer22/raker/server/db"
 	"github.com/AppleGamer22/raker/shared"
-	"github.com/AppleGamer22/raker/shared/types"
 	"github.com/bep/imagemeta"
 	"github.com/charmbracelet/log"
+	utls "github.com/refraction-networking/utls"
 	"google.golang.org/protobuf/types/known/timestamppb"
-
-	"context"
-
-	v1 "github.com/AppleGamer22/raker/server/buf/proto/raker/v1"
 )
 
 // RemoveFile implements [v1connect.RakerServerHandler].
@@ -150,26 +148,25 @@ func (handler *storageHandler) Save(user db.User, media db.PostType, owner, file
 	}
 
 	switch media {
-	case types.TikTok:
+	case db.PostTypeTiktok:
 		request.Header.Add("Range", "bytes=0-")
 		for _, cookie := range cookies {
 			request.AddCookie(cookie)
 		}
 		request.Header.Add("referer", "https://www.tiktok.com/")
-	case types.VSCO:
+	case db.PostTypeVsco:
 		request.Header.Add("referer", "https://vsco.co/")
 	}
 
 	request.Header.Add("User-Agent", shared.UserAgent)
+	request.Header.Add("sec-ch-ua", `"Google Chrome";v="147", "Not.A/Brand";v="8", "Chromium";v="147"`)
+	request.Header.Add("accept", "text/html,application/xhtml+xml,application/xml;image/avif,image/webp,image/apng,*/*;application/signed-exchange;")
 
 	client := http.DefaultClient
-	if media == types.VSCO {
+	if media == db.PostTypeVsco {
 		client = &http.Client{
-			Transport: &http.Transport{
-				TLSClientConfig: &tls.Config{
-					MinVersion: tls.VersionTLS13,
-				},
-			},
+			Timeout:   time.Second * 30,
+			Transport: shared.NewBypassJA3Transport(utls.HelloChrome_Auto),
 		}
 	}
 
@@ -184,7 +181,7 @@ func (handler *storageHandler) Save(user db.User, media db.PostType, owner, file
 		return fmt.Errorf("response of %d instead of media", response.StatusCode)
 	}
 
-	if media == types.VSCO && response.Header.Get("Content-Type") == "video/MP2T" {
+	if media == db.PostTypeVsco && response.Header.Get("Content-Type") == "video/MP2T" {
 		log.Debugf("decoding stream from %s", media)
 		return shared.Stream2MP4(response.Body, mediaPath)
 	}
@@ -218,7 +215,7 @@ func (handler *storageHandler) SaveBundle(user db.User, media db.PostType, owner
 		URL := URLs[i]
 		fileName := fileNames[i]
 		go func(fileName, URL string, i int) {
-			if err2 := handler.Save(user, media, owner, fileName, URL, cookies); err != nil {
+			if err2 := handler.Save(user, media, owner, fileName, URL, cookies); err2 != nil {
 				mutex.Lock()
 				err = errors.Join(err, err2)
 				fileNames[i] = ""

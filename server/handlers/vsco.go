@@ -12,7 +12,6 @@ import (
 	v1 "github.com/AppleGamer22/raker/server/buf/proto/raker/v1"
 	"github.com/AppleGamer22/raker/server/db"
 	"github.com/AppleGamer22/raker/shared"
-	"github.com/AppleGamer22/raker/shared/types"
 	"github.com/charmbracelet/log"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -67,9 +66,9 @@ func (server *RakerServer) ScrapeVSCO(ctx context.Context, request *v1.BinaryScr
 			localURLs = append(localURLs, localURL)
 		}
 	}
-	localURLs, err2 := StorageHandler.SaveBundle(user, types.VSCO, username, localURLs, URLs, cookies)
+	localURLs, err2 := StorageHandler.SaveBundle(user, db.PostTypeVsco, username, localURLs, URLs, cookies)
 	if err2 != nil {
-		err = errors.Join(err, err2)
+		return nil, connect.NewError(connect.CodeInternal, errors.Join(err, err2))
 	}
 
 	if len(localURLs) == 0 {
@@ -78,7 +77,7 @@ func (server *RakerServer) ScrapeVSCO(ctx context.Context, request *v1.BinaryScr
 
 	history, err2 = server.DBClient.HistoryAdd(context.Background(), db.HistoryAddParams{
 		Username:   user.Username,
-		PostType:   db.PostTypeSnapchat,
+		PostType:   db.PostTypeVsco,
 		PostOwner:  username,
 		Post:       request.Post,
 		Files:      localURLs,
@@ -90,7 +89,7 @@ func (server *RakerServer) ScrapeVSCO(ctx context.Context, request *v1.BinaryScr
 	}
 
 	return &v1.ScrapeResponse{
-		PostType:   v1.PostType_Snapchat,
+		PostType:   v1.PostType_VSCO,
 		PostOwner:  history.PostOwner,
 		Post:       history.Post,
 		PostDate:   timestamppb.New(history.PostDate),

@@ -127,7 +127,6 @@ function Snapchat() {
 					</Field>
 				</FieldGroup>
 			</CardContent>
-			{/* TODO: results */}
 			{result && (
 				<CardFooter>
 					<Result result={result} setResult={setResult} />

@@ -1,10 +1,15 @@
+import { useMutation } from "@connectrpc/connect-query";
 import { useForm } from "@tanstack/react-form";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 import { z } from "zod";
 
+import { scrapeVSCO } from "@/buf/raker/v1/raker-RakerServer_connectquery";
+import type { ScrapeResponse } from "@/buf/raker/v1/raker_pb";
+import { Result } from "@/components/result";
 import { Button } from "@/components/ui/button";
-import { CardContent } from "@/components/ui/card";
+import { CardContent, CardFooter } from "@/components/ui/card";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { useUser } from "@/hooks/user-provider";
@@ -23,6 +28,8 @@ function VSCO() {
 	const { owner, post } = Route.useSearch();
 	const navigate = useNavigate({ from: Route.fullPath });
 	const { username } = useUser();
+	const vscoMutation = useMutation(scrapeVSCO);
+	const [result, setResult] = useState<ScrapeResponse | null>(null);
 
 	useEffect(() => {
 		if (username === null) {
@@ -43,9 +50,28 @@ function VSCO() {
 			}),
 		},
 		onSubmit: async ({ value: { owner, post } }) => {
-			await navigate({ search: { owner, post }, replace: true });
+			try {
+				const result = await vscoMutation.mutateAsync({ owner, post });
+				setResult(result);
+				await navigate({ search: { owner, post }, replace: true });
+			} catch (err) {
+				toast.error((err as Error).message, {
+					position: "top-center",
+				});
+			}
 		},
 	});
+
+	// submit once on initial page load if search params are present
+	const initialSubmit = useRef(true);
+	useEffect(() => {
+		if (!initialSubmit.current) return;
+		initialSubmit.current = false;
+		if (username === null) return;
+		if ((owner && owner.length > 0) || (post && post.length > 0)) {
+			form.handleSubmit();
+		}
+	}, [form, owner, post, username]);
 
 	return (
 		<form
@@ -99,8 +125,11 @@ function VSCO() {
 					</Field>
 				</FieldGroup>
 			</CardContent>
-			{/* TODO: results */}
-			{/* <CardFooter></CardFooter> */}
+			{result && (
+				<CardFooter>
+					<Result result={result} setResult={setResult} />
+				</CardFooter>
+			)}
 		</form>
 	);
 }
