@@ -72,7 +72,11 @@ export function ResultLink({ result, children }: { result: ScrapeResponse; child
 				</Link>
 			);
 		case PostType.Story:
-			return <>{children}</>;
+			return (
+				<Link to="/story" search={{ owner: result.post }} target="_blank">
+					{children}
+				</Link>
+			);
 		case PostType.TikTok:
 			return (
 				<Link
