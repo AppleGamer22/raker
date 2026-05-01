@@ -29,6 +29,7 @@ import {
 	ContextMenuTrigger,
 } from "@/components/ui/context-menu";
 import { Label } from "@/components/ui/label";
+import { Progress } from "@/components/ui/progress";
 import { InstagramIcon } from "@/components/ui/svgs/instagram";
 import { SnapchatIcon } from "@/components/ui/svgs/snapchat";
 import { TikTokIcon } from "@/components/ui/svgs/tiktok";
@@ -451,6 +452,11 @@ export function Result({
 
 	return (
 		<section className="my-3 flex w-full flex-col items-center gap-3">
+			{(updateCategoriesMutation.isPending || removeFilesMutation.isPending) && (
+				<div className="w-full">
+					<Progress value={null} className="pb-2" />
+				</div>
+			)}
 			<div className="max-w-full">
 				<ResultHeader categories={availableCategories} exclusive={false} result={result} />
 			</div>
