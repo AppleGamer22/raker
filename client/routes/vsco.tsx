@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { CardContent, CardFooter } from "@/components/ui/card";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { Progress } from "@/components/ui/progress";
 import { useUser } from "@/hooks/user-provider";
 
 const vscoSearchSchema = z.object({
@@ -121,8 +122,15 @@ function VSCO() {
 						}}
 					</form.Field>
 					<Field orientation="horizontal">
-						<Button type="submit">Submit</Button>
+						<Button type="submit" disabled={vscoMutation.isPending} className="mb-3">
+							Submit
+						</Button>
 					</Field>
+					{vscoMutation.isPending && (
+						<Field>
+							<Progress value={null} className="pb-2" />
+						</Field>
+					)}
 				</FieldGroup>
 			</CardContent>
 			{result && (
