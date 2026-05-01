@@ -11,7 +11,6 @@ import (
 	v1 "github.com/AppleGamer22/raker/server/buf/proto/raker/v1"
 	"github.com/AppleGamer22/raker/server/db"
 	"github.com/AppleGamer22/raker/shared"
-	"github.com/AppleGamer22/raker/shared/types"
 	"github.com/google/uuid"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -70,8 +69,7 @@ func (server *RakerServer) ScrapeStory(ctx context.Context, request *v1.UnaryScr
 		// newURLs = append(newURLs, urlString)
 	}
 
-	localURLs, err2 := StorageHandler.SaveBundle(user, types.Story, username, localURLs, URLs, []*http.Cookie{})
-
+	localURLs, err2 := StorageHandler.SaveBundle(user, db.PostTypeStory, username, localURLs, URLs, []*http.Cookie{})
 	if err2 != nil {
 		return nil, connect.NewError(connect.CodeInternal, errors.Join(err, err2))
 	}
