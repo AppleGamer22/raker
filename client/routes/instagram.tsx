@@ -1,10 +1,15 @@
+import { useMutation } from "@connectrpc/connect-query";
 import { useForm } from "@tanstack/react-form";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 import { z } from "zod";
 
+import { scrapeInstagram } from "@/buf/raker/v1/raker-RakerServer_connectquery";
+import type { ScrapeResponse } from "@/buf/raker/v1/raker_pb";
+import { Result } from "@/components/result";
 import { Button } from "@/components/ui/button";
-import { CardContent } from "@/components/ui/card";
+import { CardContent, CardFooter } from "@/components/ui/card";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -24,6 +29,8 @@ function Instagram() {
 	const { post, incognito } = Route.useSearch();
 	const navigate = useNavigate({ from: Route.fullPath });
 	const { username } = useUser();
+	const instagramMutation = useMutation(scrapeInstagram);
+	const [result, setResult] = useState<ScrapeResponse | null>(null);
 
 	useEffect(() => {
 		if (username === null) {
@@ -43,9 +50,28 @@ function Instagram() {
 			}),
 		},
 		onSubmit: async ({ value: { post, incognito } }) => {
-			await navigate({ search: { post, incognito }, replace: true });
+			try {
+				const result = await instagramMutation.mutateAsync({ post, incognito });
+				setResult(result);
+				await navigate({ search: { post, incognito }, replace: true });
+			} catch (err) {
+				toast.error((err as Error).message, {
+					position: "top-center",
+				});
+			}
 		},
 	});
+
+	// submit once on initial page load if search params are present
+	const initialSubmit = useRef(true);
+	useEffect(() => {
+		if (!initialSubmit.current) return;
+		initialSubmit.current = false;
+		if (username === null) return;
+		if (post && post.length > 0) {
+			form.handleSubmit();
+		}
+	}, [form, post, username]);
 
 	return (
 		<form
@@ -92,8 +118,11 @@ function Instagram() {
 					</Field>
 				</FieldGroup>
 			</CardContent>
-			{/* TODO: results */}
-			{/* <CardFooter></CardFooter> */}
+			{result && (
+				<CardFooter>
+					<Result result={result} setResult={setResult} />
+				</CardFooter>
+			)}
 		</form>
 	);
 }
