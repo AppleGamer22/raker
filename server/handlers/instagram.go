@@ -12,7 +12,6 @@ import (
 	v1 "github.com/AppleGamer22/raker/server/buf/proto/raker/v1"
 	"github.com/AppleGamer22/raker/server/db"
 	"github.com/AppleGamer22/raker/shared"
-	"github.com/AppleGamer22/raker/shared/types"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -46,7 +45,7 @@ func (server *RakerServer) ScrapeInstagram(ctx context.Context, request *v1.Unar
 		URLs     []string
 	)
 
-	if request.Incognito != nil && *request.Incognito {
+	if request.GetIncognito() {
 		URLs, username, _, err = shared.InstagramIncognito(request.Post)
 	} else {
 		URLs, username, err = instagram.Post(request.Post)
@@ -67,7 +66,7 @@ func (server *RakerServer) ScrapeInstagram(ctx context.Context, request *v1.Unar
 		localURLs = append(localURLs, fileName)
 	}
 
-	localURLs, err2 := StorageHandler.SaveBundle(user, types.Instagram, username, localURLs, URLs, []*http.Cookie{})
+	localURLs, err2 := StorageHandler.SaveBundle(user, db.PostTypeInstagram, username, localURLs, URLs, []*http.Cookie{})
 	if err2 != nil {
 		return nil, connect.NewError(connect.CodeInternal, errors.Join(err, err2))
 	}
