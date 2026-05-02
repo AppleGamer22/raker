@@ -108,17 +108,17 @@ func NewRakerServer() (*RakerServer, error) {
 	mux.Handle(fmt.Sprintf("/api%s", rpcPath), http.StripPrefix("/api", handler))
 	// Storage
 	mux.Handle("/api/storage/", http.StripPrefix("/api/storage", rakerServer.NewStorageHandler(rakerServer.Configuration.Storage, rakerServer.Configuration.Directories)))
-	// React client: serve static files from dist, but fall back to index.html
-	fileServer := http.FileServer(http.Dir("dist"))
+	// React client: serve static files from vdist, but fall back to index.html
+	fileServer := http.FileServer(http.Dir("vdist"))
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		// Try to serve the requested file; if it doesn't exist, serve index.html
 		reqPath := strings.TrimPrefix(r.URL.Path, "/")
-		fullPath := filepath.Join("dist", reqPath)
+		fullPath := filepath.Join("vdist", reqPath)
 		if info, err := os.Stat(fullPath); err == nil && !info.IsDir() {
 			fileServer.ServeHTTP(w, r)
 			return
 		}
-		http.ServeFile(w, r, filepath.Join("dist", "index.html"))
+		http.ServeFile(w, r, filepath.Join("vdist", "index.html"))
 	})
 
 	protocols := new(http.Protocols)

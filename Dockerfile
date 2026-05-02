@@ -5,4 +5,4 @@ RUN apk add ffmpeg
 ENV STORAGE="/raker/storage"
 ENV DATABASE="raker"
 EXPOSE 4100
-CMD ./raker
+CMD ["./raker"]
