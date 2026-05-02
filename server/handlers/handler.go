@@ -104,6 +104,7 @@ func NewRakerServer() (*RakerServer, error) {
 	mux := http.NewServeMux()
 	mux.Handle(fmt.Sprintf("/api%s", path), http.StripPrefix("/api", handler))
 	mux.Handle("/api/storage/", http.StripPrefix("/api/storage", rakerServer.NewStorageHandler(rakerServer.Configuration.Storage, rakerServer.Configuration.Directories)))
+	mux.Handle("/", http.FileServer(http.Dir("dist")))
 
 	protocols := new(http.Protocols)
 	protocols.SetHTTP1(true)
