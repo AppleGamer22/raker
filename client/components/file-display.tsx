@@ -137,9 +137,19 @@ export function FileDisplay({
 }) {
 	const url = `/api/storage/${username}/${postTypeString(postType)}/${postOwner}/${file}`;
 	if (/\.(jpg)|(jpeg)|(webp)|(heic)$/.test(file)) {
-		return <img src={url} onLoad={onMediaLoad} className="h-auto w-full" />;
+		return <img src={url} onLoad={onMediaLoad} loading="lazy" className="h-auto w-full" />;
 	} else if (/\.(mp4)|(webm)$/.test(file)) {
-		return <video src={url} loop controls muted onLoadedMetadata={onMediaLoad} className="h-auto w-full" />;
+		return (
+			<video
+				src={url}
+				onLoadedMetadata={onMediaLoad}
+				preload="metadata"
+				className="h-auto w-full"
+				loop
+				controls
+				muted
+			/>
+		);
 	} else {
 		return <a href={url}>{url}</a>;
 	}
