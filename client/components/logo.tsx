@@ -5,9 +5,9 @@ export function RakerLogo({ withVersion }: { withVersion?: boolean }) {
 		<div className="flex flex-row items-center">
 			<img alt="Raker Logo" src="/raker.svg" className="w-6" />
 			{withVersion && (
-				<sup className="ml-2">
-					<Badge>&alpha;</Badge>
-				</sup>
+				<Badge className="ml-2">
+					{import.meta.env.DEV ? <>v&alpha;</> : <>{import.meta.env.VITE_GIT_TAG}</>}
+				</Badge>
 			)}
 		</div>
 	);

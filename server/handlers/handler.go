@@ -109,8 +109,7 @@ func NewRakerServer() (*RakerServer, error) {
 	// Storage
 	mux.Handle("/api/storage/", http.StripPrefix("/api/storage", rakerServer.NewStorageHandler(rakerServer.Configuration.Storage, rakerServer.Configuration.Directories)))
 	// React client: serve static files from dist, but fall back to index.html
-	fs := http.Dir("dist")
-	fileServer := http.FileServer(fs)
+	fileServer := http.FileServer(http.Dir("dist"))
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		// Try to serve the requested file; if it doesn't exist, serve index.html
 		reqPath := strings.TrimPrefix(r.URL.Path, "/")
