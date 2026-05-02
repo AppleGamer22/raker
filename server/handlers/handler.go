@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"path/filepath"
+	"strings"
 
 	"connectrpc.com/connect"
 	"connectrpc.com/validate"
@@ -96,15 +98,29 @@ func NewRakerServer() (*RakerServer, error) {
 	pgdb := db.New(connection)
 	rakerServer.DBClient = pgdb
 
-	path, handler := v1connect.NewRakerServerHandler(
+	rpcPath, handler := v1connect.NewRakerServerHandler(
 		&rakerServer,
 		connect.WithInterceptors(rakerServer.NewAuthInterceptor(), validate.NewInterceptor()),
 	)
 
 	mux := http.NewServeMux()
-	mux.Handle(fmt.Sprintf("/api%s", path), http.StripPrefix("/api", handler))
+	// Connect RPC
+	mux.Handle(fmt.Sprintf("/api%s", rpcPath), http.StripPrefix("/api", handler))
+	// Storage
 	mux.Handle("/api/storage/", http.StripPrefix("/api/storage", rakerServer.NewStorageHandler(rakerServer.Configuration.Storage, rakerServer.Configuration.Directories)))
-	mux.Handle("/", http.FileServer(http.Dir("dist")))
+	// React client: serve static files from dist, but fall back to index.html
+	fs := http.Dir("dist")
+	fileServer := http.FileServer(fs)
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		// Try to serve the requested file; if it doesn't exist, serve index.html
+		reqPath := strings.TrimPrefix(r.URL.Path, "/")
+		fullPath := filepath.Join("dist", reqPath)
+		if info, err := os.Stat(fullPath); err == nil && !info.IsDir() {
+			fileServer.ServeHTTP(w, r)
+			return
+		}
+		http.ServeFile(w, r, filepath.Join("dist", "index.html"))
+	})
 
 	protocols := new(http.Protocols)
 	protocols.SetHTTP1(true)
