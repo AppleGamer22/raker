@@ -594,7 +594,7 @@ export function Result({
 											<Label className="w-full wrap-anywhere whitespace-normal">{file}</Label>
 										</AccordionTrigger>
 									</div>
-									<AccordionContent className="max-w-[50vw]">
+									<AccordionContent className="sm:max-w-full md:max-w-[25vw]">
 										<FileDisplay file={file} post={result} username={username} />
 									</AccordionContent>
 								</AccordionItem>
