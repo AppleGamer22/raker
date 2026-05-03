@@ -14,8 +14,15 @@ COPY vdist vdist
 # install runtime dependencies
 RUN apk add --no-cache ffmpeg
 
+# define non-root user
+RUN addgroup -S raker
+RUN adduser -S -G raker -h /raker raker
+RUN chown -R raker:raker /raker
+USER raker
+
 ENV STORAGE="/raker/storage"
 ENV DATABASE="raker"
+
 
 EXPOSE 4100
 CMD ["./raker"]
