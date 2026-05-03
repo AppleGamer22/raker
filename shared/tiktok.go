@@ -150,9 +150,11 @@ func (tiktok *TikTok) Post(owner, post string, incognito bool) ([]string, []stri
 		return []string{}, []string{}, "", []*http.Cookie{}, err
 	}
 
+	// fmt.Println(jsonText)
+
 	username := tiktokPost.DefaultScop.VideoDetail.ItemInfo.ItemStruct.Author.UniqueID
 	URL := tiktokPost.DefaultScop.VideoDetail.ItemInfo.ItemStruct.Video.PlayAddress
-	if URL == "" {
+	if URL == "" && len(tiktokPost.DefaultScop.VideoDetail.ItemInfo.ItemStruct.Video.PlayAddrStruct.UrlList) == 0 {
 		if len(tiktokPost.DefaultScop.VideoDetail.ItemInfo.ItemStruct.ImagePost.Images) == 0 {
 			return []string{}, []string{}, "", []*http.Cookie{}, errors.New("Post not available from incognito mode")
 		}
@@ -161,6 +163,8 @@ func (tiktok *TikTok) Post(owner, post string, incognito bool) ([]string, []stri
 			URLs = append(URLs, image.ImageURL.URLs[0])
 		}
 		return []string{}, URLs, username, slices.Concat(request.Cookies(), response.Cookies()), err
+	} else if URL != "" && len(tiktokPost.DefaultScop.VideoDetail.ItemInfo.ItemStruct.Video.PlayAddrStruct.UrlList) == 0 {
+		return []string{URL}, []string{tiktokPost.DefaultScop.VideoDetail.ItemInfo.ItemStruct.Video.Cover}, username, slices.Concat(request.Cookies(), response.Cookies()), err
 	}
 
 	return tiktokPost.DefaultScop.VideoDetail.ItemInfo.ItemStruct.Video.PlayAddrStruct.UrlList, []string{tiktokPost.DefaultScop.VideoDetail.ItemInfo.ItemStruct.Video.Cover}, username, slices.Concat(request.Cookies(), response.Cookies()), err
