@@ -40,7 +40,7 @@ func (server *RakerServer) ScrapeStory(ctx context.Context, request *v1.UnaryScr
 	}
 
 	instagram := shared.NewInstagram(user.InstagramSessionID, user.InstagramUserID)
-	URLs, username, err := instagram.Reels(request.Post, false)
+	URLs, username, err := instagram.Story(request.Post)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
