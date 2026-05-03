@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
 
 	"connectrpc.com/connect"
@@ -171,6 +172,8 @@ func (server *RakerServer) EditUserCredentials(ctx context.Context, request *v1.
 		passwordHash = hashed
 	}
 
+	fmt.Printf("%+v\n", request)
+
 	sessionID := user.InstagramSessionID
 	shouldUpdateSessionID := request.SessionId != nil && len(*request.SessionId) > 0
 	if shouldUpdateSessionID {
@@ -180,7 +183,7 @@ func (server *RakerServer) EditUserCredentials(ctx context.Context, request *v1.
 	userID := user.InstagramUserID
 	shouldUpdateUserID := request.UserId != nil && len(*request.UserId) > 0
 	if shouldUpdateUserID {
-		sessionID = *request.UserId
+		userID = *request.UserId
 	}
 
 	if shouldUpdateHash || shouldUpdateSessionID || shouldUpdateUserID {
