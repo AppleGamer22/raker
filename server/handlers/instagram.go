@@ -12,6 +12,7 @@ import (
 	v1 "github.com/AppleGamer22/raker/server/buf/proto/raker/v1"
 	"github.com/AppleGamer22/raker/server/db"
 	"github.com/AppleGamer22/raker/shared"
+	"github.com/charmbracelet/log"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -52,6 +53,7 @@ func (server *RakerServer) ScrapeInstagram(ctx context.Context, request *v1.Unar
 	}
 
 	if err != nil {
+		log.Error(err)
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 

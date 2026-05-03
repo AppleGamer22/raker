@@ -64,7 +64,7 @@ func (b *BypassJA3Transport) httpsRoundTrip(req *http.Request) (*http.Response, 
 		port = "443"
 	}
 
-	conn, err := net.Dial("tcp", fmt.Sprintf("%s:%s", req.URL.Host, port))
+	conn, err := net.Dial("tcp", net.JoinHostPort(req.URL.Host, port))
 	if err != nil {
 		return nil, fmt.Errorf("tcp net dial fail: %w", err)
 	}

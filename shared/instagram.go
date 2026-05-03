@@ -175,10 +175,11 @@ func (instagram *Instagram) Post(post string) (URLs []string, username string, e
 	htmlRequest.AddCookie(&instagram.sessionCookie)
 	htmlRequest.AddCookie(&instagram.userCookie)
 
-	htmlRequest.Header.Add("x-ig-app-id", "936619743392459")
-	htmlRequest.Header.Add("user-agent", UserAgent)
-	htmlRequest.Header.Add("referer", "https://www.instagram.com/")
+	// htmlRequest.Header.Add("x-ig-app-id", "936619743392459")
+	htmlRequest.Header.Add("User-Agent", UserAgent)
+	// htmlRequest.Header.Add("referer", "https://www.instagram.com/")
 	htmlRequest.Header.Add("sec-fetch-mode", "navigate")
+	htmlRequest.Header.Add("accept", "text/html,application/xhtml+xml,application/xml;image/avif,image/webp,image/apng,*/*;application/signed-exchange;")
 
 	htmlResponse, err := http.DefaultClient.Do(htmlRequest)
 	if err != nil {
