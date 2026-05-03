@@ -8,6 +8,9 @@ WORKDIR /raker
 # copy the platform-specific binary produced by GoReleaser
 COPY $TARGETPLATFORM/raker .
 
+# copy bundled frontend assets
+COPY vdist vdist
+
 # install runtime dependencies
 RUN apk add --no-cache ffmpeg
 
