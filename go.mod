@@ -3,7 +3,7 @@ module github.com/AppleGamer22/raker
 go 1.25.0
 
 require (
-	connectrpc.com/connect v1.19.1
+	connectrpc.com/connect v1.19.2
 	connectrpc.com/validate v0.6.0
 	github.com/bep/imagemeta v0.17.2
 	github.com/charmbracelet/log v1.0.0
