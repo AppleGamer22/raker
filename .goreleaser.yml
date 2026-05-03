@@ -71,6 +71,8 @@ dockers_v2:
       org.opencontainers.image.revision: "{{.FullCommit}}"
       org.opencontainers.image.version: "{{.Version}}"
     flags:
-      - "--pull"
+      - --pull
+    extra_files:
+      - vdist
 sboms:
   - artifacts: source
