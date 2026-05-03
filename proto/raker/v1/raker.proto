@@ -2,76 +2,150 @@ syntax = "proto3";
 
 package raker.v1;
 
-import "google/api/annotations.proto";
-import "google/api/httpbody.proto";
-// import "google/protobuf/empty.proto";
-// import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+import "google/type/latlng.proto";
 
-option go_package = "github.com/AppleGamer22/raker/proto";
+option go_package = "github.com/AppleGamer22/raker/server/buf/proto/raker/v1";
 
-enum MediaType {
-  UNSPECIFIED = 0;
-  INSTAGRAM = 1;
-  HIGHLIGHT = 2;
-  STORY = 3;
-  TIKTOK = 4;
+// enum NetworkType {
+//   Instagram = 0;
+//   TikTok = 1;
+//   VSCO = 2;
+// }
+
+enum PostType {
+  Instagram = 0;
+  Highlight = 1;
+  Story = 2;
+  TikTok = 3;
+  Snapchat = 4;
   VSCO = 5;
 }
 
-message AuthenticationRequest {
+message SignUpRequest {
   string username = 1;
   string password = 2;
-  optional string fbsr = 3;
-  optional string session_id = 4;
-  optional string user_id = 5;
+  optional string session_id = 3;
+  optional string user_id = 4;
 }
 
-message EditCategoryRequest {
-  string category = 1;
-  optional string old_category = 2;
+message SignInRequest {
+  string username = 1;
+  string password = 2;
 }
 
-message ScrapeRequest {
-  string post = 1;
-  optional string owner = 2;
-}
-
-message AddRemoveCategoriesRequest {
+message UserCategoriesResponse {
   repeated string categories = 1;
 }
 
-message RemoveFileRequest {
-  MediaType type = 1;
+message EditCategoryRequest {
+  string old_category = 1;
+  string new_category = 2;
+}
+
+message EditUserCredentialsRequest {
+  optional string password = 1;
+  optional string session_id = 2;
+  optional string user_id = 3;
+}
+
+message UnaryScrapeRequest {
+  string post = 1;
+  optional bool incognito = 2;
+}
+
+message BinaryScrapeRequest {
+  string owner = 1;
+  string post = 2;
+  optional bool incognito = 3;
+}
+
+message ScrapeResponse {
+  PostType post_type = 1;
+  string post_owner = 2;
+  string post = 3;
+  google.protobuf.Timestamp post_date = 4;
+  repeated string files = 5;
+  repeated string categories = 6;
+  bool incognito = 7;
+  optional google.type.LatLng coordinates = 8;
+  repeated string issue_log = 9;
+}
+
+message RemoveFilesRequest {
+  PostType type = 1;
   string owner = 2;
   string post = 3;
-  string path = 4;
+  repeated string paths = 4;
+}
+
+message UpdateCategoriesRequest {
+  PostType type = 1;
+  string owner = 2;
+  string post = 3;
+  repeated string categories = 4;
+}
+
+message HistoryOwnersRequest {
+  string owner = 1;
+  bool exclusive = 2;
+  int64 page = 3;
+  int32 page_size = 4;
+  repeated string categories = 5;
+  repeated PostType types = 6;
 }
 
 message HistoryRequest {
-  string owner = 1;
-  bool exclusive = 2;
-  repeated string categories = 3;
-  repeated MediaType types = 4;
+  bool exclusive = 1;
+  int64 page = 2;
+  int32 page_size = 3;
+  repeated string owners = 4;
+  repeated string categories = 5;
+  repeated PostType types = 6;
+}
+
+message HistoryResponse {
+  int64 total_count = 1;
+  repeated ScrapeResponse histories = 3;
+}
+
+message HistoryOwnersResponse {
+  message HistoryOwner {
+    string owner = 1;
+    PostType type = 2;
+  }
+  repeated HistoryOwner owners = 1;
 }
 
 service RakerServer {
-  rpc SignUpInstagram(AuthenticationRequest) returns (google.api.HttpBody) {
-    option (google.api.http) = {patch: "/api/auth/sign_up/instagram"};
-  }
+  rpc SignUpInstagram(SignUpRequest) returns (google.protobuf.Empty);
 
-  rpc SignInInstagram(AuthenticationRequest) returns (google.api.HttpBody) {
-    option (google.api.http) = {patch: "/api/auth/sign_in/instagram"};
-  }
+  rpc SignInInstagram(SignInRequest) returns (google.protobuf.Empty);
 
-  rpc EditCategory(EditCategoryRequest) returns (google.api.HttpBody) {
-    option (google.api.http) = {patch: "/api/categories"};
-  }
+  rpc EditCategory(EditCategoryRequest) returns (google.protobuf.Empty);
 
-  rpc AddRemoveCategories(AddRemoveCategoriesRequest) returns (google.api.HttpBody) {
-    option (google.api.http) = {patch: "/api/history"};
-  }
+  rpc EditUserCredentials(EditUserCredentialsRequest) returns (google.protobuf.Empty);
 
-  rpc RemoveFile(RemoveFileRequest) returns (google.api.HttpBody) {
-    option (google.api.http) = {delete: "/api/history"};
-  }
+  rpc GetUserCategories(google.protobuf.Empty) returns (UserCategoriesResponse);
+
+  rpc ScrapeInstagram(UnaryScrapeRequest) returns (ScrapeResponse);
+
+  rpc ScrapeHighlight(UnaryScrapeRequest) returns (ScrapeResponse);
+
+  rpc ScrapeStory(UnaryScrapeRequest) returns (ScrapeResponse);
+
+  rpc ScrapeTikTok(BinaryScrapeRequest) returns (ScrapeResponse);
+
+  rpc ScrapeSnapchat(BinaryScrapeRequest) returns (ScrapeResponse);
+
+  rpc ScrapeVSCO(BinaryScrapeRequest) returns (ScrapeResponse);
+
+  rpc RemoveFiles(RemoveFilesRequest) returns (ScrapeResponse);
+
+  rpc UpdateCategories(UpdateCategoriesRequest) returns (google.protobuf.Empty);
+
+  rpc SearchHistory(HistoryRequest) returns (HistoryResponse);
+
+  rpc SearchHistoryOwners(HistoryOwnersRequest) returns (HistoryOwnersResponse);
 }

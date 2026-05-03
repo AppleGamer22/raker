@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"net/http/cookiejar"
 	"regexp"
 	"slices"
 )
@@ -52,16 +51,12 @@ func NewTikTok(sessionID, sessionIDGuard string) TikTok {
 }
 
 func (tikok *TikTok) MSToken(owner string) (http.Client, error) {
-	jar, _ := cookiejar.New(nil)
-	client := http.Client{
-		Jar: jar,
-	}
+	client := *NewClient(false)
 	ownerURL := fmt.Sprintf("https://www.tiktok.com/@%s", owner)
 	request, err := http.NewRequest(http.MethodGet, ownerURL, nil)
 	if err != nil {
 		return http.Client{}, err
 	}
-	request.Header.Add("User-Agent", UserAgent)
 
 	response, err := client.Do(request)
 	if err != nil {
@@ -81,7 +76,6 @@ func (tikok *TikTok) MSToken(owner string) (http.Client, error) {
 		}
 	}
 	request.URL.RawQuery = query.Encode()
-	request.Header.Add("User-Agent", UserAgent)
 	for _, cookie := range request.Cookies() {
 		request.AddCookie(cookie)
 	}
@@ -127,7 +121,6 @@ func (tiktok *TikTok) Post(owner, post string, incognito bool) ([]string, []stri
 		}
 		request.AddCookie(&sessionGuardCookie)
 	}
-	request.Header.Add("User-Agent", UserAgent)
 	client, err := tiktok.MSToken(owner)
 	if err != nil {
 		return []string{}, []string{}, "", []*http.Cookie{}, err
@@ -147,6 +140,7 @@ func (tiktok *TikTok) Post(owner, post string, incognito bool) ([]string, []stri
 
 	script := tiktok_regexp.FindString(string(body))
 	if script == "" {
+		// fmt.Println(string(body))
 		return []string{}, []string{}, "", []*http.Cookie{}, errors.New("could not find JSON")
 	}
 
@@ -156,9 +150,11 @@ func (tiktok *TikTok) Post(owner, post string, incognito bool) ([]string, []stri
 		return []string{}, []string{}, "", []*http.Cookie{}, err
 	}
 
+	// fmt.Println(jsonText)
+
 	username := tiktokPost.DefaultScop.VideoDetail.ItemInfo.ItemStruct.Author.UniqueID
 	URL := tiktokPost.DefaultScop.VideoDetail.ItemInfo.ItemStruct.Video.PlayAddress
-	if URL == "" {
+	if URL == "" && len(tiktokPost.DefaultScop.VideoDetail.ItemInfo.ItemStruct.Video.PlayAddrStruct.UrlList) == 0 {
 		if len(tiktokPost.DefaultScop.VideoDetail.ItemInfo.ItemStruct.ImagePost.Images) == 0 {
 			return []string{}, []string{}, "", []*http.Cookie{}, errors.New("Post not available from incognito mode")
 		}
@@ -167,6 +163,8 @@ func (tiktok *TikTok) Post(owner, post string, incognito bool) ([]string, []stri
 			URLs = append(URLs, image.ImageURL.URLs[0])
 		}
 		return []string{}, URLs, username, slices.Concat(request.Cookies(), response.Cookies()), err
+	} else if URL != "" && len(tiktokPost.DefaultScop.VideoDetail.ItemInfo.ItemStruct.Video.PlayAddrStruct.UrlList) == 0 {
+		return []string{URL}, []string{tiktokPost.DefaultScop.VideoDetail.ItemInfo.ItemStruct.Video.Cover}, username, slices.Concat(request.Cookies(), response.Cookies()), err
 	}
 
 	return tiktokPost.DefaultScop.VideoDetail.ItemInfo.ItemStruct.Video.PlayAddrStruct.UrlList, []string{tiktokPost.DefaultScop.VideoDetail.ItemInfo.ItemStruct.Video.Cover}, username, slices.Concat(request.Cookies(), response.Cookies()), err

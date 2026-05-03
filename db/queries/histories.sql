@@ -127,20 +127,24 @@ WHERE post_type = ANY (sqlc.slice(post_types)::post_type [])
 LIMIT sqlc.arg(page_size)::int OFFSET sqlc.arg(page)::int;
 
 -- name: HistoryGetPage :many
-SELECT *
+SELECT DISTINCT *
 FROM Histories
 WHERE post_type = ANY (sqlc.slice(post_types)::post_type [])
 	AND (
 		(
 			sqlc.arg(exclusive)::boolean
-			and categories = sqlc.slice(categories)::text []
+			and categories = COALESCE(sqlc.slice(categories)::text[], ARRAY[]::text[])
 		)
 		or (
 			not sqlc.arg(exclusive)::boolean
-			and categories <@ sqlc.slice(categories)::text []
+			and categories <@ COALESCE(sqlc.slice(categories)::text[], ARRAY[]::text[])
 		)
 	)
-	AND post_owner LIKE FORMAT('%%%s%%', sqlc.arg(post_owner)::text)
+	AND (cardinality(COALESCE(sqlc.slice(post_owners)::text[], ARRAY[]::text[])) = 0 or EXISTS(
+		SELECT 1
+		FROM unnest(sqlc.slice(post_owners)::text[]) AS owner_filter(owner)
+		WHERE Histories.post_owner LIKE FORMAT('%%%s%%', owner_filter.owner)
+	))
 	AND username = sqlc.arg(username)::text
 order by post_date DESC
 LIMIT sqlc.arg(page_size)::int OFFSET sqlc.arg(page)::int;
@@ -152,11 +156,37 @@ WHERE post_type = ANY (sqlc.slice(post_types)::post_type [])
 	AND (
 		(
 			sqlc.arg(exclusive)::boolean
-			and categories = sqlc.slice(categories)::text []
+			and categories = COALESCE(sqlc.slice(categories)::text[], ARRAY[]::text[])
 		)
 		or (
 			not sqlc.arg(exclusive)::boolean
-			and categories <@ sqlc.slice(categories)::text []
+			and categories <@ COALESCE(sqlc.slice(categories)::text[], ARRAY[]::text[])
+		)
+	)
+	AND (cardinality(COALESCE(sqlc.slice(post_owners)::text[], ARRAY[]::text[])) = 0 or EXISTS(
+		SELECT 1
+		FROM unnest(sqlc.slice(post_owners)::text[]) AS owner_filter(owner)
+		WHERE Histories.post_owner LIKE FORMAT('%%%s%%', owner_filter.owner)
+	))
+	AND username = sqlc.arg(username)::text;
+
+-- name: HistoryOwners :many
+select distinct
+post_owner,
+case 
+	when post_type in ('instagram', 'highlight', 'story') then 'instagram'::post_type
+	else post_type::post_type
+end as post_type
+from Histories
+WHERE post_type = ANY (sqlc.slice(post_types)::post_type [])
+	AND (
+		(
+			sqlc.arg(exclusive)::boolean
+			and categories = COALESCE(sqlc.slice(categories)::text[], ARRAY[]::text[])
+		)
+		or (
+			not sqlc.arg(exclusive)::boolean
+			and categories <@ COALESCE(sqlc.slice(categories)::text[], ARRAY[]::text[])
 		)
 	)
 	AND post_owner LIKE FORMAT('%%%s%%', sqlc.arg(post_owner)::text)

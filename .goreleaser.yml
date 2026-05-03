@@ -1,9 +1,13 @@
 # yaml-language-server: $schema=https://goreleaser.com/static/schema.json
 version: 2
 project_name: raker
+before:
+  hooks:
+    - npm ci
+    - npm run build
 builds:
   - id: linux
-    env: [CGO_ENABLED=0]
+    env: [ CGO_ENABLED=0 ]
     main: ./server
     goos:
       - linux
@@ -14,23 +18,29 @@ builds:
       - -s -w
       - -X 'github.com/AppleGamer22/{{.ProjectName}}/shared.Version={{.Version}}'
       - -X 'github.com/AppleGamer22/{{.ProjectName}}/shared.Hash={{.FullCommit}}'
+source:
+  enabled: true
+archives:
+  - format_overrides:
+      - goos: linux
+        formats: [ none ]
 changelog:
   use: github
   filters:
     exclude:
-    - '^docs:'
-    - '^test:'
-    - '^chore'
-    - typo
-    - Merge pull request
-    - Merge remote-tracking branch
-    - Merge branch
-    - go mod tidy
+      - "^docs:"
+      - "^test:"
+      - "^chore"
+      - typo
+      - Merge pull request
+      - Merge remote-tracking branch
+      - Merge branch
+      - go mod tidy
   groups:
-    - title: 'New Features'
+    - title: "New Features"
       regexp: "^.*feat[(\\w)]*:+.*$"
       order: 0
-    - title: 'Bug fixes'
+    - title: "Bug fixes"
       regexp: "^.*fix[(\\w)]*:+.*$"
       order: 10
     - title: Other work
@@ -41,39 +51,26 @@ release:
     name: raker
   discussion_category_name: General
   prerelease: auto
-dockers:
-  - use: buildx
-    goarch: amd64
-    image_templates:
-      - docker.io/applegamer22/{{.ProjectName}}:{{.Version}}-amd64
-      - ghcr.io/applegamer22/{{.ProjectName}}:{{.Version}}-amd64
-    build_flag_templates:
-      - --pull
-      - --platform=linux/amd64
-      - --label=org.opencontainers.image.created={{.Date}}
-      - --label=org.opencontainers.image.title={{.ProjectName}}
-      - --label=org.opencontainers.image.revision={{.FullCommit}}
-      - --label=org.opencontainers.image.version={{.Version}}
-  - use: buildx
-    goarch: arm64
-    image_templates:
-      - docker.io/applegamer22/{{.ProjectName}}:{{.Version}}-arm64
-      - ghcr.io/applegamer22/{{.ProjectName}}:{{.Version}}-arm64
-    build_flag_templates:
-      - --pull
-      - --platform=linux/arm64
-      - --label=org.opencontainers.image.created={{.Date}}
-      - --label=org.opencontainers.image.title={{.ProjectName}}
-      - --label=org.opencontainers.image.revision={{.FullCommit}}
-      - --label=org.opencontainers.image.version={{.Version}}
-docker_manifests:
-  - name_template: docker.io/applegamer22/{{.ProjectName}}:{{.Version}}
-    image_templates:
-      - docker.io/applegamer22/{{.ProjectName}}:{{.Version}}-amd64
-      - docker.io/applegamer22/{{.ProjectName}}:{{.Version}}-arm64
-  - name_template: ghcr.io/applegamer22/{{.ProjectName}}:{{.Version}}
-    image_templates:
-      - ghcr.io/applegamer22/{{.ProjectName}}:{{.Version}}-amd64
-      - ghcr.io/applegamer22/{{.ProjectName}}:{{.Version}}-arm64
+# Docker (v2) configuration: replaces legacy `dockers` + `docker_manifests`.
+# Uses buildx to produce multi-arch images/manifests. See:
+# https://goreleaser.com/customization/package/dockers_v2/
+dockers_v2:
+  - id: raker
+    dockerfile: Dockerfile
+    images:
+      - docker.io/applegamer22/{{.ProjectName}}
+      - ghcr.io/applegamer22/{{.ProjectName}}
+    tags:
+      - "{{.Version}}"
+    platforms:
+      - linux/amd64
+      - linux/arm64
+    labels:
+      org.opencontainers.image.created: "{{.Date}}"
+      org.opencontainers.image.title: "{{.ProjectName}}"
+      org.opencontainers.image.revision: "{{.FullCommit}}"
+      org.opencontainers.image.version: "{{.Version}}"
+    flags:
+      - "--pull"
 sboms:
-  - artifacts: archive
+  - artifacts: source

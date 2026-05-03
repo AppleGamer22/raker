@@ -54,6 +54,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.historyGetPageStmt, err = db.PrepareContext(ctx, historyGetPage); err != nil {
 		return nil, fmt.Errorf("error preparing query HistoryGetPage: %w", err)
 	}
+	if q.historyOwnersStmt, err = db.PrepareContext(ctx, historyOwners); err != nil {
+		return nil, fmt.Errorf("error preparing query HistoryOwners: %w", err)
+	}
 	if q.historyRemoveStmt, err = db.PrepareContext(ctx, historyRemove); err != nil {
 		return nil, fmt.Errorf("error preparing query HistoryRemove: %w", err)
 	}
@@ -137,6 +140,11 @@ func (q *Queries) Close() error {
 	if q.historyGetPageStmt != nil {
 		if cerr := q.historyGetPageStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing historyGetPageStmt: %w", cerr)
+		}
+	}
+	if q.historyOwnersStmt != nil {
+		if cerr := q.historyOwnersStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing historyOwnersStmt: %w", cerr)
 		}
 	}
 	if q.historyRemoveStmt != nil {
@@ -238,6 +246,7 @@ type Queries struct {
 	historyGetExclusiveStmt        *sql.Stmt
 	historyGetInclusiveStmt        *sql.Stmt
 	historyGetPageStmt             *sql.Stmt
+	historyOwnersStmt              *sql.Stmt
 	historyRemoveStmt              *sql.Stmt
 	historyUpdateCategoriesStmt    *sql.Stmt
 	historyUpdateOwnerStmt         *sql.Stmt
@@ -264,6 +273,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		historyGetExclusiveStmt:        q.historyGetExclusiveStmt,
 		historyGetInclusiveStmt:        q.historyGetInclusiveStmt,
 		historyGetPageStmt:             q.historyGetPageStmt,
+		historyOwnersStmt:              q.historyOwnersStmt,
 		historyRemoveStmt:              q.historyRemoveStmt,
 		historyUpdateCategoriesStmt:    q.historyUpdateCategoriesStmt,
 		historyUpdateOwnerStmt:         q.historyUpdateOwnerStmt,

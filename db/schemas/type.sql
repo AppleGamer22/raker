@@ -6,4 +6,6 @@ CREATE TYPE post_type AS ENUM (
 	'vsco'
 );
 
+ALTER TYPE post_type ADD VALUE 'snapchat';
+
 CREATE TYPE network_type AS ENUM ('instagram', 'tiktok', 'vsco');

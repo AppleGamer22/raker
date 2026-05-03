@@ -1,20 +1,31 @@
 # yaml-language-server: $schema=https://json.schemastore.org/buf.gen.json
-version: v1
+version: v2
 plugins:
-  # - plugin: go
-  - plugin: buf.build/protocolbuffers/go
-    out: gen/go
-    opt: paths=source_relative
-  # - name: go-grpc
-  - plugin: buf.build/grpc/go
-    out: gen/go
-    opt: paths=source_relative
-  # - name: grpc-gateway
-  - plugin: buf.build/grpc-ecosystem/gateway
-    out: gen/go
+  - remote: buf.build/protocolbuffers/go:v1.36.11
+    out: server/buf/proto
     opt:
       - paths=source_relative
-      - generate_unbound_methods=true
-  # - name: openapiv2
-  - plugin: buf.build/grpc-ecosystem/openapiv2
-    out: gen/openapiv2
+  - remote: buf.build/connectrpc/go:v1.19.1
+    out: server/buf/connect
+    opt:
+      - paths=source_relative
+      - simple
+  - remote: buf.build/bufbuild/es:v2.11.0
+    out: client/buf
+    include_imports: true
+    opt: target=ts
+  - remote: buf.build/connectrpc/query-es:v2.2.0
+    out: client/buf
+    include_imports: true
+    opt: target=ts
+managed:
+  enabled: true
+  # override:
+  #   - file_option: go_package
+  #     value: github.com/AppleGamer22/raker/server/buf/proto/raker/v1
+  #   - file_option: go_package
+  #     module: buf.build/googleapis/googleapis
+  #     value: google.golang.org/genproto/googleapis/type/latlng
+  disable:
+    - file_option: go_package
+      module: buf.build/bufbuild/protovalidate
