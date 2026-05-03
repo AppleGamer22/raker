@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { PostType, type ScrapeResponse } from "@/buf/raker/v1/raker_pb";
 import {
@@ -36,6 +36,7 @@ export function FilesCarousel({
 }) {
 	const [api, setApi] = useState<CarouselApi>();
 	const [selectedIndex, setSelectedIndex] = useState(0);
+	const prevHeightsRef = useRef<Map<number, number>>(new Map());
 
 	const syncSelectedSlideHeight = useCallback((emblaApi: CarouselApi) => {
 		if (!emblaApi) {
@@ -48,7 +49,18 @@ export function FilesCarousel({
 			return;
 		}
 
-		emblaApi.containerNode().style.height = `${selectedSlide.offsetHeight}px`;
+		const h = selectedSlide.offsetHeight;
+		const prev = prevHeightsRef.current.get(selectedIndex) || 0;
+
+		if (h > prev) {
+			prevHeightsRef.current.set(selectedIndex, h);
+			emblaApi.containerNode().style.height = `${h}px`;
+		} else if (prev > 0) {
+			// Do not shrink below the previously observed max height for this slide.
+			emblaApi.containerNode().style.height = `${prev}px`;
+		} else {
+			emblaApi.containerNode().style.height = `${h}px`;
+		}
 	}, []);
 
 	useEffect(() => {

@@ -64,7 +64,7 @@ export const Route = createFileRoute("/history")({
 		types: z.array(z.enum(PostType)).catch(defaultPostTypes),
 		exclusive: z.boolean().catch(false),
 		categories: z.array(z.string()).catch([]),
-		page: z.bigint().min(1n).catch(1n),
+		page: z.coerce.bigint().min(1n).catch(1n),
 		owners: z
 			.array(
 				z.object({
