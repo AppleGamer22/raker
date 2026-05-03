@@ -9,7 +9,7 @@ WORKDIR /raker
 COPY $TARGETPLATFORM/raker .
 
 # copy bundled frontend assets
-COPY vdist vdist
+COPY vdist ./vdist
 
 # install runtime dependencies
 RUN apk add --no-cache ffmpeg
