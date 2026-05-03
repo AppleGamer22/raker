@@ -160,7 +160,7 @@ func (handler *storageHandler) Save(user db.User, media db.PostType, owner, file
 
 	request.Header.Add("User-Agent", shared.UserAgent)
 	request.Header.Add("sec-ch-ua", `"Google Chrome";v="147", "Not.A/Brand";v="8", "Chromium";v="147"`)
-	request.Header.Add("accept", "text/html,application/xhtml+xml,application/xml;image/avif,image/webp,image/apng,*/*;application/signed-exchange;")
+	request.Header.Add("accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8")
 
 	client := http.DefaultClient
 	if media == db.PostTypeVsco {

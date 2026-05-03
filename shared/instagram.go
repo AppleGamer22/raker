@@ -175,13 +175,17 @@ func (instagram *Instagram) Post(post string) (URLs []string, username string, e
 	htmlRequest.AddCookie(&instagram.sessionCookie)
 	htmlRequest.AddCookie(&instagram.userCookie)
 
-	// htmlRequest.Header.Add("x-ig-app-id", "936619743392459")
 	htmlRequest.Header.Add("User-Agent", UserAgent)
-	// htmlRequest.Header.Add("referer", "https://www.instagram.com/")
-	htmlRequest.Header.Add("sec-fetch-mode", "navigate")
-	htmlRequest.Header.Add("accept", "text/html,application/xhtml+xml,application/xml;image/avif,image/webp,image/apng,*/*;application/signed-exchange;")
+	htmlRequest.Header.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8")
+	htmlRequest.Header.Add("Accept-Language", "en-GB,en;q=0.9")
+	htmlRequest.Header.Add("Connection", "keep-alive")
+	htmlRequest.Header.Add("Sec-Fetch-Mode", "navigate")
+	htmlRequest.Header.Add("Sec-Fetch-Site", "none")
+	htmlRequest.Header.Add("Sec-Fetch-Dest", "document")
 
-	htmlResponse, err := http.DefaultClient.Do(htmlRequest)
+	client := NewClient()
+
+	htmlResponse, err := client.Do(htmlRequest)
 	if err != nil {
 		return URLs, username, err
 	}
@@ -194,6 +198,12 @@ func (instagram *Instagram) Post(post string) (URLs []string, username string, e
 
 	mediaIDMatch := instagramRegExpMediaID.FindString(string(htmlBody))
 	if mediaIDMatch == "" {
+		// filename := fmt.Sprintf("instagram_%s.html", time.Now().Format("20060102_150405"))
+		// if err := os.WriteFile(filename, htmlBody, 0644); err != nil {
+		// 	fmt.Println("failed to save html body:", err)
+		// } else {
+		// 	fmt.Println("saved html body to", filename)
+		// }
 		return URLs, username, errors.New("could not find media ID")
 	}
 
@@ -219,7 +229,7 @@ func (instagram *Instagram) Post(post string) (URLs []string, username string, e
 	jsonRequest.Header.Add("User-Agent", UserAgent)
 	jsonRequest.Header.Add("referer", "https://www.instagram.com/")
 
-	jsonResponse, err := http.DefaultClient.Do(jsonRequest)
+	jsonResponse, err := client.Do(jsonRequest)
 	if err != nil {
 		return URLs, username, err
 	}
@@ -237,7 +247,7 @@ func (instagram *Instagram) Post(post string) (URLs []string, username string, e
 	return URLs, username, err
 }
 
-func extractDocumentIDFromScripts(jsURLs [][]string) (string, error) {
+func extractDocumentIDFromScripts(client *http.Client, jsURLs [][]string) (string, error) {
 	for _, match := range jsURLs {
 		jsURL := match[1]
 		if jsURL == "" {
@@ -247,10 +257,12 @@ func extractDocumentIDFromScripts(jsURLs [][]string) (string, error) {
 		if err != nil {
 			continue
 		}
-		jsRequest.Header.Add("user-agent", UserAgent)
-		jsRequest.Header.Add("referer", "https://www.instagram.com/")
+		jsRequest.Header.Add("User-Agent", UserAgent)
+		jsRequest.Header.Add("Referer", "https://www.instagram.com/")
+		jsRequest.Header.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8")
+		jsRequest.Header.Add("Accept-Language", "en-GB,en;q=0.9")
 
-		jsResponse, err := http.DefaultClient.Do(jsRequest)
+		jsResponse, err := client.Do(jsRequest)
 		if err != nil {
 			continue
 		}
@@ -278,11 +290,16 @@ func InstagramIncognito(post string) ([]string, string, []*http.Cookie, error) {
 	}
 
 	htmlRequest.Header.Add("x-ig-app-id", "936619743392459")
-	htmlRequest.Header.Add("user-agent", UserAgent)
-	htmlRequest.Header.Add("referer", "https://www.instagram.com/")
-	htmlRequest.Header.Add("sec-fetch-mode", "navigate")
+	htmlRequest.Header.Add("User-Agent", UserAgent)
+	htmlRequest.Header.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8")
+	htmlRequest.Header.Add("Accept-Language", "en-US,en;q=0.9")
+	htmlRequest.Header.Add("Accept-Encoding", "gzip, deflate, br")
+	htmlRequest.Header.Add("Referer", "https://www.instagram.com/")
+	htmlRequest.Header.Add("Sec-Fetch-Mode", "navigate")
 
-	htmlResponse, err := http.DefaultClient.Do(htmlRequest)
+	client := NewClient()
+
+	htmlResponse, err := client.Do(htmlRequest)
 	if err != nil {
 		return []string{}, "", []*http.Cookie{}, err
 	}
@@ -304,7 +321,7 @@ func InstagramIncognito(post string) ([]string, string, []*http.Cookie, error) {
 	}
 
 	jsURLs := instagramRegExpScriptWithDocumentID.FindAllStringSubmatch(string(htmlBody), 4)
-	documentID, err := extractDocumentIDFromScripts(jsURLs)
+	documentID, err := extractDocumentIDFromScripts(client, jsURLs)
 	if err != nil {
 		return []string{}, "", []*http.Cookie{}, err
 	}
@@ -340,7 +357,7 @@ func InstagramIncognito(post string) ([]string, string, []*http.Cookie, error) {
 		jsonRequest.AddCookie(cookie)
 	}
 
-	jsonResponse, err := http.DefaultClient.Do(jsonRequest)
+	jsonResponse, err := client.Do(jsonRequest)
 	if err != nil {
 		return []string{}, "", []*http.Cookie{}, err
 	}

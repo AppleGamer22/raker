@@ -147,6 +147,7 @@ func (tiktok *TikTok) Post(owner, post string, incognito bool) ([]string, []stri
 
 	script := tiktok_regexp.FindString(string(body))
 	if script == "" {
+		// fmt.Println(string(body))
 		return []string{}, []string{}, "", []*http.Cookie{}, errors.New("could not find JSON")
 	}
 
