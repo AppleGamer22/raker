@@ -38,7 +38,8 @@ version: "3"
 services:
   raker:
     container_name: raker
-    build: .
+    build: ghcr.io/applegamer22/raker
+    user: "1000"
     environment:
       SECRET: a secret
       URI: "postgres://${USER}:postgres@postgres/raker?sslmode=prefer"
