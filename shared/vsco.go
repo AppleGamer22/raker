@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"net/http/cookiejar"
 	"regexp"
 	"strings"
 )
@@ -68,20 +67,12 @@ var vsco_regexp = regexp.MustCompile(`<script>window\.__PRELOADED_STATE__ =(.*?)
 func VSCO(owner, post string) ([]string, string, []*http.Cookie, error) {
 	postURL := fmt.Sprintf("https://vsco.co/%s/media/%s", owner, post)
 
-	jar, err := cookiejar.New(nil)
-	if err != nil {
-		return []string{}, "", []*http.Cookie{}, err
-	}
-
-	client := NewClient()
+	client := NewClient(false)
 
 	htmlRequest, err := http.NewRequest(http.MethodGet, postURL, nil)
 	if err != nil {
 		return []string{}, "", []*http.Cookie{}, err
 	}
-	htmlRequest.Header.Add("User-Agent", UserAgent)
-	htmlRequest.Header.Add("sec-ch-ua", `"Google Chrome";v="147", "Not.A/Brand";v="8", "Chromium";v="147"`)
-	htmlRequest.Header.Add("accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8")
 
 	htmlResponse, err := client.Do(htmlRequest)
 	if err != nil {
@@ -125,5 +116,5 @@ func VSCO(owner, post string) ([]string, string, []*http.Cookie, error) {
 		URLs = append(URLs, URL)
 	}
 
-	return URLs, username, jar.Cookies(htmlResponse.Request.URL), err
+	return URLs, username, htmlResponse.Cookies(), err
 }

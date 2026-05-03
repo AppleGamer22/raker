@@ -10,7 +10,6 @@ import (
 	"path"
 	"strings"
 	"sync"
-	"time"
 
 	"connectrpc.com/connect"
 	v1 "github.com/AppleGamer22/raker/server/buf/proto/raker/v1"
@@ -19,7 +18,6 @@ import (
 	"github.com/AppleGamer22/raker/shared"
 	"github.com/bep/imagemeta"
 	"github.com/charmbracelet/log"
-	utls "github.com/refraction-networking/utls"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -158,17 +156,9 @@ func (handler *storageHandler) Save(user db.User, media db.PostType, owner, file
 		request.Header.Add("referer", "https://vsco.co/")
 	}
 
-	request.Header.Add("User-Agent", shared.UserAgent)
-	request.Header.Add("sec-ch-ua", `"Google Chrome";v="147", "Not.A/Brand";v="8", "Chromium";v="147"`)
-	request.Header.Add("accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8")
+	// request.Header.Add("referer", "https://www.instagram.com/")
 
-	client := http.DefaultClient
-	if media == db.PostTypeVsco {
-		client = &http.Client{
-			Timeout:   time.Second * 30,
-			Transport: shared.NewBypassJA3Transport(utls.HelloChrome_Auto),
-		}
-	}
+	client := shared.NewClient(media == db.PostTypeVsco)
 
 	response, err := client.Do(request)
 	if err != nil {

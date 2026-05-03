@@ -36,6 +36,11 @@ func (instagram *Instagram) Reels(id string, highlight bool) (URLs []string, use
 	}
 	defer response.Body.Close()
 
+	statusClass := response.StatusCode / 100
+	if statusClass == 4 || statusClass == 5 {
+		return []string{}, "", fmt.Errorf("response of %d instead of media", response.StatusCode)
+	}
+
 	var instagramReels InstagramReels
 	if err := json.NewDecoder(response.Body).Decode(&instagramReels); err != nil {
 		return URLs, username, err
@@ -63,7 +68,6 @@ func (instagram *Instagram) userID(username string) (string, error) {
 	request.AddCookie(&instagram.sessionCookie)
 	request.AddCookie(&instagram.userCookie)
 	request.Header.Add("x-ig-app-id", "936619743392459")
-	request.Header.Add("User-Agent", UserAgent)
 
 	response, err := http.DefaultClient.Do(request)
 	if err != nil {

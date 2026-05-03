@@ -1,13 +1,11 @@
 package shared
 
 import (
-	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"net/http"
-	"net/http/cookiejar"
 	"regexp"
 )
 
@@ -43,26 +41,12 @@ var snapchatRegex = regexp.MustCompile(`<script id="__NEXT_DATA__" type="applica
 func Snapchat(owner, highlight string) (SnapchatHighlightResult, []*http.Cookie, error) {
 	postURL := fmt.Sprintf("https://www.snapchat.com/@%s/highlight/%s", owner, highlight)
 
-	jar, err := cookiejar.New(nil)
-	if err != nil {
-		return SnapchatHighlightResult{}, []*http.Cookie{}, err
-	}
-
-	client := &http.Client{
-		Jar: jar,
-		Transport: &http.Transport{
-			// ForceAttemptHTTP2: false,
-			TLSClientConfig: &tls.Config{
-				MinVersion: tls.VersionTLS13,
-			},
-		},
-	}
+	client := NewClient(false)
 
 	htmlRequest, err := http.NewRequest(http.MethodGet, postURL, nil)
 	if err != nil {
 		return SnapchatHighlightResult{}, []*http.Cookie{}, err
 	}
-	htmlRequest.Header.Add("User-Agent", UserAgent)
 
 	htmlResponse, err := client.Do(htmlRequest)
 	if err != nil {

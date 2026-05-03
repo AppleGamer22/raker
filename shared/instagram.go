@@ -175,15 +175,9 @@ func (instagram *Instagram) Post(post string) (URLs []string, username string, e
 	htmlRequest.AddCookie(&instagram.sessionCookie)
 	htmlRequest.AddCookie(&instagram.userCookie)
 
-	htmlRequest.Header.Add("User-Agent", UserAgent)
-	htmlRequest.Header.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8")
-	htmlRequest.Header.Add("Accept-Language", "en-GB,en;q=0.9")
 	htmlRequest.Header.Add("Connection", "keep-alive")
-	htmlRequest.Header.Add("Sec-Fetch-Mode", "navigate")
-	htmlRequest.Header.Add("Sec-Fetch-Site", "none")
-	htmlRequest.Header.Add("Sec-Fetch-Dest", "document")
 
-	client := NewClient()
+	client := NewClient(false)
 
 	htmlResponse, err := client.Do(htmlRequest)
 	if err != nil {
@@ -226,7 +220,6 @@ func (instagram *Instagram) Post(post string) (URLs []string, username string, e
 	jsonRequest.AddCookie(&instagram.userCookie)
 
 	jsonRequest.Header.Add("x-ig-app-id", "936619743392459")
-	jsonRequest.Header.Add("User-Agent", UserAgent)
 	jsonRequest.Header.Add("referer", "https://www.instagram.com/")
 
 	jsonResponse, err := client.Do(jsonRequest)
@@ -257,10 +250,7 @@ func extractDocumentIDFromScripts(client *http.Client, jsURLs [][]string) (strin
 		if err != nil {
 			continue
 		}
-		jsRequest.Header.Add("User-Agent", UserAgent)
 		jsRequest.Header.Add("Referer", "https://www.instagram.com/")
-		jsRequest.Header.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8")
-		jsRequest.Header.Add("Accept-Language", "en-GB,en;q=0.9")
 
 		jsResponse, err := client.Do(jsRequest)
 		if err != nil {
@@ -290,14 +280,9 @@ func InstagramIncognito(post string) ([]string, string, []*http.Cookie, error) {
 	}
 
 	htmlRequest.Header.Add("x-ig-app-id", "936619743392459")
-	htmlRequest.Header.Add("User-Agent", UserAgent)
-	htmlRequest.Header.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8")
-	htmlRequest.Header.Add("Accept-Language", "en-US,en;q=0.9")
-	htmlRequest.Header.Add("Accept-Encoding", "gzip, deflate, br")
 	htmlRequest.Header.Add("Referer", "https://www.instagram.com/")
-	htmlRequest.Header.Add("Sec-Fetch-Mode", "navigate")
 
-	client := NewClient()
+	client := NewClient(false)
 
 	htmlResponse, err := client.Do(htmlRequest)
 	if err != nil {
@@ -341,7 +326,6 @@ func InstagramIncognito(post string) ([]string, string, []*http.Cookie, error) {
 	jsonRequest.Header.Add("x-ig-app-id", "936619743392459")
 	jsonRequest.Header.Add("x-asbd-id", "129477")
 	jsonRequest.Header.Add("x-fb-friendly-name", "PolarisPostActionLoadPostQueryQuery")
-	jsonRequest.Header.Add("User-Agent", UserAgent)
 	jsonRequest.Header.Add("referer", htmlURL)
 
 	jsonRequest.AddCookie(&http.Cookie{

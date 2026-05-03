@@ -15,16 +15,17 @@ import (
 )
 
 // based on https://github.com/refraction-networking/utls/issues/16#issuecomment-1285198375
-func NewBypassJA3Transport(helloID utls.ClientHelloID) *BypassJA3Transport {
-	return &BypassJA3Transport{clientHello: helloID}
+func NewBypassJA3Transport(helloID utls.ClientHelloID, disableHTTP2 bool) *BypassJA3Transport {
+	return &BypassJA3Transport{clientHello: helloID, disableHTTP2: disableHTTP2}
 }
 
 type BypassJA3Transport struct {
 	tr1 http.Transport
 	tr2 http2.Transport
 
-	mu          sync.RWMutex
-	clientHello utls.ClientHelloID
+	mu           sync.RWMutex
+	clientHello  utls.ClientHelloID
+	disableHTTP2 bool
 }
 
 type responseBodyCloser struct {
@@ -108,10 +109,14 @@ func (b *BypassJA3Transport) httpsRoundTrip(req *http.Request) (*http.Response, 
 }
 
 func (b *BypassJA3Transport) getTLSConfig(req *http.Request) *utls.Config {
+	nextProtos := []string{}
+	if !b.disableHTTP2 {
+		nextProtos = append(nextProtos, "h2")
+	}
 	return &utls.Config{
 		ServerName:         req.URL.Host,
 		InsecureSkipVerify: true,
-		NextProtos:         []string{"h2"},
+		NextProtos:         nextProtos,
 	}
 }
 
@@ -132,15 +137,54 @@ func (b *BypassJA3Transport) SetClientHello(hello utls.ClientHelloID) {
 	b.clientHello = hello
 }
 
-func NewClient(protocols ...string) *http.Client {
-	jar, _ := cookiejar.New(nil)
-	return NewClientWithJar(jar)
+// BrowserHeaderRoundTripper injects browser-like headers into all requests
+type BrowserHeaderRoundTripper struct {
+	transport http.RoundTripper
 }
 
-func NewClientWithJar(jar *cookiejar.Jar) *http.Client {
+// RoundTrip implements the http.RoundTripper interface by injecting browser headers
+func (b *BrowserHeaderRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
+	// Inject headers only if not already present (allows per-request override)
+	if req.Header.Get("User-Agent") == "" {
+		req.Header.Set("User-Agent", UserAgent)
+	}
+	if req.Header.Get("Accept") == "" {
+		req.Header.Set("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8")
+	}
+	if req.Header.Get("Accept-Language") == "" {
+		req.Header.Set("Accept-Language", "en-GB,en;q=0.9")
+	}
+	// if req.Header.Get("Accept-Encoding") == "" {
+	// 	req.Header.Set("Accept-Encoding", "gzip, deflate, br")
+	// }
+	if req.Header.Get("Sec-Fetch-Mode") == "" {
+		req.Header.Set("Sec-Fetch-Mode", "navigate")
+	}
+	if req.Header.Get("Sec-Fetch-Site") == "" {
+		req.Header.Set("Sec-Fetch-Site", "none")
+	}
+	if req.Header.Get("Sec-Fetch-Dest") == "" {
+		req.Header.Set("Sec-Fetch-Dest", "document")
+	}
+	if req.Header.Get("sec-ch-ua") == "" {
+		req.Header.Set("sec-ch-ua", `"Google Chrome";v="147", "Not.A/Brand";v="8", "Chromium";v="147"`)
+	}
+
+	return b.transport.RoundTrip(req)
+}
+
+func NewClient(disableHTTP2 bool) *http.Client {
+	jar, _ := cookiejar.New(nil)
+	return NewClientWithJar(jar, disableHTTP2)
+}
+
+func NewClientWithJar(jar *cookiejar.Jar, disableHTTP2 bool) *http.Client {
+	baseTransport := NewBypassJA3Transport(utls.HelloChrome_Auto, disableHTTP2)
 	return &http.Client{
-		Jar:       jar,
-		Timeout:   30 * time.Second,
-		Transport: NewBypassJA3Transport(utls.HelloChrome_Auto),
+		Jar:     jar,
+		Timeout: 30 * time.Second,
+		Transport: &BrowserHeaderRoundTripper{
+			transport: baseTransport,
+		},
 	}
 }
