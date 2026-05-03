@@ -40,7 +40,7 @@ func (server *RakerServer) ScrapeHighlight(ctx context.Context, request *v1.Unar
 	}
 
 	instagram := shared.NewInstagram(user.InstagramSessionID, user.InstagramUserID)
-	URLs, username, err := instagram.Reels(request.Post, true)
+	URLs, username, err := instagram.Highlights(request.Post)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
