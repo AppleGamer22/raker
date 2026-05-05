@@ -30,6 +30,7 @@ import {
 	useComboboxAnchor,
 } from "@/components/ui/combobox";
 import { FieldGroup, FieldLegend, Field, FieldSet, FieldLabel, FieldContent, FieldTitle } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
 import { InputGroupAddon } from "@/components/ui/input-group";
 import { Label } from "@/components/ui/label";
 import {
@@ -48,15 +49,7 @@ import { TikTokIcon } from "@/components/ui/svgs/tiktok";
 import { VSCOIcon } from "@/components/ui/svgs/vsco";
 import { Switch } from "@/components/ui/switch";
 import { useUser } from "@/hooks/user-provider";
-
-export const defaultPostTypes = [
-	PostType.Instagram,
-	PostType.Highlight,
-	PostType.Story,
-	PostType.TikTok,
-	PostType.Snapchat,
-	PostType.VSCO,
-];
+import { defaultPostTypes } from "@/lib/utils";
 
 export const Route = createFileRoute("/history")({
 	component: History,
@@ -137,8 +130,31 @@ function HistoryPagination({
 	total: bigint;
 	onChange: (n: bigint) => void;
 }) {
+	const [pageValue, setPageValue] = useState(current.toString());
+
+	useEffect(() => {
+		setPageValue(current.toString());
+	}, [current]);
+
+	const commitPageValue = () => {
+		if (!/^\d+$/.test(pageValue)) {
+			setPageValue(current.toString());
+			return;
+		}
+
+		const nextPage = BigInt(pageValue);
+		if (nextPage < 1n || nextPage > total) {
+			setPageValue(current.toString());
+			return;
+		}
+
+		if (nextPage !== current) {
+			onChange(nextPage);
+		}
+	};
+
 	return total <= 1n ? null : (
-		<Pagination>
+		<Pagination className="my-2">
 			<PaginationContent>
 				{current > 1n && (
 					<>
@@ -153,7 +169,23 @@ function HistoryPagination({
 					</>
 				)}
 				<PaginationItem>
-					<PaginationLink>{current}</PaginationLink>
+					<Input
+						aria-label="Current page"
+						className="h-8 px-1 text-center"
+						onBlur={commitPageValue}
+						onChange={(event) => setPageValue(event.target.value)}
+						onKeyDown={(event) => {
+							if (event.key === "Enter") {
+								event.preventDefault();
+								commitPageValue();
+							}
+						}}
+						min="1"
+						max={total.toString()}
+						step="1"
+						type="number"
+						value={pageValue}
+					/>
 				</PaginationItem>
 				{current < total && (
 					<>

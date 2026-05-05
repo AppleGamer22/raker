@@ -37,8 +37,8 @@ import { VSCOIcon } from "@/components/ui/svgs/vsco";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useConfirmationDialog } from "@/hooks/use-confirmation-dialog";
 import { useUser } from "@/hooks/user-provider";
-import { cn, writeClipboard } from "@/lib/utils";
-import { defaultPostTypes, HistoryPostCategoryForm } from "@/routes/history";
+import { cn, writeClipboard, defaultPostTypes } from "@/lib/utils";
+import { HistoryPostCategoryForm } from "@/routes/history";
 
 export function PlatformIcon({ type }: { type: PostType | -1 }) {
 	switch (type) {

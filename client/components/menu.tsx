@@ -22,7 +22,7 @@ import { SnapchatIcon } from "@/components/ui/svgs/snapchat";
 import { TikTokIcon } from "@/components/ui/svgs/tiktok";
 import { VSCOIcon } from "@/components/ui/svgs/vsco";
 import { useUser } from "@/hooks/user-provider";
-import { defaultPostTypes } from "@/routes/history";
+import { defaultPostTypes } from "@/lib/utils";
 
 type MenuMode = "default" | "mobile-sheet";
 

@@ -2,6 +2,8 @@ import { clsx, type ClassValue } from "clsx";
 import { toast } from "sonner";
 import { twMerge } from "tailwind-merge";
 
+import { PostType } from "@/buf/raker/v1/raker_pb";
+
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));
 }
@@ -18,3 +20,12 @@ export async function writeClipboard(text: string) {
 		});
 	}
 }
+
+export const defaultPostTypes = [
+	PostType.Instagram,
+	PostType.Highlight,
+	PostType.Story,
+	PostType.TikTok,
+	PostType.Snapchat,
+	PostType.VSCO,
+];
