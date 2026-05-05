@@ -1,7 +1,7 @@
 import { timestampDate } from "@bufbuild/protobuf/wkt";
 import { useMutation } from "@connectrpc/connect-query";
 import { useForm } from "@tanstack/react-form";
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, stripSearchParams, useNavigate } from "@tanstack/react-router";
 import { SearchIcon } from "lucide-react";
 import { Fragment, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -49,15 +49,23 @@ import { TikTokIcon } from "@/components/ui/svgs/tiktok";
 import { VSCOIcon } from "@/components/ui/svgs/vsco";
 import { Switch } from "@/components/ui/switch";
 import { useUser } from "@/hooks/user-provider";
-import { defaultPostTypes } from "@/lib/utils";
+import { defaultPostTypes, inPWA } from "@/lib/utils";
+
+const historySearchDefaults = {
+	exclusive: false,
+	categories: [],
+	page: 1n,
+	owners: [],
+	types: defaultPostTypes,
+};
 
 export const Route = createFileRoute("/history")({
 	component: History,
 	validateSearch: z.object({
-		types: z.array(z.enum(PostType)).catch(defaultPostTypes),
-		exclusive: z.boolean().catch(false),
-		categories: z.array(z.string()).catch([]),
-		page: z.coerce.bigint().min(1n).catch(1n),
+		types: z.array(z.enum(PostType)).catch(historySearchDefaults.types),
+		exclusive: z.boolean().catch(historySearchDefaults.exclusive),
+		categories: z.array(z.string()).catch(historySearchDefaults.categories),
+		page: z.coerce.bigint().min(1n).catch(historySearchDefaults.page),
 		owners: z
 			.array(
 				z.object({
@@ -65,8 +73,11 @@ export const Route = createFileRoute("/history")({
 					type: z.union([z.enum(PostType), z.literal(-1)]),
 				}),
 			)
-			.catch([]),
+			.catch(historySearchDefaults.owners),
 	}),
+	search: {
+		middlewares: [stripSearchParams(historySearchDefaults)],
+	},
 });
 
 type OwnerPostType = {
@@ -656,7 +667,7 @@ function History() {
 													owners: [],
 													types: defaultPostTypes,
 												}}
-												target="_blank"
+												target={inPWA ? "_self" : "_blank"}
 											>
 												{category}
 											</Link>

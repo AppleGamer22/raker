@@ -1,6 +1,6 @@
 import { useMutation } from "@connectrpc/connect-query";
 import { useForm } from "@tanstack/react-form";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, stripSearchParams, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -15,13 +15,21 @@ import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { useUser } from "@/hooks/user-provider";
 
+const vscoSearchDefaults = {
+	owner: "",
+	post: "",
+};
+
 const vscoSearchSchema = z.object({
-	owner: z.string().catch(""),
-	post: z.string().catch(""),
+	owner: z.string().catch(vscoSearchDefaults.owner),
+	post: z.string().catch(vscoSearchDefaults.post),
 });
 
 export const Route = createFileRoute("/vsco")({
 	component: VSCO,
+	search: {
+		middlewares: [stripSearchParams(vscoSearchDefaults)],
+	},
 	validateSearch: vscoSearchSchema,
 });
 

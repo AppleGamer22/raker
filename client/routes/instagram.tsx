@@ -1,6 +1,6 @@
 import { useMutation } from "@connectrpc/connect-query";
 import { useForm } from "@tanstack/react-form";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, stripSearchParams, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -16,13 +16,21 @@ import { Progress } from "@/components/ui/progress";
 import { Switch } from "@/components/ui/switch";
 import { useUser } from "@/hooks/user-provider";
 
+const instagramSearchDefaults = {
+	post: "",
+	incognito: false,
+};
+
 const instagramSearchSchema = z.object({
-	post: z.string().catch(""),
-	incognito: z.boolean().catch(false),
+	post: z.string().catch(instagramSearchDefaults.post),
+	incognito: z.boolean().catch(instagramSearchDefaults.incognito),
 });
 
 export const Route = createFileRoute("/instagram")({
 	component: Instagram,
+	search: {
+		middlewares: [stripSearchParams(instagramSearchDefaults)],
+	},
 	validateSearch: instagramSearchSchema,
 });
 

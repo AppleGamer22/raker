@@ -1,6 +1,6 @@
 import { useMutation } from "@connectrpc/connect-query";
 import { useForm } from "@tanstack/react-form";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, stripSearchParams, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -16,14 +16,23 @@ import { Progress } from "@/components/ui/progress";
 import { Switch } from "@/components/ui/switch";
 import { useUser } from "@/hooks/user-provider";
 
+const tikTokSearchDefaults = {
+	owner: "",
+	post: "",
+	incognito: false,
+};
+
 const tikTokSearchSchema = z.object({
-	owner: z.string().catch(""),
-	post: z.string().catch(""),
-	incognito: z.boolean().catch(false),
+	owner: z.string().catch(tikTokSearchDefaults.owner),
+	post: z.string().catch(tikTokSearchDefaults.post),
+	incognito: z.boolean().catch(tikTokSearchDefaults.incognito),
 });
 
 export const Route = createFileRoute("/tiktok")({
 	component: TikTok,
+	search: {
+		middlewares: [stripSearchParams(tikTokSearchDefaults)],
+	},
 	validateSearch: tikTokSearchSchema,
 });
 

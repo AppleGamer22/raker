@@ -1,6 +1,6 @@
 import { useMutation } from "@connectrpc/connect-query";
 import { useForm } from "@tanstack/react-form";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, stripSearchParams, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, useRef } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -15,13 +15,21 @@ import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { useUser } from "@/hooks/user-provider";
 
+const snapchatSearchDefaults = {
+	owner: "",
+	highlight: "",
+};
+
 const snapchatSearchSchema = z.object({
-	owner: z.string().catch(""),
-	highlight: z.string().catch(""),
+	owner: z.string().catch(snapchatSearchDefaults.owner),
+	highlight: z.string().catch(snapchatSearchDefaults.highlight),
 });
 
 export const Route = createFileRoute("/snapchat")({
 	component: Snapchat,
+	search: {
+		middlewares: [stripSearchParams(snapchatSearchDefaults)],
+	},
 	validateSearch: snapchatSearchSchema,
 });
 

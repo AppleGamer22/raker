@@ -1,6 +1,6 @@
 import { useMutation } from "@connectrpc/connect-query";
 import { useForm } from "@tanstack/react-form";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, stripSearchParams, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -15,13 +15,20 @@ import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { useUser } from "@/hooks/user-provider";
 
+const storySearchDefaults = {
+	owner: "",
+};
+
 const storySearchSchema = z.object({
-	owner: z.string().catch(""),
+	owner: z.string().catch(storySearchDefaults.owner),
 	// incognito: z.boolean().catch(false),
 });
 
 export const Route = createFileRoute("/story")({
 	component: Story,
+	search: {
+		middlewares: [stripSearchParams(storySearchDefaults)],
+	},
 	validateSearch: storySearchSchema,
 });
 
