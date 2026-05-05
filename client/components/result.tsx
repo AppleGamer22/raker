@@ -37,7 +37,7 @@ import { VSCOIcon } from "@/components/ui/svgs/vsco";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useConfirmationDialog } from "@/hooks/use-confirmation-dialog";
 import { useUser } from "@/hooks/user-provider";
-import { cn, writeClipboard, defaultPostTypes } from "@/lib/utils";
+import { cn, writeClipboard, defaultPostTypes, inPWA } from "@/lib/utils";
 import { HistoryPostCategoryForm } from "@/routes/history";
 
 export function PlatformIcon({ type }: { type: PostType | -1 }) {
@@ -58,22 +58,24 @@ export function PlatformIcon({ type }: { type: PostType | -1 }) {
 }
 
 export function ResultLink({ result, children }: { result: ScrapeResponse; children: ReactNode }) {
+	const target = inPWA() ? undefined : "_blank";
+
 	switch (result.postType) {
 		case PostType.Instagram:
 			return (
-				<Link to="/instagram" search={{ post: result.post, incognito: result.incognito }} target="_blank">
+				<Link to="/instagram" search={{ post: result.post, incognito: result.incognito }} target={target}>
 					{children}
 				</Link>
 			);
 		case PostType.Highlight:
 			return (
-				<Link to="/highlight" search={{ highlight: result.post }} target="_blank">
+				<Link to="/highlight" search={{ highlight: result.post }} target={target}>
 					{children}
 				</Link>
 			);
 		case PostType.Story:
 			return (
-				<Link to="/story" search={{ owner: result.post }} target="_blank">
+				<Link to="/story" search={{ owner: result.post }} target={target}>
 					{children}
 				</Link>
 			);
@@ -82,20 +84,20 @@ export function ResultLink({ result, children }: { result: ScrapeResponse; child
 				<Link
 					to="/tiktok"
 					search={{ owner: result.postOwner, post: result.post, incognito: result.incognito }}
-					target="_blank"
+					target={target}
 				>
 					{children}
 				</Link>
 			);
 		case PostType.Snapchat:
 			return (
-				<Link to="/snapchat" search={{ owner: result.postOwner, highlight: result.post }} target="_blank">
+				<Link to="/snapchat" search={{ owner: result.postOwner, highlight: result.post }} target={target}>
 					{children}
 				</Link>
 			);
 		case PostType.VSCO:
 			return (
-				<Link to="/vsco" search={{ owner: result.postOwner, post: result.post }} target="_blank">
+				<Link to="/vsco" search={{ owner: result.postOwner, post: result.post }} target={target}>
 					{children}
 				</Link>
 			);
@@ -160,6 +162,8 @@ export function ResultHeader({
 	exclusive: boolean;
 	showPost?: boolean;
 }) {
+	const target = inPWA() ? undefined : "_blank";
+
 	return (
 		<span className="inline-flex max-w-full flex-wrap items-center gap-x-1 gap-y-1 leading-none">
 			<Badge variant="secondary">
@@ -172,7 +176,7 @@ export function ResultHeader({
 						owners: [],
 						types: [result.postType],
 					}}
-					target="_blank"
+					target={target}
 				>
 					<PostTypeIconLabel type={result.postType} />
 				</Link>
@@ -195,7 +199,7 @@ export function ResultHeader({
 								owners: [{ owner: result.postOwner, type: -1 }],
 								types: defaultPostTypes,
 							}}
-							target="_blank"
+							target={target}
 						>
 							<ContextMenuItem>
 								<ExternalLinkIcon /> History Results

@@ -305,14 +305,14 @@ function History() {
 	const { types, exclusive, categories, owners, page } = Route.useSearch();
 	const navigate = useNavigate({ from: Route.fullPath });
 	const { username, categories: availableCategories, isCategoriesPending } = useUser();
+	const linkTarget = inPWA() ? undefined : "_blank";
 	const [ownersSearchOptions, setOwnersSearchOptions] = useState<OwnerPostType[]>([]);
 	const [isOpen, setIsOpen] = useState(false);
 	const [totalCount, setTotalCount] = useState(0n);
 	const [currentPage, setCurrentPage] = useState(BigInt(page));
 	const currentPageRef = useRef(BigInt(page));
 	const [histories, setHistories] = useState<ScrapeResponse[]>([]);
-	const hasInitializedCategories = useRef(false);
-	const hasSubmittedInitialSearch = useRef(false);
+	const lastSubmittedSearch = useRef("");
 
 	const anchor = useComboboxAnchor();
 
@@ -361,21 +361,34 @@ function History() {
 	});
 
 	useEffect(() => {
-		if (isCategoriesPending || hasInitializedCategories.current) {
+		if (isCategoriesPending) {
 			return;
 		}
 
 		const validSearchCategories = categories.filter((category) => availableCategories.includes(category));
-		form.setFieldValue("categories", validSearchCategories);
-		hasInitializedCategories.current = true;
+		const normalizedPage = BigInt(page);
+		const nextSearch = JSON.stringify({
+			types,
+			exclusive,
+			categories: validSearchCategories,
+			owners,
+			page: normalizedPage.toString(),
+		});
 
-		if (hasSubmittedInitialSearch.current || username === null) {
+		form.setFieldValue("types", types);
+		form.setFieldValue("exclusive", exclusive);
+		form.setFieldValue("categories", validSearchCategories);
+		form.setFieldValue("ownersSearchValue", owners);
+		setCurrentPage(normalizedPage);
+		currentPageRef.current = normalizedPage;
+
+		if (username === null || lastSubmittedSearch.current === nextSearch) {
 			return;
 		}
 
-		hasSubmittedInitialSearch.current = true;
+		lastSubmittedSearch.current = nextSearch;
 		form.handleSubmit();
-	}, [availableCategories, categories, form, isCategoriesPending, username]);
+	}, [availableCategories, categories, exclusive, form, isCategoriesPending, owners, page, types, username]);
 
 	useEffect(() => {
 		const normalizedPage = BigInt(page);
@@ -667,7 +680,7 @@ function History() {
 													owners: [],
 													types: defaultPostTypes,
 												}}
-												target={inPWA ? "_self" : "_blank"}
+												target={linkTarget}
 											>
 												{category}
 											</Link>
