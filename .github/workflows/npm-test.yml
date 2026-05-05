@@ -28,4 +28,4 @@ jobs:
           node-version: lts/*
           check-latest: true
           cache: npm
-      - run: cpm ci
+      - run: npm ci
