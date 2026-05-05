@@ -108,23 +108,6 @@ WHERE post_type = sqlc.arg(post_type)::post_type
 
 -- https://docs.sqlc.dev/en/stable/howto/select.html#passing-a-slice-as-a-parameter-to-a-query
 -- https://docs.sqlc.dev/en/stable/howto/named_parameters.html
--- name: HistoryGetInclusive :many
-SELECT *
-FROM Histories
-WHERE post_type = ANY (sqlc.slice(post_types)::post_type [])
-	AND categories <@ sqlc.slice(categories)::text []
-	AND post_owner LIKE sqlc.arg(post_owner)::text
-	AND username = sqlc.arg(username)::text
-LIMIT sqlc.arg(page_size)::int OFFSET sqlc.arg(page)::int;
-
--- name: HistoryGetExclusive :many
-SELECT *
-FROM Histories
-WHERE post_type = ANY (sqlc.slice(post_types)::post_type [])
-	AND categories = sqlc.slice(categories)::text []
-	AND post_owner LIKE sqlc.arg(post_owner)::text
-	AND username = sqlc.arg(username)::text
-LIMIT sqlc.arg(page_size)::int OFFSET sqlc.arg(page)::int;
 
 -- name: HistoryGetPage :many
 SELECT DISTINCT *
@@ -137,7 +120,7 @@ WHERE post_type = ANY (sqlc.slice(post_types)::post_type [])
 		)
 		or (
 			not sqlc.arg(exclusive)::boolean
-			and categories <@ COALESCE(sqlc.slice(categories)::text[], ARRAY[]::text[])
+			and categories && COALESCE(sqlc.slice(categories)::text[], ARRAY[]::text[])
 		)
 	)
 	AND (cardinality(COALESCE(sqlc.slice(post_owners)::text[], ARRAY[]::text[])) = 0 or EXISTS(
@@ -160,7 +143,7 @@ WHERE post_type = ANY (sqlc.slice(post_types)::post_type [])
 		)
 		or (
 			not sqlc.arg(exclusive)::boolean
-			and categories <@ COALESCE(sqlc.slice(categories)::text[], ARRAY[]::text[])
+			and categories && COALESCE(sqlc.slice(categories)::text[], ARRAY[]::text[])
 		)
 	)
 	AND (cardinality(COALESCE(sqlc.slice(post_owners)::text[], ARRAY[]::text[])) = 0 or EXISTS(
@@ -186,7 +169,7 @@ WHERE post_type = ANY (sqlc.slice(post_types)::post_type [])
 		)
 		or (
 			not sqlc.arg(exclusive)::boolean
-			and categories <@ COALESCE(sqlc.slice(categories)::text[], ARRAY[]::text[])
+			and categories && COALESCE(sqlc.slice(categories)::text[], ARRAY[]::text[])
 		)
 	)
 	AND post_owner LIKE FORMAT('%%%s%%', sqlc.arg(post_owner)::text)
