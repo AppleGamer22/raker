@@ -50,23 +50,23 @@ func NewTikTok(sessionID, sessionIDGuard string) TikTok {
 	return TikTok{sessionID, sessionIDGuard}
 }
 
-func (tikok *TikTok) MSToken(owner string) (http.Client, error) {
-	client := *NewClient(false)
+func (tikok *TikTok) MSToken(owner string) (*http.Client, error) {
+	client := NewClient(false)
 	ownerURL := fmt.Sprintf("https://www.tiktok.com/@%s", owner)
 	request, err := http.NewRequest(http.MethodGet, ownerURL, nil)
 	if err != nil {
-		return http.Client{}, err
+		return &http.Client{}, err
 	}
 
 	response, err := client.Do(request)
 	if err != nil {
-		return http.Client{}, err
+		return &http.Client{}, err
 	}
 	response.Body.Close()
 
 	request, err = http.NewRequest(http.MethodPost, "https://mssdk-sg.tiktok.com/web/common", nil)
 	if err != nil {
-		return http.Client{}, err
+		return &http.Client{}, err
 	}
 
 	query := request.URL.Query()
@@ -82,7 +82,7 @@ func (tikok *TikTok) MSToken(owner string) (http.Client, error) {
 
 	response, err = client.Do(request)
 	if err != nil {
-		return http.Client{}, err
+		return &http.Client{}, err
 	}
 	response.Body.Close()
 
@@ -140,7 +140,7 @@ func (tiktok *TikTok) Post(owner, post string, incognito bool) ([]string, []stri
 
 	script := tiktok_regexp.FindString(string(body))
 	if script == "" {
-		// fmt.Println(string(body))
+		fmt.Println(string(body))
 		return []string{}, []string{}, "", []*http.Cookie{}, errors.New("could not find JSON")
 	}
 

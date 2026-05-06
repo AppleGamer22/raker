@@ -11,6 +11,7 @@ import (
 	v1 "github.com/AppleGamer22/raker/server/buf/proto/raker/v1"
 	"github.com/AppleGamer22/raker/server/db"
 	"github.com/AppleGamer22/raker/shared"
+	"github.com/charmbracelet/log"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -41,6 +42,7 @@ func (server *RakerServer) ScrapeTikTok(ctx context.Context, request *v1.BinaryS
 	tiktok := shared.NewTikTok(user.TiktokSessionID, user.TiktokSessionIDGuard)
 	videoURLs, coverURLs, username, cookies, err := tiktok.Post(request.Owner, request.Post, request.GetIncognito())
 	if err != nil {
+		log.Error(err)
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 

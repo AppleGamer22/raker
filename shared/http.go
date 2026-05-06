@@ -111,7 +111,7 @@ func (b *BypassJA3Transport) httpsRoundTrip(req *http.Request) (*http.Response, 
 func (b *BypassJA3Transport) getTLSConfig(req *http.Request) *utls.Config {
 	nextProtos := []string{}
 	if !b.disableHTTP2 {
-		nextProtos = append(nextProtos, "h2")
+		nextProtos = []string{"h2"}
 	}
 	return &utls.Config{
 		ServerName:         req.URL.Host,

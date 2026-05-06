@@ -59,7 +59,7 @@ function Story() {
 			try {
 				const result = await storyMutation.mutateAsync({ post: owner });
 				setResult(result);
-				await navigate({ search: { owner }, replace: true });
+				await navigate({ search: { owner: result.post }, replace: true });
 			} catch (err) {
 				toast.error((err as Error).message, {
 					position: "top-center",
