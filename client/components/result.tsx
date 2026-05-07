@@ -320,7 +320,7 @@ export function Result({
 						categories,
 					};
 				});
-				toast.success("Categories updated", {
+				toast.success("Updated", {
 					position: "top-center",
 				});
 			} catch (err) {
