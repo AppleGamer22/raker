@@ -229,10 +229,10 @@ func (tiktok *TikTok) Post(owner, post string, incognito bool) ([]string, []stri
 		for _, image := range tiktokPost.DefaultScop.VideoDetail.ItemInfo.ItemStruct.ImagePost.Images {
 			URLs = append(URLs, image.ImageURL.URLs[0])
 		}
-		return []string{}, URLs, username, slices.Concat(request.Cookies(), cookies), err
+		return []string{}, URLs, username, slices.Concat(request.Cookies(), cookies), nil
 	} else if URL != "" && len(tiktokPost.DefaultScop.VideoDetail.ItemInfo.ItemStruct.Video.PlayAddrStruct.UrlList) == 0 {
-		return []string{URL}, []string{tiktokPost.DefaultScop.VideoDetail.ItemInfo.ItemStruct.Video.Cover}, username, slices.Concat(request.Cookies(), cookies), err
+		return []string{URL}, []string{tiktokPost.DefaultScop.VideoDetail.ItemInfo.ItemStruct.Video.Cover}, username, slices.Concat(request.Cookies(), cookies), nil
 	}
 
-	return tiktokPost.DefaultScop.VideoDetail.ItemInfo.ItemStruct.Video.PlayAddrStruct.UrlList, []string{tiktokPost.DefaultScop.VideoDetail.ItemInfo.ItemStruct.Video.Cover}, username, slices.Concat(request.Cookies(), cookies), err
+	return tiktokPost.DefaultScop.VideoDetail.ItemInfo.ItemStruct.Video.PlayAddrStruct.UrlList, []string{tiktokPost.DefaultScop.VideoDetail.ItemInfo.ItemStruct.Video.Cover}, username, slices.Concat(request.Cookies(), cookies), nil
 }

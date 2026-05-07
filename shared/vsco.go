@@ -116,5 +116,5 @@ func VSCO(owner, post string) ([]string, string, []*http.Cookie, error) {
 		URLs = append(URLs, URL)
 	}
 
-	return URLs, username, htmlResponse.Cookies(), err
+	return URLs, username, htmlResponse.Cookies(), nil
 }
