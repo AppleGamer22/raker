@@ -74,5 +74,6 @@ dockers_v2:
       - --pull
     extra_files:
       - vdist
+      - waf.ts
 sboms:
   - artifacts: source

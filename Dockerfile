@@ -13,6 +13,7 @@ COPY vdist ./vdist
 
 # install runtime dependencies
 RUN apk add --no-cache ffmpeg deno
+COPY waf.ts .
 
 # define non-root user
 RUN addgroup -S raker
