@@ -12,7 +12,7 @@ COPY $TARGETPLATFORM/raker .
 COPY vdist ./vdist
 
 # install runtime dependencies
-RUN apk add --no-cache ffmpeg
+RUN apk add --no-cache ffmpeg deno
 
 # define non-root user
 RUN addgroup -S raker
