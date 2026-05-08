@@ -151,7 +151,7 @@ func (tiktok *TikTok) FetchPost(owner, post string, incognito bool, wafCookies .
 
 	script := tiktok_regexp.FindString(string(body))
 	if script == "" {
-		fmt.Println(string(body))
+		// fmt.Println(string(body))
 		return string(body), []*http.Cookie{}, errors.New("could not find JSON")
 	}
 	return script, response.Cookies(), nil
@@ -163,7 +163,7 @@ func (tiktok *TikTok) TryWAF(url, challenge string) ([]*http.Cookie, error) {
 	output, err := command.Output()
 	if err != nil {
 		log.Error(err)
-		log.Error(output)
+		// log.Error(output)
 		return []*http.Cookie{}, err
 	}
 
