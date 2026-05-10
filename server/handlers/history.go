@@ -50,8 +50,8 @@ func PostTypePB2DB(pt v1.PostType) db.PostType {
 	}
 }
 
-func HistoryToScrapeResponse(history db.History) *v1.ScrapeResponse {
-	return &v1.ScrapeResponse{
+func HistoryToScrapeResponse(user db.User, history db.History) *v1.ScrapeResponse {
+	return resolveVSCOMetadata(user, &v1.ScrapeResponse{
 		PostOwner:  history.PostOwner,
 		Post:       history.Post,
 		Files:      history.Files,
@@ -59,7 +59,7 @@ func HistoryToScrapeResponse(history db.History) *v1.ScrapeResponse {
 		Categories: history.Categories,
 		Incognito:  history.Incognito,
 		PostType:   PostTypeDB2PB(history.PostType),
-	}
+	})
 }
 
 // SearchHistory implements [v1connect.RakerServerHandler].
@@ -117,7 +117,7 @@ func (server *RakerServer) SearchHistory(ctx context.Context, request *v1.Histor
 		Histories: (func() []*v1.ScrapeResponse {
 			output := make([]*v1.ScrapeResponse, 0, len(histories))
 			for _, history := range histories {
-				output = append(output, HistoryToScrapeResponse(history))
+				output = append(output, HistoryToScrapeResponse(user, history))
 			}
 			return output
 		})(),

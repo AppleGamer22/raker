@@ -258,8 +258,8 @@ func (handler *storageHandler) Delete(user db.User, media db.PostType, owner, fi
 	return nil
 }
 
-func (handler *storageHandler) LocationEXIF(user db.User, media, owner, fileName string) (float64, float64) {
-	filePath := path.Join(user.Username, media, owner, fileName)
+func (handler *storageHandler) LocationEXIF(user db.User, media db.PostType, owner, fileName string) (float64, float64) {
+	filePath := path.Join(user.Username, string(media), owner, fileName)
 	mediaPath := path.Join(handler.root, filePath)
 	mediaPath = cleaner.Path(mediaPath)
 	file, err := os.Open(mediaPath)

@@ -654,7 +654,7 @@ function History() {
 			{totalCount > 0 && <Label className="my-2 justify-center">{totalCount} results</Label>}
 			<HistoryPageinationButtons />
 			<div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-				{histories.map(({ postType, postOwner, post, postDate, categories, files }) => (
+				{histories.map(({ postType, postOwner, post, postDate, categories, files, coordinates }) => (
 					<Card key={`post-${postType}-${postOwner}-${post}`}>
 						<CardHeader className="w-full wrap-break-word">
 							<div className="flex max-w-full flex-wrap items-center gap-x-1 gap-y-1 leading-none">
@@ -691,7 +691,7 @@ function History() {
 						</CardHeader>
 						<CardContent>
 							<FilesCarousel
-								post={{ postType, postOwner, post, files } as ScrapeResponse}
+								post={{ postType, postOwner, post, files, coordinates } as ScrapeResponse}
 								username={username!}
 							/>
 						</CardContent>

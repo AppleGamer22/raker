@@ -7,7 +7,7 @@ before:
     - npm run build
 builds:
   - id: linux
-    env: [ CGO_ENABLED=0 ]
+    env: [CGO_ENABLED=0]
     main: ./server
     goos:
       - linux
@@ -23,7 +23,7 @@ source:
 archives:
   - format_overrides:
       - goos: linux
-        formats: [ none ]
+        formats: [none]
 changelog:
   use: github
   filters:

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { PostType, type ScrapeResponse } from "@/buf/raker/v1/raker_pb";
+import { Button } from "@/components/ui/button";
 import {
 	Carousel,
 	CarouselContent,
@@ -9,6 +10,7 @@ import {
 	CarouselPrevious,
 	type CarouselApi,
 } from "@/components/ui/carousel";
+import { GoogleMaps } from "@/components/ui/svgs/google-maps";
 
 export function postTypeString(type: PostType) {
 	switch (type) {
@@ -29,7 +31,7 @@ export function postTypeString(type: PostType) {
 
 export function FilesCarousel({
 	username,
-	post: { postType, postOwner, post, files },
+	post: { postType, postOwner, coordinates, post, files },
 }: {
 	username: string;
 	post: ScrapeResponse;
@@ -100,7 +102,7 @@ export function FilesCarousel({
 					>
 						<FileDisplay
 							username={username}
-							post={{ postType, postOwner } as ScrapeResponse}
+							post={{ postType, postOwner, coordinates } as ScrapeResponse}
 							file={file}
 							onMediaLoad={() => {
 								api?.reInit();
@@ -132,14 +134,18 @@ export function FilesCarousel({
 			</div>
 		</Carousel>
 	) : (
-		<FileDisplay username={username} post={{ postType, postOwner } as ScrapeResponse} file={files[0]} />
+		<FileDisplay
+			username={username}
+			post={{ postType, postOwner, coordinates } as ScrapeResponse}
+			file={files[0]}
+		/>
 	);
 }
 
 export function FileDisplay({
 	username,
 	file,
-	post: { postType, postOwner },
+	post: { postType, postOwner, coordinates },
 	onMediaLoad,
 }: {
 	username: string;
@@ -149,7 +155,29 @@ export function FileDisplay({
 }) {
 	const url = `/api/storage/${username}/${postTypeString(postType)}/${postOwner}/${file}`;
 	if (/\.(jpg)|(jpeg)|(webp)|(heic)$/.test(file)) {
-		return <img src={url} onLoad={onMediaLoad} loading="lazy" className="h-auto w-full" />;
+		return (
+			<div className="relative inline-block w-full">
+				<img src={url} onLoad={onMediaLoad} loading="lazy" className="h-auto w-full" />
+				{postType === PostType.VSCO && coordinates ? (
+					<Button
+						variant="secondary"
+						size="icon"
+						className="absolute top-2 left-2 z-10"
+						nativeButton={false}
+						render={
+							<a
+								href={`https://www.google.com/maps/search/?api=1&query=${coordinates.latitude},${coordinates.longitude}`}
+								target="_blank"
+								rel="noopener noreferrer"
+								aria-label="Open location in Google Maps"
+							/>
+						}
+					>
+						<GoogleMaps className="h-5 w-5" />
+					</Button>
+				) : null}
+			</div>
+		);
 	} else if (/\.(mp4)|(webm)$/.test(file)) {
 		return (
 			<video

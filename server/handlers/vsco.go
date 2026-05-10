@@ -13,8 +13,22 @@ import (
 	"github.com/AppleGamer22/raker/server/db"
 	"github.com/AppleGamer22/raker/shared"
 	"github.com/charmbracelet/log"
+	"google.golang.org/genproto/googleapis/type/latlng"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
+
+func resolveVSCOMetadata(user db.User, result *v1.ScrapeResponse) *v1.ScrapeResponse {
+	if len(result.Files) == 1 {
+		latitude, longitude := StorageHandler.LocationEXIF(user, db.PostTypeVsco, result.PostOwner, result.Files[0])
+		if latitude != 0 && longitude != 0 {
+			result.Coordinates = &latlng.LatLng{
+				Latitude:  latitude,
+				Longitude: longitude,
+			}
+		}
+	}
+	return result
+}
 
 // ScrapeVSCO implements [v1connect.RakerServerHandler].
 func (server *RakerServer) ScrapeVSCO(ctx context.Context, request *v1.BinaryScrapeRequest) (*v1.ScrapeResponse, error) {
@@ -29,7 +43,7 @@ func (server *RakerServer) ScrapeVSCO(ctx context.Context, request *v1.BinaryScr
 		Username: user.Username,
 	})
 	if err == nil {
-		return &v1.ScrapeResponse{
+		return resolveVSCOMetadata(user, &v1.ScrapeResponse{
 			PostType:   v1.PostType_VSCO,
 			PostOwner:  history.PostOwner,
 			Post:       history.Post,
@@ -37,7 +51,7 @@ func (server *RakerServer) ScrapeVSCO(ctx context.Context, request *v1.BinaryScr
 			Files:      history.Files,
 			Categories: history.Categories,
 			Incognito:  history.Incognito,
-		}, nil
+		}), nil
 	}
 
 	URLs, username, cookies, err := shared.VSCO(request.Owner, request.Post)
@@ -88,7 +102,7 @@ func (server *RakerServer) ScrapeVSCO(ctx context.Context, request *v1.BinaryScr
 		return nil, connect.NewError(connect.CodeInternal, errors.Join(err, err2))
 	}
 
-	return &v1.ScrapeResponse{
+	return resolveVSCOMetadata(user, &v1.ScrapeResponse{
 		PostType:   v1.PostType_VSCO,
 		PostOwner:  history.PostOwner,
 		Post:       history.Post,
@@ -96,6 +110,6 @@ func (server *RakerServer) ScrapeVSCO(ctx context.Context, request *v1.BinaryScr
 		Files:      history.Files,
 		Categories: history.Categories,
 		Incognito:  history.Incognito,
-	}, nil
+	}), nil
 
 }
