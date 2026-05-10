@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { PostType, type ScrapeResponse } from "@/buf/raker/v1/raker_pb";
-import { Button } from "@/components/ui/button";
 import {
 	Carousel,
 	CarouselContent,
@@ -10,9 +9,9 @@ import {
 	CarouselPrevious,
 	type CarouselApi,
 } from "@/components/ui/carousel";
-import { GoogleMaps } from "@/components/ui/svgs/google-maps";
+import { GoogleMapsLink } from "@/components/ui/svgs/google-maps";
 
-export function postTypeString(type: PostType) {
+export function postTypeString(type: PostType): string {
 	switch (type) {
 		case PostType.Instagram:
 			return "instagram";
@@ -159,22 +158,7 @@ export function FileDisplay({
 			<div className="relative inline-block w-full">
 				<img src={url} onLoad={onMediaLoad} loading="lazy" className="h-auto w-full" />
 				{postType === PostType.VSCO && coordinates ? (
-					<Button
-						variant="secondary"
-						size="icon"
-						className="absolute top-2 left-2 z-10"
-						nativeButton={false}
-						render={
-							<a
-								href={`https://www.google.com/maps/search/?api=1&query=${coordinates.latitude},${coordinates.longitude}`}
-								target="_blank"
-								rel="noopener noreferrer"
-								aria-label="Open location in Google Maps"
-							/>
-						}
-					>
-						<GoogleMaps className="h-5 w-5" />
-					</Button>
+					<GoogleMapsLink coordinates={coordinates} className="absolute top-2 left-2 z-10" size="icon" />
 				) : null}
 			</div>
 		);

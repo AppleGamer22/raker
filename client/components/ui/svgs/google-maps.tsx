@@ -1,6 +1,11 @@
+import type { VariantProps } from "class-variance-authority";
 import type { SVGProps } from "react";
 
-export function GoogleMaps(props: SVGProps<SVGSVGElement>) {
+import type { LatLng } from "@/buf/google/type/latlng_pb";
+import { Button, type buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+
+function GoogleMaps(props: SVGProps<SVGSVGElement>) {
 	return (
 		<svg {...props} viewBox="0 0 92.3 132.3">
 			<path fill="#1a73e8" d="M60.2 2.2C55.8.8 51 0 46.1 0 32 0 19.3 6.4 10.8 16.5l21.8 18.3L60.2 2.2z" />
@@ -18,5 +23,34 @@ export function GoogleMaps(props: SVGProps<SVGSVGElement>) {
 				d="M59.1 109.2c15.4-24.1 33.3-35 33.3-63 0-7.7-1.9-14.9-5.2-21.3L25.6 98c2.6 3.4 5.3 7.3 7.9 11.3 9.4 14.5 6.8 23.1 12.8 23.1s3.4-8.7 12.8-23.2"
 			/>
 		</svg>
+	);
+}
+
+export function GoogleMapsLink({
+	coordinates,
+	className,
+	size = "sm",
+}: {
+	coordinates: LatLng;
+	className?: string;
+	size?: VariantProps<typeof buttonVariants>["size"];
+}) {
+	return (
+		<Button
+			variant="outline"
+			size={size}
+			className={cn("dark:bg-secondary dark:hover:bg-secondary/80", className)}
+			nativeButton={false}
+			render={
+				<a
+					href={`https://www.google.com/maps/search/?api=1&query=${coordinates.latitude},${coordinates.longitude}`}
+					target="_blank"
+					rel="noopener noreferrer"
+					aria-label="Open location in Google Maps"
+				/>
+			}
+		>
+			<GoogleMaps />
+		</Button>
 	);
 }

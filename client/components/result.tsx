@@ -30,6 +30,7 @@ import {
 } from "@/components/ui/context-menu";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
+import { GoogleMapsLink } from "@/components/ui/svgs/google-maps";
 import { InstagramIcon } from "@/components/ui/svgs/instagram";
 import { SnapchatIcon } from "@/components/ui/svgs/snapchat";
 import { TikTokIcon } from "@/components/ui/svgs/tiktok";
@@ -594,6 +595,9 @@ export function Result({
 										>
 											<TrashIcon className="h-4 w-4" />
 										</Button>
+										{result.postType === PostType.VSCO && result.coordinates ? (
+											<GoogleMapsLink coordinates={result.coordinates} size="sm" />
+										) : null}
 										<AccordionTrigger className="flex-1 gap-2 text-left">
 											<Label className="w-full wrap-anywhere whitespace-normal">{file}</Label>
 										</AccordionTrigger>

@@ -18,7 +18,7 @@ import (
 )
 
 func resolveVSCOMetadata(user db.User, result *v1.ScrapeResponse) *v1.ScrapeResponse {
-	if len(result.Files) == 1 {
+	if result.PostType == v1.PostType_VSCO && len(result.Files) == 1 {
 		latitude, longitude := StorageHandler.LocationEXIF(user, db.PostTypeVsco, result.PostOwner, result.Files[0])
 		if latitude != 0 && longitude != 0 {
 			result.Coordinates = &latlng.LatLng{
