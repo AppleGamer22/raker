@@ -633,7 +633,7 @@ export function Result({
 										handleSelection(file, event);
 									}}
 								/>
-								<FileDisplay file={file} post={result} username={username} />
+								<FileDisplay file={file} post={result} username={username} withCoordinates />
 							</div>
 						);
 					})}

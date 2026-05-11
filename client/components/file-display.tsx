@@ -137,6 +137,7 @@ export function FilesCarousel({
 			username={username}
 			post={{ postType, postOwner, coordinates } as ScrapeResponse}
 			file={files[0]}
+			withCoordinates
 		/>
 	);
 }
@@ -146,21 +147,24 @@ export function FileDisplay({
 	file,
 	post: { postType, postOwner, coordinates },
 	onMediaLoad,
+	withCoordinates,
 }: {
 	username: string;
 	file: string;
 	post: ScrapeResponse;
 	onMediaLoad?: () => void;
+	withCoordinates?: boolean;
 }) {
 	const url = `/api/storage/${username}/${postTypeString(postType)}/${postOwner}/${file}`;
 	if (/\.(jpg)|(jpeg)|(webp)|(heic)$/.test(file)) {
-		return (
+		const imgResult = <img src={url} onLoad={onMediaLoad} loading="lazy" className="h-auto w-full" />;
+		return withCoordinates && postType === PostType.VSCO && coordinates ? (
 			<div className="relative inline-block w-full">
-				<img src={url} onLoad={onMediaLoad} loading="lazy" className="h-auto w-full" />
-				{postType === PostType.VSCO && coordinates ? (
-					<GoogleMapsLink coordinates={coordinates} className="absolute top-2 left-2 z-10" size="icon" />
-				) : null}
+				{imgResult}
+				<GoogleMapsLink coordinates={coordinates} className="absolute top-2 left-2 z-10" size="icon" />
 			</div>
+		) : (
+			imgResult
 		);
 	} else if (/\.(mp4)|(webm)$/.test(file)) {
 		return (
