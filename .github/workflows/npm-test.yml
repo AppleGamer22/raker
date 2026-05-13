@@ -27,5 +27,4 @@ jobs:
         with:
           node-version: lts/*
           check-latest: true
-          cache: npm
       - run: npm ci
