@@ -16,8 +16,9 @@ import (
 	"github.com/AppleGamer22/raker/server/cleaner"
 	"github.com/AppleGamer22/raker/server/db"
 	"github.com/AppleGamer22/raker/shared"
-	"github.com/bep/imagemeta"
 	"github.com/charmbracelet/log"
+	exifcommon "github.com/dsoprea/go-exif/v3/common"
+	jpegstructure "github.com/dsoprea/go-jpeg-image-structure/v2"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -262,29 +263,31 @@ func (handler *storageHandler) LocationEXIF(user db.User, media db.PostType, own
 	filePath := path.Join(user.Username, string(media), owner, fileName)
 	mediaPath := path.Join(handler.root, filePath)
 	mediaPath = cleaner.Path(mediaPath)
-	file, err := os.Open(mediaPath)
-	if err != nil {
-		log.Error(err)
-		return 0, 0
-	}
-	defer file.Close()
 
-	var tags imagemeta.Tags
-	handleTag := func(ti imagemeta.TagInfo) error {
-		tags.Add(ti)
-		return nil
-	}
-
-	if _, err := imagemeta.Decode(imagemeta.Options{R: file, HandleTag: handleTag, ImageFormat: imagemeta.JPEG}); err != nil {
-		log.Error(err)
-		return 0, 0
-	}
-
-	latitude, longitude, err := tags.GetLatLong()
+	intfc, err := jpegstructure.NewJpegMediaParser().ParseFile(mediaPath)
 	if err != nil {
 		log.Error(err)
 		return 0, 0
 	}
 
-	return latitude, longitude
+	sl := intfc.(*jpegstructure.SegmentList)
+	rootIfd, _, err := sl.Exif()
+	if err != nil {
+		log.Error(err)
+		return 0, 0
+	}
+
+	gpsIfd, err := rootIfd.ChildWithIfdPath(exifcommon.IfdGpsInfoStandardIfdIdentity)
+	if err != nil {
+		log.Error(err)
+		return 0, 0
+	}
+
+	gpsInfo, err := gpsIfd.GpsInfo()
+	if err != nil {
+		log.Error(err)
+		return 0, 0
+	}
+
+	return gpsInfo.Latitude.Decimal(), gpsInfo.Longitude.Decimal()
 }
