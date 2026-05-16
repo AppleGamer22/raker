@@ -403,15 +403,18 @@ function History() {
 	}, [navigate, username]);
 
 	const HistoryPageinationButtons = () => (
-		<HistoryPagination
-			current={currentPage}
-			total={totalCount / 30n + (totalCount % 30n ? 1n : 0n)}
-			onChange={(current) => {
-				setCurrentPage(current);
-				currentPageRef.current = current;
-				form.handleSubmit();
-			}}
-		/>
+		<>
+			{searchHistoryMutation.isPending && <Progress className="pt-2" value={null} />}
+			<HistoryPagination
+				current={currentPage}
+				total={totalCount / 30n + (totalCount % 30n ? 1n : 0n)}
+				onChange={(current) => {
+					setCurrentPage(current);
+					currentPageRef.current = current;
+					form.handleSubmit();
+				}}
+			/>
+		</>
 	);
 
 	return (
@@ -650,7 +653,6 @@ function History() {
 					Search
 				</Button>
 			</form>
-			{searchHistoryMutation.isPending && <Progress className="pt-2" value={null} />}
 			{totalCount > 0 && <Label className="my-2 justify-center">{totalCount} results</Label>}
 			<HistoryPageinationButtons />
 			<div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
