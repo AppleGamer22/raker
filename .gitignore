@@ -28,6 +28,7 @@ dist/
 **/*.raker*
 **/database**
 **/docker-compose.yml
+**/compose.yml
 **/histories.json
 **/users.json
 **/__debug_bin*
