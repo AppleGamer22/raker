@@ -45,7 +45,7 @@ func (server *RakerServer) ScrapeStory(ctx context.Context, request *v1.UnaryScr
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
-	// newURLs := make([]string, 0, len(URLs))
+	newURLs := make([]string, 0, len(URLs))
 	localURLs := make([]string, 0, len(URLs))
 	for _, urlString := range URLs {
 		URL, err2 := url.Parse(urlString)
@@ -66,10 +66,10 @@ func (server *RakerServer) ScrapeStory(ctx context.Context, request *v1.UnaryScr
 		}
 
 		localURLs = append(localURLs, fileName)
-		// newURLs = append(newURLs, urlString)
+		newURLs = append(newURLs, urlString)
 	}
 
-	localURLs, err2 := StorageHandler.SaveBundle(user, db.PostTypeStory, username, localURLs, URLs, []*http.Cookie{})
+	localURLs, err2 := StorageHandler.SaveBundle(user, db.PostTypeStory, username, localURLs, newURLs, []*http.Cookie{})
 	if err2 != nil {
 		return nil, connect.NewError(connect.CodeInternal, errors.Join(err, err2))
 	}
