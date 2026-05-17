@@ -700,7 +700,7 @@ function History() {
 					</Card>
 				))}
 			</div>
-			<HistoryPageinationButtons />
+			{histories.length > 0 && <HistoryPageinationButtons />}
 		</CardContent>
 	);
 }
