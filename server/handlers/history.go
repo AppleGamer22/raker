@@ -75,11 +75,12 @@ func (server *RakerServer) SearchHistory(ctx context.Context, request *v1.Histor
 	}
 
 	count, err := server.DBClient.HistoryCount(context.Background(), db.HistoryCountParams{
-		PostTypes:  postTypes,
-		Exclusive:  request.Exclusive,
-		Categories: request.Categories,
-		PostOwners: request.Owners,
-		Username:   user.Username,
+		PostTypes:      postTypes,
+		Exclusive:      request.Exclusive,
+		Categories:     request.Categories,
+		UserCategories: user.Categories,
+		PostOwners:     request.Owners,
+		Username:       user.Username,
 	})
 	if err != nil {
 		return &v1.HistoryResponse{}, connect.NewError(connect.CodeInternal, err)
@@ -99,13 +100,14 @@ func (server *RakerServer) SearchHistory(ctx context.Context, request *v1.Histor
 	}
 
 	histories, err := server.DBClient.HistoryGetPage(context.Background(), db.HistoryGetPageParams{
-		PostTypes:  postTypes,
-		Exclusive:  request.Exclusive,
-		Categories: request.Categories,
-		PostOwners: request.Owners,
-		Username:   user.Username,
-		Page:       int32((page - 1) * int64(request.PageSize)),
-		PageSize:   30,
+		PostTypes:      postTypes,
+		Exclusive:      request.Exclusive,
+		Categories:     request.Categories,
+		UserCategories: user.Categories,
+		PostOwners:     request.Owners,
+		Username:       user.Username,
+		Page:           int32((page - 1) * int64(request.PageSize)),
+		PageSize:       30,
 	})
 
 	if err != nil {
@@ -137,11 +139,12 @@ func (server *RakerServer) SearchHistoryOwners(ctx context.Context, request *v1.
 	}
 
 	result, err := server.DBClient.HistoryOwners(ctx, db.HistoryOwnersParams{
-		PostTypes:  postTypes,
-		Exclusive:  request.Exclusive,
-		Categories: request.Categories,
-		PostOwner:  request.Owner,
-		Username:   user.Username,
+		PostTypes:      postTypes,
+		Exclusive:      request.Exclusive,
+		Categories:     request.Categories,
+		UserCategories: user.Categories,
+		PostOwner:      request.Owner,
+		Username:       user.Username,
 	})
 
 	if err != nil {

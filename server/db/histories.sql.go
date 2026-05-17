@@ -163,23 +163,27 @@ WHERE post_type = ANY ($1::post_type [])
 		)
 		or (
 			not $2::boolean
-			and categories && COALESCE($3::text[], ARRAY[]::text[])
+			and (
+				categories && COALESCE($3::text[], ARRAY[]::text[])
+				or COALESCE($3::text[], ARRAY[]::text[]) = COALESCE($4::text[], ARRAY[]::text[])
+			)
 		)
 	)
-	AND (cardinality(COALESCE($4::text[], ARRAY[]::text[])) = 0 or EXISTS(
+	AND (cardinality(COALESCE($5::text[], ARRAY[]::text[])) = 0 or EXISTS(
 		SELECT 1
-		FROM unnest($4::text[]) AS owner_filter(owner)
+		FROM unnest($5::text[]) AS owner_filter(owner)
 		WHERE Histories.post_owner LIKE FORMAT('%%%s%%', owner_filter.owner)
 	))
-	AND username = $5::text
+	AND username = $6::text
 `
 
 type HistoryCountParams struct {
-	PostTypes  []PostType `json:"post_types"`
-	Exclusive  bool       `json:"exclusive"`
-	Categories []string   `json:"categories"`
-	PostOwners []string   `json:"post_owners"`
-	Username   string     `json:"username"`
+	PostTypes      []PostType `json:"post_types"`
+	Exclusive      bool       `json:"exclusive"`
+	Categories     []string   `json:"categories"`
+	UserCategories []string   `json:"user_categories"`
+	PostOwners     []string   `json:"post_owners"`
+	Username       string     `json:"username"`
 }
 
 func (q *Queries) HistoryCount(ctx context.Context, arg HistoryCountParams) (int64, error) {
@@ -187,6 +191,7 @@ func (q *Queries) HistoryCount(ctx context.Context, arg HistoryCountParams) (int
 		pq.Array(arg.PostTypes),
 		arg.Exclusive,
 		pq.Array(arg.Categories),
+		pq.Array(arg.UserCategories),
 		pq.Array(arg.PostOwners),
 		arg.Username,
 	)
@@ -302,27 +307,31 @@ WHERE post_type = ANY ($1::post_type [])
 		)
 		or (
 			not $2::boolean
-			and categories && COALESCE($3::text[], ARRAY[]::text[])
+			and (
+				categories && COALESCE($3::text[], ARRAY[]::text[])
+				or COALESCE($3::text[], ARRAY[]::text[]) = COALESCE($4::text[], ARRAY[]::text[])
+			)
 		)
 	)
-	AND (cardinality(COALESCE($4::text[], ARRAY[]::text[])) = 0 or EXISTS(
+	AND (cardinality(COALESCE($5::text[], ARRAY[]::text[])) = 0 or EXISTS(
 		SELECT 1
-		FROM unnest($4::text[]) AS owner_filter(owner)
+		FROM unnest($5::text[]) AS owner_filter(owner)
 		WHERE Histories.post_owner LIKE FORMAT('%%%s%%', owner_filter.owner)
 	))
-	AND username = $5::text
+	AND username = $6::text
 order by post_date DESC
-LIMIT $7::int OFFSET $6::int
+LIMIT $8::int OFFSET $7::int
 `
 
 type HistoryGetPageParams struct {
-	PostTypes  []PostType `json:"post_types"`
-	Exclusive  bool       `json:"exclusive"`
-	Categories []string   `json:"categories"`
-	PostOwners []string   `json:"post_owners"`
-	Username   string     `json:"username"`
-	Page       int32      `json:"page"`
-	PageSize   int32      `json:"page_size"`
+	PostTypes      []PostType `json:"post_types"`
+	Exclusive      bool       `json:"exclusive"`
+	Categories     []string   `json:"categories"`
+	UserCategories []string   `json:"user_categories"`
+	PostOwners     []string   `json:"post_owners"`
+	Username       string     `json:"username"`
+	Page           int32      `json:"page"`
+	PageSize       int32      `json:"page_size"`
 }
 
 // https://docs.sqlc.dev/en/stable/howto/select.html#passing-a-slice-as-a-parameter-to-a-query
@@ -332,6 +341,7 @@ func (q *Queries) HistoryGetPage(ctx context.Context, arg HistoryGetPageParams) 
 		pq.Array(arg.PostTypes),
 		arg.Exclusive,
 		pq.Array(arg.Categories),
+		pq.Array(arg.UserCategories),
 		pq.Array(arg.PostOwners),
 		arg.Username,
 		arg.Page,
@@ -383,19 +393,23 @@ WHERE post_type = ANY ($1::post_type [])
 		)
 		or (
 			not $2::boolean
-			and categories && COALESCE($3::text[], ARRAY[]::text[])
+			and (
+				categories && COALESCE($3::text[], ARRAY[]::text[])
+				or COALESCE($3::text[], ARRAY[]::text[]) = COALESCE($4::text[], ARRAY[]::text[])
+			)
 		)
 	)
-	AND post_owner LIKE FORMAT('%%%s%%', $4::text)
-	AND username = $5::text
+	AND post_owner LIKE FORMAT('%%%s%%', $5::text)
+	AND username = $6::text
 `
 
 type HistoryOwnersParams struct {
-	PostTypes  []PostType `json:"post_types"`
-	Exclusive  bool       `json:"exclusive"`
-	Categories []string   `json:"categories"`
-	PostOwner  string     `json:"post_owner"`
-	Username   string     `json:"username"`
+	PostTypes      []PostType `json:"post_types"`
+	Exclusive      bool       `json:"exclusive"`
+	Categories     []string   `json:"categories"`
+	UserCategories []string   `json:"user_categories"`
+	PostOwner      string     `json:"post_owner"`
+	Username       string     `json:"username"`
 }
 
 type HistoryOwnersRow struct {
@@ -408,6 +422,7 @@ func (q *Queries) HistoryOwners(ctx context.Context, arg HistoryOwnersParams) ([
 		pq.Array(arg.PostTypes),
 		arg.Exclusive,
 		pq.Array(arg.Categories),
+		pq.Array(arg.UserCategories),
 		arg.PostOwner,
 		arg.Username,
 	)
