@@ -231,6 +231,11 @@ function Categories() {
 	const editCategoryMutation = useMutation(editCategory);
 	const { confirm, DialogComponent } = useConfirmationDialog();
 
+	// Update form when categories are fetched
+	useEffect(() => {
+		form.setFieldValue("categories", categories);
+	}, [categories, form]);
+
 	return (
 		<form
 			onSubmit={(e) => {
