@@ -224,7 +224,10 @@ export function HistoryPostCategoryForm({
 	return (
 		<FieldGroup>
 			<FieldSet>
-				<FieldLegend>Post Categories</FieldLegend>
+				<FieldLegend className="flex items-center">
+					{!showExclusive && <Badge className="mr-1 h-2 w-2 rounded-full p-0" />}
+					Post Categories
+				</FieldLegend>
 				<FieldGroup className="flex flex-row flex-wrap gap-1 *:w-auto">
 					{showExclusive && exclusiveField ? (
 						<>
