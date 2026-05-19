@@ -38,7 +38,7 @@ import { VSCOIcon } from "@/components/ui/svgs/vsco";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useConfirmationDialog } from "@/hooks/use-confirmation-dialog";
 import { useUser } from "@/hooks/user-provider";
-import { cn, writeClipboard, defaultPostTypes, inPWA } from "@/lib/utils";
+import { cn, writeClipboard, defaultPostTypes, inPWA, uniqueArraysEqualAsSets } from "@/lib/utils";
 import { HistoryPostCategoryForm } from "@/routes/history";
 
 export function PlatformIcon({ type }: { type: PostType | -1 }) {
@@ -341,7 +341,7 @@ export function Result({
 	const files = result.files;
 
 	useEffect(() => {
-		form.setFieldValue("categories", result.categories);
+		form.reset({ categories: result.categories });
 	}, [result, form]);
 
 	useEffect(() => {
@@ -475,40 +475,50 @@ export function Result({
 			<div className="w-full">
 				<form.Field name="categories" mode="array">
 					{(categoriesField) => (
-						<div className="flex flex-col gap-3 rounded-lg border border-border/60 bg-background/70 p-3">
-							<HistoryPostCategoryForm
-								availableCategories={availableCategories}
-								showExclusive={false}
-								categoriesField={{
-									name: categoriesField.name,
-									value: categoriesField.state.value,
-									onToggleCategory: (category, checked) => {
-										if (checked) {
-											if (!categoriesField.state.value.includes(category)) {
-												categoriesField.pushValue(category);
-											}
-										} else {
-											const index = categoriesField.state.value.indexOf(category);
-											if (index > -1) {
-												categoriesField.removeValue(index);
-											}
+						<form.Subscribe selector={(state) => state.isDirty}>
+							{(isDirty) => (
+								<div className="flex flex-col gap-3 rounded-lg border border-border/60 bg-background/70 p-3">
+									<HistoryPostCategoryForm
+										availableCategories={availableCategories}
+										showExclusive={false}
+										legendBadge={
+											isDirty &&
+											!uniqueArraysEqualAsSets(categoriesField.state.value, result.categories) ? (
+												<Badge className="mr-1 h-2 w-2 rounded-full p-0" />
+											) : null
 										}
-									},
-								}}
-							/>
-							<div>
-								<Button
-									type="button"
-									size="sm"
-									disabled={updateCategoriesMutation.isPending}
-									onClick={() => {
-										form.handleSubmit();
-									}}
-								>
-									Save Categories
-								</Button>
-							</div>
-						</div>
+										categoriesField={{
+											name: categoriesField.name,
+											value: categoriesField.state.value,
+											onToggleCategory: (category, checked) => {
+												if (checked) {
+													if (!categoriesField.state.value.includes(category)) {
+														categoriesField.pushValue(category);
+													}
+												} else {
+													const index = categoriesField.state.value.indexOf(category);
+													if (index > -1) {
+														categoriesField.removeValue(index);
+													}
+												}
+											},
+										}}
+									/>
+									<div>
+										<Button
+											type="button"
+											size="sm"
+											disabled={updateCategoriesMutation.isPending}
+											onClick={() => {
+												form.handleSubmit();
+											}}
+										>
+											Save Categories
+										</Button>
+									</div>
+								</div>
+							)}
+						</form.Subscribe>
 					)}
 				</form.Field>
 			</div>

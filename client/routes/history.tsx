@@ -3,7 +3,7 @@ import { useMutation } from "@connectrpc/connect-query";
 import { useForm } from "@tanstack/react-form";
 import { createFileRoute, Link, stripSearchParams, useNavigate } from "@tanstack/react-router";
 import { SearchIcon } from "lucide-react";
-import { Fragment, useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState, type ReactNode } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -103,6 +103,7 @@ type HistoryFormValues = z.infer<typeof historyFormSchema>;
 type HistoryPostCategoryFormProps = {
 	availableCategories: string[];
 	showExclusive?: boolean;
+	legendBadge?: ReactNode;
 	exclusiveField?: {
 		name: string;
 		value: HistoryFormValues["exclusive"];
@@ -218,6 +219,7 @@ function HistoryPagination({
 export function HistoryPostCategoryForm({
 	availableCategories,
 	showExclusive = true,
+	legendBadge,
 	exclusiveField,
 	categoriesField,
 }: HistoryPostCategoryFormProps) {
@@ -225,7 +227,7 @@ export function HistoryPostCategoryForm({
 		<FieldGroup>
 			<FieldSet>
 				<FieldLegend className="flex items-center">
-					{!showExclusive && <Badge className="mr-1 h-2 w-2 rounded-full p-0" />}
+					{legendBadge}
 					Post Categories
 				</FieldLegend>
 				<FieldGroup className="flex flex-row flex-wrap gap-1 *:w-auto">

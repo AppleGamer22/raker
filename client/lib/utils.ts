@@ -37,3 +37,9 @@ export function inPWA(): boolean {
 		window.matchMedia("(display-mode: minimal-ui)").matches
 	);
 }
+
+export function uniqueArraysEqualAsSets<T>(a: T[] = [], b: T[] = []) {
+	if (a.length !== b.length) return false;
+	const setA = new Set(a);
+	return b.every((bi) => setA.has(bi));
+}
