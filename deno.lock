@@ -43,7 +43,6 @@
         "npm:@connectrpc/connect-query@^2.2.0",
         "npm:@connectrpc/connect-web@^2.1.1",
         "npm:@connectrpc/connect@^2.1.1",
-        "npm:@fontsource-variable/geist@^5.2.8",
         "npm:@rolldown/plugin-babel@~0.2.3",
         "npm:@tailwindcss/typography@~0.5.19",
         "npm:@tailwindcss/vite@^4.3.0",
