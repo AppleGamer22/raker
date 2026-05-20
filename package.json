@@ -16,7 +16,7 @@
 		"@connectrpc/connect": "^2.1.1",
 		"@connectrpc/connect-query": "^2.2.0",
 		"@connectrpc/connect-web": "^2.1.1",
-		"@fontsource-variable/geist": "^5.2.8",
+		"@fontsource-variable/geist": "^5.2.9",
 		"@tailwindcss/vite": "^4.3.0",
 		"@tanstack/react-devtools": "^0.10.5",
 		"@tanstack/react-form": "^1.32.0",
