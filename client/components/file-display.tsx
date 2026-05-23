@@ -324,6 +324,7 @@ function CropPreview({
 		height: number;
 	} | null>(null);
 	const resizeHandleRef = useRef<string | null>(null);
+	const [activeHandle, setActiveHandle] = useState<string | null>(null);
 	const [naturalSize, setNaturalSize] = useState({ width: 0, height: 0 });
 	const [displaySize, setDisplaySize] = useState({ width: 0, height: 0 });
 	const [cropNatural, setCropNatural] = useState<CropRect | null>(null);
@@ -388,10 +389,16 @@ function CropPreview({
 		? clampRect(naturalToDisplay(cropNatural, scaleX, scaleY), displaySize.width, displaySize.height)
 		: null;
 	const maxConstraints: [number, number] = cropDisplay
-		? [
-				Math.max(MIN_CROP_SIZE, displaySize.width - cropDisplay.x),
-				Math.max(MIN_CROP_SIZE, displaySize.height - cropDisplay.y),
-			]
+		? (() => {
+				const handle = activeHandle ?? resizeHandleRef.current ?? "se";
+				const maxWidth = handle.includes("w")
+					? cropDisplay.x + cropDisplay.width
+					: displaySize.width - cropDisplay.x;
+				const maxHeight = handle.includes("n")
+					? cropDisplay.y + cropDisplay.height
+					: displaySize.height - cropDisplay.y;
+				return [Math.max(MIN_CROP_SIZE, maxWidth), Math.max(MIN_CROP_SIZE, maxHeight)];
+			})()
 		: [MIN_CROP_SIZE, MIN_CROP_SIZE];
 
 	const updateFromDisplay = useCallback(
@@ -428,11 +435,14 @@ function CropPreview({
 	);
 
 	const handleResizeStart = useCallback((_event: SyntheticEvent, data: ResizeCallbackData) => {
-		resizeHandleRef.current = data.handle ?? null;
+		const handle = data.handle ?? null;
+		resizeHandleRef.current = handle;
+		setActiveHandle(handle);
 	}, []);
 
 	const handleResizeStop = useCallback(() => {
 		resizeHandleRef.current = null;
+		setActiveHandle(null);
 	}, []);
 
 	const handleDragStart = useCallback(
