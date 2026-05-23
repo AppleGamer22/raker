@@ -227,7 +227,7 @@ export function FileDisplay({
 	}
 }
 
-type CropRect = {
+export type CropRect = {
 	x: number;
 	y: number;
 	width: number;
@@ -305,11 +305,13 @@ function CropPreview({
 	username,
 	file,
 	post: { postType, postOwner },
+	onCropChange,
 	className = "h-full w-auto rounded-xl",
 }: {
 	username: string;
 	file: string;
 	post: ScrapeResponse;
+	onCropChange?: (rect: CropRect | null) => void;
 	className?: string;
 }) {
 	const imageRef = useRef<HTMLImageElement | null>(null);
@@ -476,11 +478,15 @@ function CropPreview({
 	);
 
 	useEffect(() => {
-		if (!cropNatural || naturalSize.width === 0 || naturalSize.height === 0) {
+		if (!onCropChange) {
 			return;
 		}
-		console.log("[crop]", file, cropNatural);
-	}, [cropNatural, naturalSize, file]);
+		if (!cropNatural || naturalSize.width === 0 || naturalSize.height === 0) {
+			onCropChange(null);
+			return;
+		}
+		onCropChange(cropNatural);
+	}, [cropNatural, naturalSize, onCropChange]);
 
 	const url = `/api/storage/${username}/${postTypeString(postType)}/${postOwner}/${file}`;
 
@@ -557,7 +563,7 @@ export function FileSheet({
 								/>
 							</TabsContent>
 							<TabsContent value="crop" className="max-h-full w-auto rounded-xl">
-								<CropPreview file={file} post={post} username={username} />
+								<CropPreview file={file} post={post} username={username} onCropChange={undefined} />
 							</TabsContent>
 						</div>
 					</div>
