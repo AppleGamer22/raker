@@ -149,3 +149,17 @@
 	/* Use Tailwind’s  utilities to re-enable selection: select-text!, select-auto!, select-all! */
 	@apply select-none;
 }
+
+.crop-box {
+	box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.35);
+}
+
+.crop-handle {
+	width: 10px;
+	height: 10px;
+	border-radius: 9999px;
+	background: var(--background);
+	border: 2px solid var(--primary);
+	box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35);
+	background-image: none;
+}
