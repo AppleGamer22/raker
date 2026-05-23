@@ -596,17 +596,6 @@ export function Result({
 										>
 											<ExternalLinkIcon className="h-4 w-4" />
 										</Button>
-										<Button
-											type="button"
-											variant="outline"
-											size="sm"
-											className="shrink-0 px-2 hover:bg-destructive/20 hover:text-destructive"
-											disabled={removeFilesMutation.isPending}
-											onClick={() => deleteFiles([file])}
-											aria-label={`Delete ${file}`}
-										>
-											<TrashIcon className="h-4 w-4" />
-										</Button>
 										{/\.(jpe?g)$/.test(file) && (
 											<FileSheet
 												file={file}
@@ -626,6 +615,17 @@ export function Result({
 										{result.postType === PostType.VSCO && result.coordinates ? (
 											<GoogleMapsLink coordinates={result.coordinates} size="sm" />
 										) : null}
+										<Button
+											type="button"
+											variant="outline"
+											size="sm"
+											className="shrink-0 px-2 hover:bg-destructive/20 hover:text-destructive"
+											disabled={removeFilesMutation.isPending}
+											onClick={() => deleteFiles([file])}
+											aria-label={`Delete ${file}`}
+										>
+											<TrashIcon className="h-4 w-4" />
+										</Button>
 										<AccordionTrigger className="flex-1 gap-2 text-left">
 											<Label className="w-full wrap-anywhere whitespace-normal">{file}</Label>
 										</AccordionTrigger>

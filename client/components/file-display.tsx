@@ -156,6 +156,7 @@ export function FileDisplay({
 	onMediaLoad,
 	withCrop,
 	withCoordinates,
+	className = "h-auto w-full rounded-xl",
 }: {
 	username: string;
 	file: string;
@@ -163,10 +164,11 @@ export function FileDisplay({
 	onMediaLoad?: () => void;
 	withCrop?: boolean;
 	withCoordinates?: boolean;
+	className?: string;
 }) {
 	const url = `/api/storage/${username}/${postTypeString(postType)}/${postOwner}/${file}`;
 	if (/\.(jpe?g)|(webp)|(heic)$/.test(file)) {
-		const imgResult = <img src={url} onLoad={onMediaLoad} loading="lazy" className="h-auto w-full rounded-xl" />;
+		const imgResult = <img src={url} onLoad={onMediaLoad} loading="lazy" className={className} />;
 		return withCrop || withCoordinates ? (
 			<div className="relative inline-block w-full rounded-xl">
 				{imgResult}
@@ -201,7 +203,7 @@ export function FileDisplay({
 				src={url}
 				onLoadedMetadata={onMediaLoad}
 				preload="metadata"
-				className="h-auto w-full rounded-xl"
+				className={className}
 				loop
 				controls
 				muted
@@ -226,8 +228,8 @@ export function FileSheet({
 	return (
 		<Sheet>
 			<SheetTrigger render={trigger} />
-			<SheetContent side="bottom" className="h-[90vh] p-1">
-				<Tabs className="items-center">
+			<SheetContent side="bottom" className="p-1 pt-2 data-[side=bottom]:h-[90vh]">
+				<Tabs className="flex h-full flex-col items-center">
 					<TabsList>
 						<TabsTrigger value="view">View</TabsTrigger>
 						<TabsTrigger value="crop">
@@ -235,9 +237,14 @@ export function FileSheet({
 							Crop
 						</TabsTrigger>
 					</TabsList>
-					<TabsContent value="view">
-						<div className="*:max-w-auto *:max-h-[90vh]">
-							<FileDisplay file={file} post={post} username={username} />
+					<TabsContent value="view" className="flex min-h-0 flex-1 flex-col items-center justify-center">
+						<div className="flex max-h-full min-h-0 flex-col items-center">
+							<FileDisplay
+								file={file}
+								post={post}
+								username={username}
+								className="max-h-full w-auto rounded-xl"
+							/>
 						</div>
 					</TabsContent>
 				</Tabs>
