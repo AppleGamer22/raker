@@ -1,5 +1,5 @@
 import { CropIcon } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactElement } from "react";
 
 import { PostType, type ScrapeResponse } from "@/buf/raker/v1/raker_pb";
 import { Button } from "@/components/ui/button";
@@ -11,7 +11,9 @@ import {
 	CarouselPrevious,
 	type CarouselApi,
 } from "@/components/ui/carousel";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { GoogleMapsLink } from "@/components/ui/svgs/google-maps";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export function postTypeString(type: PostType): string {
 	switch (type) {
@@ -111,7 +113,8 @@ export function FilesCarousel({
 									requestAnimationFrame(() => syncSelectedSlideHeight(api));
 								}
 							}}
-							withButtons
+							withCrop
+							withCoordinates
 						/>
 					</CarouselItem>
 				))}
@@ -140,7 +143,8 @@ export function FilesCarousel({
 			username={username}
 			post={{ postType, postOwner, coordinates } as ScrapeResponse}
 			file={files[0]}
-			withButtons
+			withCrop
+			withCoordinates
 		/>
 	);
 }
@@ -150,27 +154,40 @@ export function FileDisplay({
 	file,
 	post: { postType, postOwner, coordinates },
 	onMediaLoad,
-	withButtons,
+	withCrop,
+	withCoordinates,
 }: {
 	username: string;
 	file: string;
 	post: ScrapeResponse;
 	onMediaLoad?: () => void;
-	withButtons?: boolean;
+	withCrop?: boolean;
+	withCoordinates?: boolean;
 }) {
 	const url = `/api/storage/${username}/${postTypeString(postType)}/${postOwner}/${file}`;
 	if (/\.(jpe?g)|(webp)|(heic)$/.test(file)) {
 		const imgResult = <img src={url} onLoad={onMediaLoad} loading="lazy" className="h-auto w-full rounded-xl" />;
-		return withButtons ? (
+		return withCrop || withCoordinates ? (
 			<div className="relative inline-block w-full rounded-xl">
 				{imgResult}
-				<div className="absolute top-2 left-2 z-10">
-					{/\.(jpe?g)$/.test(file) && (
-						<Button variant="outline" size="icon" className="dark:bg-secondary dark:hover:bg-secondary/80">
-							<CropIcon />
-						</Button>
+				<div className="absolute top-2 left-2 z-10 flex flex-row gap-2">
+					{withCrop && /\.(jpe?g)$/.test(file) && (
+						<FileSheet
+							file={file}
+							post={{ postType, postOwner, coordinates } as ScrapeResponse}
+							username={username}
+							trigger={
+								<Button
+									variant="outline"
+									size="icon"
+									className="dark:bg-secondary dark:hover:bg-secondary/80"
+								>
+									<CropIcon />
+								</Button>
+							}
+						/>
 					)}
-					{postType === PostType.VSCO && coordinates && (
+					{withCoordinates && postType === PostType.VSCO && coordinates && (
 						<GoogleMapsLink coordinates={coordinates} size="icon" />
 					)}
 				</div>
@@ -193,4 +210,38 @@ export function FileDisplay({
 	} else {
 		return <a href={url}>{url}</a>;
 	}
+}
+
+export function FileSheet({
+	trigger,
+	username,
+	file,
+	post,
+}: {
+	trigger: ReactElement;
+	username: string;
+	file: string;
+	post: ScrapeResponse;
+}) {
+	return (
+		<Sheet>
+			<SheetTrigger render={trigger} />
+			<SheetContent side="bottom" className="h-[90vh] p-1">
+				<Tabs className="items-center">
+					<TabsList>
+						<TabsTrigger value="view">View</TabsTrigger>
+						<TabsTrigger value="crop">
+							<CropIcon />
+							Crop
+						</TabsTrigger>
+					</TabsList>
+					<TabsContent value="view">
+						<div className="*:max-w-auto *:max-h-[90vh]">
+							<FileDisplay file={file} post={post} username={username} />
+						</div>
+					</TabsContent>
+				</Tabs>
+			</SheetContent>
+		</Sheet>
+	);
 }

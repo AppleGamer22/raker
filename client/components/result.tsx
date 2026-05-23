@@ -17,7 +17,7 @@ import z from "zod";
 
 import { removeFiles, updateCategories } from "@/buf/raker/v1/raker-RakerServer_connectquery";
 import { PostType, type ScrapeResponse } from "@/buf/raker/v1/raker_pb";
-import { FileDisplay, FilesCarousel, postTypeString } from "@/components/file-display";
+import { FileDisplay, FilesCarousel, FileSheet, postTypeString } from "@/components/file-display";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -608,13 +608,20 @@ export function Result({
 											<TrashIcon className="h-4 w-4" />
 										</Button>
 										{/\.(jpe?g)$/.test(file) && (
-											<Button
-												variant="outline"
-												size="sm"
-												className="dark:bg-secondary dark:hover:bg-secondary/80"
-											>
-												<CropIcon />
-											</Button>
+											<FileSheet
+												file={file}
+												post={result}
+												username={username}
+												trigger={
+													<Button
+														variant="outline"
+														size="sm"
+														className="dark:bg-secondary dark:hover:bg-secondary/80"
+													>
+														<CropIcon />
+													</Button>
+												}
+											/>
 										)}
 										{result.postType === PostType.VSCO && result.coordinates ? (
 											<GoogleMapsLink coordinates={result.coordinates} size="sm" />
@@ -654,7 +661,7 @@ export function Result({
 										handleSelection(file, event);
 									}}
 								/>
-								<FileDisplay file={file} post={result} username={username} withButtons />
+								<FileDisplay file={file} post={result} username={username} withCrop withCoordinates />
 							</div>
 						);
 					})}
