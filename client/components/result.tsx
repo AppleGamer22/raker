@@ -637,14 +637,14 @@ export function Result({
 								<Checkbox
 									checked={selected}
 									aria-label={selected ? `Deselect ${file}` : `Select ${file}`}
-									className="absolute top-2 right-2 z-10 border-foreground/60 bg-background/95 shadow-sm dark:border-foreground/70 dark:bg-background/85"
+									className="absolute top-3 right-3 z-10 border-foreground/60 bg-background/95 shadow-sm dark:border-foreground/70 dark:bg-background/85"
 									onClick={(event) => {
 										event.preventDefault();
 										event.stopPropagation();
 										handleSelection(file, event);
 									}}
 								/>
-								<FileDisplay file={file} post={result} username={username} withCoordinates />
+								<FileDisplay file={file} post={result} username={username} withButtons />
 							</div>
 						);
 					})}

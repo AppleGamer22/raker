@@ -1,6 +1,8 @@
+import { CropIcon } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { PostType, type ScrapeResponse } from "@/buf/raker/v1/raker_pb";
+import { Button } from "@/components/ui/button";
 import {
 	Carousel,
 	CarouselContent,
@@ -109,6 +111,7 @@ export function FilesCarousel({
 									requestAnimationFrame(() => syncSelectedSlideHeight(api));
 								}
 							}}
+							withButtons
 						/>
 					</CarouselItem>
 				))}
@@ -137,7 +140,7 @@ export function FilesCarousel({
 			username={username}
 			post={{ postType, postOwner, coordinates } as ScrapeResponse}
 			file={files[0]}
-			withCoordinates
+			withButtons
 		/>
 	);
 }
@@ -147,21 +150,30 @@ export function FileDisplay({
 	file,
 	post: { postType, postOwner, coordinates },
 	onMediaLoad,
-	withCoordinates,
+	withButtons,
 }: {
 	username: string;
 	file: string;
 	post: ScrapeResponse;
 	onMediaLoad?: () => void;
-	withCoordinates?: boolean;
+	withButtons?: boolean;
 }) {
 	const url = `/api/storage/${username}/${postTypeString(postType)}/${postOwner}/${file}`;
-	if (/\.(jpg)|(jpeg)|(webp)|(heic)$/.test(file)) {
-		const imgResult = <img src={url} onLoad={onMediaLoad} loading="lazy" className="h-auto w-full" />;
-		return withCoordinates && postType === PostType.VSCO && coordinates ? (
-			<div className="relative inline-block w-full">
+	if (/\.(jpe?g)|(webp)|(heic)$/.test(file)) {
+		const imgResult = <img src={url} onLoad={onMediaLoad} loading="lazy" className="h-auto w-full rounded-xl" />;
+		return withButtons ? (
+			<div className="relative inline-block w-full rounded-xl">
 				{imgResult}
-				<GoogleMapsLink coordinates={coordinates} className="absolute top-2 left-2 z-10" size="icon" />
+				<div className="absolute top-2 left-2 z-10">
+					{/\.(jpe?g)$/.test(file) && (
+						<Button variant="outline" size="icon" className="dark:bg-secondary dark:hover:bg-secondary/80">
+							<CropIcon />
+						</Button>
+					)}
+					{postType === PostType.VSCO && coordinates && (
+						<GoogleMapsLink coordinates={coordinates} size="icon" />
+					)}
+				</div>
 			</div>
 		) : (
 			imgResult
@@ -172,7 +184,7 @@ export function FileDisplay({
 				src={url}
 				onLoadedMetadata={onMediaLoad}
 				preload="metadata"
-				className="h-auto w-full"
+				className="h-auto w-full rounded-xl"
 				loop
 				controls
 				muted
