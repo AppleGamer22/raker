@@ -9,6 +9,7 @@ import {
 	TrashIcon,
 	ExternalLinkIcon,
 	CopyIcon,
+	CropIcon,
 } from "lucide-react";
 import { useEffect, useState, type Dispatch, type ReactNode, type SetStateAction } from "react";
 import { toast } from "sonner";
@@ -606,6 +607,15 @@ export function Result({
 										>
 											<TrashIcon className="h-4 w-4" />
 										</Button>
+										{/\.(jpe?g)$/.test(file) && (
+											<Button
+												variant="outline"
+												size="sm"
+												className="dark:bg-secondary dark:hover:bg-secondary/80"
+											>
+												<CropIcon />
+											</Button>
+										)}
 										{result.postType === PostType.VSCO && result.coordinates ? (
 											<GoogleMapsLink coordinates={result.coordinates} size="sm" />
 										) : null}
