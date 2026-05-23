@@ -451,6 +451,11 @@ function CropPreview({
 				return;
 			}
 			event.preventDefault();
+
+			const target = event.currentTarget;
+			if (target.setPointerCapture) {
+				target.setPointerCapture(event.pointerId);
+			}
 			dragStateRef.current = {
 				startX: event.clientX,
 				startY: event.clientY,
@@ -477,12 +482,17 @@ function CropPreview({
 
 			const handleUp = () => {
 				dragStateRef.current = null;
-				window.removeEventListener("pointermove", handleMove);
-				window.removeEventListener("pointerup", handleUp);
+				target.removeEventListener("pointermove", handleMove);
+				target.removeEventListener("pointerup", handleUp);
+				target.removeEventListener("pointercancel", handleUp);
+				if (target.releasePointerCapture) {
+					target.releasePointerCapture(event.pointerId);
+				}
 			};
 
-			window.addEventListener("pointermove", handleMove);
-			window.addEventListener("pointerup", handleUp);
+			target.addEventListener("pointermove", handleMove);
+			target.addEventListener("pointerup", handleUp);
+			target.addEventListener("pointercancel", handleUp);
 		},
 		[cropDisplay, updateFromDisplay],
 	);
