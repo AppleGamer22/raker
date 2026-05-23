@@ -369,14 +369,12 @@ function CropPreview({
 		if (cropNatural || displaySize.width === 0 || displaySize.height === 0) {
 			return;
 		}
-		const width = Math.max(displaySize.width * 0.6, MIN_CROP_SIZE);
-		const height = Math.max(displaySize.height * 0.6, MIN_CROP_SIZE);
 		const initialDisplay = clampRect(
 			{
-				x: (displaySize.width - width) / 2,
-				y: (displaySize.height - height) / 2,
-				width,
-				height,
+				x: 0,
+				y: 0,
+				width: displaySize.width,
+				height: displaySize.height,
 			},
 			displaySize.width,
 			displaySize.height,
@@ -510,6 +508,9 @@ function CropPreview({
 					onResizeStart={handleResizeStart}
 					onResize={handleResize}
 					onResizeStop={handleResizeStop}
+					lockAspectRatio={false}
+					axis="both"
+					transformScale={1}
 				>
 					<div className="h-full w-full cursor-move rounded-md bg-black/10" onPointerDown={handleDragStart} />
 				</ResizableBox>
