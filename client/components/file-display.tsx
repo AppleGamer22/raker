@@ -445,6 +445,17 @@ function CropPreview({
 		? clampRect(naturalToDisplay(cropNatural, scaleX, scaleY), displaySize.width, displaySize.height)
 		: null;
 	const cropDisplayBox = cropDisplay ? cropRectToBox(cropDisplay) : null;
+	const edgeContact =
+		!!cropDisplayBox && displaySize.width > 0 && displaySize.height > 0
+			? (() => {
+					const threshold = 1;
+					const left = cropDisplayBox.x <= threshold;
+					const right = cropDisplayBox.x + cropDisplayBox.width >= displaySize.width - threshold;
+					const top = cropDisplayBox.y <= threshold;
+					const bottom = cropDisplayBox.y + cropDisplayBox.height >= displaySize.height - threshold;
+					return { left, right, top, bottom };
+				})()
+			: { left: false, right: false, top: false, bottom: false };
 	const maxConstraints: [number, number] = cropDisplay
 		? (() => {
 				const handle = activeHandle ?? resizeHandleRef.current ?? "se";
@@ -575,7 +586,15 @@ function CropPreview({
 					width={cropDisplayBox.width}
 					height={cropDisplayBox.height}
 					className="crop-box absolute z-10 rounded-md border-2 border-primary/80"
-					style={{ left: cropDisplayBox.x, top: cropDisplayBox.y, position: "absolute" }}
+					style={{
+						left: cropDisplayBox.x,
+						top: cropDisplayBox.y,
+						position: "absolute",
+						borderTopColor: edgeContact.top ? "hsl(var(--secondary))" : undefined,
+						borderBottomColor: edgeContact.bottom ? "hsl(var(--secondary))" : undefined,
+						borderLeftColor: edgeContact.left ? "hsl(var(--secondary))" : undefined,
+						borderRightColor: edgeContact.right ? "hsl(var(--secondary))" : undefined,
+					}}
 					handleSize={[CROP_HANDLE_SIZE, CROP_HANDLE_SIZE]}
 					minConstraints={[MIN_CROP_SIZE, MIN_CROP_SIZE]}
 					maxConstraints={maxConstraints}
