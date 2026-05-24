@@ -10,6 +10,7 @@ import {
 	ExternalLinkIcon,
 	CopyIcon,
 	CropIcon,
+	ImageIcon,
 } from "lucide-react";
 import { useEffect, useState, type Dispatch, type ReactNode, type SetStateAction } from "react";
 import { toast } from "sonner";
@@ -607,6 +608,7 @@ export function Result({
 														size="sm"
 														className="dark:bg-secondary dark:hover:bg-secondary/80"
 													>
+														<ImageIcon />
 														<CropIcon />
 													</Button>
 												}

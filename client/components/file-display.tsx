@@ -192,11 +192,8 @@ export function FileDisplay({
 							post={{ postType, postOwner, coordinates } as ScrapeResponse}
 							username={username}
 							trigger={
-								<Button
-									variant="outline"
-									size="icon"
-									className="dark:bg-secondary dark:hover:bg-secondary/80"
-								>
+								<Button variant="outline" className="dark:bg-secondary dark:hover:bg-secondary/80">
+									<ImageIcon />
 									<CropIcon />
 								</Button>
 							}
