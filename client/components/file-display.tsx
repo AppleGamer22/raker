@@ -228,6 +228,13 @@ export function FileDisplay({
 }
 
 export type CropRect = {
+	x1: number;
+	y1: number;
+	x2: number;
+	y2: number;
+};
+
+export type CropBox = {
 	x: number;
 	y: number;
 	width: number;
@@ -242,33 +249,76 @@ function clamp(value: number, min: number, max: number) {
 }
 
 function clampRect(rect: CropRect, maxWidth: number, maxHeight: number): CropRect {
-	const safeWidth = clamp(rect.width, MIN_CROP_SIZE, maxWidth);
-	const safeHeight = clamp(rect.height, MIN_CROP_SIZE, maxHeight);
-	const safeX = clamp(rect.x, 0, Math.max(0, maxWidth - safeWidth));
-	const safeY = clamp(rect.y, 0, Math.max(0, maxHeight - safeHeight));
+	const left = Math.min(rect.x1, rect.x2);
+	const right = Math.max(rect.x1, rect.x2);
+	const top = Math.min(rect.y1, rect.y2);
+	const bottom = Math.max(rect.y1, rect.y2);
+	const safeX1 = clamp(left, 0, Math.max(0, maxWidth - MIN_CROP_SIZE));
+	const safeY1 = clamp(top, 0, Math.max(0, maxHeight - MIN_CROP_SIZE));
+	const safeX2 = clamp(right, safeX1 + MIN_CROP_SIZE, maxWidth);
+	const safeY2 = clamp(bottom, safeY1 + MIN_CROP_SIZE, maxHeight);
 	return {
-		x: safeX,
-		y: safeY,
-		width: safeWidth,
-		height: safeHeight,
+		x1: safeX1,
+		y1: safeY1,
+		x2: safeX2,
+		y2: safeY2,
+	};
+}
+
+function clampRectPreserveSize(rect: CropRect, maxWidth: number, maxHeight: number): CropRect {
+	const left = Math.min(rect.x1, rect.x2);
+	const right = Math.max(rect.x1, rect.x2);
+	const top = Math.min(rect.y1, rect.y2);
+	const bottom = Math.max(rect.y1, rect.y2);
+	const width = Math.max(MIN_CROP_SIZE, right - left);
+	const height = Math.max(MIN_CROP_SIZE, bottom - top);
+	const safeX1 = clamp(left, 0, Math.max(0, maxWidth - width));
+	const safeY1 = clamp(top, 0, Math.max(0, maxHeight - height));
+	return {
+		x1: safeX1,
+		y1: safeY1,
+		x2: safeX1 + width,
+		y2: safeY1 + height,
 	};
 }
 
 function displayToNatural(rect: CropRect, scaleX: number, scaleY: number): CropRect {
 	return {
-		x: Math.round(rect.x * scaleX),
-		y: Math.round(rect.y * scaleY),
-		width: Math.round(rect.width * scaleX),
-		height: Math.round(rect.height * scaleY),
+		x1: Math.round(rect.x1 * scaleX),
+		y1: Math.round(rect.y1 * scaleY),
+		x2: Math.round(rect.x2 * scaleX),
+		y2: Math.round(rect.y2 * scaleY),
 	};
 }
 
 function naturalToDisplay(rect: CropRect, scaleX: number, scaleY: number): CropRect {
 	return {
-		x: rect.x / scaleX,
-		y: rect.y / scaleY,
-		width: rect.width / scaleX,
-		height: rect.height / scaleY,
+		x1: rect.x1 / scaleX,
+		y1: rect.y1 / scaleY,
+		x2: rect.x2 / scaleX,
+		y2: rect.y2 / scaleY,
+	};
+}
+
+export function cropRectToBox(rect: CropRect): CropBox {
+	const x1 = Math.min(rect.x1, rect.x2);
+	const y1 = Math.min(rect.y1, rect.y2);
+	const x2 = Math.max(rect.x1, rect.x2);
+	const y2 = Math.max(rect.y1, rect.y2);
+	return {
+		x: x1,
+		y: y1,
+		width: x2 - x1,
+		height: y2 - y1,
+	};
+}
+
+function boxToRect(box: { x: number; y: number; width: number; height: number }): CropRect {
+	return {
+		x1: box.x,
+		y1: box.y,
+		x2: box.x + box.width,
+		y2: box.y + box.height,
 	};
 }
 
@@ -369,44 +419,53 @@ function CropPreview({
 	const scaleY = naturalSize.height > 0 && displaySize.height > 0 ? naturalSize.height / displaySize.height : 1;
 
 	useEffect(() => {
-		if (cropNatural || displaySize.width === 0 || displaySize.height === 0) {
+		if (
+			cropNatural ||
+			displaySize.width === 0 ||
+			displaySize.height === 0 ||
+			naturalSize.width === 0 ||
+			naturalSize.height === 0
+		) {
 			return;
 		}
 		const initialDisplay = clampRect(
 			{
-				x: 0,
-				y: 0,
-				width: displaySize.width,
-				height: displaySize.height,
+				x1: 0,
+				y1: 0,
+				x2: displaySize.width,
+				y2: displaySize.height,
 			},
 			displaySize.width,
 			displaySize.height,
 		);
 		setCropNatural(displayToNatural(initialDisplay, scaleX, scaleY));
-	}, [cropNatural, displaySize, scaleX, scaleY]);
+	}, [cropNatural, displaySize, naturalSize, scaleX, scaleY]);
 
 	const cropDisplay = cropNatural
 		? clampRect(naturalToDisplay(cropNatural, scaleX, scaleY), displaySize.width, displaySize.height)
 		: null;
+	const cropDisplayBox = cropDisplay ? cropRectToBox(cropDisplay) : null;
 	const maxConstraints: [number, number] = cropDisplay
 		? (() => {
 				const handle = activeHandle ?? resizeHandleRef.current ?? "se";
 				const maxWidth = handle.includes("w")
-					? cropDisplay.x + cropDisplay.width
-					: displaySize.width - cropDisplay.x;
+					? (cropDisplayBox?.x ?? 0) + (cropDisplayBox?.width ?? 0)
+					: displaySize.width - (cropDisplayBox?.x ?? 0);
 				const maxHeight = handle.includes("n")
-					? cropDisplay.y + cropDisplay.height
-					: displaySize.height - cropDisplay.y;
+					? (cropDisplayBox?.y ?? 0) + (cropDisplayBox?.height ?? 0)
+					: displaySize.height - (cropDisplayBox?.y ?? 0);
 				return [Math.max(MIN_CROP_SIZE, maxWidth), Math.max(MIN_CROP_SIZE, maxHeight)];
 			})()
 		: [MIN_CROP_SIZE, MIN_CROP_SIZE];
 
 	const updateFromDisplay = useCallback(
-		(displayRect: CropRect) => {
+		(displayRect: CropRect, options?: { preserveSize?: boolean }) => {
 			if (displaySize.width === 0 || displaySize.height === 0) {
 				return;
 			}
-			const clamped = clampRect(displayRect, displaySize.width, displaySize.height);
+			const clamped = options?.preserveSize
+				? clampRectPreserveSize(displayRect, displaySize.width, displaySize.height)
+				: clampRect(displayRect, displaySize.width, displaySize.height);
 			setCropNatural(displayToNatural(clamped, scaleX, scaleY));
 		},
 		[displaySize, scaleX, scaleY],
@@ -414,24 +473,19 @@ function CropPreview({
 
 	const handleResize = useCallback(
 		(_event: SyntheticEvent, data: ResizeCallbackData) => {
-			if (!cropDisplay) {
+			if (!cropDisplay || !cropDisplayBox) {
 				return;
 			}
 			const handle = data.handle ?? resizeHandleRef.current ?? "se";
 			const nextWidth = data.size.width;
 			const nextHeight = data.size.height;
-			const shiftX = cropDisplay.width - nextWidth;
-			const shiftY = cropDisplay.height - nextHeight;
-			const nextX = handle.includes("w") ? cropDisplay.x + shiftX : cropDisplay.x;
-			const nextY = handle.includes("n") ? cropDisplay.y + shiftY : cropDisplay.y;
-			updateFromDisplay({
-				x: nextX,
-				y: nextY,
-				width: nextWidth,
-				height: nextHeight,
-			});
+			const shiftX = cropDisplayBox.width - nextWidth;
+			const shiftY = cropDisplayBox.height - nextHeight;
+			const nextX = handle.includes("w") ? cropDisplayBox.x + shiftX : cropDisplayBox.x;
+			const nextY = handle.includes("n") ? cropDisplayBox.y + shiftY : cropDisplayBox.y;
+			updateFromDisplay(boxToRect({ x: nextX, y: nextY, width: nextWidth, height: nextHeight }));
 		},
-		[cropDisplay, updateFromDisplay],
+		[cropDisplay, cropDisplayBox, updateFromDisplay],
 	);
 
 	const handleResizeStart = useCallback((_event: SyntheticEvent, data: ResizeCallbackData) => {
@@ -447,7 +501,7 @@ function CropPreview({
 
 	const handleDragStart = useCallback(
 		(event: ReactPointerEvent<HTMLDivElement>) => {
-			if (!cropDisplay || event.button !== 0) {
+			if (!cropDisplay || !cropDisplayBox || event.button !== 0) {
 				return;
 			}
 			event.preventDefault();
@@ -459,10 +513,10 @@ function CropPreview({
 			dragStateRef.current = {
 				startX: event.clientX,
 				startY: event.clientY,
-				originX: cropDisplay.x,
-				originY: cropDisplay.y,
-				width: cropDisplay.width,
-				height: cropDisplay.height,
+				originX: cropDisplayBox.x,
+				originY: cropDisplayBox.y,
+				width: cropDisplayBox.width,
+				height: cropDisplayBox.height,
 			};
 
 			const handleMove = (moveEvent: PointerEvent) => {
@@ -472,12 +526,15 @@ function CropPreview({
 				}
 				const dx = moveEvent.clientX - dragState.startX;
 				const dy = moveEvent.clientY - dragState.startY;
-				updateFromDisplay({
-					x: dragState.originX + dx,
-					y: dragState.originY + dy,
-					width: dragState.width,
-					height: dragState.height,
-				});
+				updateFromDisplay(
+					{
+						x1: dragState.originX + dx,
+						y1: dragState.originY + dy,
+						x2: dragState.originX + dx + dragState.width,
+						y2: dragState.originY + dy + dragState.height,
+					},
+					{ preserveSize: true },
+				);
 			};
 
 			const handleUp = () => {
@@ -494,7 +551,7 @@ function CropPreview({
 			target.addEventListener("pointerup", handleUp);
 			target.addEventListener("pointercancel", handleUp);
 		},
-		[cropDisplay, updateFromDisplay],
+		[cropDisplay, cropDisplayBox, updateFromDisplay],
 	);
 
 	useEffect(() => {
@@ -513,12 +570,12 @@ function CropPreview({
 	return (
 		<div className={cn("relative inline-block", className)}>
 			<img ref={imageRef} src={url} onLoad={handleImageLoad} className={className} />
-			{cropDisplay && (
+			{cropDisplayBox && (
 				<ResizableBox
-					width={cropDisplay.width}
-					height={cropDisplay.height}
+					width={cropDisplayBox.width}
+					height={cropDisplayBox.height}
 					className="crop-box absolute z-10 rounded-md border-2 border-primary/80"
-					style={{ left: cropDisplay.x, top: cropDisplay.y, position: "absolute" }}
+					style={{ left: cropDisplayBox.x, top: cropDisplayBox.y, position: "absolute" }}
 					handleSize={[CROP_HANDLE_SIZE, CROP_HANDLE_SIZE]}
 					minConstraints={[MIN_CROP_SIZE, MIN_CROP_SIZE]}
 					maxConstraints={maxConstraints}
@@ -583,7 +640,12 @@ export function FileSheet({
 								/>
 							</TabsContent>
 							<TabsContent value="crop" className="max-h-full w-auto rounded-xl">
-								<CropPreview file={file} post={post} username={username} onCropChange={undefined} />
+								<CropPreview
+									file={file}
+									post={post}
+									username={username}
+									onCropChange={(rect) => rect}
+								/>
 							</TabsContent>
 						</div>
 					</div>
