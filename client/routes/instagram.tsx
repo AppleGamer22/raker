@@ -98,6 +98,7 @@ function Instagram() {
 								<Field>
 									<FieldLabel htmlFor={field.name}>post ID</FieldLabel>
 									<Input
+										id={field.name}
 										name={field.name}
 										value={field.state.value}
 										onBlur={field.handleBlur}
@@ -115,6 +116,7 @@ function Instagram() {
 							<Field orientation="horizontal" className="w-fit">
 								<FieldLabel htmlFor={field.name}>Incognito</FieldLabel>
 								<Switch
+									id={field.name}
 									name={field.name}
 									checked={field.state.value}
 									onCheckedChange={field.handleChange}

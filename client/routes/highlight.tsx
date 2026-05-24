@@ -94,6 +94,7 @@ function Highlight() {
 								<Field>
 									<FieldLabel htmlFor={field.name}>highlight ID</FieldLabel>
 									<Input
+										id={field.name}
 										name={field.name}
 										value={field.state.value}
 										onBlur={field.handleBlur}

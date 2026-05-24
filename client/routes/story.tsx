@@ -95,6 +95,7 @@ function Story() {
 								<Field>
 									<FieldLabel htmlFor={field.name}>owner</FieldLabel>
 									<Input
+										id={field.name}
 										name={field.name}
 										value={field.state.value}
 										onBlur={field.handleBlur}
