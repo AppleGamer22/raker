@@ -1,5 +1,5 @@
 import { useMutation } from "@connectrpc/connect-query";
-import { CheckIcon, CropIcon, ImageIcon } from "lucide-react";
+import { CheckIcon, CropIcon, ImageIcon, UndoIcon } from "lucide-react";
 import {
 	useCallback,
 	useEffect,
@@ -28,6 +28,7 @@ import {
 	CarouselPrevious,
 	type CarouselApi,
 } from "@/components/ui/carousel";
+import { Progress } from "@/components/ui/progress";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { GoogleMapsLink } from "@/components/ui/svgs/google-maps";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -400,6 +401,7 @@ function CropPreview({
 	onCropChange,
 	className = "h-full w-auto rounded-xl",
 	cacheBuster,
+	resetSignal,
 }: {
 	username: string;
 	file: string;
@@ -407,6 +409,7 @@ function CropPreview({
 	onCropChange?: (rect: CropRect | null, isFullImageCrop: boolean) => void;
 	className?: string;
 	cacheBuster?: number | string;
+	resetSignal?: number;
 }) {
 	const imageRef = useRef<HTMLImageElement | null>(null);
 	const dragStateRef = useRef<{
@@ -463,6 +466,18 @@ function CropPreview({
 
 	const scaleX = naturalSize.width > 0 && displaySize.width > 0 ? naturalSize.width / displaySize.width : 1;
 	const scaleY = naturalSize.height > 0 && displaySize.height > 0 ? naturalSize.height / displaySize.height : 1;
+	const getFullDisplayRect = useCallback(() => {
+		return clampRect(
+			{
+				x1: 0,
+				y1: 0,
+				x2: displaySize.width,
+				y2: displaySize.height,
+			},
+			displaySize.width,
+			displaySize.height,
+		);
+	}, [displaySize.height, displaySize.width]);
 
 	useEffect(() => {
 		if (
@@ -474,20 +489,11 @@ function CropPreview({
 		) {
 			return;
 		}
-		const initialDisplay = clampRect(
-			{
-				x1: 0,
-				y1: 0,
-				x2: displaySize.width,
-				y2: displaySize.height,
-			},
-			displaySize.width,
-			displaySize.height,
-		);
+		const initialDisplay = getFullDisplayRect();
 		const initialNatural = displayToNatural(initialDisplay, scaleX, scaleY);
 		latestCropNaturalRef.current = initialNatural;
 		setCropNatural(initialNatural);
-	}, [cropNatural, displaySize, naturalSize, scaleX, scaleY]);
+	}, [cropNatural, displaySize, naturalSize, scaleX, scaleY, getFullDisplayRect]);
 
 	const cropDisplay = cropNatural
 		? clampRect(naturalToDisplay(cropNatural, scaleX, scaleY), displaySize.width, displaySize.height)
@@ -545,6 +551,23 @@ function CropPreview({
 		},
 		[onCropChange, naturalSize],
 	);
+
+	useEffect(() => {
+		if (
+			resetSignal === undefined ||
+			displaySize.width === 0 ||
+			displaySize.height === 0 ||
+			naturalSize.width === 0 ||
+			naturalSize.height === 0
+		) {
+			return;
+		}
+		const fullDisplay = getFullDisplayRect();
+		const fullNatural = displayToNatural(fullDisplay, scaleX, scaleY);
+		latestCropNaturalRef.current = fullNatural;
+		setCropNatural(fullNatural);
+		emitCropChange(fullNatural);
+	}, [resetSignal, displaySize, naturalSize, scaleX, scaleY, emitCropChange, getFullDisplayRect]);
 
 	const handleResize = useCallback(
 		(_event: SyntheticEvent, data: ResizeCallbackData) => {
@@ -693,6 +716,7 @@ export function FileSheet({
 	const [cropRect, setCropRect] = useState<CropRect | null>(null);
 	const [isFullImageCrop, setIsFullImageCrop] = useState(true);
 	const [viewReloadKey, setViewReloadKey] = useState(0);
+	const [resetSignal, setResetSignal] = useState(0);
 	const cropFileMutation = useMutation(cropFile);
 	const handleCropChange = useCallback((rect: CropRect | null, nextIsFullImageCrop: boolean) => {
 		setCropRect(rect);
@@ -721,57 +745,6 @@ export function FileSheet({
 							Crop
 						</TabsTrigger>
 					</TabsList>
-					{selectedTab == "crop" && (
-						<ButtonGroup>
-							<Button
-								type="button"
-								variant="outline"
-								disabled={isFullImageCrop || cropRect === null}
-								onClick={async () => {
-									try {
-										await cropFileMutation.mutateAsync({
-											postType: post.postType,
-											postOwner: post.postOwner,
-											post: post.post,
-											file,
-											corner1: {
-												x: cropRect?.x1,
-												y: cropRect?.y1,
-											},
-											corner2: {
-												x: cropRect?.x2,
-												y: cropRect?.y2,
-											},
-										});
-										setSelectedTab("view");
-										const nextKey = Date.now();
-										setViewReloadKey(nextKey);
-										// Notify other components (e.g. parent FileDisplay instances) to bust cache for this file
-										try {
-											window.dispatchEvent(
-												new CustomEvent("fileCropped", {
-													detail: {
-														username,
-														postType: postTypeString(post.postType),
-														postOwner: post.postOwner,
-														file,
-														cacheBuster: nextKey,
-													},
-												}),
-											);
-										} catch {}
-									} catch (err) {
-										toast.error((err as Error).message, {
-											position: "top-center",
-										});
-									}
-								}}
-							>
-								<CheckIcon />
-								Done
-							</Button>
-						</ButtonGroup>
-					)}
 
 					<div className="flex min-h-0 flex-1 flex-col items-center justify-center">
 						<div className="flex max-h-full min-h-0 flex-col items-center">
@@ -785,14 +758,85 @@ export function FileSheet({
 									cacheBuster={viewReloadKey}
 								/>
 							</TabsContent>
-							<TabsContent value="crop" className="flex max-h-full w-auto flex-col">
-								<CropPreview
-									file={file}
-									post={post}
-									username={username}
-									onCropChange={handleCropChange}
-									cacheBuster={viewReloadKey}
-								/>
+							<TabsContent
+								value="crop"
+								className="flex max-h-full min-h-0 w-auto flex-col items-center gap-2"
+							>
+								<ButtonGroup>
+									<Button
+										variant="outline"
+										disabled={!cropFileMutation.isPending && (isFullImageCrop || cropRect === null)}
+										onClick={() => {
+											setResetSignal((prev) => prev + 1);
+											setCropRect(null);
+											setIsFullImageCrop(true);
+										}}
+									>
+										<UndoIcon />
+										Clear
+									</Button>
+									<Button
+										variant="outline"
+										disabled={!cropFileMutation.isPending && (isFullImageCrop || cropRect === null)}
+										onClick={async () => {
+											try {
+												await cropFileMutation.mutateAsync({
+													postType: post.postType,
+													postOwner: post.postOwner,
+													post: post.post,
+													file,
+													corner1: {
+														x: cropRect?.x1,
+														y: cropRect?.y1,
+													},
+													corner2: {
+														x: cropRect?.x2,
+														y: cropRect?.y2,
+													},
+												});
+												setSelectedTab("view");
+												const nextKey = Date.now();
+												setViewReloadKey(nextKey);
+												// Notify other components (e.g. parent FileDisplay instances) to bust cache for this file
+												try {
+													window.dispatchEvent(
+														new CustomEvent("fileCropped", {
+															detail: {
+																username,
+																postType: postTypeString(post.postType),
+																postOwner: post.postOwner,
+																file,
+																cacheBuster: nextKey,
+															},
+														}),
+													);
+												} catch {}
+											} catch (err) {
+												toast.error((err as Error).message, {
+													position: "top-center",
+												});
+											}
+										}}
+									>
+										<CheckIcon />
+										Done
+									</Button>
+								</ButtonGroup>
+								{cropFileMutation.isPending && (
+									<div className="w-full">
+										<Progress value={null} />
+									</div>
+								)}
+								<div className="flex min-h-0 flex-1 items-center justify-center">
+									<CropPreview
+										file={file}
+										post={post}
+										username={username}
+										onCropChange={handleCropChange}
+										cacheBuster={viewReloadKey}
+										resetSignal={resetSignal}
+									/>
+								</div>
 							</TabsContent>
 						</div>
 					</div>
