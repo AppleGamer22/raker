@@ -340,6 +340,7 @@ export function Result({
 		selectedFiles: [],
 		anchorFile: null,
 	});
+	const [fileCacheBusters, setFileCacheBusters] = useState<Record<string, number | string>>({});
 	const files = result.files;
 
 	useEffect(() => {
@@ -361,6 +362,33 @@ export function Result({
 			return { selectedFiles, anchorFile };
 		});
 	}, [files]);
+
+	useEffect(() => {
+		setFileCacheBusters({});
+	}, [result.postType, result.postOwner, result.post]);
+
+	useEffect(() => {
+		const handler = (ev: Event) => {
+			try {
+				const custom = ev as CustomEvent<any>;
+				const d = custom.detail;
+				if (
+					!d ||
+					d.username !== username ||
+					d.postType !== postTypeString(result.postType) ||
+					d.postOwner !== result.postOwner
+				) {
+					return;
+				}
+				setFileCacheBusters((prev) => ({
+					...prev,
+					[d.file]: d.cacheBuster,
+				}));
+			} catch {}
+		};
+		window.addEventListener("fileCropped", handler as EventListener);
+		return () => window.removeEventListener("fileCropped", handler as EventListener);
+	}, [result.postOwner, result.postType, username]);
 
 	useEffect(() => {
 		const onKeyDown = (event: KeyboardEvent) => {
@@ -631,7 +659,12 @@ export function Result({
 										</AccordionTrigger>
 									</div>
 									<AccordionContent className="sm:max-w-full md:max-w-[25vw]">
-										<FileDisplay file={file} post={result} username={username} />
+										<FileDisplay
+											file={file}
+											post={result}
+											username={username}
+											cacheBuster={fileCacheBusters[file]}
+										/>
 									</AccordionContent>
 								</AccordionItem>
 							);
@@ -661,7 +694,14 @@ export function Result({
 										handleSelection(file, event);
 									}}
 								/>
-								<FileDisplay file={file} post={result} username={username} withCrop withCoordinates />
+								<FileDisplay
+									file={file}
+									post={result}
+									username={username}
+									withCrop
+									withCoordinates
+									cacheBuster={fileCacheBusters[file]}
+								/>
 							</div>
 						);
 					})}
@@ -671,7 +711,7 @@ export function Result({
 						value="carousel"
 						className="mt-2 w-full [&_img]:max-h-[50vh] [&_img]:w-auto [&_video]:max-h-[50vh] [&_video]:w-auto"
 					>
-						<FilesCarousel post={result} username={username} />
+						<FilesCarousel post={result} username={username} cacheBustersByFile={fileCacheBusters} />
 					</TabsContent>
 				)}
 			</Tabs>

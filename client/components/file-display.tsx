@@ -54,9 +54,11 @@ export function postTypeString(type: PostType): string {
 export function FilesCarousel({
 	username,
 	post: { postType, postOwner, coordinates, post, files },
+	cacheBustersByFile,
 }: {
 	username: string;
 	post: ScrapeResponse;
+	cacheBustersByFile?: Record<string, number | string>;
 }) {
 	const [api, setApi] = useState<CarouselApi>();
 	const [selectedIndex, setSelectedIndex] = useState(0);
@@ -115,26 +117,29 @@ export function FilesCarousel({
 	}, [api, syncSelectedSlideHeight]);
 
 	return files.length > 1 ? (
-		<Carousel opts={{ loop: true }} setApi={setApi}>
+		<Carousel opts={{ loop: true, align: "center" }} setApi={setApi}>
 			<CarouselContent className="items-center">
 				{files.map((file, i) => (
 					<CarouselItem
 						key={`file-${postType}-${postOwner}-${post}-${i}`}
 						className="flex items-center justify-center self-center"
 					>
-						<FileDisplay
-							username={username}
-							post={{ postType, postOwner, coordinates } as ScrapeResponse}
-							file={file}
-							onMediaLoad={() => {
-								api?.reInit();
-								if (api) {
-									requestAnimationFrame(() => syncSelectedSlideHeight(api));
-								}
-							}}
-							withCrop
-							withCoordinates
-						/>
+						<div className="mx-auto">
+							<FileDisplay
+								username={username}
+								post={{ postType, postOwner, coordinates } as ScrapeResponse}
+								file={file}
+								cacheBuster={cacheBustersByFile?.[file]}
+								onMediaLoad={() => {
+									api?.reInit();
+									if (api) {
+										requestAnimationFrame(() => syncSelectedSlideHeight(api));
+									}
+								}}
+								withCrop
+								withCoordinates
+							/>
+						</div>
 					</CarouselItem>
 				))}
 			</CarouselContent>
@@ -162,6 +167,7 @@ export function FilesCarousel({
 			username={username}
 			post={{ postType, postOwner, coordinates } as ScrapeResponse}
 			file={files[0]}
+			cacheBuster={cacheBustersByFile?.[files[0]]}
 			withCrop
 			withCoordinates
 		/>
