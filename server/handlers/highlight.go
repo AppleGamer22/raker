@@ -12,6 +12,7 @@ import (
 	v1 "github.com/AppleGamer22/raker/server/buf/proto/raker/v1"
 	"github.com/AppleGamer22/raker/server/db"
 	"github.com/AppleGamer22/raker/shared"
+	"github.com/charmbracelet/log"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -42,6 +43,7 @@ func (server *RakerServer) ScrapeHighlight(ctx context.Context, request *v1.Unar
 	instagram := shared.NewInstagram(user.InstagramSessionID, user.InstagramUserID)
 	URLs, username, err := instagram.Highlights(request.Post)
 	if err != nil {
+		log.Error(err)
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
@@ -75,6 +77,7 @@ func (server *RakerServer) ScrapeHighlight(ctx context.Context, request *v1.Unar
 	})
 
 	if err2 != nil {
+		log.Error(err2)
 		return nil, connect.NewError(connect.CodeInternal, errors.Join(err, err2))
 	}
 

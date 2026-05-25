@@ -4,6 +4,7 @@ package raker.v1;
 
 import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
+import "google/type/fraction.proto";
 import "google/type/latlng.proto";
 
 option go_package = "github.com/AppleGamer22/raker/server/buf/proto/raker/v1";
@@ -118,6 +119,19 @@ message HistoryOwnersResponse {
   repeated HistoryOwner owners = 1;
 }
 
+message CropFileRequest {
+  PostType post_type = 1;
+  string post_owner = 2;
+  string post = 3;
+  string file = 4;
+  message PixelCoordinate {
+    int32 x = 1;
+    int32 y = 2;
+  }
+  PixelCoordinate corner1 = 5;
+  PixelCoordinate corner2 = 6;
+}
+
 service RakerServer {
   rpc SignUpInstagram(SignUpRequest) returns (google.protobuf.Empty);
 
@@ -148,4 +162,6 @@ service RakerServer {
   rpc SearchHistory(HistoryRequest) returns (HistoryResponse);
 
   rpc SearchHistoryOwners(HistoryOwnersRequest) returns (HistoryOwnersResponse);
+
+  rpc CropFile(CropFileRequest) returns (google.protobuf.Empty);
 }

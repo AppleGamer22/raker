@@ -1,9 +1,13 @@
 package handlers
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
+	"image"
+	"image/draw"
+	"image/jpeg"
 	"io"
 	"net/http"
 	"os"
@@ -17,8 +21,10 @@ import (
 	"github.com/AppleGamer22/raker/server/db"
 	"github.com/AppleGamer22/raker/shared"
 	"github.com/charmbracelet/log"
+	exif "github.com/dsoprea/go-exif/v3"
 	exifcommon "github.com/dsoprea/go-exif/v3/common"
 	jpegstructure "github.com/dsoprea/go-jpeg-image-structure/v2"
+	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -266,28 +272,129 @@ func (handler *storageHandler) LocationEXIF(user db.User, media db.PostType, own
 
 	intfc, err := jpegstructure.NewJpegMediaParser().ParseFile(mediaPath)
 	if err != nil {
-		log.Error(err)
+		// log.Error(err)
 		return 0, 0
 	}
 
 	sl := intfc.(*jpegstructure.SegmentList)
 	rootIfd, _, err := sl.Exif()
 	if err != nil {
-		log.Error(err)
+		// log.Error(err)
 		return 0, 0
 	}
 
 	gpsIfd, err := rootIfd.ChildWithIfdPath(exifcommon.IfdGpsInfoStandardIfdIdentity)
 	if err != nil {
-		log.Error(err)
+		// log.Error(err)
 		return 0, 0
 	}
 
 	gpsInfo, err := gpsIfd.GpsInfo()
 	if err != nil {
-		log.Error(err)
+		// log.Error(err)
 		return 0, 0
 	}
 
 	return gpsInfo.Latitude.Decimal(), gpsInfo.Longitude.Decimal()
+}
+
+func (handler *storageHandler) Crop(user db.User, media db.PostType, owner, fileName string, crop image.Rectangle) error {
+	// Parse the original JPEG and extract EXIF.
+	filePath := path.Join(user.Username, string(media), owner, fileName)
+	mediaPath := path.Join(handler.root, filePath)
+	mediaPath = cleaner.Path(mediaPath)
+
+	tempFile, err := os.CreateTemp(path.Dir(mediaPath), fileName+".*.jpg")
+	if err != nil {
+		return err
+	}
+	defer os.Remove(tempFile.Name())
+
+	intfc, err := jpegstructure.NewJpegMediaParser().ParseFile(mediaPath)
+	if err != nil {
+		return err
+	}
+
+	sl := intfc.(*jpegstructure.SegmentList)
+	exifData, _, err := sl.Exif()
+	if err != nil {
+		return err
+	}
+
+	// Decode the image data.
+	file, err := os.Open(mediaPath)
+	if err != nil {
+		return err
+	}
+
+	source, err := jpeg.Decode(file)
+	if closeErr := file.Close(); closeErr != nil {
+		return closeErr
+	}
+	if err != nil {
+		return err
+	}
+
+	// Crop
+	destination := image.NewRGBA(crop)
+	draw.Draw(destination, destination.Bounds(), source, crop.Min, draw.Src)
+
+	// Encode cropped JPEG.
+	var buf bytes.Buffer
+	if err := jpeg.Encode(&buf, destination, &jpeg.Options{Quality: 100}); err != nil {
+		return err
+	}
+
+	// Parse the new JPEG so we can attach EXIF.
+	newIntfc, err := jpegstructure.NewJpegMediaParser().ParseBytes(buf.Bytes())
+	if err != nil {
+		return err
+	}
+	newSL := newIntfc.(*jpegstructure.SegmentList)
+
+	// Reattach EXIF if it existed.
+	if exifData != nil {
+		exifBuilder := exif.NewIfdBuilderFromExistingChain(exifData)
+		if err := newSL.SetExif(exifBuilder); err != nil {
+			return err
+		}
+	}
+
+	// Write final JPEG to disk.
+	if err := newSL.Write(tempFile); err != nil {
+		return err
+	}
+
+	if err := tempFile.Close(); err != nil {
+		return err
+	}
+
+	if err := os.Rename(tempFile.Name(), mediaPath); err != nil {
+		// On Windows, renaming over an existing file can fail. Retry after removing destination.
+		if removeErr := os.Remove(mediaPath); removeErr != nil {
+			return err
+		}
+		if err2 := os.Rename(tempFile.Name(), mediaPath); err2 != nil {
+			return errors.Join(err, err2)
+		}
+	}
+
+	return nil
+}
+
+// CropFile implements [v1connect.RakerServerHandler].
+func (server *RakerServer) CropFile(ctx context.Context, request *v1.CropFileRequest) (*emptypb.Empty, error) {
+	user, ok := ctx.Value(authenticatedUserKey).(db.User)
+	if !ok {
+		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("not authenticated"))
+	}
+
+	crop := image.Rect(int(request.Corner1.X), int(request.Corner1.Y), int(request.Corner2.X), int(request.Corner2.Y))
+
+	err := StorageHandler.Crop(user, PostTypePB2DB(request.PostType), request.PostOwner, request.File, crop)
+	if err != nil {
+		log.Error(err)
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	return nil, nil
 }

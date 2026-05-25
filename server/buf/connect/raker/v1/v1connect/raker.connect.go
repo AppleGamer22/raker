@@ -76,6 +76,8 @@ const (
 	// RakerServerSearchHistoryOwnersProcedure is the fully-qualified name of the RakerServer's
 	// SearchHistoryOwners RPC.
 	RakerServerSearchHistoryOwnersProcedure = "/raker.v1.RakerServer/SearchHistoryOwners"
+	// RakerServerCropFileProcedure is the fully-qualified name of the RakerServer's CropFile RPC.
+	RakerServerCropFileProcedure = "/raker.v1.RakerServer/CropFile"
 )
 
 // RakerServerClient is a client for the raker.v1.RakerServer service.
@@ -95,6 +97,7 @@ type RakerServerClient interface {
 	UpdateCategories(context.Context, *v1.UpdateCategoriesRequest) (*emptypb.Empty, error)
 	SearchHistory(context.Context, *v1.HistoryRequest) (*v1.HistoryResponse, error)
 	SearchHistoryOwners(context.Context, *v1.HistoryOwnersRequest) (*v1.HistoryOwnersResponse, error)
+	CropFile(context.Context, *v1.CropFileRequest) (*emptypb.Empty, error)
 }
 
 // NewRakerServerClient constructs a client for the raker.v1.RakerServer service. By default, it
@@ -198,6 +201,12 @@ func NewRakerServerClient(httpClient connect.HTTPClient, baseURL string, opts ..
 			connect.WithSchema(rakerServerMethods.ByName("SearchHistoryOwners")),
 			connect.WithClientOptions(opts...),
 		),
+		cropFile: connect.NewClient[v1.CropFileRequest, emptypb.Empty](
+			httpClient,
+			baseURL+RakerServerCropFileProcedure,
+			connect.WithSchema(rakerServerMethods.ByName("CropFile")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -218,6 +227,7 @@ type rakerServerClient struct {
 	updateCategories    *connect.Client[v1.UpdateCategoriesRequest, emptypb.Empty]
 	searchHistory       *connect.Client[v1.HistoryRequest, v1.HistoryResponse]
 	searchHistoryOwners *connect.Client[v1.HistoryOwnersRequest, v1.HistoryOwnersResponse]
+	cropFile            *connect.Client[v1.CropFileRequest, emptypb.Empty]
 }
 
 // SignUpInstagram calls raker.v1.RakerServer.SignUpInstagram.
@@ -355,6 +365,15 @@ func (c *rakerServerClient) SearchHistoryOwners(ctx context.Context, req *v1.His
 	return nil, err
 }
 
+// CropFile calls raker.v1.RakerServer.CropFile.
+func (c *rakerServerClient) CropFile(ctx context.Context, req *v1.CropFileRequest) (*emptypb.Empty, error) {
+	response, err := c.cropFile.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
+}
+
 // RakerServerHandler is an implementation of the raker.v1.RakerServer service.
 type RakerServerHandler interface {
 	SignUpInstagram(context.Context, *v1.SignUpRequest) (*emptypb.Empty, error)
@@ -372,6 +391,7 @@ type RakerServerHandler interface {
 	UpdateCategories(context.Context, *v1.UpdateCategoriesRequest) (*emptypb.Empty, error)
 	SearchHistory(context.Context, *v1.HistoryRequest) (*v1.HistoryResponse, error)
 	SearchHistoryOwners(context.Context, *v1.HistoryOwnersRequest) (*v1.HistoryOwnersResponse, error)
+	CropFile(context.Context, *v1.CropFileRequest) (*emptypb.Empty, error)
 }
 
 // NewRakerServerHandler builds an HTTP handler from the service implementation. It returns the path
@@ -471,6 +491,12 @@ func NewRakerServerHandler(svc RakerServerHandler, opts ...connect.HandlerOption
 		connect.WithSchema(rakerServerMethods.ByName("SearchHistoryOwners")),
 		connect.WithHandlerOptions(opts...),
 	)
+	rakerServerCropFileHandler := connect.NewUnaryHandlerSimple(
+		RakerServerCropFileProcedure,
+		svc.CropFile,
+		connect.WithSchema(rakerServerMethods.ByName("CropFile")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/raker.v1.RakerServer/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case RakerServerSignUpInstagramProcedure:
@@ -503,6 +529,8 @@ func NewRakerServerHandler(svc RakerServerHandler, opts ...connect.HandlerOption
 			rakerServerSearchHistoryHandler.ServeHTTP(w, r)
 		case RakerServerSearchHistoryOwnersProcedure:
 			rakerServerSearchHistoryOwnersHandler.ServeHTTP(w, r)
+		case RakerServerCropFileProcedure:
+			rakerServerCropFileHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -570,4 +598,8 @@ func (UnimplementedRakerServerHandler) SearchHistory(context.Context, *v1.Histor
 
 func (UnimplementedRakerServerHandler) SearchHistoryOwners(context.Context, *v1.HistoryOwnersRequest) (*v1.HistoryOwnersResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raker.v1.RakerServer.SearchHistoryOwners is not implemented"))
+}
+
+func (UnimplementedRakerServerHandler) CropFile(context.Context, *v1.CropFileRequest) (*emptypb.Empty, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raker.v1.RakerServer.CropFile is not implemented"))
 }

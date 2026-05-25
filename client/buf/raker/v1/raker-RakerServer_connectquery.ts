@@ -78,3 +78,8 @@ export const searchHistory = RakerServer.method.searchHistory;
  * @generated from rpc raker.v1.RakerServer.SearchHistoryOwners
  */
 export const searchHistoryOwners = RakerServer.method.searchHistoryOwners;
+
+/**
+ * @generated from rpc raker.v1.RakerServer.CropFile
+ */
+export const cropFile = RakerServer.method.cropFile;
