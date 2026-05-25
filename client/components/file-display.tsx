@@ -175,6 +175,7 @@ export function FileDisplay({
 	withCrop,
 	withCoordinates,
 	className = "h-auto w-full rounded-xl",
+	cacheBuster,
 }: {
 	username: string;
 	file: string;
@@ -183,8 +184,37 @@ export function FileDisplay({
 	withCrop?: boolean;
 	withCoordinates?: boolean;
 	className?: string;
+	cacheBuster?: number | string;
 }) {
-	const url = `/api/storage/${username}/${postTypeString(postType)}/${postOwner}/${file}`;
+	const [cacheBusterState, setCacheBusterState] = useState<number | string | undefined>(cacheBuster ?? undefined);
+
+	useEffect(() => {
+		setCacheBusterState(cacheBuster ?? undefined);
+	}, [cacheBuster]);
+
+	useEffect(() => {
+		const handler = (ev: Event) => {
+			try {
+				const custom = ev as CustomEvent<any>;
+				const d = custom.detail;
+				if (
+					d &&
+					d.username === username &&
+					d.postType === postTypeString(postType) &&
+					d.postOwner === postOwner &&
+					d.file === file
+				) {
+					setCacheBusterState(d.cacheBuster);
+				}
+			} catch {}
+		};
+		window.addEventListener("fileCropped", handler as EventListener);
+		return () => window.removeEventListener("fileCropped", handler as EventListener);
+	}, [username, postType, postOwner, file]);
+
+	const url =
+		`/api/storage/${username}/${postTypeString(postType)}/${postOwner}/${file}` +
+		(cacheBusterState ? `?v=${cacheBusterState}` : "");
 	if (/\.(jpe?g)|(webp)|(heic)$/.test(file)) {
 		const imgResult = <img src={url} onLoad={onMediaLoad} loading="lazy" className={className} />;
 		return withCrop || withCoordinates ? (
@@ -369,12 +399,14 @@ function CropPreview({
 	post: { postType, postOwner },
 	onCropChange,
 	className = "h-full w-auto rounded-xl",
+	cacheBuster,
 }: {
 	username: string;
 	file: string;
 	post: ScrapeResponse;
 	onCropChange?: (rect: CropRect | null, isFullImageCrop: boolean) => void;
 	className?: string;
+	cacheBuster?: number | string;
 }) {
 	const imageRef = useRef<HTMLImageElement | null>(null);
 	const dragStateRef = useRef<{
@@ -386,6 +418,7 @@ function CropPreview({
 		height: number;
 	} | null>(null);
 	const resizeHandleRef = useRef<string | null>(null);
+	const latestCropNaturalRef = useRef<CropRect | null>(null);
 	const [activeHandle, setActiveHandle] = useState<string | null>(null);
 	const [naturalSize, setNaturalSize] = useState({ width: 0, height: 0 });
 	const [displaySize, setDisplaySize] = useState({ width: 0, height: 0 });
@@ -406,6 +439,7 @@ function CropPreview({
 		setCropNatural(null);
 		setNaturalSize({ width: 0, height: 0 });
 		setDisplaySize({ width: 0, height: 0 });
+		latestCropNaturalRef.current = null;
 	}, [file]);
 
 	useEffect(() => {
@@ -450,7 +484,9 @@ function CropPreview({
 			displaySize.width,
 			displaySize.height,
 		);
-		setCropNatural(displayToNatural(initialDisplay, scaleX, scaleY));
+		const initialNatural = displayToNatural(initialDisplay, scaleX, scaleY);
+		latestCropNaturalRef.current = initialNatural;
+		setCropNatural(initialNatural);
 	}, [cropNatural, displaySize, naturalSize, scaleX, scaleY]);
 
 	const cropDisplay = cropNatural
@@ -489,9 +525,25 @@ function CropPreview({
 			const clamped = options?.preserveSize
 				? clampRectPreserveSize(displayRect, displaySize.width, displaySize.height)
 				: clampRect(displayRect, displaySize.width, displaySize.height);
-			setCropNatural(displayToNatural(clamped, scaleX, scaleY));
+			const nextNatural = displayToNatural(clamped, scaleX, scaleY);
+			latestCropNaturalRef.current = nextNatural;
+			setCropNatural(nextNatural);
 		},
 		[displaySize, scaleX, scaleY],
+	);
+
+	const emitCropChange = useCallback(
+		(rect: CropRect | null) => {
+			if (!onCropChange) {
+				return;
+			}
+			if (!rect || naturalSize.width === 0 || naturalSize.height === 0) {
+				onCropChange(null, true);
+				return;
+			}
+			onCropChange(rect, isFullImageCrop(rect, naturalSize));
+		},
+		[onCropChange, naturalSize],
 	);
 
 	const handleResize = useCallback(
@@ -520,7 +572,8 @@ function CropPreview({
 	const handleResizeStop = useCallback(() => {
 		resizeHandleRef.current = null;
 		setActiveHandle(null);
-	}, []);
+		emitCropChange(latestCropNaturalRef.current);
+	}, [emitCropChange]);
 
 	const handleDragStart = useCallback(
 		(event: ReactPointerEvent<HTMLDivElement>) => {
@@ -568,27 +621,19 @@ function CropPreview({
 				if (target.releasePointerCapture) {
 					target.releasePointerCapture(event.pointerId);
 				}
+				emitCropChange(latestCropNaturalRef.current);
 			};
 
 			target.addEventListener("pointermove", handleMove);
 			target.addEventListener("pointerup", handleUp);
 			target.addEventListener("pointercancel", handleUp);
 		},
-		[cropDisplay, cropDisplayBox, updateFromDisplay],
+		[cropDisplay, cropDisplayBox, updateFromDisplay, emitCropChange],
 	);
 
-	useEffect(() => {
-		if (!onCropChange) {
-			return;
-		}
-		if (!cropNatural || naturalSize.width === 0 || naturalSize.height === 0) {
-			onCropChange(null, true);
-			return;
-		}
-		onCropChange(cropNatural, isFullImageCrop(cropNatural, naturalSize));
-	}, [cropNatural, naturalSize, onCropChange]);
-
-	const url = `/api/storage/${username}/${postTypeString(postType)}/${postOwner}/${file}`;
+	const url =
+		`/api/storage/${username}/${postTypeString(postType)}/${postOwner}/${file}` +
+		(cacheBuster ? `?v=${cacheBuster}` : "");
 
 	return (
 		<div className={cn("relative inline-block", className)}>
@@ -649,6 +694,10 @@ export function FileSheet({
 	const [isFullImageCrop, setIsFullImageCrop] = useState(true);
 	const [viewReloadKey, setViewReloadKey] = useState(0);
 	const cropFileMutation = useMutation(cropFile);
+	const handleCropChange = useCallback((rect: CropRect | null, nextIsFullImageCrop: boolean) => {
+		setCropRect(rect);
+		setIsFullImageCrop(nextIsFullImageCrop);
+	}, []);
 
 	useEffect(() => {
 		if (selectedTab !== "crop") {
@@ -695,7 +744,22 @@ export function FileSheet({
 											},
 										});
 										setSelectedTab("view");
-										setViewReloadKey((prev) => prev + 1);
+										const nextKey = Date.now();
+										setViewReloadKey(nextKey);
+										// Notify other components (e.g. parent FileDisplay instances) to bust cache for this file
+										try {
+											window.dispatchEvent(
+												new CustomEvent("fileCropped", {
+													detail: {
+														username,
+														postType: postTypeString(post.postType),
+														postOwner: post.postOwner,
+														file,
+														cacheBuster: nextKey,
+													},
+												}),
+											);
+										} catch {}
 									} catch (err) {
 										toast.error((err as Error).message, {
 											position: "top-center",
@@ -718,6 +782,7 @@ export function FileSheet({
 									post={post}
 									username={username}
 									className="h-full w-auto rounded-xl"
+									cacheBuster={viewReloadKey}
 								/>
 							</TabsContent>
 							<TabsContent value="crop" className="flex max-h-full w-auto flex-col">
@@ -725,10 +790,8 @@ export function FileSheet({
 									file={file}
 									post={post}
 									username={username}
-									onCropChange={(rect, nextIsFullImageCrop) => {
-										setCropRect(rect);
-										setIsFullImageCrop(nextIsFullImageCrop);
-									}}
+									onCropChange={handleCropChange}
+									cacheBuster={viewReloadKey}
 								/>
 							</TabsContent>
 						</div>
