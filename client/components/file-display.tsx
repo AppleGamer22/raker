@@ -1,4 +1,5 @@
-import { CropIcon, ImageIcon } from "lucide-react";
+import { useMutation } from "@connectrpc/connect-query";
+import { CheckIcon, CropIcon, ImageIcon } from "lucide-react";
 import {
 	useCallback,
 	useEffect,
@@ -9,12 +10,16 @@ import {
 	type SyntheticEvent,
 	type PointerEvent as ReactPointerEvent,
 } from "react";
-import { ResizableBox, type ResizeCallbackData } from "react-resizable";
 
 import "react-resizable/css/styles.css";
 
+import { ResizableBox, type ResizeCallbackData } from "react-resizable";
+import { toast } from "sonner";
+
+import { cropFile } from "@/buf/raker/v1/raker-RakerServer_connectquery";
 import { PostType, type ScrapeResponse } from "@/buf/raker/v1/raker_pb";
 import { Button } from "@/components/ui/button";
+import { ButtonGroup } from "@/components/ui/button-group";
 import {
 	Carousel,
 	CarouselContent,
@@ -240,6 +245,7 @@ export type CropBox = {
 
 const CROP_HANDLE_SIZE = 10;
 const MIN_CROP_SIZE = 40;
+const FULL_IMAGE_CROP_EPSILON = 1;
 
 function clamp(value: number, min: number, max: number) {
 	return Math.min(Math.max(value, min), max);
@@ -319,6 +325,15 @@ function boxToRect(box: { x: number; y: number; width: number; height: number })
 	};
 }
 
+function isFullImageCrop(rect: CropRect, naturalSize: { width: number; height: number }): boolean {
+	return (
+		rect.x1 <= FULL_IMAGE_CROP_EPSILON &&
+		rect.y1 <= FULL_IMAGE_CROP_EPSILON &&
+		rect.x2 >= naturalSize.width - FULL_IMAGE_CROP_EPSILON &&
+		rect.y2 >= naturalSize.height - FULL_IMAGE_CROP_EPSILON
+	);
+}
+
 function handleStyle(handle: string): CSSProperties {
 	const base: CSSProperties = {
 		position: "absolute",
@@ -358,7 +373,7 @@ function CropPreview({
 	username: string;
 	file: string;
 	post: ScrapeResponse;
-	onCropChange?: (rect: CropRect | null) => void;
+	onCropChange?: (rect: CropRect | null, isFullImageCrop: boolean) => void;
 	className?: string;
 }) {
 	const imageRef = useRef<HTMLImageElement | null>(null);
@@ -567,10 +582,10 @@ function CropPreview({
 			return;
 		}
 		if (!cropNatural || naturalSize.width === 0 || naturalSize.height === 0) {
-			onCropChange(null);
+			onCropChange(null, true);
 			return;
 		}
-		onCropChange(cropNatural);
+		onCropChange(cropNatural, isFullImageCrop(cropNatural, naturalSize));
 	}, [cropNatural, naturalSize, onCropChange]);
 
 	const url = `/api/storage/${username}/${postTypeString(postType)}/${postOwner}/${file}`;
@@ -629,11 +644,24 @@ export function FileSheet({
 	file: string;
 	post: ScrapeResponse;
 }) {
+	const [selectedTab, setSelectedTab] = useState<"view" | "crop">("view");
+	const [cropRect, setCropRect] = useState<CropRect | null>(null);
+	const [isFullImageCrop, setIsFullImageCrop] = useState(true);
+	const [viewReloadKey, setViewReloadKey] = useState(0);
+	const cropFileMutation = useMutation(cropFile);
+
+	useEffect(() => {
+		if (selectedTab !== "crop") {
+			setCropRect(null);
+			setIsFullImageCrop(true);
+		}
+	}, [selectedTab, file]);
+
 	return (
 		<Sheet>
 			<SheetTrigger render={trigger} />
 			<SheetContent side="bottom" className="p-1 pt-2 data-[side=bottom]:h-[90vh]">
-				<Tabs defaultValue="view" className="flex h-full flex-col items-center">
+				<Tabs value={selectedTab} onValueChange={setSelectedTab} className="flex h-full flex-col items-center">
 					<TabsList>
 						<TabsTrigger value="view">
 							<ImageIcon />
@@ -644,23 +672,63 @@ export function FileSheet({
 							Crop
 						</TabsTrigger>
 					</TabsList>
+					{selectedTab == "crop" && (
+						<ButtonGroup>
+							<Button
+								type="button"
+								variant="outline"
+								disabled={isFullImageCrop || cropRect === null}
+								onClick={async () => {
+									try {
+										await cropFileMutation.mutateAsync({
+											postType: post.postType,
+											postOwner: post.postOwner,
+											post: post.post,
+											file,
+											corner1: {
+												x: cropRect?.x1,
+												y: cropRect?.y1,
+											},
+											corner2: {
+												x: cropRect?.x2,
+												y: cropRect?.y2,
+											},
+										});
+										setSelectedTab("view");
+										setViewReloadKey((prev) => prev + 1);
+									} catch (err) {
+										toast.error((err as Error).message, {
+											position: "top-center",
+										});
+									}
+								}}
+							>
+								<CheckIcon />
+								Done
+							</Button>
+						</ButtonGroup>
+					)}
 
 					<div className="flex min-h-0 flex-1 flex-col items-center justify-center">
 						<div className="flex max-h-full min-h-0 flex-col items-center">
-							<TabsContent value="view" className="max-h-full w-auto rounded-xl">
+							<TabsContent value="view" className="max-h-full w-auto">
 								<FileDisplay
+									key={viewReloadKey}
 									file={file}
 									post={post}
 									username={username}
 									className="h-full w-auto rounded-xl"
 								/>
 							</TabsContent>
-							<TabsContent value="crop" className="max-h-full w-auto rounded-xl">
+							<TabsContent value="crop" className="flex max-h-full w-auto flex-col">
 								<CropPreview
 									file={file}
 									post={post}
 									username={username}
-									onCropChange={(rect) => rect}
+									onCropChange={(rect, nextIsFullImageCrop) => {
+										setCropRect(rect);
+										setIsFullImageCrop(nextIsFullImageCrop);
+									}}
 								/>
 							</TabsContent>
 						</div>

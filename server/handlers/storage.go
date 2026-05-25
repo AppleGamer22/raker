@@ -316,10 +316,7 @@ func (handler *storageHandler) Crop(user db.User, media db.PostType, owner, file
 	}
 
 	sl := intfc.(*jpegstructure.SegmentList)
-	exifData, _, err := sl.Exif()
-	if err != nil {
-		return err
-	}
+	exifData, _, _ := sl.Exif()
 
 	// Decode the image data.
 	file, err := os.Open(mediaPath)

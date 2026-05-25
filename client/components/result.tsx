@@ -513,9 +513,7 @@ export function Result({
 										type="button"
 										size="sm"
 										disabled={updateCategoriesMutation.isPending || !hasUnsavedCategories}
-										onClick={() => {
-											form.handleSubmit();
-										}}
+										onClick={form.handleSubmit}
 									>
 										Save Categories
 									</Button>
