@@ -335,6 +335,11 @@ func (handler *storageHandler) Crop(user db.User, media db.PostType, owner, file
 		return err
 	}
 
+	bounds := source.Bounds()
+	if crop.Min.X < bounds.Min.X || crop.Min.Y < bounds.Min.Y || crop.Max.X > bounds.Max.X || crop.Max.Y > bounds.Max.Y {
+		return fmt.Errorf("crop rectangle %v is outside image bounds %v", crop, bounds)
+	}
+
 	// Crop
 	destination := image.NewRGBA(crop)
 	draw.Draw(destination, destination.Bounds(), source, crop.Min, draw.Src)
