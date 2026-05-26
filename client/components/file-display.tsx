@@ -833,7 +833,7 @@ export function FileSheet({
 										<Progress value={null} />
 									</div>
 								)}
-								<div className="flex min-h-0 flex-1 items-center justify-center">
+								<div className="flex min-h-0 flex-1 items-center justify-center px-4 sm:px-0">
 									<CropPreview
 										file={file}
 										post={post}
