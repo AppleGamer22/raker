@@ -155,11 +155,18 @@
 }
 
 .crop-handle {
-	width: 10px;
-	height: 10px;
+	width: 18px;
+	height: 18px;
 	border-radius: 9999px;
 	background: var(--background);
 	border: 2px solid var(--primary);
 	box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35);
 	background-image: none;
+}
+
+@media (pointer: coarse) {
+	.crop-handle {
+		width: 26px;
+		height: 26px;
+	}
 }

@@ -280,7 +280,7 @@ export type CropBox = {
 	height: number;
 };
 
-const CROP_HANDLE_SIZE = 10;
+const CROP_HANDLE_SIZE = 18;
 const MIN_CROP_SIZE = 40;
 const FULL_IMAGE_CROP_EPSILON = 1;
 
@@ -833,7 +833,7 @@ export function FileSheet({
 										<Progress value={null} />
 									</div>
 								)}
-								<div className="flex min-h-0 flex-1 items-center justify-center px-4 sm:px-0">
+								<div className="flex min-h-0 flex-1 items-center justify-center px-10 sm:px-0">
 									<CropPreview
 										file={file}
 										post={post}
