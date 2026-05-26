@@ -119,6 +119,9 @@ func (handler storageHandler) ServeHTTP(writer http.ResponseWriter, request *htt
 
 	info, err := os.Stat(mediaPath)
 	if handler.directories || (err == nil && !info.IsDir()) {
+		writer.Header().Set("Cache-Control", "no-store, max-age=0, must-revalidate")
+		writer.Header().Set("Pragma", "no-cache")
+		writer.Header().Set("Expires", "0")
 		handler.fileServer.ServeHTTP(writer, request)
 	} else {
 		if err != nil {
