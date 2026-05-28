@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"image"
+	"image/color"
 	"image/draw"
 	"image/jpeg"
 	"io"
@@ -21,6 +22,7 @@ import (
 	"github.com/AppleGamer22/raker/server/db"
 	"github.com/AppleGamer22/raker/shared"
 	"github.com/charmbracelet/log"
+	"github.com/disintegration/imaging"
 	exif "github.com/dsoprea/go-exif/v3"
 	exifcommon "github.com/dsoprea/go-exif/v3/common"
 	jpegstructure "github.com/dsoprea/go-jpeg-image-structure/v2"
@@ -301,8 +303,7 @@ func (handler *storageHandler) LocationEXIF(user db.User, media db.PostType, own
 	return gpsInfo.Latitude.Decimal(), gpsInfo.Longitude.Decimal()
 }
 
-func (handler *storageHandler) Crop(user db.User, media db.PostType, owner, fileName string, crop image.Rectangle) error {
-	// Parse the original JPEG and extract EXIF.
+func (handler *storageHandler) transformJPEG(user db.User, media db.PostType, owner, fileName string, transform func(image.Image) (image.Image, error)) error {
 	filePath := path.Join(user.Username, string(media), owner, fileName)
 	mediaPath := path.Join(handler.root, filePath)
 	mediaPath = cleaner.Path(mediaPath)
@@ -321,7 +322,6 @@ func (handler *storageHandler) Crop(user db.User, media db.PostType, owner, file
 	sl := intfc.(*jpegstructure.SegmentList)
 	exifData, _, _ := sl.Exif()
 
-	// Decode the image data.
 	file, err := os.Open(mediaPath)
 	if err != nil {
 		return err
@@ -335,29 +335,22 @@ func (handler *storageHandler) Crop(user db.User, media db.PostType, owner, file
 		return err
 	}
 
-	bounds := source.Bounds()
-	if crop.Min.X < bounds.Min.X || crop.Min.Y < bounds.Min.Y || crop.Max.X > bounds.Max.X || crop.Max.Y > bounds.Max.Y {
-		return fmt.Errorf("crop rectangle %v is outside image bounds %v", crop, bounds)
-	}
-
-	// Crop
-	destination := image.NewRGBA(crop)
-	draw.Draw(destination, destination.Bounds(), source, crop.Min, draw.Src)
-
-	// Encode cropped JPEG.
-	var buf bytes.Buffer
-	if err := jpeg.Encode(&buf, destination, &jpeg.Options{Quality: 100}); err != nil {
+	transformed, err := transform(source)
+	if err != nil {
 		return err
 	}
 
-	// Parse the new JPEG so we can attach EXIF.
+	var buf bytes.Buffer
+	if err := jpeg.Encode(&buf, transformed, &jpeg.Options{Quality: 100}); err != nil {
+		return err
+	}
+
 	newIntfc, err := jpegstructure.NewJpegMediaParser().ParseBytes(buf.Bytes())
 	if err != nil {
 		return err
 	}
 	newSL := newIntfc.(*jpegstructure.SegmentList)
 
-	// Reattach EXIF if it existed.
 	if exifData != nil {
 		exifBuilder := exif.NewIfdBuilderFromExistingChain(exifData)
 		if err := newSL.SetExif(exifBuilder); err != nil {
@@ -365,7 +358,6 @@ func (handler *storageHandler) Crop(user db.User, media db.PostType, owner, file
 		}
 	}
 
-	// Write final JPEG to disk.
 	if err := newSL.Write(tempFile); err != nil {
 		return err
 	}
@@ -387,13 +379,23 @@ func (handler *storageHandler) Crop(user db.User, media db.PostType, owner, file
 	return nil
 }
 
-func (handler *storageHandler) Rotate(user db.User, media db.PostType, owner, fileName string, amount int) error {
-	// Parse the original JPEG and extract EXIF.
-	filePath := path.Join(user.Username, string(media), owner, fileName)
-	mediaPath := path.Join(handler.root, filePath)
-	mediaPath = cleaner.Path(mediaPath)
+func (handler *storageHandler) Crop(user db.User, media db.PostType, owner, fileName string, crop image.Rectangle) error {
+	return handler.transformJPEG(user, media, owner, fileName, func(source image.Image) (image.Image, error) {
+		bounds := source.Bounds()
+		if crop.Min.X < bounds.Min.X || crop.Min.Y < bounds.Min.Y || crop.Max.X > bounds.Max.X || crop.Max.Y > bounds.Max.Y {
+			return nil, fmt.Errorf("crop rectangle %v is outside image bounds %v", crop, bounds)
+		}
 
-	return nil
+		destination := image.NewRGBA(crop)
+		draw.Draw(destination, destination.Bounds(), source, crop.Min, draw.Src)
+		return destination, nil
+	})
+}
+
+func (handler *storageHandler) Rotate(user db.User, media db.PostType, owner, fileName string, amount int) error {
+	return handler.transformJPEG(user, media, owner, fileName, func(source image.Image) (image.Image, error) {
+		return imaging.Rotate(source, float64(amount), color.White), nil
+	})
 }
 
 // CropFile implements [v1connect.RakerServerHandler].
@@ -420,7 +422,7 @@ func (server *RakerServer) RotateFile(ctx context.Context, request *v1.RotateFil
 		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("not authenticated"))
 	}
 
-	err := StorageHandler.Rotate(user, PostTypePB2DB(request.FileRequest.PostType), request.FileRequest.PostOwner, request.FileRequest.File, int(request.Amount))
+	err := StorageHandler.Rotate(user, PostTypePB2DB(request.FileRequest.PostType), request.FileRequest.PostOwner, request.FileRequest.File, -int(request.Amount))
 	if err != nil {
 		log.Error(err)
 		return nil, connect.NewError(connect.CodeInternal, err)

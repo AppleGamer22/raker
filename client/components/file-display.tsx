@@ -1,5 +1,5 @@
 import { useMutation } from "@connectrpc/connect-query";
-import { CheckIcon, CropIcon, ImageIcon, UndoIcon } from "lucide-react";
+import { CheckIcon, CropIcon, ImageIcon, RotateCcwIcon, RotateCwIcon, XIcon } from "lucide-react";
 import {
 	useCallback,
 	useEffect,
@@ -16,7 +16,7 @@ import "react-resizable/css/styles.css";
 import { ResizableBox, type ResizeCallbackData } from "react-resizable";
 import { toast } from "sonner";
 
-import { cropFile } from "@/buf/raker/v1/raker-RakerServer_connectquery";
+import { cropFile, rotateFile } from "@/buf/raker/v1/raker-RakerServer_connectquery";
 import { PostType, type ScrapeResponse } from "@/buf/raker/v1/raker_pb";
 import { Button } from "@/components/ui/button";
 import { ButtonGroup } from "@/components/ui/button-group";
@@ -718,12 +718,51 @@ export function FileSheet({
 	file: string;
 	post: ScrapeResponse;
 }) {
-	const [selectedTab, setSelectedTab] = useState<"view" | "crop">("view");
+	const [selectedTab, setSelectedTab] = useState<"view" | "crop" | "rotate">("view");
 	const [cropRect, setCropRect] = useState<CropRect | null>(null);
 	const [isFullImageCrop, setIsFullImageCrop] = useState(true);
 	const [viewReloadKey, setViewReloadKey] = useState(0);
 	const [resetSignal, setResetSignal] = useState(0);
 	const cropFileMutation = useMutation(cropFile);
+	const rotateMutation = useMutation(rotateFile);
+	const refreshEditedFile = useCallback(() => {
+		const nextKey = Date.now();
+		setViewReloadKey(nextKey);
+		try {
+			dispatchEvent(
+				new CustomEvent("fileCropped", {
+					detail: {
+						username,
+						postType: postTypeString(post.postType),
+						postOwner: post.postOwner,
+						file,
+						cacheBuster: nextKey,
+					},
+				}),
+			);
+		} catch {}
+	}, [file, post.postType, post.postOwner, username]);
+	const handleRotate = useCallback(
+		async (amount: number) => {
+			try {
+				await rotateMutation.mutateAsync({
+					fileRequest: {
+						postType: post.postType,
+						postOwner: post.postOwner,
+						post: post.post,
+						file,
+					},
+					amount,
+				});
+				refreshEditedFile();
+			} catch (err) {
+				toast.error((err as Error).message, {
+					position: "top-center",
+				});
+			}
+		},
+		[file, post, refreshEditedFile, rotateMutation],
+	);
 	const handleCropChange = useCallback((rect: CropRect | null, nextIsFullImageCrop: boolean) => {
 		setCropRect(rect);
 		setIsFullImageCrop(nextIsFullImageCrop);
@@ -749,6 +788,10 @@ export function FileSheet({
 						<TabsTrigger value="crop">
 							<CropIcon />
 							Crop
+						</TabsTrigger>
+						<TabsTrigger value="rotate">
+							<RotateCwIcon />
+							Rotate
 						</TabsTrigger>
 					</TabsList>
 
@@ -778,9 +821,10 @@ export function FileSheet({
 											setIsFullImageCrop(true);
 										}}
 									>
-										<UndoIcon />
+										<XIcon />
 										Clear
 									</Button>
+
 									<Button
 										variant="outline"
 										disabled={!cropFileMutation.isPending && (isFullImageCrop || cropRect === null)}
@@ -803,22 +847,7 @@ export function FileSheet({
 													},
 												});
 												setSelectedTab("view");
-												const nextKey = Date.now();
-												setViewReloadKey(nextKey);
-												// Notify other components (e.g. parent FileDisplay instances) to bust cache for this file
-												try {
-													window.dispatchEvent(
-														new CustomEvent("fileCropped", {
-															detail: {
-																username,
-																postType: postTypeString(post.postType),
-																postOwner: post.postOwner,
-																file,
-																cacheBuster: nextKey,
-															},
-														}),
-													);
-												} catch {}
+												refreshEditedFile();
 											} catch (err) {
 												toast.error((err as Error).message, {
 													position: "top-center",
@@ -826,8 +855,9 @@ export function FileSheet({
 											}
 										}}
 									>
+										<CropIcon />
 										<CheckIcon />
-										Done
+										Save Crop
 									</Button>
 								</ButtonGroup>
 								{cropFileMutation.isPending && (
@@ -843,6 +873,39 @@ export function FileSheet({
 										onCropChange={handleCropChange}
 										cacheBuster={viewReloadKey}
 										resetSignal={resetSignal}
+									/>
+								</div>
+							</TabsContent>
+							<TabsContent
+								value="rotate"
+								className="flex max-h-full min-h-0 w-auto flex-col items-center gap-2"
+							>
+								<ButtonGroup>
+									<Button
+										variant="outline"
+										disabled={rotateMutation.isPending}
+										onClick={() => handleRotate(-90)}
+									>
+										<RotateCcwIcon />
+										Rotate Left
+									</Button>
+									<Button
+										variant="outline"
+										disabled={rotateMutation.isPending}
+										onClick={() => handleRotate(90)}
+									>
+										<RotateCwIcon />
+										Rotate Right
+									</Button>
+								</ButtonGroup>
+								<div className="flex min-h-0 flex-1 items-center justify-center">
+									<FileDisplay
+										key={viewReloadKey}
+										file={file}
+										post={post}
+										username={username}
+										className="h-full w-auto rounded-xl"
+										cacheBuster={viewReloadKey}
 									/>
 								</div>
 							</TabsContent>
