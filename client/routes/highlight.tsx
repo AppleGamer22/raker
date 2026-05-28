@@ -108,7 +108,7 @@ function Highlight() {
 						}}
 					</form.Field>
 					<Field orientation="horizontal">
-						<Button type="submit" disabled={highlightMutation.isPending} className="mb-3">
+						<Button type="submit" disabled={highlightMutation.isPending} className="mb-3 w-full sm:w-auto">
 							Submit
 						</Button>
 					</Field>

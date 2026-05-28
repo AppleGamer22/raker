@@ -132,7 +132,7 @@ function Snapchat() {
 						}}
 					</form.Field>
 					<Field orientation="horizontal">
-						<Button type="submit" disabled={snapchatMutation.isPending} className="mb-3">
+						<Button type="submit" disabled={snapchatMutation.isPending} className="mb-3 w-full sm:w-auto">
 							Submit
 						</Button>
 					</Field>

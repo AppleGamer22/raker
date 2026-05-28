@@ -109,7 +109,7 @@ function Story() {
 						}}
 					</form.Field>
 					<Field orientation="horizontal">
-						<Button type="submit" disabled={storyMutation.isPending} className="mb-3">
+						<Button type="submit" disabled={storyMutation.isPending} className="mb-3 w-full sm:w-auto">
 							Submit
 						</Button>
 					</Field>

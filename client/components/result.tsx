@@ -538,6 +538,7 @@ export function Result({
 								/>
 								<div>
 									<Button
+										className="w-full sm:w-auto"
 										type="button"
 										size="sm"
 										disabled={updateCategoriesMutation.isPending || !hasUnsavedCategories}
