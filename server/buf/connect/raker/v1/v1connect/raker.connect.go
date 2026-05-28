@@ -78,6 +78,8 @@ const (
 	RakerServerSearchHistoryOwnersProcedure = "/raker.v1.RakerServer/SearchHistoryOwners"
 	// RakerServerCropFileProcedure is the fully-qualified name of the RakerServer's CropFile RPC.
 	RakerServerCropFileProcedure = "/raker.v1.RakerServer/CropFile"
+	// RakerServerRotateFileProcedure is the fully-qualified name of the RakerServer's RotateFile RPC.
+	RakerServerRotateFileProcedure = "/raker.v1.RakerServer/RotateFile"
 )
 
 // RakerServerClient is a client for the raker.v1.RakerServer service.
@@ -98,6 +100,7 @@ type RakerServerClient interface {
 	SearchHistory(context.Context, *v1.HistoryRequest) (*v1.HistoryResponse, error)
 	SearchHistoryOwners(context.Context, *v1.HistoryOwnersRequest) (*v1.HistoryOwnersResponse, error)
 	CropFile(context.Context, *v1.CropFileRequest) (*emptypb.Empty, error)
+	RotateFile(context.Context, *v1.RotateFileRequest) (*emptypb.Empty, error)
 }
 
 // NewRakerServerClient constructs a client for the raker.v1.RakerServer service. By default, it
@@ -207,6 +210,12 @@ func NewRakerServerClient(httpClient connect.HTTPClient, baseURL string, opts ..
 			connect.WithSchema(rakerServerMethods.ByName("CropFile")),
 			connect.WithClientOptions(opts...),
 		),
+		rotateFile: connect.NewClient[v1.RotateFileRequest, emptypb.Empty](
+			httpClient,
+			baseURL+RakerServerRotateFileProcedure,
+			connect.WithSchema(rakerServerMethods.ByName("RotateFile")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -228,6 +237,7 @@ type rakerServerClient struct {
 	searchHistory       *connect.Client[v1.HistoryRequest, v1.HistoryResponse]
 	searchHistoryOwners *connect.Client[v1.HistoryOwnersRequest, v1.HistoryOwnersResponse]
 	cropFile            *connect.Client[v1.CropFileRequest, emptypb.Empty]
+	rotateFile          *connect.Client[v1.RotateFileRequest, emptypb.Empty]
 }
 
 // SignUpInstagram calls raker.v1.RakerServer.SignUpInstagram.
@@ -374,6 +384,15 @@ func (c *rakerServerClient) CropFile(ctx context.Context, req *v1.CropFileReques
 	return nil, err
 }
 
+// RotateFile calls raker.v1.RakerServer.RotateFile.
+func (c *rakerServerClient) RotateFile(ctx context.Context, req *v1.RotateFileRequest) (*emptypb.Empty, error) {
+	response, err := c.rotateFile.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
+}
+
 // RakerServerHandler is an implementation of the raker.v1.RakerServer service.
 type RakerServerHandler interface {
 	SignUpInstagram(context.Context, *v1.SignUpRequest) (*emptypb.Empty, error)
@@ -392,6 +411,7 @@ type RakerServerHandler interface {
 	SearchHistory(context.Context, *v1.HistoryRequest) (*v1.HistoryResponse, error)
 	SearchHistoryOwners(context.Context, *v1.HistoryOwnersRequest) (*v1.HistoryOwnersResponse, error)
 	CropFile(context.Context, *v1.CropFileRequest) (*emptypb.Empty, error)
+	RotateFile(context.Context, *v1.RotateFileRequest) (*emptypb.Empty, error)
 }
 
 // NewRakerServerHandler builds an HTTP handler from the service implementation. It returns the path
@@ -497,6 +517,12 @@ func NewRakerServerHandler(svc RakerServerHandler, opts ...connect.HandlerOption
 		connect.WithSchema(rakerServerMethods.ByName("CropFile")),
 		connect.WithHandlerOptions(opts...),
 	)
+	rakerServerRotateFileHandler := connect.NewUnaryHandlerSimple(
+		RakerServerRotateFileProcedure,
+		svc.RotateFile,
+		connect.WithSchema(rakerServerMethods.ByName("RotateFile")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/raker.v1.RakerServer/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case RakerServerSignUpInstagramProcedure:
@@ -531,6 +557,8 @@ func NewRakerServerHandler(svc RakerServerHandler, opts ...connect.HandlerOption
 			rakerServerSearchHistoryOwnersHandler.ServeHTTP(w, r)
 		case RakerServerCropFileProcedure:
 			rakerServerCropFileHandler.ServeHTTP(w, r)
+		case RakerServerRotateFileProcedure:
+			rakerServerRotateFileHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -602,4 +630,8 @@ func (UnimplementedRakerServerHandler) SearchHistoryOwners(context.Context, *v1.
 
 func (UnimplementedRakerServerHandler) CropFile(context.Context, *v1.CropFileRequest) (*emptypb.Empty, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raker.v1.RakerServer.CropFile is not implemented"))
+}
+
+func (UnimplementedRakerServerHandler) RotateFile(context.Context, *v1.RotateFileRequest) (*emptypb.Empty, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raker.v1.RakerServer.RotateFile is not implemented"))
 }

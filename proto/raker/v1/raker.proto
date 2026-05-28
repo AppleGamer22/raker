@@ -119,17 +119,26 @@ message HistoryOwnersResponse {
   repeated HistoryOwner owners = 1;
 }
 
-message CropFileRequest {
+message FileSubRequest {
   PostType post_type = 1;
   string post_owner = 2;
   string post = 3;
   string file = 4;
+}
+
+message CropFileRequest {
+  FileSubRequest file_request = 1;
   message PixelCoordinate {
     int32 x = 1;
     int32 y = 2;
   }
-  PixelCoordinate corner1 = 5;
-  PixelCoordinate corner2 = 6;
+  PixelCoordinate corner1 = 2;
+  PixelCoordinate corner2 = 3;
+}
+
+message RotateFileRequest {
+  FileSubRequest file_request = 1;
+  int32 amount = 2;
 }
 
 service RakerServer {
@@ -164,4 +173,6 @@ service RakerServer {
   rpc SearchHistoryOwners(HistoryOwnersRequest) returns (HistoryOwnersResponse);
 
   rpc CropFile(CropFileRequest) returns (google.protobuf.Empty);
+
+  rpc RotateFile(RotateFileRequest) returns (google.protobuf.Empty);
 }

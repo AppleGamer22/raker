@@ -83,3 +83,8 @@ export const searchHistoryOwners = RakerServer.method.searchHistoryOwners;
  * @generated from rpc raker.v1.RakerServer.CropFile
  */
 export const cropFile = RakerServer.method.cropFile;
+
+/**
+ * @generated from rpc raker.v1.RakerServer.RotateFile
+ */
+export const rotateFile = RakerServer.method.rotateFile;

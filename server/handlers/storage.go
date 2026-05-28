@@ -387,6 +387,15 @@ func (handler *storageHandler) Crop(user db.User, media db.PostType, owner, file
 	return nil
 }
 
+func (handler *storageHandler) Rotate(user db.User, media db.PostType, owner, fileName string, amount int) error {
+	// Parse the original JPEG and extract EXIF.
+	filePath := path.Join(user.Username, string(media), owner, fileName)
+	mediaPath := path.Join(handler.root, filePath)
+	mediaPath = cleaner.Path(mediaPath)
+
+	return nil
+}
+
 // CropFile implements [v1connect.RakerServerHandler].
 func (server *RakerServer) CropFile(ctx context.Context, request *v1.CropFileRequest) (*emptypb.Empty, error) {
 	user, ok := ctx.Value(authenticatedUserKey).(db.User)
@@ -396,10 +405,26 @@ func (server *RakerServer) CropFile(ctx context.Context, request *v1.CropFileReq
 
 	crop := image.Rect(int(request.Corner1.X), int(request.Corner1.Y), int(request.Corner2.X), int(request.Corner2.Y))
 
-	err := StorageHandler.Crop(user, PostTypePB2DB(request.PostType), request.PostOwner, request.File, crop)
+	err := StorageHandler.Crop(user, PostTypePB2DB(request.FileRequest.PostType), request.FileRequest.PostOwner, request.FileRequest.File, crop)
 	if err != nil {
 		log.Error(err)
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
+	return nil, nil
+}
+
+// RotateFile implements [v1connect.RakerServerHandler].
+func (server *RakerServer) RotateFile(ctx context.Context, request *v1.RotateFileRequest) (*emptypb.Empty, error) {
+	user, ok := ctx.Value(authenticatedUserKey).(db.User)
+	if !ok {
+		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("not authenticated"))
+	}
+
+	err := StorageHandler.Rotate(user, PostTypePB2DB(request.FileRequest.PostType), request.FileRequest.PostOwner, request.FileRequest.File, int(request.Amount))
+	if err != nil {
+		log.Error(err)
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
 	return nil, nil
 }

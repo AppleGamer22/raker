@@ -787,10 +787,12 @@ export function FileSheet({
 										onClick={async () => {
 											try {
 												await cropFileMutation.mutateAsync({
-													postType: post.postType,
-													postOwner: post.postOwner,
-													post: post.post,
-													file,
+													fileRequest: {
+														postType: post.postType,
+														postOwner: post.postOwner,
+														post: post.post,
+														file,
+													},
 													corner1: {
 														x: cropRect?.x1,
 														y: cropRect?.y1,
