@@ -84,6 +84,7 @@ type storageHandler struct {
 	directories bool
 	fileServer  http.Handler
 	server      *RakerServer
+	fileLocks   sync.Map // map[string]*sync.Mutex - per-file locks to avoid concurrent ops on same file
 }
 
 var StorageHandler storageHandler
@@ -244,6 +245,12 @@ func (handler *storageHandler) Delete(user db.User, media db.PostType, owner, fi
 	mediaPath := path.Join(handler.root, filePath)
 	mediaPath = cleaner.Path(mediaPath)
 
+	// Lock the file to avoid deleting while another operation (crop/rotate) is running.
+	muIface, _ := handler.fileLocks.LoadOrStore(mediaPath, &sync.Mutex{})
+	mu := muIface.(*sync.Mutex)
+	mu.Lock()
+	defer mu.Unlock()
+
 	_, err := os.Stat(mediaPath)
 	if err != nil {
 		return fmt.Errorf("file %s does not exists", filePath)
@@ -307,6 +314,13 @@ func (handler *storageHandler) transformJPEG(user db.User, media db.PostType, ow
 	filePath := path.Join(user.Username, string(media), owner, fileName)
 	mediaPath := path.Join(handler.root, filePath)
 	mediaPath = cleaner.Path(mediaPath)
+
+	// Acquire per-file lock to prevent concurrent operations (crop/rotate/etc.) on the same file.
+	// Use sync.Map with *sync.Mutex values to avoid global lock contention.
+	muIface, _ := handler.fileLocks.LoadOrStore(mediaPath, &sync.Mutex{})
+	mu := muIface.(*sync.Mutex)
+	mu.Lock()
+	defer mu.Unlock()
 
 	tempFile, err := os.CreateTemp(path.Dir(mediaPath), fileName+".*.jpg")
 	if err != nil {
