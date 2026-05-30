@@ -365,11 +365,8 @@ func (handler *storageHandler) transformJPEG(user db.User, media db.PostType, ow
 	}
 	newSL := newIntfc.(*jpegstructure.SegmentList)
 
-	if exifData != nil {
-		exifBuilder := exif.NewIfdBuilderFromExistingChain(exifData)
-		if err := newSL.SetExif(exifBuilder); err != nil {
-			return err
-		}
+	if err := preserveExifMetadata(newSL, exifData); err != nil {
+		log.Warnf("skipping EXIF preservation for %s: %v", filePath, err)
 	}
 
 	if err := newSL.Write(tempFile); err != nil {
@@ -387,6 +384,115 @@ func (handler *storageHandler) transformJPEG(user db.User, media db.PostType, ow
 		}
 		if err2 := os.Rename(tempFile.Name(), mediaPath); err2 != nil {
 			return errors.Join(err, err2)
+		}
+	}
+
+	return nil
+}
+
+func preserveExifMetadata(target *jpegstructure.SegmentList, source *exif.Ifd) (err error) {
+	if source == nil {
+		return nil
+	}
+
+	exifBuilder, err := buildSanitizedExifBuilder(source)
+	if err != nil {
+		return err
+	}
+
+	if err := target.SetExif(exifBuilder); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func buildSanitizedExifBuilder(source *exif.Ifd) (builder *exif.IfdBuilder, err error) {
+	defer func() {
+		if state := recover(); state != nil {
+			err = fmt.Errorf("sanitize EXIF IFD [%s]: %v", source.IfdIdentity().UnindexedString(), state)
+		}
+	}()
+
+	builder = exif.NewIfdBuilderWithExistingIfd(source)
+
+	if thumbnailData, thumbnailErr := source.Thumbnail(); thumbnailErr == nil {
+		if len(thumbnailData) > 0 {
+			if err := builder.SetThumbnail(thumbnailData); err != nil {
+				log.Warnf("dropping malformed EXIF thumbnail for %s: %v", source.IfdIdentity().UnindexedString(), err)
+			}
+		}
+	} else if !errors.Is(thumbnailErr, exif.ErrNoThumbnail) {
+		log.Warnf("dropping EXIF thumbnail for %s: %v", source.IfdIdentity().UnindexedString(), thumbnailErr)
+	}
+
+	children := source.Children()
+	for index, entry := range source.Entries() {
+		if entry.IsThumbnailOffset() || entry.IsThumbnailSize() {
+			continue
+		}
+
+		if childIfdPath := entry.ChildIfdPath(); childIfdPath != "" {
+			childIfd := findChildIfdForEntry(children, index)
+			if childIfd == nil {
+				log.Warnf("dropping EXIF child IFD with no matching child for %s tag 0x%04x", source.IfdIdentity().UnindexedString(), entry.TagId())
+				continue
+			}
+
+			if childIfd.IfdIdentity().TagId() != 0xffff && childIfd.IfdIdentity().TagId() != entry.TagId() {
+				log.Warnf("dropping EXIF child IFD with mismatched tag ID for %s tag 0x%04x", source.IfdIdentity().UnindexedString(), entry.TagId())
+				continue
+			}
+
+			childBuilder, childErr := buildSanitizedExifBuilder(childIfd)
+			if childErr != nil {
+				log.Warnf("dropping malformed EXIF child IFD for %s tag 0x%04x: %v", source.IfdIdentity().UnindexedString(), entry.TagId(), childErr)
+				continue
+			}
+
+			if err := builder.AddChildIb(childBuilder); err != nil {
+				log.Warnf("dropping malformed EXIF child IFD for %s tag 0x%04x: %v", source.IfdIdentity().UnindexedString(), entry.TagId(), err)
+				continue
+			}
+			continue
+		}
+
+		rawBytes, rawErr := entry.GetRawBytes()
+		if rawErr != nil {
+			log.Warnf("dropping malformed EXIF tag for %s tag 0x%04x: %v", source.IfdIdentity().UnindexedString(), entry.TagId(), rawErr)
+			continue
+		}
+
+		bt := exif.NewBuilderTag(
+			source.IfdIdentity().UnindexedString(),
+			entry.TagId(),
+			entry.TagType(),
+			exif.NewIfdBuilderTagValueFromBytes(rawBytes),
+			source.ByteOrder(),
+		)
+
+		if err := builder.Set(bt); err != nil {
+			log.Warnf("dropping malformed EXIF tag for %s tag 0x%04x: %v", source.IfdIdentity().UnindexedString(), entry.TagId(), err)
+			continue
+		}
+	}
+
+	if nextIfd := source.NextIfd(); nextIfd != nil {
+		nextBuilder, nextErr := buildSanitizedExifBuilder(nextIfd)
+		if nextErr != nil {
+			log.Warnf("dropping malformed EXIF sibling IFD for %s: %v", source.IfdIdentity().UnindexedString(), nextErr)
+		} else if err := builder.SetNextIb(nextBuilder); err != nil {
+			log.Warnf("dropping malformed EXIF sibling IFD for %s: %v", source.IfdIdentity().UnindexedString(), err)
+		}
+	}
+
+	return builder, nil
+}
+
+func findChildIfdForEntry(children []*exif.Ifd, parentTagIndex int) *exif.Ifd {
+	for _, childIfd := range children {
+		if childIfd.ParentTagIndex() == parentTagIndex {
+			return childIfd
 		}
 	}
 
