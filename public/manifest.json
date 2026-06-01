@@ -1,4 +1,5 @@
 {
+	"$schema": "https://www.schemastore.org/web-manifest-combined.json",
 	"short_name": "Raker",
 	"name": "Raker",
 	"icons": [
@@ -21,6 +22,32 @@
 			"src": "android-chrome-512x512.png",
 			"type": "image/png",
 			"sizes": "512x512"
+		}
+	],
+	"shortcuts": [
+		{
+			"name": "Instagram Post",
+			"url": "/instagram"
+		},
+		{
+			"name": "Instagram Highlight",
+			"url": "/highlight"
+		},
+		{
+			"name": "Instagram Story",
+			"url": "/story"
+		},
+		{
+			"name": "TikTok Post",
+			"url": "/tiktok"
+		},
+		{
+			"name": "Snapchat Highlight",
+			"url": "/snapchat"
+		},
+		{
+			"name": "VSCO Post",
+			"url": "/vsco"
 		}
 	],
 	"start_url": "/",
