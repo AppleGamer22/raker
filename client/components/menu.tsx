@@ -16,7 +16,10 @@ import {
 	SidebarProvider,
 	SidebarInset,
 	SidebarGroupLabel,
+	SidebarFooter,
 } from "@/components/ui/sidebar";
+import { DockerIcon } from "@/components/ui/svgs/docker";
+import { GitHubIcon } from "@/components/ui/svgs/github";
 import { InstagramIcon } from "@/components/ui/svgs/instagram";
 import { SnapchatIcon } from "@/components/ui/svgs/snapchat";
 import { TikTokIcon } from "@/components/ui/svgs/tiktok";
@@ -206,6 +209,40 @@ export function Menu({
 						</SidebarMenu>
 					</SidebarGroup>
 				</SidebarContent>
+				<SidebarFooter>
+					<SidebarMenu>
+						<SidebarMenuItem>
+							<SidebarMenuButton
+								render={
+									<a
+										href={`https://github.com/AppleGamer22/raker${import.meta.env.DEV ? "" : `/releases/tag/${import.meta.env.VITE_GIT_TAG}`}`}
+										target="_blank"
+										rel="noopener noreferrer"
+									/>
+								}
+							>
+								<GitHubIcon className="w-4" />
+								GitHub
+							</SidebarMenuButton>
+						</SidebarMenuItem>
+						{!import.meta.env.DEV && (
+							<SidebarMenuItem>
+								<SidebarMenuButton
+									render={
+										<a
+											href={`https://hub.docker.com/repository/docker/applegamer22/raker/tags/${import.meta.env.VITE_GIT_TAG}`}
+											target="_blank"
+											rel="noopener noreferrer"
+										/>
+									}
+								>
+									<DockerIcon className="w-4" />
+									Docker Hub
+								</SidebarMenuButton>
+							</SidebarMenuItem>
+						)}
+					</SidebarMenu>
+				</SidebarFooter>
 			</Sidebar>
 			{!isMobileSheet && children ? (
 				<SidebarInset className="min-w-0 overflow-x-hidden">{children}</SidebarInset>
