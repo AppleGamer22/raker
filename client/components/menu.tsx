@@ -1,5 +1,5 @@
 import { Link, useLocation } from "@tanstack/react-router";
-import { UserKeyIcon, DatabaseSearchIcon } from "lucide-react";
+import { UserKeyIcon, DatabaseSearchIcon, ExternalLinkIcon } from "lucide-react";
 import type { ReactNode } from "react";
 
 import { RakerLogo } from "@/components/logo";
@@ -223,6 +223,7 @@ export function Menu({
 							>
 								<GitHubIcon className="w-4" />
 								GitHub
+								<ExternalLinkIcon />
 							</SidebarMenuButton>
 						</SidebarMenuItem>
 						{!import.meta.env.DEV && (
@@ -238,6 +239,7 @@ export function Menu({
 								>
 									<DockerIcon className="w-4" />
 									Docker Hub
+									<ExternalLinkIcon />
 								</SidebarMenuButton>
 							</SidebarMenuItem>
 						)}
