@@ -1,4 +1,3 @@
-import { timestampDate } from "@bufbuild/protobuf/wkt";
 import { useMutation } from "@connectrpc/connect-query";
 import { useForm } from "@tanstack/react-form";
 import { Link } from "@tanstack/react-router";
@@ -40,6 +39,7 @@ import { VSCOIcon } from "@/components/ui/svgs/vsco";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useConfirmationDialog } from "@/hooks/use-confirmation-dialog";
 import { useUser } from "@/hooks/user-provider";
+import { timestampFormat } from "@/lib/utils";
 import { cn, writeClipboard, defaultPostTypes, inPWA, uniqueArraysEqualAsSets } from "@/lib/utils";
 import { HistoryPostCategoryForm } from "@/routes/history";
 
@@ -501,7 +501,7 @@ export function Result({
 			<div className="max-w-full">
 				<ResultHeader categories={availableCategories} exclusive={false} result={result} />
 			</div>
-			<Label>{timestampDate(result.postDate!).toString()}</Label>
+			<Label>{timestampFormat(result.postDate!)}</Label>
 			<div className="w-full">
 				<form.Field name="categories" mode="array">
 					{(categoriesField) => {

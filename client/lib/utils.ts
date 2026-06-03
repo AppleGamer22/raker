@@ -1,3 +1,4 @@
+import { timestampDate, type Timestamp } from "@bufbuild/protobuf/wkt";
 import { clsx, type ClassValue } from "clsx";
 import { toast } from "sonner";
 import { twMerge } from "tailwind-merge";
@@ -42,4 +43,20 @@ export function uniqueArraysEqualAsSets<T>(a: T[] = [], b: T[] = []) {
 	if (a.length !== b.length) return false;
 	const setA = new Set(a);
 	return b.every((bi) => setA.has(bi));
+}
+
+export const dateFormatter = new Intl.DateTimeFormat(navigator.language, {
+	weekday: "long",
+	day: "2-digit",
+	month: "2-digit",
+	year: "numeric",
+	hour: "2-digit",
+	minute: "2-digit",
+	second: "2-digit",
+	hour12: true,
+	timeZoneName: "longOffset",
+});
+
+export function timestampFormat(date: Timestamp): string {
+	return dateFormatter.format(timestampDate(date));
 }

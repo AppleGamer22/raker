@@ -1,4 +1,3 @@
-import { timestampDate } from "@bufbuild/protobuf/wkt";
 import { useMutation } from "@connectrpc/connect-query";
 import { useForm } from "@tanstack/react-form";
 import { createFileRoute, Link, stripSearchParams, useNavigate } from "@tanstack/react-router";
@@ -49,6 +48,7 @@ import { TikTokIcon } from "@/components/ui/svgs/tiktok";
 import { VSCOIcon } from "@/components/ui/svgs/vsco";
 import { Switch } from "@/components/ui/switch";
 import { useUser } from "@/hooks/user-provider";
+import { timestampFormat } from "@/lib/utils";
 import { defaultPostTypes, inPWA } from "@/lib/utils";
 
 const historySearchDefaults = {
@@ -671,7 +671,7 @@ function History() {
 									exclusive={form.getFieldValue("exclusive")}
 									showPost
 								/>
-								{postDate !== undefined && <p>{timestampDate(postDate).toString()}</p>}
+								<label className="basis-full">{timestampFormat(postDate!)}</label>
 								<span className="inline-flex flex-wrap items-center gap-1">
 									{categories.map((category) => (
 										<Badge
