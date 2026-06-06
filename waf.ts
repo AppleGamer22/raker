@@ -25,7 +25,6 @@ Object.defineProperty(document, "cookie", {
 		if (!value) {
 			return;
 		}
-
 		cookieJar.set(name, value);
 	},
 	configurable: true,
@@ -79,7 +78,7 @@ const scope = {
 	location,
 };
 
-async function waitForCookieWrites(timeoutMs = 5000) {
+async function waitForCookieWrites(timeoutMs = 30e3) {
 	if (cookieJar.size > 0) {
 		return;
 	}
