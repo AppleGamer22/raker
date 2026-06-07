@@ -533,8 +533,8 @@ func (handler *storageHandler) RotateVideo(user db.User, media db.PostType, owne
 	// ffmpeg -i input.mp4 -vf "transpose=1" -c:a copy output.mp4
 
 	cmd := exec.Command("ffmpeg", "-i", mediaPath, "-vf", transpose, "-c:a", "copy", tempPath)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
+	// cmd.Stdout = os.Stdout
+	// cmd.Stderr = os.Stderr
 
 	if err := cmd.Run(); err != nil {
 		return err
