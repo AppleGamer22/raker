@@ -1,20 +1,13 @@
-import { useMutation } from "@connectrpc/connect-query";
-import { useForm } from "@tanstack/react-form";
-import { createFileRoute, stripSearchParams, useNavigate } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
-import { toast } from "sonner";
+import { createFileRoute, stripSearchParams } from "@tanstack/react-router";
 import { z } from "zod";
 
 import { scrapeInstagram } from "@/buf/raker/v1/raker-RakerServer_connectquery";
-import type { ScrapeResponse } from "@/buf/raker/v1/raker_pb";
-import { Result } from "@/components/result";
-import { Button } from "@/components/ui/button";
-import { CardContent, CardFooter } from "@/components/ui/card";
-import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
-import { Progress } from "@/components/ui/progress";
-import { Switch } from "@/components/ui/switch";
-import { useUser } from "@/hooks/user-provider";
+import {
+	ExtractorFormShell,
+	ExtractorSwitchField,
+	ExtractorTextField,
+	useExtractorForm,
+} from "@/components/extractor-form";
 
 const instagramSearchDefaults = {
 	post: "",
@@ -36,111 +29,32 @@ export const Route = createFileRoute("/instagram")({
 
 function Instagram() {
 	const { post, incognito } = Route.useSearch();
-	const navigate = useNavigate({ from: Route.fullPath });
-	const { username } = useUser();
-	const instagramMutation = useMutation(scrapeInstagram);
-	const [result, setResult] = useState<ScrapeResponse | null>(null);
-
-	useEffect(() => {
-		if (username === null) {
-			navigate({ to: "/", replace: true });
-		}
-	}, [navigate, username]);
-
-	const form = useForm({
-		defaultValues: {
-			post,
-			incognito,
-		},
+	const navigate = Route.useNavigate();
+	const { form, result, setResult, isPending } = useExtractorForm({
+		navigate,
+		search: { post, incognito },
 		validators: {
 			onChange: instagramSearchSchema,
 			onSubmit: instagramSearchSchema.extend({
 				post: z.string().min(1, "post ID is required"),
 			}),
 		},
-		onSubmit: async ({ value: { post, incognito } }) => {
-			try {
-				const result = await instagramMutation.mutateAsync({ post, incognito });
-				setResult(result);
-				await navigate({ search: { post, incognito }, replace: true });
-			} catch (err) {
-				toast.error((err as Error).message, {
-					position: "top-center",
-				});
-			}
-		},
+		mutation: scrapeInstagram,
+		autoSubmitWhen: ({ post }) => post.length > 0,
+		buildMutationArgs: ({ post, incognito }) => ({ post, incognito }),
+		buildSearch: ({ post, incognito }) => ({ post, incognito }),
 	});
 
-	// submit once on initial page load if search params are present
-	const initialSubmit = useRef(true);
-	useEffect(() => {
-		if (!initialSubmit.current) return;
-		initialSubmit.current = false;
-		if (username === null) return;
-		if (post && post.length > 0) {
-			form.handleSubmit();
-		}
-	}, [form, post, username]);
-
 	return (
-		<form
-			onSubmit={(e) => {
-				e.preventDefault();
-				form.handleSubmit();
-			}}
-		>
-			<CardContent>
-				<FieldGroup>
-					<form.Field name="post">
-						{(field) => {
-							const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
-							return (
-								<Field>
-									<FieldLabel htmlFor={field.name}>post ID</FieldLabel>
-									<Input
-										id={field.name}
-										name={field.name}
-										value={field.state.value}
-										onBlur={field.handleBlur}
-										aria-invalid={isInvalid}
-										onChange={(e) => field.handleChange(e.target.value)}
-										placeholder="https://www.instagram.com/p/ID"
-									/>
-									{isInvalid && <FieldError errors={field.state.meta.errors} />}
-								</Field>
-							);
-						}}
-					</form.Field>
-					<form.Field name="incognito">
-						{(field) => (
-							<Field orientation="horizontal" className="w-fit">
-								<FieldLabel htmlFor={field.name}>Incognito</FieldLabel>
-								<Switch
-									id={field.name}
-									name={field.name}
-									checked={field.state.value}
-									onCheckedChange={field.handleChange}
-								/>
-							</Field>
-						)}
-					</form.Field>
-					<Field orientation="horizontal">
-						<Button type="submit" disabled={instagramMutation.isPending} className="mb-3 w-full sm:w-auto">
-							Submit
-						</Button>
-					</Field>
-					{instagramMutation.isPending && (
-						<Field>
-							<Progress value={null} className="pb-2" />
-						</Field>
-					)}
-				</FieldGroup>
-			</CardContent>
-			{result && (
-				<CardFooter>
-					<Result result={result} setResult={setResult} />
-				</CardFooter>
-			)}
-		</form>
+		<ExtractorFormShell form={form} isPending={isPending} result={result} setResult={setResult}>
+			<form.Field name="post">
+				{(field) => (
+					<ExtractorTextField field={field} label="post ID" placeholder="https://www.instagram.com/p/ID" />
+				)}
+			</form.Field>
+			<form.Field name="incognito">
+				{(field) => <ExtractorSwitchField field={field} label="Incognito" />}
+			</form.Field>
+		</ExtractorFormShell>
 	);
 }

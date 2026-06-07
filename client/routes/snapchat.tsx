@@ -1,19 +1,8 @@
-import { useMutation } from "@connectrpc/connect-query";
-import { useForm } from "@tanstack/react-form";
-import { createFileRoute, stripSearchParams, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState, useRef } from "react";
-import { toast } from "sonner";
+import { createFileRoute, stripSearchParams } from "@tanstack/react-router";
 import { z } from "zod";
 
 import { scrapeSnapchat } from "@/buf/raker/v1/raker-RakerServer_connectquery";
-import type { ScrapeResponse } from "@/buf/raker/v1/raker_pb";
-import { Result } from "@/components/result";
-import { Button } from "@/components/ui/button";
-import { CardContent, CardFooter } from "@/components/ui/card";
-import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
-import { Progress } from "@/components/ui/progress";
-import { useUser } from "@/hooks/user-provider";
+import { ExtractorFormShell, ExtractorTextField, useExtractorForm } from "@/components/extractor-form";
 
 const snapchatSearchDefaults = {
 	owner: "",
@@ -35,22 +24,10 @@ export const Route = createFileRoute("/snapchat")({
 
 function Snapchat() {
 	const { owner, highlight } = Route.useSearch();
-	const navigate = useNavigate({ from: Route.fullPath });
-	const { username } = useUser();
-	const snapchatMutation = useMutation(scrapeSnapchat);
-	const [result, setResult] = useState<ScrapeResponse | null>(null);
-
-	useEffect(() => {
-		if (username === null) {
-			navigate({ to: "/", replace: true });
-		}
-	}, [navigate, username]);
-
-	const form = useForm({
-		defaultValues: {
-			owner,
-			highlight,
-		},
+	const navigate = Route.useNavigate();
+	const { form, result, setResult, isPending } = useExtractorForm({
+		navigate,
+		search: { owner, highlight },
 		validators: {
 			onChange: snapchatSearchSchema,
 			onSubmit: snapchatSearchSchema.extend({
@@ -58,96 +35,32 @@ function Snapchat() {
 				highlight: z.string().min(1, "highlight ID is required"),
 			}),
 		},
-		onSubmit: async ({ value: { owner, highlight } }) => {
-			try {
-				const result = await snapchatMutation.mutateAsync({ owner, post: highlight });
-				setResult(result);
-				await navigate({ search: { owner, highlight }, replace: true });
-			} catch (err) {
-				toast.error((err as Error).message, {
-					position: "top-center",
-				});
-			}
-		},
+		mutation: scrapeSnapchat,
+		autoSubmitWhen: ({ owner, highlight }) => owner.length > 0 || highlight.length > 0,
+		buildMutationArgs: ({ owner, highlight }) => ({ owner, post: highlight }),
+		buildSearch: ({ owner, highlight }) => ({ owner, highlight }),
 	});
 
-	// submit once on initial page load if search params are present
-	const initialSubmit = useRef(true);
-	useEffect(() => {
-		if (!initialSubmit.current) return;
-		initialSubmit.current = false;
-		if (username === null) return;
-		if ((owner && owner.length > 0) || (highlight && highlight.length > 0)) {
-			form.handleSubmit();
-		}
-	}, [form, owner, highlight, username]);
-
 	return (
-		<form
-			onSubmit={(e) => {
-				e.preventDefault();
-				form.handleSubmit();
-			}}
-		>
-			<CardContent>
-				<FieldGroup>
-					<form.Field name="owner">
-						{(field) => {
-							const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
-							return (
-								<Field>
-									<FieldLabel htmlFor={field.name}>owner</FieldLabel>
-									<Input
-										id={field.name}
-										name={field.name}
-										value={field.state.value}
-										onBlur={field.handleBlur}
-										aria-invalid={isInvalid}
-										onChange={(e) => field.handleChange(e.target.value)}
-										placeholder="https://www.snapchat.com/@<OWNER>/highlight/<highlight>"
-									/>
-									{isInvalid && <FieldError errors={field.state.meta.errors} />}
-								</Field>
-							);
-						}}
-					</form.Field>
-					<form.Field name="highlight">
-						{(field) => {
-							const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
-							return (
-								<Field>
-									<FieldLabel htmlFor={field.name}>owner</FieldLabel>
-									<Input
-										id={field.name}
-										name={field.name}
-										value={field.state.value}
-										onBlur={field.handleBlur}
-										aria-invalid={isInvalid}
-										onChange={(e) => field.handleChange(e.target.value)}
-										placeholder="https://www.snapchat.com/@<owner>/highlight/<HIGHLIGHT>"
-									/>
-									{isInvalid && <FieldError errors={field.state.meta.errors} />}
-								</Field>
-							);
-						}}
-					</form.Field>
-					<Field orientation="horizontal">
-						<Button type="submit" disabled={snapchatMutation.isPending} className="mb-3 w-full sm:w-auto">
-							Submit
-						</Button>
-					</Field>
-					{snapchatMutation.isPending && (
-						<Field>
-							<Progress value={null} className="pb-2" />
-						</Field>
-					)}
-				</FieldGroup>
-			</CardContent>
-			{result && (
-				<CardFooter>
-					<Result result={result} setResult={setResult} />
-				</CardFooter>
-			)}
-		</form>
+		<ExtractorFormShell form={form} isPending={isPending} result={result} setResult={setResult}>
+			<form.Field name="owner">
+				{(field) => (
+					<ExtractorTextField
+						field={field}
+						label="owner"
+						placeholder="https://www.snapchat.com/@<OWNER>/highlight/<highlight>"
+					/>
+				)}
+			</form.Field>
+			<form.Field name="highlight">
+				{(field) => (
+					<ExtractorTextField
+						field={field}
+						label="owner"
+						placeholder="https://www.snapchat.com/@<owner>/highlight/<HIGHLIGHT>"
+					/>
+				)}
+			</form.Field>
+		</ExtractorFormShell>
 	);
 }
