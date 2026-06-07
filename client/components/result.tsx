@@ -624,7 +624,7 @@ export function Result({
 										>
 											<ExternalLinkIcon className="h-4 w-4" />
 										</Button>
-										{/\.(jpe?g)$/.test(file) && (
+										{/\.(jpe?g)|(mp4)$/.test(file) && (
 											<FileSheet
 												file={file}
 												post={result}

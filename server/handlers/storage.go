@@ -12,6 +12,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"os/exec"
 	"path"
 	"strings"
 	"sync"
@@ -499,7 +500,7 @@ func findChildIfdForEntry(children []*exif.Ifd, parentTagIndex int) *exif.Ifd {
 	return nil
 }
 
-func (handler *storageHandler) Crop(user db.User, media db.PostType, owner, fileName string, crop image.Rectangle) error {
+func (handler *storageHandler) CropImage(user db.User, media db.PostType, owner, fileName string, crop image.Rectangle) error {
 	return handler.transformJPEG(user, media, owner, fileName, func(source image.Image) (image.Image, error) {
 		bounds := source.Bounds()
 		if crop.Min.X < bounds.Min.X || crop.Min.Y < bounds.Min.Y || crop.Max.X > bounds.Max.X || crop.Max.Y > bounds.Max.Y {
@@ -512,10 +513,43 @@ func (handler *storageHandler) Crop(user db.User, media db.PostType, owner, file
 	})
 }
 
-func (handler *storageHandler) Rotate(user db.User, media db.PostType, owner, fileName string, amount int) error {
+func (handler *storageHandler) RotateImage(user db.User, media db.PostType, owner, fileName string, amount int) error {
 	return handler.transformJPEG(user, media, owner, fileName, func(source image.Image) (image.Image, error) {
 		return imaging.Rotate(source, float64(amount), color.White), nil
 	})
+}
+
+func (handler *storageHandler) RotateVideo(user db.User, media db.PostType, owner, fileName string, amount int, args ...string) error {
+	filePath := path.Join(user.Username, string(media), owner, fileName)
+	mediaPath := path.Join(handler.root, filePath)
+	mediaPath = cleaner.Path(mediaPath)
+	tempPath := strings.Replace(mediaPath, fileName, "_"+fileName, 1)
+
+	transpose := "transpose=1"
+	if amount == -90 {
+		transpose = "transpose=2"
+	}
+
+	// ffmpeg -i input.mp4 -vf "transpose=1" -c:a copy output.mp4
+
+	cmd := exec.Command("ffmpeg", "-i", mediaPath, "-vf", transpose, "-c:a", "copy", tempPath)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	if err := cmd.Run(); err != nil {
+		return err
+	}
+
+	if err := os.Rename(tempPath, mediaPath); err != nil {
+		// On Windows, renaming over an existing file can fail. Retry after removing destination.
+		if removeErr := os.Remove(mediaPath); removeErr != nil {
+			return err
+		}
+		if err2 := os.Rename(tempPath, mediaPath); err2 != nil {
+			return errors.Join(err, err2)
+		}
+	}
+	return nil
 }
 
 // CropFile implements [v1connect.RakerServerHandler].
@@ -527,7 +561,7 @@ func (server *RakerServer) CropFile(ctx context.Context, request *v1.CropFileReq
 
 	crop := image.Rect(int(request.Corner1.X), int(request.Corner1.Y), int(request.Corner2.X), int(request.Corner2.Y))
 
-	err := StorageHandler.Crop(user, PostTypePB2DB(request.FileRequest.PostType), request.FileRequest.PostOwner, request.FileRequest.File, crop)
+	err := StorageHandler.CropImage(user, PostTypePB2DB(request.FileRequest.PostType), request.FileRequest.PostOwner, request.FileRequest.File, crop)
 	if err != nil {
 		log.Error(err)
 		return nil, connect.NewError(connect.CodeInternal, err)
@@ -542,10 +576,20 @@ func (server *RakerServer) RotateFile(ctx context.Context, request *v1.RotateFil
 		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("not authenticated"))
 	}
 
-	err := StorageHandler.Rotate(user, PostTypePB2DB(request.FileRequest.PostType), request.FileRequest.PostOwner, request.FileRequest.File, -int(request.Amount))
-	if err != nil {
-		log.Error(err)
-		return nil, connect.NewError(connect.CodeInternal, err)
+	switch {
+	case strings.HasSuffix(request.FileRequest.File, ".jpg"):
+	case strings.HasSuffix(request.FileRequest.File, ".jpeg"):
+		err := StorageHandler.RotateImage(user, PostTypePB2DB(request.FileRequest.PostType), request.FileRequest.PostOwner, request.FileRequest.File, -int(request.Amount))
+		if err != nil {
+			log.Error(err)
+			return nil, connect.NewError(connect.CodeInternal, err)
+		}
+	case strings.HasSuffix(request.FileRequest.File, ".mp4"):
+		err := StorageHandler.RotateVideo(user, PostTypePB2DB(request.FileRequest.PostType), request.FileRequest.PostOwner, request.FileRequest.File, int(request.Amount))
+		if err != nil {
+			log.Error(err)
+			return nil, connect.NewError(connect.CodeInternal, err)
+		}
 	}
 
 	return nil, nil

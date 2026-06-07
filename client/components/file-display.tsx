@@ -250,7 +250,32 @@ export function FileDisplay({
 			imgResult
 		);
 	} else if (/\.(mp4)|(webm)$/.test(file)) {
-		return (
+		return withCrop ? (
+			<div className="relative inline-block w-full rounded-xl">
+				<video
+					src={url}
+					onLoadedMetadata={onMediaLoad}
+					preload="metadata"
+					className={className}
+					loop
+					controls
+					muted
+				/>
+				<div className="absolute top-2 left-2 z-10 flex flex-row gap-2">
+					<FileSheet
+						file={file}
+						post={{ postType, postOwner, coordinates } as ScrapeResponse}
+						username={username}
+						trigger={
+							<Button variant="outline" className="dark:bg-secondary dark:hover:bg-secondary/80">
+								<ImageIcon />
+								<CropIcon />
+							</Button>
+						}
+					/>
+				</div>
+			</div>
+		) : (
 			<video
 				src={url}
 				onLoadedMetadata={onMediaLoad}
@@ -785,10 +810,12 @@ export function FileSheet({
 							<ImageIcon />
 							View
 						</TabsTrigger>
-						<TabsTrigger value="crop">
-							<CropIcon />
-							Crop
-						</TabsTrigger>
+						{/\.(jpe?g)$/.test(file) && (
+							<TabsTrigger value="crop">
+								<CropIcon />
+								Crop
+							</TabsTrigger>
+						)}
 						<TabsTrigger value="rotate">
 							<RotateCwIcon />
 							Rotate
@@ -803,7 +830,7 @@ export function FileSheet({
 									file={file}
 									post={post}
 									username={username}
-									className="h-full w-auto rounded-xl"
+									className="max-h-full w-auto rounded-xl"
 									cacheBuster={viewReloadKey}
 								/>
 							</TabsContent>
