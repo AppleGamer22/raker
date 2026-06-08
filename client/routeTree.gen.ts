@@ -13,6 +13,7 @@ import { Route as VscoRouteImport } from './routes/vsco'
 import { Route as TiktokRouteImport } from './routes/tiktok'
 import { Route as StoryRouteImport } from './routes/story'
 import { Route as SnapchatRouteImport } from './routes/snapchat'
+import { Route as MapRouteImport } from './routes/map'
 import { Route as InstagramRouteImport } from './routes/instagram'
 import { Route as HistoryRouteImport } from './routes/history'
 import { Route as HighlightRouteImport } from './routes/highlight'
@@ -36,6 +37,11 @@ const StoryRoute = StoryRouteImport.update({
 const SnapchatRoute = SnapchatRouteImport.update({
   id: '/snapchat',
   path: '/snapchat',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MapRoute = MapRouteImport.update({
+  id: '/map',
+  path: '/map',
   getParentRoute: () => rootRouteImport,
 } as any)
 const InstagramRoute = InstagramRouteImport.update({
@@ -64,6 +70,7 @@ export interface FileRoutesByFullPath {
   '/highlight': typeof HighlightRoute
   '/history': typeof HistoryRoute
   '/instagram': typeof InstagramRoute
+  '/map': typeof MapRoute
   '/snapchat': typeof SnapchatRoute
   '/story': typeof StoryRoute
   '/tiktok': typeof TiktokRoute
@@ -74,6 +81,7 @@ export interface FileRoutesByTo {
   '/highlight': typeof HighlightRoute
   '/history': typeof HistoryRoute
   '/instagram': typeof InstagramRoute
+  '/map': typeof MapRoute
   '/snapchat': typeof SnapchatRoute
   '/story': typeof StoryRoute
   '/tiktok': typeof TiktokRoute
@@ -85,6 +93,7 @@ export interface FileRoutesById {
   '/highlight': typeof HighlightRoute
   '/history': typeof HistoryRoute
   '/instagram': typeof InstagramRoute
+  '/map': typeof MapRoute
   '/snapchat': typeof SnapchatRoute
   '/story': typeof StoryRoute
   '/tiktok': typeof TiktokRoute
@@ -97,6 +106,7 @@ export interface FileRouteTypes {
     | '/highlight'
     | '/history'
     | '/instagram'
+    | '/map'
     | '/snapchat'
     | '/story'
     | '/tiktok'
@@ -107,6 +117,7 @@ export interface FileRouteTypes {
     | '/highlight'
     | '/history'
     | '/instagram'
+    | '/map'
     | '/snapchat'
     | '/story'
     | '/tiktok'
@@ -117,6 +128,7 @@ export interface FileRouteTypes {
     | '/highlight'
     | '/history'
     | '/instagram'
+    | '/map'
     | '/snapchat'
     | '/story'
     | '/tiktok'
@@ -128,6 +140,7 @@ export interface RootRouteChildren {
   HighlightRoute: typeof HighlightRoute
   HistoryRoute: typeof HistoryRoute
   InstagramRoute: typeof InstagramRoute
+  MapRoute: typeof MapRoute
   SnapchatRoute: typeof SnapchatRoute
   StoryRoute: typeof StoryRoute
   TiktokRoute: typeof TiktokRoute
@@ -162,6 +175,13 @@ declare module '@tanstack/react-router' {
       path: '/snapchat'
       fullPath: '/snapchat'
       preLoaderRoute: typeof SnapchatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/map': {
+      id: '/map'
+      path: '/map'
+      fullPath: '/map'
+      preLoaderRoute: typeof MapRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/instagram': {
@@ -200,6 +220,7 @@ const rootRouteChildren: RootRouteChildren = {
   HighlightRoute: HighlightRoute,
   HistoryRoute: HistoryRoute,
   InstagramRoute: InstagramRoute,
+  MapRoute: MapRoute,
   SnapchatRoute: SnapchatRoute,
   StoryRoute: StoryRoute,
   TiktokRoute: TiktokRoute,

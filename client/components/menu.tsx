@@ -26,6 +26,7 @@ import { TikTokIcon } from "@/components/ui/svgs/tiktok";
 import { VSCOIcon } from "@/components/ui/svgs/vsco";
 import { useUser } from "@/hooks/user-provider";
 import { defaultPostTypes } from "@/lib/utils";
+import type { FileRouteTypes } from "@/routeTree.gen";
 
 type MenuMode = "default" | "mobile-sheet";
 
@@ -39,7 +40,7 @@ export function Menu({
 	const { username, categories, isCategoriesPending } = useUser();
 	const isSignedIn = username !== null;
 
-	const isActiveRoute = (route: string) => pathname === route;
+	const isActiveRoute = (route: FileRouteTypes["fullPaths"]) => pathname === route;
 
 	// TODO: https://ui.shadcn.com/blocks/sidebar#sidebar-16
 	return (
@@ -207,7 +208,11 @@ export function Menu({
 								</SidebarMenuButton>
 							</SidebarMenuItem>
 							<SidebarMenuItem>
-								<SidebarMenuButton disabled>
+								<SidebarMenuButton
+									disabled={!isSignedIn}
+									isActive={isActiveRoute("/map")}
+									render={<Link disabled={!isSignedIn} to="/map" onClick={() => onNavigate?.()} />}
+								>
 									<MapIcon className="w-4" />
 									Map
 								</SidebarMenuButton>

@@ -29,7 +29,7 @@ if (!rootElement || !rootElement.innerHTML) {
 						</UserProvider>
 						<TanStackDevtools
 							config={{
-								position: "bottom-right",
+								position: "top-right",
 							}}
 							plugins={[
 								{
