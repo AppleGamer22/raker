@@ -1,5 +1,5 @@
 import { Link, useLocation } from "@tanstack/react-router";
-import { UserKeyIcon, DatabaseSearchIcon, ExternalLinkIcon } from "lucide-react";
+import { UserKeyIcon, DatabaseSearchIcon, ExternalLinkIcon, MapIcon } from "lucide-react";
 import type { ReactNode } from "react";
 
 import { RakerLogo } from "@/components/logo";
@@ -204,6 +204,12 @@ export function Menu({
 								>
 									<DatabaseSearchIcon className="w-4" />
 									History
+								</SidebarMenuButton>
+							</SidebarMenuItem>
+							<SidebarMenuItem>
+								<SidebarMenuButton disabled>
+									<MapIcon className="w-4" />
+									Map
 								</SidebarMenuButton>
 							</SidebarMenuItem>
 						</SidebarMenu>
