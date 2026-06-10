@@ -1,4 +1,4 @@
-FROM alpine:3.23.4
+FROM alpine:3.24.0
 
 # target platform is provided by GoReleaser's docker build context
 ARG TARGETPLATFORM
