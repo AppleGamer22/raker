@@ -248,6 +248,14 @@ export function HistoryPostCategoryForm({
 									</FieldContent>
 								</Field>
 							</FieldLabel>
+							<FieldLabel htmlFor="category-exclusive" className="max-w-fit">
+								<Field orientation="horizontal">
+									<Switch id="category-only-video" />
+									<FieldContent>
+										<FieldTitle>Only Video</FieldTitle>
+									</FieldContent>
+								</Field>
+							</FieldLabel>
 							<Separator orientation="vertical" />
 						</>
 					) : null}
