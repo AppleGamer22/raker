@@ -45,7 +45,7 @@ export default function Header({ toggleMenu }: { toggleMenu: () => void }) {
 						</MatchRoute>
 						<MatchRoute to="/snapchat">
 							<SnapchatIcon className="h-4" />
-							<Label>Highlight</Label>
+							<Label>Snap</Label>
 						</MatchRoute>
 						<MatchRoute to="/vsco">
 							<VSCOIcon className="h-4" />

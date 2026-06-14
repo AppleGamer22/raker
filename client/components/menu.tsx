@@ -159,7 +159,7 @@ export function Menu({
 									}
 								>
 									<SnapchatIcon className="h-40 w-40" />
-									Snapchat Highlight
+									Snapchat
 								</SidebarMenuButton>
 							</SidebarMenuItem>
 							<SidebarMenuItem>

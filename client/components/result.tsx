@@ -141,7 +141,7 @@ export function PostTypeIconLabel({ type }: { type: PostType }) {
 			return (
 				<span className="inline-flex items-center gap-1 align-middle leading-none whitespace-nowrap">
 					<SnapchatIcon className="w-4" />
-					Highlight
+					Snap
 				</span>
 			);
 		case PostType.VSCO:
@@ -251,30 +251,31 @@ export function ResultHeader({
 									<ExternalLinkIcon /> History Result
 								</ContextMenuItem>
 							</ResultLink>
-							{![PostType.Highlight, PostType.Story].includes(result.postType) && (
-								<a
-									target="_blank"
-									rel="noopener noreferrer"
-									href={(() => {
-										switch (result.postType) {
-											case PostType.Instagram:
-											case PostType.Highlight:
-											case PostType.Story:
-												return `https://www.instagram.com/p/${result.post}`;
-											case PostType.TikTok:
-												return `https://www.tiktok.com/@${result.postOwner}/video/${result.post}`;
-											case PostType.Snapchat:
-												return `https://www.snapchat.com/@${result.postOwner}/highlight/${result.post}`;
-											case PostType.VSCO:
-												return `https://vsco.co/${result.postOwner}/media/${result.post}`;
-										}
-									})()}
-								>
-									<ContextMenuItem>
-										<PlatformIcon type={result.postType} /> Open Original Post
-									</ContextMenuItem>
-								</a>
-							)}
+							{![PostType.Highlight, PostType.Story].includes(result.postType) &&
+								(result.postType == PostType.Snapchat ? result.post.includes("-") : true) && (
+									<a
+										target="_blank"
+										rel="noopener noreferrer"
+										href={(() => {
+											switch (result.postType) {
+												case PostType.Instagram:
+												case PostType.Highlight:
+												case PostType.Story:
+													return `https://www.instagram.com/p/${result.post}`;
+												case PostType.TikTok:
+													return `https://www.tiktok.com/@${result.postOwner}/video/${result.post}`;
+												case PostType.Snapchat:
+													return `https://www.snapchat.com/@${result.postOwner}/highlight/${result.post}`;
+												case PostType.VSCO:
+													return `https://vsco.co/${result.postOwner}/media/${result.post}`;
+											}
+										})()}
+									>
+										<ContextMenuItem>
+											<PlatformIcon type={result.postType} /> Open Original Post
+										</ContextMenuItem>
+									</a>
+								)}
 						</ContextMenuGroup>
 					</ContextMenuContent>
 				</ContextMenu>

@@ -7,12 +7,14 @@ import (
 	"net/http"
 	"net/url"
 	"path"
+	"strings"
 
 	"connectrpc.com/connect"
 	v1 "github.com/AppleGamer22/raker/server/buf/proto/raker/v1"
 	"github.com/AppleGamer22/raker/server/db"
 	"github.com/AppleGamer22/raker/shared"
 	"github.com/charmbracelet/log"
+	"github.com/google/uuid"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -40,10 +42,20 @@ func (server *RakerServer) ScrapeSnapchat(ctx context.Context, request *v1.Binar
 		}, nil
 	}
 
-	result, _, err := shared.Snapchat(request.Owner, request.Post)
-	if err != nil {
-		log.Error(err)
-		return nil, connect.NewError(connect.CodeInternal, err)
+	var result shared.SnapchatHighlightResult
+	if request.Post != "" {
+		result, _, err = shared.SnapchatHighlight(request.Owner, request.Post)
+		if err != nil {
+			log.Error(err)
+			return nil, connect.NewError(connect.CodeInternal, err)
+		}
+	} else {
+		result, _, err = shared.SnapchatStory(request.Owner)
+		if err != nil {
+			log.Error(err)
+			return nil, connect.NewError(connect.CodeInternal, err)
+		}
+		request.Post = strings.ReplaceAll(uuid.NewString(), "-", "")
 	}
 
 	localURLs := make([]string, 0, len(result.URLs))
@@ -54,12 +66,32 @@ func (server *RakerServer) ScrapeSnapchat(ctx context.Context, request *v1.Binar
 			err = errors.Join(err, err2)
 			continue
 		}
-		fileName := fmt.Sprintf("%s_%s", request.Post, path.Base(URL.Path))
+
+		fileName := func() string {
+			if result.IsStory {
+				return path.Base(URL.Path)
+			}
+			return fmt.Sprintf("%s_%s", request.Post, path.Base(URL.Path))
+		}()
+
 		if u.IsVideo {
 			fileName = fmt.Sprintf("%s.mp4", fileName)
 		} else {
 			fileName = fmt.Sprintf("%s.jpg", fileName)
 		}
+
+		if result.IsStory {
+			count, err2 := server.DBClient.HistoryCountByFile(context.Background(), db.HistoryCountByFileParams{
+				PostType:  db.PostTypeSnapchat,
+				PostOwner: result.Username,
+				File:      fileName,
+				Username:  user.Username,
+			})
+			if err2 != nil || count > 0 {
+				continue
+			}
+		}
+
 		localURLs = append(localURLs, fileName)
 		remoteURLs = append(remoteURLs, u.URL)
 	}

@@ -32,7 +32,7 @@ function Snapchat() {
 			onChange: snapchatSearchSchema,
 			onSubmit: snapchatSearchSchema.extend({
 				owner: z.string().min(1, "post owner is required"),
-				highlight: z.string().min(1, "highlight ID is required"),
+				highlight: z.string(),
 			}),
 		},
 		mutation: scrapeSnapchat,
