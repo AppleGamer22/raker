@@ -78,7 +78,7 @@ const scope = {
 	location,
 };
 
-async function waitForCookieWrites(timeoutMs = 10e3) {
+async function waitForCookieWrites(timeoutMs = 5e3) {
 	if (cookieJar.size > 0) {
 		return;
 	}
