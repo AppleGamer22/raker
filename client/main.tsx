@@ -44,7 +44,7 @@ if (!rootElement || !rootElement.innerHTML) {
 						/>
 					</QueryClientProvider>
 				</TransportProvider>
-				<Toaster />
+				<Toaster closeButton />
 			</ThemeProvider>
 		</StrictMode>,
 	);
