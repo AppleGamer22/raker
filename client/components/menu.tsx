@@ -242,7 +242,7 @@ export function Menu({
 								<SidebarMenuButton
 									render={
 										<a
-											href={`https://hub.docker.com/repository/docker/applegamer22/raker/tags/${import.meta.env.VITE_GIT_TAG}`}
+											href={`https://hub.docker.com/repository/docker/applegamer22/raker/tags/${import.meta.env.VITE_GIT_TAG.replace("v", "")}`}
 											target="_blank"
 											rel="noopener noreferrer"
 										/>
