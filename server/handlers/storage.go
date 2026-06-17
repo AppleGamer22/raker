@@ -577,8 +577,7 @@ func (server *RakerServer) RotateFile(ctx context.Context, request *v1.RotateFil
 	}
 
 	switch {
-	case strings.HasSuffix(request.FileRequest.File, ".jpg"):
-	case strings.HasSuffix(request.FileRequest.File, ".jpeg"):
+	case strings.HasSuffix(request.FileRequest.File, ".jpg"), strings.HasSuffix(request.FileRequest.File, ".jpeg"):
 		err := StorageHandler.RotateImage(user, PostTypePB2DB(request.FileRequest.PostType), request.FileRequest.PostOwner, request.FileRequest.File, -int(request.Amount))
 		if err != nil {
 			log.Error(err)
