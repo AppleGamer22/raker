@@ -62,6 +62,7 @@ type InstagramItem struct {
 	User struct {
 		Username string `json:"username"`
 	} `json:"user"`
+	Code string `json:"code"`
 }
 
 func (item *InstagramItem) URLs() []string {
@@ -109,6 +110,7 @@ func (post *InstagramPostIncognito) URLs() []string {
 }
 
 type InstagramPost struct {
+	// ProfileGridItems []struct {} `json:"profile_grid_items"`
 	Items [1]InstagramItem `json:"items"`
 }
 
@@ -133,6 +135,7 @@ var (
 	instagramRegExpLSD                  = regexp.MustCompile(`lsd\":\"([0-9a-zA-Z-]+)`)
 	instagramRegExpScriptWithDocumentID = regexp.MustCompile(`<link rel=\"preload\" href=\"(.*?)\" as=\"script\" crossorigin=\"anonymous\" nonce=".*?" />`)
 	instagramRegExpDocumentID           = regexp.MustCompile(`__d\(\"PolarisPostActionLoadPostQueryQuery_instagramRelayOperation\",\[\],\(function\(a,b,c,d,e,f\){e\.exports=\"([0-9]+)\"}\),null\);`)
+	instagramRegExpPostJSON             = regexp.MustCompile(`<script type="application/json"\s*data-content-len="\d*"\s*data-sjs>.*"data":{"xdt_api__v1__media__shortcode__web_info":(.*)},"extensions":{"is_final":true}.*</script>`)
 )
 
 const scriptWithDocumentMatch = 1
@@ -164,80 +167,54 @@ func NewInstagram(sessionID, userID string) Instagram {
 	}
 }
 
-func (instagram *Instagram) Post(post string) (URLs []string, username string, err error) {
+func (instagram *Instagram) Post(post string) ([]string, string, error) {
 	htmlURL := fmt.Sprintf("https://www.instagram.com/p/%s", post)
 	htmlRequest, err := http.NewRequest(http.MethodGet, htmlURL, nil)
 	if err != nil {
-		return URLs, username, err
+		return []string{}, "", err
 	}
 
 	// htmlRequest.AddCookie(&instagram.fbsrCookie)
 	htmlRequest.AddCookie(&instagram.sessionCookie)
 	htmlRequest.AddCookie(&instagram.userCookie)
 
+	htmlRequest.Header.Add("referer", "https://www.instagram.com/")
 	htmlRequest.Header.Add("Connection", "keep-alive")
 
 	client := NewClient(false)
 
 	htmlResponse, err := client.Do(htmlRequest)
 	if err != nil {
-		return URLs, username, err
+		return []string{}, "", err
 	}
 	defer htmlResponse.Body.Close()
 
 	htmlBody, err := io.ReadAll(htmlResponse.Body)
 	if err != nil {
-		return URLs, username, err
+		return []string{}, "", err
 	}
 
-	mediaIDMatch := instagramRegExpMediaID.FindString(string(htmlBody))
-	if mediaIDMatch == "" {
+	jsonMatch := instagramRegExpPostJSON.FindStringSubmatch(string(htmlBody))
+	if len(jsonMatch) != 2 {
 		// filename := fmt.Sprintf("instagram_%s.html", time.Now().Format("20060102_150405"))
 		// if err := os.WriteFile(filename, htmlBody, 0644); err != nil {
 		// 	fmt.Println("failed to save html body:", err)
 		// } else {
 		// 	fmt.Println("saved html body to", filename)
 		// }
-		return URLs, username, errors.New("could not find media ID")
+		return []string{}, "", errors.New("could not find JSON ID")
 	}
-
-	mediaID := func() string {
-		if mediaIDMatch[len(mediaIDMatch)-1] != '"' {
-			return mediaIDMatch[len(`"media_id":`):]
-		} else {
-			return mediaIDMatch[len(`"media_id":"`) : len(mediaIDMatch)-1]
-		}
-	}()
-
-	jsonURL := fmt.Sprintf("https://i.instagram.com/api/v1/media/%s/info/", mediaID)
-	jsonRequest, err := http.NewRequest(http.MethodGet, jsonURL, nil)
-	if err != nil {
-		return URLs, username, err
-	}
-
-	// jsonRequest.AddCookie(&instagram.fbsrCookie)
-	jsonRequest.AddCookie(&instagram.sessionCookie)
-	jsonRequest.AddCookie(&instagram.userCookie)
-
-	jsonRequest.Header.Add("x-ig-app-id", "936619743392459")
-	jsonRequest.Header.Add("referer", "https://www.instagram.com/")
-
-	jsonResponse, err := client.Do(jsonRequest)
-	if err != nil {
-		return URLs, username, err
-	}
-	defer jsonResponse.Body.Close()
 
 	var instagramPost InstagramPost
-	if err := json.NewDecoder(jsonResponse.Body).Decode(&instagramPost); err != nil {
-		return URLs, username, err
+	if err := json.Unmarshal([]byte(jsonMatch[1]), &instagramPost); err != nil {
+		return []string{}, "", err
 	}
 
-	item := instagramPost.Items[0]
-	username = item.User.Username
-	URLs = item.URLs()
+	media := instagramPost.Items[0]
+	username := media.User.Username
+	URLs := media.URLs()
 
-	return URLs, username, err
+	return URLs, username, nil
 }
 
 func extractDocumentIDFromScripts(client *http.Client, jsURLs [][]string) (string, error) {
