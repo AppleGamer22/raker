@@ -120,6 +120,9 @@ export function ExtractorTextField({
 				value={field.state.value}
 				onBlur={field.handleBlur}
 				aria-invalid={isInvalid}
+				autoCapitalize="off"
+				autoComplete="off"
+				autoCorrect="off"
 				onChange={(e) => field.handleChange(e.target.value)}
 				placeholder={placeholder}
 			/>
