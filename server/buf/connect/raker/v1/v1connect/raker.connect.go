@@ -80,6 +80,9 @@ const (
 	RakerServerCropFileProcedure = "/raker.v1.RakerServer/CropFile"
 	// RakerServerRotateFileProcedure is the fully-qualified name of the RakerServer's RotateFile RPC.
 	RakerServerRotateFileProcedure = "/raker.v1.RakerServer/RotateFile"
+	// RakerServerDuplicateFileProcedure is the fully-qualified name of the RakerServer's DuplicateFile
+	// RPC.
+	RakerServerDuplicateFileProcedure = "/raker.v1.RakerServer/DuplicateFile"
 )
 
 // RakerServerClient is a client for the raker.v1.RakerServer service.
@@ -101,6 +104,7 @@ type RakerServerClient interface {
 	SearchHistoryOwners(context.Context, *v1.HistoryOwnersRequest) (*v1.HistoryOwnersResponse, error)
 	CropFile(context.Context, *v1.CropFileRequest) (*emptypb.Empty, error)
 	RotateFile(context.Context, *v1.RotateFileRequest) (*emptypb.Empty, error)
+	DuplicateFile(context.Context, *v1.FileSubRequest) (*emptypb.Empty, error)
 }
 
 // NewRakerServerClient constructs a client for the raker.v1.RakerServer service. By default, it
@@ -216,6 +220,12 @@ func NewRakerServerClient(httpClient connect.HTTPClient, baseURL string, opts ..
 			connect.WithSchema(rakerServerMethods.ByName("RotateFile")),
 			connect.WithClientOptions(opts...),
 		),
+		duplicateFile: connect.NewClient[v1.FileSubRequest, emptypb.Empty](
+			httpClient,
+			baseURL+RakerServerDuplicateFileProcedure,
+			connect.WithSchema(rakerServerMethods.ByName("DuplicateFile")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -238,6 +248,7 @@ type rakerServerClient struct {
 	searchHistoryOwners *connect.Client[v1.HistoryOwnersRequest, v1.HistoryOwnersResponse]
 	cropFile            *connect.Client[v1.CropFileRequest, emptypb.Empty]
 	rotateFile          *connect.Client[v1.RotateFileRequest, emptypb.Empty]
+	duplicateFile       *connect.Client[v1.FileSubRequest, emptypb.Empty]
 }
 
 // SignUpInstagram calls raker.v1.RakerServer.SignUpInstagram.
@@ -393,6 +404,15 @@ func (c *rakerServerClient) RotateFile(ctx context.Context, req *v1.RotateFileRe
 	return nil, err
 }
 
+// DuplicateFile calls raker.v1.RakerServer.DuplicateFile.
+func (c *rakerServerClient) DuplicateFile(ctx context.Context, req *v1.FileSubRequest) (*emptypb.Empty, error) {
+	response, err := c.duplicateFile.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
+}
+
 // RakerServerHandler is an implementation of the raker.v1.RakerServer service.
 type RakerServerHandler interface {
 	SignUpInstagram(context.Context, *v1.SignUpRequest) (*emptypb.Empty, error)
@@ -412,6 +432,7 @@ type RakerServerHandler interface {
 	SearchHistoryOwners(context.Context, *v1.HistoryOwnersRequest) (*v1.HistoryOwnersResponse, error)
 	CropFile(context.Context, *v1.CropFileRequest) (*emptypb.Empty, error)
 	RotateFile(context.Context, *v1.RotateFileRequest) (*emptypb.Empty, error)
+	DuplicateFile(context.Context, *v1.FileSubRequest) (*emptypb.Empty, error)
 }
 
 // NewRakerServerHandler builds an HTTP handler from the service implementation. It returns the path
@@ -523,6 +544,12 @@ func NewRakerServerHandler(svc RakerServerHandler, opts ...connect.HandlerOption
 		connect.WithSchema(rakerServerMethods.ByName("RotateFile")),
 		connect.WithHandlerOptions(opts...),
 	)
+	rakerServerDuplicateFileHandler := connect.NewUnaryHandlerSimple(
+		RakerServerDuplicateFileProcedure,
+		svc.DuplicateFile,
+		connect.WithSchema(rakerServerMethods.ByName("DuplicateFile")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/raker.v1.RakerServer/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case RakerServerSignUpInstagramProcedure:
@@ -559,6 +586,8 @@ func NewRakerServerHandler(svc RakerServerHandler, opts ...connect.HandlerOption
 			rakerServerCropFileHandler.ServeHTTP(w, r)
 		case RakerServerRotateFileProcedure:
 			rakerServerRotateFileHandler.ServeHTTP(w, r)
+		case RakerServerDuplicateFileProcedure:
+			rakerServerDuplicateFileHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -634,4 +663,8 @@ func (UnimplementedRakerServerHandler) CropFile(context.Context, *v1.CropFileReq
 
 func (UnimplementedRakerServerHandler) RotateFile(context.Context, *v1.RotateFileRequest) (*emptypb.Empty, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raker.v1.RakerServer.RotateFile is not implemented"))
+}
+
+func (UnimplementedRakerServerHandler) DuplicateFile(context.Context, *v1.FileSubRequest) (*emptypb.Empty, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raker.v1.RakerServer.DuplicateFile is not implemented"))
 }

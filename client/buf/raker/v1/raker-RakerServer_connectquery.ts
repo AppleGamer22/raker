@@ -88,3 +88,8 @@ export const cropFile = RakerServer.method.cropFile;
  * @generated from rpc raker.v1.RakerServer.RotateFile
  */
 export const rotateFile = RakerServer.method.rotateFile;
+
+/**
+ * @generated from rpc raker.v1.RakerServer.DuplicateFile
+ */
+export const duplicateFile = RakerServer.method.duplicateFile;

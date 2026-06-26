@@ -1383,7 +1383,8 @@ const file_raker_v1_raker_proto_rawDesc = "" +
 	"\n" +
 	"\x06TikTok\x10\x03\x12\f\n" +
 	"\bSnapchat\x10\x04\x12\b\n" +
-	"\x04VSCO\x10\x052\xee\t\n" +
+	"\x04VSCO\x10\x052\xb1\n" +
+	"\n" +
 	"\vRakerServer\x12B\n" +
 	"\x0fSignUpInstagram\x12\x17.raker.v1.SignUpRequest\x1a\x16.google.protobuf.Empty\x12B\n" +
 	"\x0fSignInInstagram\x12\x17.raker.v1.SignInRequest\x1a\x16.google.protobuf.Empty\x12E\n" +
@@ -1403,7 +1404,8 @@ const file_raker_v1_raker_proto_rawDesc = "" +
 	"\x13SearchHistoryOwners\x12\x1e.raker.v1.HistoryOwnersRequest\x1a\x1f.raker.v1.HistoryOwnersResponse\x12=\n" +
 	"\bCropFile\x12\x19.raker.v1.CropFileRequest\x1a\x16.google.protobuf.Empty\x12A\n" +
 	"\n" +
-	"RotateFile\x12\x1b.raker.v1.RotateFileRequest\x1a\x16.google.protobuf.EmptyB\x94\x01\n" +
+	"RotateFile\x12\x1b.raker.v1.RotateFileRequest\x1a\x16.google.protobuf.Empty\x12A\n" +
+	"\rDuplicateFile\x12\x18.raker.v1.FileSubRequest\x1a\x16.google.protobuf.EmptyB\x94\x01\n" +
 	"\fcom.raker.v1B\n" +
 	"RakerProtoP\x01Z7github.com/AppleGamer22/raker/server/buf/proto/raker/v1\xa2\x02\x03RXX\xaa\x02\bRaker.V1\xca\x02\bRaker\\V1\xe2\x02\x14Raker\\V1\\GPBMetadata\xea\x02\tRaker::V1b\x06proto3"
 
@@ -1479,25 +1481,27 @@ var file_raker_v1_raker_proto_depIdxs = []int32{
 	11, // 29: raker.v1.RakerServer.SearchHistoryOwners:input_type -> raker.v1.HistoryOwnersRequest
 	16, // 30: raker.v1.RakerServer.CropFile:input_type -> raker.v1.CropFileRequest
 	17, // 31: raker.v1.RakerServer.RotateFile:input_type -> raker.v1.RotateFileRequest
-	22, // 32: raker.v1.RakerServer.SignUpInstagram:output_type -> google.protobuf.Empty
-	22, // 33: raker.v1.RakerServer.SignInInstagram:output_type -> google.protobuf.Empty
-	22, // 34: raker.v1.RakerServer.EditCategory:output_type -> google.protobuf.Empty
-	22, // 35: raker.v1.RakerServer.EditUserCredentials:output_type -> google.protobuf.Empty
-	3,  // 36: raker.v1.RakerServer.GetUserCategories:output_type -> raker.v1.UserCategoriesResponse
-	8,  // 37: raker.v1.RakerServer.ScrapeInstagram:output_type -> raker.v1.ScrapeResponse
-	8,  // 38: raker.v1.RakerServer.ScrapeHighlight:output_type -> raker.v1.ScrapeResponse
-	8,  // 39: raker.v1.RakerServer.ScrapeStory:output_type -> raker.v1.ScrapeResponse
-	8,  // 40: raker.v1.RakerServer.ScrapeTikTok:output_type -> raker.v1.ScrapeResponse
-	8,  // 41: raker.v1.RakerServer.ScrapeSnapchat:output_type -> raker.v1.ScrapeResponse
-	8,  // 42: raker.v1.RakerServer.ScrapeVSCO:output_type -> raker.v1.ScrapeResponse
-	8,  // 43: raker.v1.RakerServer.RemoveFiles:output_type -> raker.v1.ScrapeResponse
-	22, // 44: raker.v1.RakerServer.UpdateCategories:output_type -> google.protobuf.Empty
-	13, // 45: raker.v1.RakerServer.SearchHistory:output_type -> raker.v1.HistoryResponse
-	14, // 46: raker.v1.RakerServer.SearchHistoryOwners:output_type -> raker.v1.HistoryOwnersResponse
-	22, // 47: raker.v1.RakerServer.CropFile:output_type -> google.protobuf.Empty
-	22, // 48: raker.v1.RakerServer.RotateFile:output_type -> google.protobuf.Empty
-	32, // [32:49] is the sub-list for method output_type
-	15, // [15:32] is the sub-list for method input_type
+	15, // 32: raker.v1.RakerServer.DuplicateFile:input_type -> raker.v1.FileSubRequest
+	22, // 33: raker.v1.RakerServer.SignUpInstagram:output_type -> google.protobuf.Empty
+	22, // 34: raker.v1.RakerServer.SignInInstagram:output_type -> google.protobuf.Empty
+	22, // 35: raker.v1.RakerServer.EditCategory:output_type -> google.protobuf.Empty
+	22, // 36: raker.v1.RakerServer.EditUserCredentials:output_type -> google.protobuf.Empty
+	3,  // 37: raker.v1.RakerServer.GetUserCategories:output_type -> raker.v1.UserCategoriesResponse
+	8,  // 38: raker.v1.RakerServer.ScrapeInstagram:output_type -> raker.v1.ScrapeResponse
+	8,  // 39: raker.v1.RakerServer.ScrapeHighlight:output_type -> raker.v1.ScrapeResponse
+	8,  // 40: raker.v1.RakerServer.ScrapeStory:output_type -> raker.v1.ScrapeResponse
+	8,  // 41: raker.v1.RakerServer.ScrapeTikTok:output_type -> raker.v1.ScrapeResponse
+	8,  // 42: raker.v1.RakerServer.ScrapeSnapchat:output_type -> raker.v1.ScrapeResponse
+	8,  // 43: raker.v1.RakerServer.ScrapeVSCO:output_type -> raker.v1.ScrapeResponse
+	8,  // 44: raker.v1.RakerServer.RemoveFiles:output_type -> raker.v1.ScrapeResponse
+	22, // 45: raker.v1.RakerServer.UpdateCategories:output_type -> google.protobuf.Empty
+	13, // 46: raker.v1.RakerServer.SearchHistory:output_type -> raker.v1.HistoryResponse
+	14, // 47: raker.v1.RakerServer.SearchHistoryOwners:output_type -> raker.v1.HistoryOwnersResponse
+	22, // 48: raker.v1.RakerServer.CropFile:output_type -> google.protobuf.Empty
+	22, // 49: raker.v1.RakerServer.RotateFile:output_type -> google.protobuf.Empty
+	22, // 50: raker.v1.RakerServer.DuplicateFile:output_type -> google.protobuf.Empty
+	33, // [33:51] is the sub-list for method output_type
+	15, // [15:33] is the sub-list for method input_type
 	15, // [15:15] is the sub-list for extension type_name
 	15, // [15:15] is the sub-list for extension extendee
 	0,  // [0:15] is the sub-list for field type_name

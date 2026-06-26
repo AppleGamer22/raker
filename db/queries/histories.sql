@@ -58,6 +58,17 @@ WHERE post_type = sqlc.arg(post_type)::post_type
 	AND username = sqlc.arg(username)::text
 RETURNING *;
 
+-- name: UpdateHistoryDuplicateFile :one
+UPDATE Histories
+SET files = files[1 : array_position(files, sqlc.arg(file)::text)]
+	|| ARRAY[sqlc.arg(duplicate)::text]
+	|| files[array_position(files, sqlc.arg(file)::text) + 1 : array_length(files, 1)]
+WHERE post_type = sqlc.arg(post_type)::post_type
+	AND post = sqlc.arg(post)::text
+	AND post_owner = sqlc.arg(post_owner)::text
+	AND username = sqlc.arg(username)::text
+RETURNING *;
+
 -- name: HistoryUpdateOwner :exec
 UPDATE Histories
 SET post_owner = sqlc.arg(new_owner)::text

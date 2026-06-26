@@ -14,6 +14,7 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"slices"
 	"strings"
 	"sync"
 
@@ -27,6 +28,7 @@ import (
 	exif "github.com/dsoprea/go-exif/v3"
 	exifcommon "github.com/dsoprea/go-exif/v3/common"
 	jpegstructure "github.com/dsoprea/go-jpeg-image-structure/v2"
+	"github.com/google/uuid"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -552,6 +554,33 @@ func (handler *storageHandler) RotateVideo(user db.User, media db.PostType, owne
 	return nil
 }
 
+func (handler *storageHandler) DuplicateFile(user db.User, media db.PostType, owner, fileName string) (string, error) {
+	filePath := path.Join(user.Username, string(media), owner, fileName)
+	mediaPath := path.Join(handler.root, filePath)
+	mediaPath = cleaner.Path(mediaPath)
+	duplicateFileName := uuid.NewString() + fileName
+	duplicatePath := strings.Replace(mediaPath, fileName, duplicateFileName, 1)
+
+	src, err := os.Open(mediaPath)
+	if err != nil {
+		return "", fmt.Errorf("failed to open source file: %w", err)
+	}
+	defer src.Close()
+
+	dst, err := os.Create(duplicatePath)
+	if err != nil {
+		return "", fmt.Errorf("failed to create destination file: %w", err)
+	}
+	defer dst.Close()
+
+	_, err = io.Copy(dst, src)
+	if err != nil {
+		return "", fmt.Errorf("failed to copy data: %w", err)
+	}
+
+	return duplicateFileName, dst.Sync()
+}
+
 // CropFile implements [v1connect.RakerServerHandler].
 func (server *RakerServer) CropFile(ctx context.Context, request *v1.CropFileRequest) (*emptypb.Empty, error) {
 	user, ok := ctx.Value(authenticatedUserKey).(db.User)
@@ -589,6 +618,47 @@ func (server *RakerServer) RotateFile(ctx context.Context, request *v1.RotateFil
 			log.Error(err)
 			return nil, connect.NewError(connect.CodeInternal, err)
 		}
+	}
+
+	return nil, nil
+}
+
+// DuplicateFile implements [v1connect.RakerServerHandler].
+func (server *RakerServer) DuplicateFile(ctx context.Context, request *v1.FileSubRequest) (*emptypb.Empty, error) {
+	user, ok := ctx.Value(authenticatedUserKey).(db.User)
+	if !ok {
+		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("not authenticated"))
+	}
+
+	history, err := server.DBClient.HistoryGet(ctx, db.HistoryGetParams{
+		Username: user.Username,
+		PostType: PostTypePB2DB(request.PostType),
+		Post:     request.Post,
+	})
+	if err != nil {
+		log.Error(err)
+		return nil, connect.NewError(connect.CodeInternal, err)
+	} else if !slices.Contains(history.Files, request.File) {
+		return nil, connect.NewError(connect.CodeNotFound, fmt.Errorf("post %s/%s doesn't include file %s", PostTypePB2DB(request.PostType), request.Post, request.File))
+	}
+
+	duplicateFileName, err := StorageHandler.DuplicateFile(user, PostTypePB2DB(request.PostType), request.PostOwner, request.File)
+	if err != nil {
+		log.Error(err)
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
+	_, err = server.DBClient.UpdateHistoryDuplicateFile(ctx, db.UpdateHistoryDuplicateFileParams{
+		Username:  user.Username,
+		PostType:  PostTypePB2DB(request.PostType),
+		PostOwner: history.PostOwner,
+		Post:      request.Post,
+		File:      request.File,
+		Duplicate: duplicateFileName,
+	})
+	if err != nil {
+		log.Error(err)
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
 	return nil, nil

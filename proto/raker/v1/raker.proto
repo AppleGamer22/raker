@@ -175,4 +175,6 @@ service RakerServer {
   rpc CropFile(CropFileRequest) returns (google.protobuf.Empty);
 
   rpc RotateFile(RotateFileRequest) returns (google.protobuf.Empty);
+
+  rpc DuplicateFile(FileSubRequest) returns (google.protobuf.Empty);
 }

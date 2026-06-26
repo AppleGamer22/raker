@@ -60,6 +60,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.historyUpdateOwnerStmt, err = db.PrepareContext(ctx, historyUpdateOwner); err != nil {
 		return nil, fmt.Errorf("error preparing query HistoryUpdateOwner: %w", err)
 	}
+	if q.updateHistoryDuplicateFileStmt, err = db.PrepareContext(ctx, updateHistoryDuplicateFile); err != nil {
+		return nil, fmt.Errorf("error preparing query UpdateHistoryDuplicateFile: %w", err)
+	}
 	if q.updateHistoryRemoveFileStmt, err = db.PrepareContext(ctx, updateHistoryRemoveFile); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateHistoryRemoveFile: %w", err)
 	}
@@ -144,6 +147,11 @@ func (q *Queries) Close() error {
 	if q.historyUpdateOwnerStmt != nil {
 		if cerr := q.historyUpdateOwnerStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing historyUpdateOwnerStmt: %w", cerr)
+		}
+	}
+	if q.updateHistoryDuplicateFileStmt != nil {
+		if cerr := q.updateHistoryDuplicateFileStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing updateHistoryDuplicateFileStmt: %w", cerr)
 		}
 	}
 	if q.updateHistoryRemoveFileStmt != nil {
@@ -232,6 +240,7 @@ type Queries struct {
 	historyRemoveStmt              *sql.Stmt
 	historyUpdateCategoriesStmt    *sql.Stmt
 	historyUpdateOwnerStmt         *sql.Stmt
+	updateHistoryDuplicateFileStmt *sql.Stmt
 	updateHistoryRemoveFileStmt    *sql.Stmt
 	userAddStmt                    *sql.Stmt
 	userCategoryAddStmt            *sql.Stmt
@@ -257,6 +266,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		historyRemoveStmt:              q.historyRemoveStmt,
 		historyUpdateCategoriesStmt:    q.historyUpdateCategoriesStmt,
 		historyUpdateOwnerStmt:         q.historyUpdateOwnerStmt,
+		updateHistoryDuplicateFileStmt: q.updateHistoryDuplicateFileStmt,
 		updateHistoryRemoveFileStmt:    q.updateHistoryRemoveFileStmt,
 		userAddStmt:                    q.userAddStmt,
 		userCategoryAddStmt:            q.userCategoryAddStmt,

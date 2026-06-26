@@ -1,5 +1,9 @@
 import { useMutation } from "@connectrpc/connect-query";
-import { CheckIcon, CropIcon, ImageIcon, RotateCcwIcon, RotateCwIcon, XIcon } from "lucide-react";
+import type { VariantProps } from "class-variance-authority";
+import { CheckIcon, CropIcon, ImageIcon, RotateCcwIcon, RotateCwIcon, StickyNotesIcon, XIcon } from "lucide-react";
+
+import "react-resizable/css/styles.css";
+
 import {
 	useCallback,
 	useEffect,
@@ -10,15 +14,12 @@ import {
 	type SyntheticEvent,
 	type PointerEvent as ReactPointerEvent,
 } from "react";
-
-import "react-resizable/css/styles.css";
-
 import { ResizableBox, type ResizeCallbackData } from "react-resizable";
 import { toast } from "sonner";
 
-import { cropFile, rotateFile } from "@/buf/raker/v1/raker-RakerServer_connectquery";
+import { cropFile, duplicateFile, rotateFile } from "@/buf/raker/v1/raker-RakerServer_connectquery";
 import { PostType, type ScrapeResponse } from "@/buf/raker/v1/raker_pb";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { ButtonGroup } from "@/components/ui/button-group";
 import {
 	Carousel,
@@ -177,10 +178,11 @@ export function FilesCarousel({
 export function FileDisplay({
 	username,
 	file,
-	post: { postType, postOwner, coordinates },
+	post: { postType, postOwner, post, coordinates },
 	onMediaLoad,
 	withCrop,
 	withCoordinates,
+	withDuplicate,
 	className = "h-auto w-full rounded-xl",
 	cacheBuster,
 }: {
@@ -190,6 +192,7 @@ export function FileDisplay({
 	onMediaLoad?: () => void;
 	withCrop?: boolean;
 	withCoordinates?: boolean;
+	withDuplicate?: boolean;
 	className?: string;
 	cacheBuster?: number | string;
 }) {
@@ -241,6 +244,13 @@ export function FileDisplay({
 							}
 						/>
 					)}
+					{withDuplicate && (
+						<DuplicateButton
+							file={file}
+							size="icon"
+							post={{ post, postOwner, postType } as ScrapeResponse}
+						/>
+					)}
 					{withCoordinates && postType === PostType.VSCO && coordinates && (
 						<GoogleMapsLink coordinates={coordinates} size="icon" />
 					)}
@@ -289,6 +299,41 @@ export function FileDisplay({
 	} else {
 		return <a href={url}>{url}</a>;
 	}
+}
+
+export function DuplicateButton({
+	file,
+	post: { post, postOwner, postType },
+	size = "sm",
+}: {
+	file: string;
+	post: ScrapeResponse;
+	size?: VariantProps<typeof buttonVariants>["size"];
+}) {
+	const duplicateFileMutation = useMutation(duplicateFile);
+	return (
+		<Button
+			className="dark:bg-secondary dark:hover:bg-secondary/80"
+			variant="outline"
+			size={size}
+			onClick={async () => {
+				try {
+					await duplicateFileMutation.mutateAsync({
+						file,
+						post,
+						postOwner,
+						postType,
+					});
+				} catch (err) {
+					toast.error((err as Error).message, {
+						position: "top-center",
+					});
+				}
+			}}
+		>
+			<StickyNotesIcon />
+		</Button>
+	);
 }
 
 export type CropRect = {

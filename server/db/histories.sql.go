@@ -537,6 +537,50 @@ func (q *Queries) HistoryUpdateOwner(ctx context.Context, arg HistoryUpdateOwner
 	return err
 }
 
+const updateHistoryDuplicateFile = `-- name: UpdateHistoryDuplicateFile :one
+UPDATE Histories
+SET files = files[1 : array_position(files, $1::text)]
+	|| ARRAY[$2::text]
+	|| files[array_position(files, $1::text) + 1 : array_length(files, 1)]
+WHERE post_type = $3::post_type
+	AND post = $4::text
+	AND post_owner = $5::text
+	AND username = $6::text
+RETURNING username, post_type, post_owner, post, post_date, files, categories, incognito
+`
+
+type UpdateHistoryDuplicateFileParams struct {
+	File      string   `json:"file"`
+	Duplicate string   `json:"duplicate"`
+	PostType  PostType `json:"post_type"`
+	Post      string   `json:"post"`
+	PostOwner string   `json:"post_owner"`
+	Username  string   `json:"username"`
+}
+
+func (q *Queries) UpdateHistoryDuplicateFile(ctx context.Context, arg UpdateHistoryDuplicateFileParams) (History, error) {
+	row := q.queryRow(ctx, q.updateHistoryDuplicateFileStmt, updateHistoryDuplicateFile,
+		arg.File,
+		arg.Duplicate,
+		arg.PostType,
+		arg.Post,
+		arg.PostOwner,
+		arg.Username,
+	)
+	var i History
+	err := row.Scan(
+		&i.Username,
+		&i.PostType,
+		&i.PostOwner,
+		&i.Post,
+		&i.PostDate,
+		pq.Array(&i.Files),
+		pq.Array(&i.Categories),
+		&i.Incognito,
+	)
+	return i, err
+}
+
 const updateHistoryRemoveFile = `-- name: UpdateHistoryRemoveFile :one
 UPDATE Histories
 SET files = array_remove(files, $1::text)
