@@ -67,5 +67,7 @@
 		"editor.detectIndentation": false,
 		"editor.useTabStops": false,
 		"editor.tabSize": 2
-	}
+	},
+	"go.testFlags": ["-v"],
+	"go.testTimeout": "180s"
 }
