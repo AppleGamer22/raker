@@ -35,7 +35,7 @@
 		"react-day-picker": "^10.0.1",
 		"react-dom": "^19.2.8",
 		"react-resizable": "^4.0.2",
-		"shadcn": "^4.14.0",
+		"shadcn": "^4.14.1",
 		"sonner": "^2.0.7",
 		"tailwind-merge": "^3.6.0",
 		"tailwindcss": "^4.3.3",
