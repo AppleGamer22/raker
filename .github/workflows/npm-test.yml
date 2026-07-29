@@ -28,3 +28,4 @@ jobs:
           node-version: lts/*
           check-latest: true
       - run: npm ci
+      - run: npm run build
