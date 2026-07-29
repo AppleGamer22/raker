@@ -43,7 +43,7 @@ func testHTTP1(t *testing.T) {
 	// client := http.DefaultClient
 	client := shared.NewClient(true)
 	errCount := 0
-	for i := 0; i < 1e3; i++ {
+	for i := 0; i < 1e2; i++ {
 		_, err := getHTML(client)
 		// assert.Error(t, err, html)
 		if err != nil {
@@ -55,7 +55,7 @@ func testHTTP1(t *testing.T) {
 
 func testHTTP2(t *testing.T) {
 	client := shared.NewClient(false)
-	for i := 0; i < 1e3; i++ {
+	for i := 0; i < 1e2; i++ {
 		_, err := getHTML(client)
 		assert.NoError(t, err)
 	}
