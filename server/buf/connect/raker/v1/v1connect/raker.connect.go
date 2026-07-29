@@ -104,7 +104,7 @@ type RakerServerClient interface {
 	SearchHistoryOwners(context.Context, *v1.HistoryOwnersRequest) (*v1.HistoryOwnersResponse, error)
 	CropFile(context.Context, *v1.CropFileRequest) (*emptypb.Empty, error)
 	RotateFile(context.Context, *v1.RotateFileRequest) (*emptypb.Empty, error)
-	DuplicateFile(context.Context, *v1.FileSubRequest) (*emptypb.Empty, error)
+	DuplicateFile(context.Context, *v1.FileSubRequest) (*v1.FileSubRequest, error)
 }
 
 // NewRakerServerClient constructs a client for the raker.v1.RakerServer service. By default, it
@@ -220,7 +220,7 @@ func NewRakerServerClient(httpClient connect.HTTPClient, baseURL string, opts ..
 			connect.WithSchema(rakerServerMethods.ByName("RotateFile")),
 			connect.WithClientOptions(opts...),
 		),
-		duplicateFile: connect.NewClient[v1.FileSubRequest, emptypb.Empty](
+		duplicateFile: connect.NewClient[v1.FileSubRequest, v1.FileSubRequest](
 			httpClient,
 			baseURL+RakerServerDuplicateFileProcedure,
 			connect.WithSchema(rakerServerMethods.ByName("DuplicateFile")),
@@ -248,7 +248,7 @@ type rakerServerClient struct {
 	searchHistoryOwners *connect.Client[v1.HistoryOwnersRequest, v1.HistoryOwnersResponse]
 	cropFile            *connect.Client[v1.CropFileRequest, emptypb.Empty]
 	rotateFile          *connect.Client[v1.RotateFileRequest, emptypb.Empty]
-	duplicateFile       *connect.Client[v1.FileSubRequest, emptypb.Empty]
+	duplicateFile       *connect.Client[v1.FileSubRequest, v1.FileSubRequest]
 }
 
 // SignUpInstagram calls raker.v1.RakerServer.SignUpInstagram.
@@ -405,7 +405,7 @@ func (c *rakerServerClient) RotateFile(ctx context.Context, req *v1.RotateFileRe
 }
 
 // DuplicateFile calls raker.v1.RakerServer.DuplicateFile.
-func (c *rakerServerClient) DuplicateFile(ctx context.Context, req *v1.FileSubRequest) (*emptypb.Empty, error) {
+func (c *rakerServerClient) DuplicateFile(ctx context.Context, req *v1.FileSubRequest) (*v1.FileSubRequest, error) {
 	response, err := c.duplicateFile.CallUnary(ctx, connect.NewRequest(req))
 	if response != nil {
 		return response.Msg, err
@@ -432,7 +432,7 @@ type RakerServerHandler interface {
 	SearchHistoryOwners(context.Context, *v1.HistoryOwnersRequest) (*v1.HistoryOwnersResponse, error)
 	CropFile(context.Context, *v1.CropFileRequest) (*emptypb.Empty, error)
 	RotateFile(context.Context, *v1.RotateFileRequest) (*emptypb.Empty, error)
-	DuplicateFile(context.Context, *v1.FileSubRequest) (*emptypb.Empty, error)
+	DuplicateFile(context.Context, *v1.FileSubRequest) (*v1.FileSubRequest, error)
 }
 
 // NewRakerServerHandler builds an HTTP handler from the service implementation. It returns the path
@@ -665,6 +665,6 @@ func (UnimplementedRakerServerHandler) RotateFile(context.Context, *v1.RotateFil
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raker.v1.RakerServer.RotateFile is not implemented"))
 }
 
-func (UnimplementedRakerServerHandler) DuplicateFile(context.Context, *v1.FileSubRequest) (*emptypb.Empty, error) {
+func (UnimplementedRakerServerHandler) DuplicateFile(context.Context, *v1.FileSubRequest) (*v1.FileSubRequest, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raker.v1.RakerServer.DuplicateFile is not implemented"))
 }

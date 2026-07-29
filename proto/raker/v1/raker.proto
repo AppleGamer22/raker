@@ -176,5 +176,5 @@ service RakerServer {
 
   rpc RotateFile(RotateFileRequest) returns (google.protobuf.Empty);
 
-  rpc DuplicateFile(FileSubRequest) returns (google.protobuf.Empty);
+  rpc DuplicateFile(FileSubRequest) returns (FileSubRequest);
 }

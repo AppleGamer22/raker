@@ -137,6 +137,7 @@ export function FilesCarousel({
 										requestAnimationFrame(() => syncSelectedSlideHeight(api));
 									}
 								}}
+								onDuplicateFile={() => {}}
 								withCrop
 								withCoordinates
 							/>
@@ -169,6 +170,7 @@ export function FilesCarousel({
 			post={{ postType, postOwner, coordinates } as ScrapeResponse}
 			file={files[0]}
 			cacheBuster={cacheBustersByFile?.[files[0]]}
+			onDuplicateFile={() => {}}
 			withCrop
 			withCoordinates
 		/>
@@ -185,6 +187,7 @@ export function FileDisplay({
 	withDuplicate,
 	className = "h-auto w-full rounded-xl",
 	cacheBuster,
+	onDuplicateFile,
 }: {
 	username: string;
 	file: string;
@@ -195,6 +198,7 @@ export function FileDisplay({
 	withDuplicate?: boolean;
 	className?: string;
 	cacheBuster?: number | string;
+	onDuplicateFile?: (duplicateFileName: string) => void;
 }) {
 	const [cacheBusterState, setCacheBusterState] = useState<number | string | undefined>(cacheBuster ?? undefined);
 
@@ -249,6 +253,7 @@ export function FileDisplay({
 							file={file}
 							size="icon"
 							post={{ post, postOwner, postType } as ScrapeResponse}
+							onDuplicateFile={onDuplicateFile ?? (() => {})}
 						/>
 					)}
 					{withCoordinates && postType === PostType.VSCO && coordinates && (
@@ -304,11 +309,13 @@ export function FileDisplay({
 export function DuplicateButton({
 	file,
 	post: { post, postOwner, postType },
+	onDuplicateFile,
 	size = "sm",
 }: {
 	file: string;
 	post: ScrapeResponse;
 	size?: VariantProps<typeof buttonVariants>["size"];
+	onDuplicateFile: (duplicateFileName: string) => void;
 }) {
 	const duplicateFileMutation = useMutation(duplicateFile);
 	return (
@@ -318,12 +325,13 @@ export function DuplicateButton({
 			size={size}
 			onClick={async () => {
 				try {
-					await duplicateFileMutation.mutateAsync({
+					const { file: duplicateFileName } = await duplicateFileMutation.mutateAsync({
 						file,
 						post,
 						postOwner,
 						postType,
 					});
+					onDuplicateFile(duplicateFileName);
 				} catch (err) {
 					toast.error((err as Error).message, {
 						position: "top-center",
@@ -877,6 +885,7 @@ export function FileSheet({
 									username={username}
 									className="max-h-full w-auto rounded-xl"
 									cacheBuster={viewReloadKey}
+									onDuplicateFile={() => {}}
 								/>
 							</TabsContent>
 							<TabsContent

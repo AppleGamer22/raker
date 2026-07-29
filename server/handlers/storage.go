@@ -624,7 +624,7 @@ func (server *RakerServer) RotateFile(ctx context.Context, request *v1.RotateFil
 }
 
 // DuplicateFile implements [v1connect.RakerServerHandler].
-func (server *RakerServer) DuplicateFile(ctx context.Context, request *v1.FileSubRequest) (*emptypb.Empty, error) {
+func (server *RakerServer) DuplicateFile(ctx context.Context, request *v1.FileSubRequest) (*v1.FileSubRequest, error) {
 	user, ok := ctx.Value(authenticatedUserKey).(db.User)
 	if !ok {
 		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("not authenticated"))
@@ -661,5 +661,10 @@ func (server *RakerServer) DuplicateFile(ctx context.Context, request *v1.FileSu
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
-	return nil, nil
+	return &v1.FileSubRequest{
+		PostType:  request.PostType,
+		PostOwner: request.PostOwner,
+		Post:      request.Post,
+		File:      duplicateFileName,
+	}, nil
 }

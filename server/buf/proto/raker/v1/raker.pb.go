@@ -1383,7 +1383,7 @@ const file_raker_v1_raker_proto_rawDesc = "" +
 	"\n" +
 	"\x06TikTok\x10\x03\x12\f\n" +
 	"\bSnapchat\x10\x04\x12\b\n" +
-	"\x04VSCO\x10\x052\xb1\n" +
+	"\x04VSCO\x10\x052\xb3\n" +
 	"\n" +
 	"\vRakerServer\x12B\n" +
 	"\x0fSignUpInstagram\x12\x17.raker.v1.SignUpRequest\x1a\x16.google.protobuf.Empty\x12B\n" +
@@ -1404,8 +1404,8 @@ const file_raker_v1_raker_proto_rawDesc = "" +
 	"\x13SearchHistoryOwners\x12\x1e.raker.v1.HistoryOwnersRequest\x1a\x1f.raker.v1.HistoryOwnersResponse\x12=\n" +
 	"\bCropFile\x12\x19.raker.v1.CropFileRequest\x1a\x16.google.protobuf.Empty\x12A\n" +
 	"\n" +
-	"RotateFile\x12\x1b.raker.v1.RotateFileRequest\x1a\x16.google.protobuf.Empty\x12A\n" +
-	"\rDuplicateFile\x12\x18.raker.v1.FileSubRequest\x1a\x16.google.protobuf.EmptyB\x94\x01\n" +
+	"RotateFile\x12\x1b.raker.v1.RotateFileRequest\x1a\x16.google.protobuf.Empty\x12C\n" +
+	"\rDuplicateFile\x12\x18.raker.v1.FileSubRequest\x1a\x18.raker.v1.FileSubRequestB\x94\x01\n" +
 	"\fcom.raker.v1B\n" +
 	"RakerProtoP\x01Z7github.com/AppleGamer22/raker/server/buf/proto/raker/v1\xa2\x02\x03RXX\xaa\x02\bRaker.V1\xca\x02\bRaker\\V1\xe2\x02\x14Raker\\V1\\GPBMetadata\xea\x02\tRaker::V1b\x06proto3"
 
@@ -1499,7 +1499,7 @@ var file_raker_v1_raker_proto_depIdxs = []int32{
 	14, // 47: raker.v1.RakerServer.SearchHistoryOwners:output_type -> raker.v1.HistoryOwnersResponse
 	22, // 48: raker.v1.RakerServer.CropFile:output_type -> google.protobuf.Empty
 	22, // 49: raker.v1.RakerServer.RotateFile:output_type -> google.protobuf.Empty
-	22, // 50: raker.v1.RakerServer.DuplicateFile:output_type -> google.protobuf.Empty
+	15, // 50: raker.v1.RakerServer.DuplicateFile:output_type -> raker.v1.FileSubRequest
 	33, // [33:51] is the sub-list for method output_type
 	15, // [15:33] is the sub-list for method input_type
 	15, // [15:15] is the sub-list for extension type_name

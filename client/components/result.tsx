@@ -717,6 +717,20 @@ export function Result({
 									withCoordinates
 									withDuplicate
 									cacheBuster={fileCacheBusters[file]}
+									onDuplicateFile={(duplicateFileName: string) =>
+										setResult((prev) => {
+											if (!prev) return prev;
+											const index = files.indexOf(file);
+											return {
+												...prev,
+												files: [
+													...files.slice(0, index + 1),
+													duplicateFileName,
+													...files.slice(index + 1),
+												],
+											};
+										})
+									}
 								/>
 							</div>
 						);
