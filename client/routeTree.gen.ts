@@ -9,49 +9,19 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as VscoRouteImport } from './routes/vsco'
-import { Route as TiktokRouteImport } from './routes/tiktok'
-import { Route as StoryRouteImport } from './routes/story'
-import { Route as SnapchatRouteImport } from './routes/snapchat'
-import { Route as MapRouteImport } from './routes/map'
-import { Route as InstagramRouteImport } from './routes/instagram'
-import { Route as HistoryRouteImport } from './routes/history'
-import { Route as HighlightRouteImport } from './routes/highlight'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as HighlightRouteImport } from './routes/highlight'
+import { Route as HistoryRouteImport } from './routes/history'
+import { Route as InstagramRouteImport } from './routes/instagram'
+import { Route as MapRouteImport } from './routes/map'
+import { Route as SnapchatRouteImport } from './routes/snapchat'
+import { Route as StoryRouteImport } from './routes/story'
+import { Route as TiktokRouteImport } from './routes/tiktok'
+import { Route as VscoRouteImport } from './routes/vsco'
 
-const VscoRoute = VscoRouteImport.update({
-  id: '/vsco',
-  path: '/vsco',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const TiktokRoute = TiktokRouteImport.update({
-  id: '/tiktok',
-  path: '/tiktok',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const StoryRoute = StoryRouteImport.update({
-  id: '/story',
-  path: '/story',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SnapchatRoute = SnapchatRouteImport.update({
-  id: '/snapchat',
-  path: '/snapchat',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const MapRoute = MapRouteImport.update({
-  id: '/map',
-  path: '/map',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const InstagramRoute = InstagramRouteImport.update({
-  id: '/instagram',
-  path: '/instagram',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const HistoryRoute = HistoryRouteImport.update({
-  id: '/history',
-  path: '/history',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const HighlightRoute = HighlightRouteImport.update({
@@ -59,9 +29,39 @@ const HighlightRoute = HighlightRouteImport.update({
   path: '/highlight',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const HistoryRoute = HistoryRouteImport.update({
+  id: '/history',
+  path: '/history',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InstagramRoute = InstagramRouteImport.update({
+  id: '/instagram',
+  path: '/instagram',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MapRoute = MapRouteImport.update({
+  id: '/map',
+  path: '/map',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SnapchatRoute = SnapchatRouteImport.update({
+  id: '/snapchat',
+  path: '/snapchat',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StoryRoute = StoryRouteImport.update({
+  id: '/story',
+  path: '/story',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TiktokRoute = TiktokRouteImport.update({
+  id: '/tiktok',
+  path: '/tiktok',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VscoRoute = VscoRouteImport.update({
+  id: '/vsco',
+  path: '/vsco',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -149,53 +149,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/vsco': {
-      id: '/vsco'
-      path: '/vsco'
-      fullPath: '/vsco'
-      preLoaderRoute: typeof VscoRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/tiktok': {
-      id: '/tiktok'
-      path: '/tiktok'
-      fullPath: '/tiktok'
-      preLoaderRoute: typeof TiktokRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/story': {
-      id: '/story'
-      path: '/story'
-      fullPath: '/story'
-      preLoaderRoute: typeof StoryRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/snapchat': {
-      id: '/snapchat'
-      path: '/snapchat'
-      fullPath: '/snapchat'
-      preLoaderRoute: typeof SnapchatRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/map': {
-      id: '/map'
-      path: '/map'
-      fullPath: '/map'
-      preLoaderRoute: typeof MapRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/instagram': {
-      id: '/instagram'
-      path: '/instagram'
-      fullPath: '/instagram'
-      preLoaderRoute: typeof InstagramRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/history': {
-      id: '/history'
-      path: '/history'
-      fullPath: '/history'
-      preLoaderRoute: typeof HistoryRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/highlight': {
@@ -205,11 +163,53 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof HighlightRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/history': {
+      id: '/history'
+      path: '/history'
+      fullPath: '/history'
+      preLoaderRoute: typeof HistoryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/instagram': {
+      id: '/instagram'
+      path: '/instagram'
+      fullPath: '/instagram'
+      preLoaderRoute: typeof InstagramRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/map': {
+      id: '/map'
+      path: '/map'
+      fullPath: '/map'
+      preLoaderRoute: typeof MapRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/snapchat': {
+      id: '/snapchat'
+      path: '/snapchat'
+      fullPath: '/snapchat'
+      preLoaderRoute: typeof SnapchatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/story': {
+      id: '/story'
+      path: '/story'
+      fullPath: '/story'
+      preLoaderRoute: typeof StoryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tiktok': {
+      id: '/tiktok'
+      path: '/tiktok'
+      fullPath: '/tiktok'
+      preLoaderRoute: typeof TiktokRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/vsco': {
+      id: '/vsco'
+      path: '/vsco'
+      fullPath: '/vsco'
+      preLoaderRoute: typeof VscoRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
