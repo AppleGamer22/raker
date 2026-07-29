@@ -9,7 +9,7 @@ import { z } from "zod";
 import { searchHistory, searchHistoryOwners } from "@/buf/raker/v1/raker-RakerServer_connectquery";
 import { PostType, type ScrapeResponse } from "@/buf/raker/v1/raker_pb";
 import { FilesCarousel } from "@/components/file-display";
-import { PlatformIcon, PostTypeIconLabel, ResultHeader } from "@/components/result";
+import { PlatformIcon, PostOwnerContextMenuContext, PostTypeIconLabel, ResultHeader } from "@/components/result";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -28,6 +28,7 @@ import {
 	ComboboxValue,
 	useComboboxAnchor,
 } from "@/components/ui/combobox";
+import { ContextMenu, ContextMenuTrigger } from "@/components/ui/context-menu";
 import { FieldGroup, FieldLegend, Field, FieldSet, FieldLabel, FieldContent, FieldTitle } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { InputGroupAddon } from "@/components/ui/input-group";
@@ -564,16 +565,27 @@ function History() {
 									>
 										<ComboboxChips className="my-2" ref={anchor}>
 											<ComboboxValue>
-												{(values) => (
+												{(values: OwnerPostType[]) => (
 													<Fragment>
-														{values.map(({ owner, type }: OwnerPostType) => (
-															<ComboboxChip
-																key={`search-chip-${type}-${owner}`}
-																className="select-text!"
-															>
-																<PlatformIcon type={type} />
-																{owner}
-															</ComboboxChip>
+														{values.map(({ owner, type }) => (
+															<ContextMenu key={`${owner}-${type}`}>
+																<ContextMenuTrigger>
+																	<ComboboxChip key={`search-chip-${type}-${owner}`}>
+																		<PlatformIcon type={type} />
+																		{owner}
+																	</ComboboxChip>
+																</ContextMenuTrigger>
+																<PostOwnerContextMenuContext
+																	result={
+																		{
+																			postOwner: owner,
+																			postType: type,
+																		} as ScrapeResponse
+																	}
+																	categories={availableCategories}
+																	exclusive={exclusive}
+																/>
+															</ContextMenu>
 														))}
 														<ComboboxChipsInput
 															placeholder="post owner search"

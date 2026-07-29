@@ -154,6 +154,66 @@ export function PostTypeIconLabel({ type }: { type: PostType }) {
 	}
 }
 
+export function PostOwnerContextMenuContext({
+	result,
+	categories,
+	exclusive,
+}: {
+	result: ScrapeResponse;
+	categories: string[];
+	exclusive: boolean;
+}) {
+	const target = inPWA() ? undefined : "_blank";
+	return (
+		<ContextMenuContent>
+			<ContextMenuGroup>
+				<Link
+					to="/history"
+					search={{
+						categories,
+						exclusive,
+						page: 1n,
+						owners: [{ owner: result.postOwner, type: -1 }],
+						types: defaultPostTypes,
+					}}
+					target={target}
+				>
+					<ContextMenuItem>
+						<ExternalLinkIcon /> History Results
+					</ContextMenuItem>
+				</Link>
+				{result.postType > -1 && (
+					<a
+						target="_blank"
+						rel="noopener noreferrer"
+						href={(() => {
+							switch (result.postType) {
+								case PostType.Instagram:
+								case PostType.Highlight:
+								case PostType.Story:
+									return `https://www.instagram.com/${result.postOwner}`;
+								case PostType.TikTok:
+									return `https://www.tiktok.com/@${result.postOwner}`;
+								case PostType.Snapchat:
+									return `https://www.snapchat.com/@${result.postOwner}`;
+								case PostType.VSCO:
+									return `https://vsco.co/${result.postOwner}/gallery`;
+							}
+						})()}
+					>
+						<ContextMenuItem>
+							<PlatformIcon type={result.postType} /> Open Profile
+						</ContextMenuItem>
+					</a>
+				)}
+				<ContextMenuItem onClick={() => writeClipboard(result.postOwner)}>
+					<CopyIcon /> Copy
+				</ContextMenuItem>
+			</ContextMenuGroup>
+		</ContextMenuContent>
+	);
+}
+
 export function ResultHeader({
 	result,
 	categories,
@@ -191,50 +251,7 @@ export function ResultHeader({
 						<code className="align-middle leading-none">{result.postOwner}</code>
 					</Badge>
 				</ContextMenuTrigger>
-				<ContextMenuContent>
-					<ContextMenuGroup>
-						<Link
-							to="/history"
-							search={{
-								categories,
-								exclusive,
-								page: 1n,
-								owners: [{ owner: result.postOwner, type: -1 }],
-								types: defaultPostTypes,
-							}}
-							target={target}
-						>
-							<ContextMenuItem>
-								<ExternalLinkIcon /> History Results
-							</ContextMenuItem>
-						</Link>
-						<a
-							target="_blank"
-							rel="noopener noreferrer"
-							href={(() => {
-								switch (result.postType) {
-									case PostType.Instagram:
-									case PostType.Highlight:
-									case PostType.Story:
-										return `https://www.instagram.com/${result.postOwner}`;
-									case PostType.TikTok:
-										return `https://www.tiktok.com/@${result.postOwner}`;
-									case PostType.Snapchat:
-										return `https://www.snapchat.com/@${result.postOwner}`;
-									case PostType.VSCO:
-										return `https://vsco.co/${result.postOwner}/gallery`;
-								}
-							})()}
-						>
-							<ContextMenuItem>
-								<PlatformIcon type={result.postType} /> Open Profile
-							</ContextMenuItem>
-						</a>
-						<ContextMenuItem onClick={() => writeClipboard(result.postOwner)}>
-							<CopyIcon /> Copy
-						</ContextMenuItem>
-					</ContextMenuGroup>
-				</ContextMenuContent>
+				<PostOwnerContextMenuContext result={result} categories={categories} exclusive={exclusive} />
 			</ContextMenu>
 			<span>/</span>
 			<ContextMenu>
