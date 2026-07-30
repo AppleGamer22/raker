@@ -715,7 +715,6 @@ export function Result({
 									username={username}
 									withCrop
 									withCoordinates
-									withDuplicate
 									cacheBuster={fileCacheBusters[file]}
 									onDuplicateFile={(duplicateFileName: string) =>
 										setResult((prev) => {

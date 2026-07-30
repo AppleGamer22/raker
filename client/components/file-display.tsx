@@ -137,7 +137,6 @@ export function FilesCarousel({
 										requestAnimationFrame(() => syncSelectedSlideHeight(api));
 									}
 								}}
-								onDuplicateFile={() => {}}
 								withCrop
 								withCoordinates
 							/>
@@ -170,7 +169,6 @@ export function FilesCarousel({
 			post={{ postType, postOwner, coordinates } as ScrapeResponse}
 			file={files[0]}
 			cacheBuster={cacheBustersByFile?.[files[0]]}
-			onDuplicateFile={() => {}}
 			withCrop
 			withCoordinates
 		/>
@@ -184,7 +182,6 @@ export function FileDisplay({
 	onMediaLoad,
 	withCrop,
 	withCoordinates,
-	withDuplicate,
 	className = "h-auto w-full rounded-xl",
 	cacheBuster,
 	onDuplicateFile,
@@ -195,7 +192,6 @@ export function FileDisplay({
 	onMediaLoad?: () => void;
 	withCrop?: boolean;
 	withCoordinates?: boolean;
-	withDuplicate?: boolean;
 	className?: string;
 	cacheBuster?: number | string;
 	onDuplicateFile?: (duplicateFileName: string) => void;
@@ -248,7 +244,7 @@ export function FileDisplay({
 							}
 						/>
 					)}
-					{withDuplicate && (
+					{onDuplicateFile != undefined && (
 						<DuplicateButton
 							file={file}
 							size="icon"
@@ -885,7 +881,6 @@ export function FileSheet({
 									username={username}
 									className="max-h-full w-auto rounded-xl"
 									cacheBuster={viewReloadKey}
-									onDuplicateFile={() => {}}
 								/>
 							</TabsContent>
 							<TabsContent
