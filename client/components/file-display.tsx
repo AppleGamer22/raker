@@ -31,7 +31,7 @@ import {
 } from "@/components/ui/carousel";
 import { Progress } from "@/components/ui/progress";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { GoogleMapsLink } from "@/components/ui/svgs/google-maps";
+import { GoogleMapsLink } from "@/components/ui/svgs/google";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 

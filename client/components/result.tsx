@@ -31,7 +31,7 @@ import {
 } from "@/components/ui/context-menu";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
-import { GoogleMapsLink } from "@/components/ui/svgs/google-maps";
+import { GoogleMapsLink } from "@/components/ui/svgs/google";
 import { InstagramIcon } from "@/components/ui/svgs/instagram";
 import { SnapchatIcon } from "@/components/ui/svgs/snapchat";
 import { TikTokIcon } from "@/components/ui/svgs/tiktok";
