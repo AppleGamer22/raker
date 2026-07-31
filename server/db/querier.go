@@ -23,12 +23,16 @@ type Querier interface {
 	HistoryRemove(ctx context.Context, arg HistoryRemoveParams) error
 	HistoryUpdateCategories(ctx context.Context, arg HistoryUpdateCategoriesParams) (History, error)
 	HistoryUpdateOwner(ctx context.Context, arg HistoryUpdateOwnerParams) error
+	PasskeyUpdateName(ctx context.Context, arg PasskeyUpdateNameParams) error
+	PasskeyUpdateSignCount(ctx context.Context, passkeyID []byte) error
 	UpdateHistoryDuplicateFile(ctx context.Context, arg UpdateHistoryDuplicateFileParams) (History, error)
 	UpdateHistoryRemoveFile(ctx context.Context, arg UpdateHistoryRemoveFileParams) (History, error)
 	UserAdd(ctx context.Context, arg UserAddParams) error
 	UserCategoryAdd(ctx context.Context, arg UserCategoryAddParams) error
 	UserCategoryRemove(ctx context.Context, arg UserCategoryRemoveParams) error
+	UserCreatePasskey(ctx context.Context, arg UserCreatePasskeyParams) error
 	UserGet(ctx context.Context, username string) (User, error)
+	UserGetPasskeysByUsername(ctx context.Context, username string) ([]Passkey, error)
 	UserUpdateHash(ctx context.Context, arg UserUpdateHashParams) error
 	UserUpdateInstagramSession(ctx context.Context, arg UserUpdateInstagramSessionParams) error
 }

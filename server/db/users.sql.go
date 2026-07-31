@@ -8,26 +8,58 @@ package db
 import (
 	"context"
 
+	"github.com/google/uuid"
 	"github.com/lib/pq"
 )
 
+const passkeyUpdateName = `-- name: PasskeyUpdateName :exec
+UPDATE
+	Passkeys
+SET
+	name = $1::text
+WHERE
+	id = $2::bytea
+`
+
+type PasskeyUpdateNameParams struct {
+	Name      string `json:"name"`
+	PasskeyID []byte `json:"passkey_id"`
+}
+
+func (q *Queries) PasskeyUpdateName(ctx context.Context, arg PasskeyUpdateNameParams) error {
+	_, err := q.exec(ctx, q.passkeyUpdateNameStmt, passkeyUpdateName, arg.Name, arg.PasskeyID)
+	return err
+}
+
+const passkeyUpdateSignCount = `-- name: PasskeyUpdateSignCount :exec
+UPDATE
+	Passkeys
+SET
+	sign_count = sign_count + 1
+WHERE
+	id = $1::bytea
+`
+
+func (q *Queries) PasskeyUpdateSignCount(ctx context.Context, passkeyID []byte) error {
+	_, err := q.exec(ctx, q.passkeyUpdateSignCountStmt, passkeyUpdateSignCount, passkeyID)
+	return err
+}
+
 const userAdd = `-- name: UserAdd :exec
-INSERT INTO Users (
-		username,
-		password_hash,
-		instagram_session_id,
-		instagram_user_id,
-		network,
-		categories
-	)
+INSERT INTO Users(
+	username,
+	password_hash,
+	instagram_session_id,
+	instagram_user_id,
+	network,
+	categories)
 VALUES (
-		$1::text,
-		$2::text,
-		$3::text,
-		$4::text,
-		'instagram',
-		$5::text []
-	)
+	$1::text,
+	$2::text,
+	$3::text,
+	$4::text,
+	'instagram',
+	$5::text[])
 `
 
 type UserAddParams struct {
@@ -50,14 +82,16 @@ func (q *Queries) UserAdd(ctx context.Context, arg UserAddParams) error {
 }
 
 const userCategoryAdd = `-- name: UserCategoryAdd :exec
-UPDATE Users
-SET categories = array(
-		select unnest(
-				array_append(categories, $1::text)
-			) AS c
-		ORDER BY c
-	)
-where username = $2::text
+UPDATE
+	Users
+SET
+	categories = ARRAY (
+		SELECT
+			unnest(array_append(categories, $1::text)) AS c
+		ORDER BY
+			c)
+	WHERE
+		username = $2::text
 `
 
 type UserCategoryAddParams struct {
@@ -71,9 +105,12 @@ func (q *Queries) UserCategoryAdd(ctx context.Context, arg UserCategoryAddParams
 }
 
 const userCategoryRemove = `-- name: UserCategoryRemove :exec
-UPDATE Users
-SET categories = array_remove(categories, $1::text)
-where username = $2::text
+UPDATE
+	Users
+SET
+	categories = array_remove(categories, $1::text)
+WHERE
+	username = $2::text
 `
 
 type UserCategoryRemoveParams struct {
@@ -86,10 +123,55 @@ func (q *Queries) UserCategoryRemove(ctx context.Context, arg UserCategoryRemove
 	return err
 }
 
+const userCreatePasskey = `-- name: UserCreatePasskey :exec
+INSERT INTO Passkeys(
+	id,
+	user_id,
+	name,
+	public_key,
+	attestation_type,
+	aaguid,
+	transports)
+VALUES (
+	$1,
+	$2,
+	$3,
+	$4,
+	$5,
+	$6,
+	$7)
+`
+
+type UserCreatePasskeyParams struct {
+	PasskeyID       []byte    `json:"passkey_id"`
+	UdserID         uuid.UUID `json:"udser_id"`
+	Name            string    `json:"name"`
+	PublicKey       []byte    `json:"public_key"`
+	AttestationType string    `json:"attestation_type"`
+	Aaguid          []byte    `json:"aaguid"`
+	Transports      []string  `json:"transports"`
+}
+
+func (q *Queries) UserCreatePasskey(ctx context.Context, arg UserCreatePasskeyParams) error {
+	_, err := q.exec(ctx, q.userCreatePasskeyStmt, userCreatePasskey,
+		arg.PasskeyID,
+		arg.UdserID,
+		arg.Name,
+		arg.PublicKey,
+		arg.AttestationType,
+		arg.Aaguid,
+		pq.Array(arg.Transports),
+	)
+	return err
+}
+
 const userGet = `-- name: UserGet :one
-SELECT username, password_hash, instagram_session_id, instagram_user_id, network, categories, tiktok_session_id, tiktok_session_id_guard
-FROM Users
-WHERE username = $1::text
+SELECT
+	username, password_hash, instagram_session_id, instagram_user_id, network, categories, tiktok_session_id, tiktok_session_id_guard, id
+FROM
+	Users
+WHERE
+	username = $1::text
 `
 
 func (q *Queries) UserGet(ctx context.Context, username string) (User, error) {
@@ -104,14 +186,59 @@ func (q *Queries) UserGet(ctx context.Context, username string) (User, error) {
 		pq.Array(&i.Categories),
 		&i.TiktokSessionID,
 		&i.TiktokSessionIDGuard,
+		&i.ID,
 	)
 	return i, err
 }
 
+const userGetPasskeysByUsername = `-- name: UserGetPasskeysByUsername :many
+SELECT
+	id, name, user_id, public_key, attestation_type, aaguid, sign_count, transports
+FROM
+	passkeys
+WHERE
+	username = $1::text
+`
+
+func (q *Queries) UserGetPasskeysByUsername(ctx context.Context, username string) ([]Passkey, error) {
+	rows, err := q.query(ctx, q.userGetPasskeysByUsernameStmt, userGetPasskeysByUsername, username)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Passkey
+	for rows.Next() {
+		var i Passkey
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.UserID,
+			&i.PublicKey,
+			&i.AttestationType,
+			&i.Aaguid,
+			&i.SignCount,
+			pq.Array(&i.Transports),
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const userUpdateHash = `-- name: UserUpdateHash :exec
-UPDATE Users
-SET password_hash = $1::text
-where username = $2::text
+UPDATE
+	Users
+SET
+	password_hash = $1::text
+WHERE
+	username = $2::text
 `
 
 type UserUpdateHashParams struct {
@@ -125,11 +252,14 @@ func (q *Queries) UserUpdateHash(ctx context.Context, arg UserUpdateHashParams) 
 }
 
 const userUpdateInstagramSession = `-- name: UserUpdateInstagramSession :exec
-UPDATE Users
-SET instagram_session_id = $1::text,
+UPDATE
+	Users
+SET
+	instagram_session_id = $1::text,
 	instagram_user_id = $2::text,
 	password_hash = $3::text
-where username = $4::text
+WHERE
+	username = $4::text
 `
 
 type UserUpdateInstagramSessionParams struct {

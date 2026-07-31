@@ -71,20 +71,20 @@ WHERE
 -- name: UserCreatePasskey :exec
 INSERT INTO Passkeys(
 	id,
-	username,
+	user_id,
 	name,
 	public_key,
 	attestation_type,
 	aaguid,
 	transports)
 VALUES (
-	sqlc.arg(passkey_id)::bytea,
-	sqlc.arg(username)::text,
-	sqlc.arg(name)::text,
-	sqlc.arg(public_key)::bytea,
-	sqlc.arg(attestation_type)::varchar(64),
-	sqlc.arg(aaguid)::bytea,
-	sqlc.arg(transports)::text[]);
+	sqlc.arg(passkey_id),
+	sqlc.arg(udser_id),
+	sqlc.arg(name),
+	sqlc.arg(public_key),
+	sqlc.arg(attestation_type),
+	sqlc.arg(aaguid),
+	sqlc.arg(transports));
 
 -- name: PasskeyUpdateSignCount :exec
 UPDATE

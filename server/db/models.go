@@ -8,6 +8,8 @@ import (
 	"database/sql/driver"
 	"fmt"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type NetworkType string
@@ -138,13 +140,25 @@ type Owner struct {
 	Type  string `json:"type"`
 }
 
+type Passkey struct {
+	ID              []byte    `json:"id"`
+	Name            string    `json:"name"`
+	UserID          uuid.UUID `json:"user_id"`
+	PublicKey       []byte    `json:"public_key"`
+	AttestationType string    `json:"attestation_type"`
+	Aaguid          []byte    `json:"aaguid"`
+	SignCount       int64     `json:"sign_count"`
+	Transports      []string  `json:"transports"`
+}
+
 type User struct {
-	Username             string      `json:"username"`
-	PasswordHash         string      `json:"password_hash"`
-	InstagramSessionID   string      `json:"instagram_session_id"`
-	InstagramUserID      string      `json:"instagram_user_id"`
-	Network              NetworkType `json:"network"`
-	Categories           []string    `json:"categories"`
-	TiktokSessionID      string      `json:"tiktok_session_id"`
-	TiktokSessionIDGuard string      `json:"tiktok_session_id_guard"`
+	Username             string        `json:"username"`
+	PasswordHash         string        `json:"password_hash"`
+	InstagramSessionID   string        `json:"instagram_session_id"`
+	InstagramUserID      string        `json:"instagram_user_id"`
+	Network              NetworkType   `json:"network"`
+	Categories           []string      `json:"categories"`
+	TiktokSessionID      string        `json:"tiktok_session_id"`
+	TiktokSessionIDGuard string        `json:"tiktok_session_id_guard"`
+	ID                   uuid.NullUUID `json:"id"`
 }

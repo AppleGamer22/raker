@@ -60,6 +60,12 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.historyUpdateOwnerStmt, err = db.PrepareContext(ctx, historyUpdateOwner); err != nil {
 		return nil, fmt.Errorf("error preparing query HistoryUpdateOwner: %w", err)
 	}
+	if q.passkeyUpdateNameStmt, err = db.PrepareContext(ctx, passkeyUpdateName); err != nil {
+		return nil, fmt.Errorf("error preparing query PasskeyUpdateName: %w", err)
+	}
+	if q.passkeyUpdateSignCountStmt, err = db.PrepareContext(ctx, passkeyUpdateSignCount); err != nil {
+		return nil, fmt.Errorf("error preparing query PasskeyUpdateSignCount: %w", err)
+	}
 	if q.updateHistoryDuplicateFileStmt, err = db.PrepareContext(ctx, updateHistoryDuplicateFile); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateHistoryDuplicateFile: %w", err)
 	}
@@ -75,8 +81,14 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.userCategoryRemoveStmt, err = db.PrepareContext(ctx, userCategoryRemove); err != nil {
 		return nil, fmt.Errorf("error preparing query UserCategoryRemove: %w", err)
 	}
+	if q.userCreatePasskeyStmt, err = db.PrepareContext(ctx, userCreatePasskey); err != nil {
+		return nil, fmt.Errorf("error preparing query UserCreatePasskey: %w", err)
+	}
 	if q.userGetStmt, err = db.PrepareContext(ctx, userGet); err != nil {
 		return nil, fmt.Errorf("error preparing query UserGet: %w", err)
+	}
+	if q.userGetPasskeysByUsernameStmt, err = db.PrepareContext(ctx, userGetPasskeysByUsername); err != nil {
+		return nil, fmt.Errorf("error preparing query UserGetPasskeysByUsername: %w", err)
 	}
 	if q.userUpdateHashStmt, err = db.PrepareContext(ctx, userUpdateHash); err != nil {
 		return nil, fmt.Errorf("error preparing query UserUpdateHash: %w", err)
@@ -149,6 +161,16 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing historyUpdateOwnerStmt: %w", cerr)
 		}
 	}
+	if q.passkeyUpdateNameStmt != nil {
+		if cerr := q.passkeyUpdateNameStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing passkeyUpdateNameStmt: %w", cerr)
+		}
+	}
+	if q.passkeyUpdateSignCountStmt != nil {
+		if cerr := q.passkeyUpdateSignCountStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing passkeyUpdateSignCountStmt: %w", cerr)
+		}
+	}
 	if q.updateHistoryDuplicateFileStmt != nil {
 		if cerr := q.updateHistoryDuplicateFileStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing updateHistoryDuplicateFileStmt: %w", cerr)
@@ -174,9 +196,19 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing userCategoryRemoveStmt: %w", cerr)
 		}
 	}
+	if q.userCreatePasskeyStmt != nil {
+		if cerr := q.userCreatePasskeyStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing userCreatePasskeyStmt: %w", cerr)
+		}
+	}
 	if q.userGetStmt != nil {
 		if cerr := q.userGetStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing userGetStmt: %w", cerr)
+		}
+	}
+	if q.userGetPasskeysByUsernameStmt != nil {
+		if cerr := q.userGetPasskeysByUsernameStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing userGetPasskeysByUsernameStmt: %w", cerr)
 		}
 	}
 	if q.userUpdateHashStmt != nil {
@@ -240,12 +272,16 @@ type Queries struct {
 	historyRemoveStmt              *sql.Stmt
 	historyUpdateCategoriesStmt    *sql.Stmt
 	historyUpdateOwnerStmt         *sql.Stmt
+	passkeyUpdateNameStmt          *sql.Stmt
+	passkeyUpdateSignCountStmt     *sql.Stmt
 	updateHistoryDuplicateFileStmt *sql.Stmt
 	updateHistoryRemoveFileStmt    *sql.Stmt
 	userAddStmt                    *sql.Stmt
 	userCategoryAddStmt            *sql.Stmt
 	userCategoryRemoveStmt         *sql.Stmt
+	userCreatePasskeyStmt          *sql.Stmt
 	userGetStmt                    *sql.Stmt
+	userGetPasskeysByUsernameStmt  *sql.Stmt
 	userUpdateHashStmt             *sql.Stmt
 	userUpdateInstagramSessionStmt *sql.Stmt
 }
@@ -266,12 +302,16 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		historyRemoveStmt:              q.historyRemoveStmt,
 		historyUpdateCategoriesStmt:    q.historyUpdateCategoriesStmt,
 		historyUpdateOwnerStmt:         q.historyUpdateOwnerStmt,
+		passkeyUpdateNameStmt:          q.passkeyUpdateNameStmt,
+		passkeyUpdateSignCountStmt:     q.passkeyUpdateSignCountStmt,
 		updateHistoryDuplicateFileStmt: q.updateHistoryDuplicateFileStmt,
 		updateHistoryRemoveFileStmt:    q.updateHistoryRemoveFileStmt,
 		userAddStmt:                    q.userAddStmt,
 		userCategoryAddStmt:            q.userCategoryAddStmt,
 		userCategoryRemoveStmt:         q.userCategoryRemoveStmt,
+		userCreatePasskeyStmt:          q.userCreatePasskeyStmt,
 		userGetStmt:                    q.userGetStmt,
+		userGetPasskeysByUsernameStmt:  q.userGetPasskeysByUsernameStmt,
 		userUpdateHashStmt:             q.userUpdateHashStmt,
 		userUpdateInstagramSessionStmt: q.userUpdateInstagramSessionStmt,
 	}
