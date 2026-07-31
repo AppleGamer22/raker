@@ -152,13 +152,13 @@ type Passkey struct {
 }
 
 type User struct {
-	Username             string        `json:"username"`
-	PasswordHash         string        `json:"password_hash"`
-	InstagramSessionID   string        `json:"instagram_session_id"`
-	InstagramUserID      string        `json:"instagram_user_id"`
-	Network              NetworkType   `json:"network"`
-	Categories           []string      `json:"categories"`
-	TiktokSessionID      string        `json:"tiktok_session_id"`
-	TiktokSessionIDGuard string        `json:"tiktok_session_id_guard"`
-	ID                   uuid.NullUUID `json:"id"`
+	Username             string      `json:"username"`
+	PasswordHash         string      `json:"password_hash"`
+	InstagramSessionID   string      `json:"instagram_session_id"`
+	InstagramUserID      string      `json:"instagram_user_id"`
+	Network              NetworkType `json:"network"`
+	Categories           []string    `json:"categories"`
+	TiktokSessionID      string      `json:"tiktok_session_id"`
+	TiktokSessionIDGuard string      `json:"tiktok_session_id_guard"`
+	ID                   uuid.UUID   `json:"id"`
 }

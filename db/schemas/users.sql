@@ -14,7 +14,7 @@ ALTER TABLE Users
 	ADD COLUMN tiktok_session_id_guard text NOT NULL DEFAULT '';
 
 ALTER TABLE Users
-	ADD COLUMN id uuid UNIQUE DEFAULT gen_random_uuid();
+	ADD COLUMN id uuid NOT NULL UNIQUE DEFAULT gen_random_uuid();
 
 CREATE TABLE Passkeys(
 	id bytea PRIMARY KEY,

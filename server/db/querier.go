@@ -6,6 +6,8 @@ package db
 
 import (
 	"context"
+
+	"github.com/google/uuid"
 )
 
 type Querier interface {
@@ -27,12 +29,13 @@ type Querier interface {
 	PasskeyUpdateSignCount(ctx context.Context, passkeyID []byte) error
 	UpdateHistoryDuplicateFile(ctx context.Context, arg UpdateHistoryDuplicateFileParams) (History, error)
 	UpdateHistoryRemoveFile(ctx context.Context, arg UpdateHistoryRemoveFileParams) (History, error)
-	UserAdd(ctx context.Context, arg UserAddParams) error
+	UserAdd(ctx context.Context, arg UserAddParams) (User, error)
 	UserCategoryAdd(ctx context.Context, arg UserCategoryAddParams) error
 	UserCategoryRemove(ctx context.Context, arg UserCategoryRemoveParams) error
 	UserCreatePasskey(ctx context.Context, arg UserCreatePasskeyParams) error
-	UserGet(ctx context.Context, username string) (User, error)
-	UserGetPasskeysByUsername(ctx context.Context, username string) ([]Passkey, error)
+	UserGetByID(ctx context.Context, userID uuid.UUID) (User, error)
+	UserGetByUsername(ctx context.Context, username string) (User, error)
+	UserGetPasskeysByID(ctx context.Context, userID []byte) ([]Passkey, error)
 	UserUpdateHash(ctx context.Context, arg UserUpdateHashParams) error
 	UserUpdateInstagramSession(ctx context.Context, arg UserUpdateInstagramSessionParams) error
 }

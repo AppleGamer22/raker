@@ -14,6 +14,7 @@ sql:
         emit_interface: true
         emit_enum_valid_method: true
         # emit_all_enum_values: true
+        emit_pointers_for_null_types: true
         rename:
           urls: URLs
           PostType: PostType
@@ -22,3 +23,7 @@ sql:
             go_type:
               import: time
               type: Time
+          - db_type: uuid
+            go_type:
+              import: github.com/google/uuid
+              type: UUID

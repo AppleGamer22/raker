@@ -9,6 +9,7 @@ import (
 	context "context"
 	errors "errors"
 	v1 "github.com/AppleGamer22/raker/server/buf/proto/raker/v1"
+	webauthn "github.com/AppleGamer22/raker/server/buf/proto/raker/v1/webauthn"
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
 	http "net/http"
 	strings "strings"
@@ -34,6 +35,16 @@ const (
 // reflection-formatted method names, remove the leading slash and convert the remaining slash to a
 // period.
 const (
+	// RakerServerBeginSignUpProcedure is the fully-qualified name of the RakerServer's BeginSignUp RPC.
+	RakerServerBeginSignUpProcedure = "/raker.v1.RakerServer/BeginSignUp"
+	// RakerServerFinishSignUpProcedure is the fully-qualified name of the RakerServer's FinishSignUp
+	// RPC.
+	RakerServerFinishSignUpProcedure = "/raker.v1.RakerServer/FinishSignUp"
+	// RakerServerBeginSignInProcedure is the fully-qualified name of the RakerServer's BeginSignIn RPC.
+	RakerServerBeginSignInProcedure = "/raker.v1.RakerServer/BeginSignIn"
+	// RakerServerFinishSignInProcedure is the fully-qualified name of the RakerServer's FinishSignIn
+	// RPC.
+	RakerServerFinishSignInProcedure = "/raker.v1.RakerServer/FinishSignIn"
 	// RakerServerSignUpInstagramProcedure is the fully-qualified name of the RakerServer's
 	// SignUpInstagram RPC.
 	RakerServerSignUpInstagramProcedure = "/raker.v1.RakerServer/SignUpInstagram"
@@ -87,6 +98,10 @@ const (
 
 // RakerServerClient is a client for the raker.v1.RakerServer service.
 type RakerServerClient interface {
+	BeginSignUp(context.Context, *webauthn.BeginSignUpRequest) (*webauthn.BeginSignUpResponse, error)
+	FinishSignUp(context.Context, *webauthn.FinishSignUpRequest) (*webauthn.FinishSignUpResponse, error)
+	BeginSignIn(context.Context, *webauthn.BeginSignInRequest) (*webauthn.BeginSignInResponse, error)
+	FinishSignIn(context.Context, *webauthn.FinishSignInRequest) (*webauthn.FinishSignInResponse, error)
 	SignUpInstagram(context.Context, *v1.SignUpRequest) (*emptypb.Empty, error)
 	SignInInstagram(context.Context, *v1.SignInRequest) (*emptypb.Empty, error)
 	EditCategory(context.Context, *v1.EditCategoryRequest) (*emptypb.Empty, error)
@@ -118,6 +133,30 @@ func NewRakerServerClient(httpClient connect.HTTPClient, baseURL string, opts ..
 	baseURL = strings.TrimRight(baseURL, "/")
 	rakerServerMethods := v1.File_raker_v1_raker_proto.Services().ByName("RakerServer").Methods()
 	return &rakerServerClient{
+		beginSignUp: connect.NewClient[webauthn.BeginSignUpRequest, webauthn.BeginSignUpResponse](
+			httpClient,
+			baseURL+RakerServerBeginSignUpProcedure,
+			connect.WithSchema(rakerServerMethods.ByName("BeginSignUp")),
+			connect.WithClientOptions(opts...),
+		),
+		finishSignUp: connect.NewClient[webauthn.FinishSignUpRequest, webauthn.FinishSignUpResponse](
+			httpClient,
+			baseURL+RakerServerFinishSignUpProcedure,
+			connect.WithSchema(rakerServerMethods.ByName("FinishSignUp")),
+			connect.WithClientOptions(opts...),
+		),
+		beginSignIn: connect.NewClient[webauthn.BeginSignInRequest, webauthn.BeginSignInResponse](
+			httpClient,
+			baseURL+RakerServerBeginSignInProcedure,
+			connect.WithSchema(rakerServerMethods.ByName("BeginSignIn")),
+			connect.WithClientOptions(opts...),
+		),
+		finishSignIn: connect.NewClient[webauthn.FinishSignInRequest, webauthn.FinishSignInResponse](
+			httpClient,
+			baseURL+RakerServerFinishSignInProcedure,
+			connect.WithSchema(rakerServerMethods.ByName("FinishSignIn")),
+			connect.WithClientOptions(opts...),
+		),
 		signUpInstagram: connect.NewClient[v1.SignUpRequest, emptypb.Empty](
 			httpClient,
 			baseURL+RakerServerSignUpInstagramProcedure,
@@ -231,6 +270,10 @@ func NewRakerServerClient(httpClient connect.HTTPClient, baseURL string, opts ..
 
 // rakerServerClient implements RakerServerClient.
 type rakerServerClient struct {
+	beginSignUp         *connect.Client[webauthn.BeginSignUpRequest, webauthn.BeginSignUpResponse]
+	finishSignUp        *connect.Client[webauthn.FinishSignUpRequest, webauthn.FinishSignUpResponse]
+	beginSignIn         *connect.Client[webauthn.BeginSignInRequest, webauthn.BeginSignInResponse]
+	finishSignIn        *connect.Client[webauthn.FinishSignInRequest, webauthn.FinishSignInResponse]
 	signUpInstagram     *connect.Client[v1.SignUpRequest, emptypb.Empty]
 	signInInstagram     *connect.Client[v1.SignInRequest, emptypb.Empty]
 	editCategory        *connect.Client[v1.EditCategoryRequest, emptypb.Empty]
@@ -249,6 +292,42 @@ type rakerServerClient struct {
 	cropFile            *connect.Client[v1.CropFileRequest, emptypb.Empty]
 	rotateFile          *connect.Client[v1.RotateFileRequest, emptypb.Empty]
 	duplicateFile       *connect.Client[v1.FileSubRequest, v1.FileSubRequest]
+}
+
+// BeginSignUp calls raker.v1.RakerServer.BeginSignUp.
+func (c *rakerServerClient) BeginSignUp(ctx context.Context, req *webauthn.BeginSignUpRequest) (*webauthn.BeginSignUpResponse, error) {
+	response, err := c.beginSignUp.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
+}
+
+// FinishSignUp calls raker.v1.RakerServer.FinishSignUp.
+func (c *rakerServerClient) FinishSignUp(ctx context.Context, req *webauthn.FinishSignUpRequest) (*webauthn.FinishSignUpResponse, error) {
+	response, err := c.finishSignUp.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
+}
+
+// BeginSignIn calls raker.v1.RakerServer.BeginSignIn.
+func (c *rakerServerClient) BeginSignIn(ctx context.Context, req *webauthn.BeginSignInRequest) (*webauthn.BeginSignInResponse, error) {
+	response, err := c.beginSignIn.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
+}
+
+// FinishSignIn calls raker.v1.RakerServer.FinishSignIn.
+func (c *rakerServerClient) FinishSignIn(ctx context.Context, req *webauthn.FinishSignInRequest) (*webauthn.FinishSignInResponse, error) {
+	response, err := c.finishSignIn.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // SignUpInstagram calls raker.v1.RakerServer.SignUpInstagram.
@@ -415,6 +494,10 @@ func (c *rakerServerClient) DuplicateFile(ctx context.Context, req *v1.FileSubRe
 
 // RakerServerHandler is an implementation of the raker.v1.RakerServer service.
 type RakerServerHandler interface {
+	BeginSignUp(context.Context, *webauthn.BeginSignUpRequest) (*webauthn.BeginSignUpResponse, error)
+	FinishSignUp(context.Context, *webauthn.FinishSignUpRequest) (*webauthn.FinishSignUpResponse, error)
+	BeginSignIn(context.Context, *webauthn.BeginSignInRequest) (*webauthn.BeginSignInResponse, error)
+	FinishSignIn(context.Context, *webauthn.FinishSignInRequest) (*webauthn.FinishSignInResponse, error)
 	SignUpInstagram(context.Context, *v1.SignUpRequest) (*emptypb.Empty, error)
 	SignInInstagram(context.Context, *v1.SignInRequest) (*emptypb.Empty, error)
 	EditCategory(context.Context, *v1.EditCategoryRequest) (*emptypb.Empty, error)
@@ -442,6 +525,30 @@ type RakerServerHandler interface {
 // and JSON codecs. They also support gzip compression.
 func NewRakerServerHandler(svc RakerServerHandler, opts ...connect.HandlerOption) (string, http.Handler) {
 	rakerServerMethods := v1.File_raker_v1_raker_proto.Services().ByName("RakerServer").Methods()
+	rakerServerBeginSignUpHandler := connect.NewUnaryHandlerSimple(
+		RakerServerBeginSignUpProcedure,
+		svc.BeginSignUp,
+		connect.WithSchema(rakerServerMethods.ByName("BeginSignUp")),
+		connect.WithHandlerOptions(opts...),
+	)
+	rakerServerFinishSignUpHandler := connect.NewUnaryHandlerSimple(
+		RakerServerFinishSignUpProcedure,
+		svc.FinishSignUp,
+		connect.WithSchema(rakerServerMethods.ByName("FinishSignUp")),
+		connect.WithHandlerOptions(opts...),
+	)
+	rakerServerBeginSignInHandler := connect.NewUnaryHandlerSimple(
+		RakerServerBeginSignInProcedure,
+		svc.BeginSignIn,
+		connect.WithSchema(rakerServerMethods.ByName("BeginSignIn")),
+		connect.WithHandlerOptions(opts...),
+	)
+	rakerServerFinishSignInHandler := connect.NewUnaryHandlerSimple(
+		RakerServerFinishSignInProcedure,
+		svc.FinishSignIn,
+		connect.WithSchema(rakerServerMethods.ByName("FinishSignIn")),
+		connect.WithHandlerOptions(opts...),
+	)
 	rakerServerSignUpInstagramHandler := connect.NewUnaryHandlerSimple(
 		RakerServerSignUpInstagramProcedure,
 		svc.SignUpInstagram,
@@ -552,6 +659,14 @@ func NewRakerServerHandler(svc RakerServerHandler, opts ...connect.HandlerOption
 	)
 	return "/raker.v1.RakerServer/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
+		case RakerServerBeginSignUpProcedure:
+			rakerServerBeginSignUpHandler.ServeHTTP(w, r)
+		case RakerServerFinishSignUpProcedure:
+			rakerServerFinishSignUpHandler.ServeHTTP(w, r)
+		case RakerServerBeginSignInProcedure:
+			rakerServerBeginSignInHandler.ServeHTTP(w, r)
+		case RakerServerFinishSignInProcedure:
+			rakerServerFinishSignInHandler.ServeHTTP(w, r)
 		case RakerServerSignUpInstagramProcedure:
 			rakerServerSignUpInstagramHandler.ServeHTTP(w, r)
 		case RakerServerSignInInstagramProcedure:
@@ -596,6 +711,22 @@ func NewRakerServerHandler(svc RakerServerHandler, opts ...connect.HandlerOption
 
 // UnimplementedRakerServerHandler returns CodeUnimplemented from all methods.
 type UnimplementedRakerServerHandler struct{}
+
+func (UnimplementedRakerServerHandler) BeginSignUp(context.Context, *webauthn.BeginSignUpRequest) (*webauthn.BeginSignUpResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raker.v1.RakerServer.BeginSignUp is not implemented"))
+}
+
+func (UnimplementedRakerServerHandler) FinishSignUp(context.Context, *webauthn.FinishSignUpRequest) (*webauthn.FinishSignUpResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raker.v1.RakerServer.FinishSignUp is not implemented"))
+}
+
+func (UnimplementedRakerServerHandler) BeginSignIn(context.Context, *webauthn.BeginSignInRequest) (*webauthn.BeginSignInResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raker.v1.RakerServer.BeginSignIn is not implemented"))
+}
+
+func (UnimplementedRakerServerHandler) FinishSignIn(context.Context, *webauthn.FinishSignInRequest) (*webauthn.FinishSignInResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raker.v1.RakerServer.FinishSignIn is not implemented"))
+}
 
 func (UnimplementedRakerServerHandler) SignUpInstagram(context.Context, *v1.SignUpRequest) (*emptypb.Empty, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raker.v1.RakerServer.SignUpInstagram is not implemented"))

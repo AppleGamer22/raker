@@ -7,12 +7,14 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"connectrpc.com/connect"
 	"connectrpc.com/validate"
 	"github.com/AppleGamer22/raker/server/authenticator"
 	"github.com/AppleGamer22/raker/server/buf/connect/raker/v1/v1connect"
 	"github.com/AppleGamer22/raker/server/db"
+	"github.com/go-webauthn/webauthn/protocol"
 	"github.com/go-webauthn/webauthn/webauthn"
 	"github.com/spf13/viper"
 
@@ -27,21 +29,22 @@ type Configuration struct {
 	Secret       string
 	URI          string
 	Database     string
-	Username     string
-	Password     string
 	Storage      string
 	Directories  bool
 	SecureCookie bool
 	Port         uint
+	RPID         string
+	RPOrigins    []string
 }
 
 type RakerServer struct {
 	Configuration
-	DBConnection  *sql.DB
-	DBClient      *db.Queries
-	Authenticator authenticator.Authenticator
-	WebAuthn      *webauthn.WebAuthn
-	HTTPServer    http.Server
+	DBConnection         *sql.DB
+	DBClient             *db.Queries
+	Authenticator        authenticator.Authenticator
+	WebAuthn             *webauthn.WebAuthn
+	WebAuthnSessionStore authenticator.WebAuthnSessionStore
+	HTTPServer           http.Server
 }
 
 // type rakerServerHandlerAdapter struct {
@@ -61,6 +64,7 @@ type RakerServer struct {
 
 func NewRakerServer() (*RakerServer, error) {
 	rakerServer := RakerServer{
+		WebAuthnSessionStore: authenticator.NewSessionStore(),
 		Configuration: Configuration{
 			Database:    "raker",
 			Storage:     ".",
@@ -78,6 +82,31 @@ func NewRakerServer() (*RakerServer, error) {
 	if err := viper.Unmarshal(&rakerServer.Configuration); err != nil {
 		log.Fatal(err)
 	}
+
+	wa, err := webauthn.New(&webauthn.Config{
+		RPDisplayName:         "Raker",
+		RPID:                  rakerServer.Configuration.RPID,
+		RPOrigins:             rakerServer.WebAuthn.Config.RPOrigins,
+		AttestationPreference: protocol.PreferNoAttestation,
+		AuthenticatorSelection: protocol.AuthenticatorSelection{
+			UserVerification: protocol.VerificationRequired,
+		},
+		Timeouts: webauthn.TimeoutsConfig{
+			Registration: webauthn.TimeoutConfig{
+				Timeout: 5 * time.Minute,
+				Enforce: true,
+			},
+			Login: webauthn.TimeoutConfig{
+				Timeout: 5 * time.Minute,
+				Enforce: true,
+			},
+		},
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	rakerServer.WebAuthn = wa
 
 	if rakerServer.Configuration.Secret == "" && !viper.IsSet("secret") {
 		log.Fatal("A JWT secret must be set via a config file or an environment variable")
@@ -147,6 +176,8 @@ func init() {
 	viper.BindEnv("DIRECTORIES")
 	viper.BindEnv("SECURE_COOKIES")
 	viper.BindEnv("PORT")
+	viper.BindEnv("RPID")
+	viper.BindEnv("RPORIGINS")
 	viper.SetConfigName(".raker")
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath(".")

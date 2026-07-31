@@ -45,7 +45,7 @@ func (q *Queries) PasskeyUpdateSignCount(ctx context.Context, passkeyID []byte) 
 	return err
 }
 
-const userAdd = `-- name: UserAdd :exec
+const userAdd = `-- name: UserAdd :one
 INSERT INTO Users(
 	username,
 	password_hash,
@@ -60,6 +60,8 @@ VALUES (
 	$4::text,
 	'instagram',
 	$5::text[])
+RETURNING
+	username, password_hash, instagram_session_id, instagram_user_id, network, categories, tiktok_session_id, tiktok_session_id_guard, id
 `
 
 type UserAddParams struct {
@@ -70,15 +72,27 @@ type UserAddParams struct {
 	Categories         []string `json:"categories"`
 }
 
-func (q *Queries) UserAdd(ctx context.Context, arg UserAddParams) error {
-	_, err := q.exec(ctx, q.userAddStmt, userAdd,
+func (q *Queries) UserAdd(ctx context.Context, arg UserAddParams) (User, error) {
+	row := q.queryRow(ctx, q.userAddStmt, userAdd,
 		arg.Username,
 		arg.PasswordHash,
 		arg.InstagramSessionID,
 		arg.InstagramUserID,
 		pq.Array(arg.Categories),
 	)
-	return err
+	var i User
+	err := row.Scan(
+		&i.Username,
+		&i.PasswordHash,
+		&i.InstagramSessionID,
+		&i.InstagramUserID,
+		&i.Network,
+		pq.Array(&i.Categories),
+		&i.TiktokSessionID,
+		&i.TiktokSessionIDGuard,
+		&i.ID,
+	)
+	return i, err
 }
 
 const userCategoryAdd = `-- name: UserCategoryAdd :exec
@@ -131,6 +145,7 @@ INSERT INTO Passkeys(
 	public_key,
 	attestation_type,
 	aaguid,
+	sign_count,
 	transports)
 VALUES (
 	$1,
@@ -139,43 +154,46 @@ VALUES (
 	$4,
 	$5,
 	$6,
-	$7)
+	$7,
+	$8)
 `
 
 type UserCreatePasskeyParams struct {
 	PasskeyID       []byte    `json:"passkey_id"`
-	UdserID         uuid.UUID `json:"udser_id"`
+	UserID          uuid.UUID `json:"user_id"`
 	Name            string    `json:"name"`
 	PublicKey       []byte    `json:"public_key"`
 	AttestationType string    `json:"attestation_type"`
 	Aaguid          []byte    `json:"aaguid"`
+	SignCount       int64     `json:"sign_count"`
 	Transports      []string  `json:"transports"`
 }
 
 func (q *Queries) UserCreatePasskey(ctx context.Context, arg UserCreatePasskeyParams) error {
 	_, err := q.exec(ctx, q.userCreatePasskeyStmt, userCreatePasskey,
 		arg.PasskeyID,
-		arg.UdserID,
+		arg.UserID,
 		arg.Name,
 		arg.PublicKey,
 		arg.AttestationType,
 		arg.Aaguid,
+		arg.SignCount,
 		pq.Array(arg.Transports),
 	)
 	return err
 }
 
-const userGet = `-- name: UserGet :one
+const userGetByID = `-- name: UserGetByID :one
 SELECT
 	username, password_hash, instagram_session_id, instagram_user_id, network, categories, tiktok_session_id, tiktok_session_id_guard, id
 FROM
 	Users
 WHERE
-	username = $1::text
+	id = $1
 `
 
-func (q *Queries) UserGet(ctx context.Context, username string) (User, error) {
-	row := q.queryRow(ctx, q.userGetStmt, userGet, username)
+func (q *Queries) UserGetByID(ctx context.Context, userID uuid.UUID) (User, error) {
+	row := q.queryRow(ctx, q.userGetByIDStmt, userGetByID, userID)
 	var i User
 	err := row.Scan(
 		&i.Username,
@@ -191,17 +209,43 @@ func (q *Queries) UserGet(ctx context.Context, username string) (User, error) {
 	return i, err
 }
 
-const userGetPasskeysByUsername = `-- name: UserGetPasskeysByUsername :many
+const userGetByUsername = `-- name: UserGetByUsername :one
+SELECT
+	username, password_hash, instagram_session_id, instagram_user_id, network, categories, tiktok_session_id, tiktok_session_id_guard, id
+FROM
+	Users
+WHERE
+	username = $1::text
+`
+
+func (q *Queries) UserGetByUsername(ctx context.Context, username string) (User, error) {
+	row := q.queryRow(ctx, q.userGetByUsernameStmt, userGetByUsername, username)
+	var i User
+	err := row.Scan(
+		&i.Username,
+		&i.PasswordHash,
+		&i.InstagramSessionID,
+		&i.InstagramUserID,
+		&i.Network,
+		pq.Array(&i.Categories),
+		&i.TiktokSessionID,
+		&i.TiktokSessionIDGuard,
+		&i.ID,
+	)
+	return i, err
+}
+
+const userGetPasskeysByID = `-- name: UserGetPasskeysByID :many
 SELECT
 	id, name, user_id, public_key, attestation_type, aaguid, sign_count, transports
 FROM
 	passkeys
 WHERE
-	username = $1::text
+	id = $1
 `
 
-func (q *Queries) UserGetPasskeysByUsername(ctx context.Context, username string) ([]Passkey, error) {
-	rows, err := q.query(ctx, q.userGetPasskeysByUsernameStmt, userGetPasskeysByUsername, username)
+func (q *Queries) UserGetPasskeysByID(ctx context.Context, userID []byte) ([]Passkey, error) {
+	rows, err := q.query(ctx, q.userGetPasskeysByIDStmt, userGetPasskeysByID, userID)
 	if err != nil {
 		return nil, err
 	}

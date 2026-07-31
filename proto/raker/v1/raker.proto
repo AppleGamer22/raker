@@ -4,8 +4,8 @@ package raker.v1;
 
 import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
-import "google/type/fraction.proto";
 import "google/type/latlng.proto";
+import "raker/v1/webauthn/passkey.proto";
 
 option go_package = "github.com/AppleGamer22/raker/server/buf/proto/raker/v1";
 
@@ -142,6 +142,12 @@ message RotateFileRequest {
 }
 
 service RakerServer {
+  rpc BeginSignUp(raker.v1.webauthn.BeginSignUpRequest) returns (raker.v1.webauthn.BeginSignUpResponse);
+  rpc FinishSignUp(raker.v1.webauthn.FinishSignUpRequest) returns (raker.v1.webauthn.FinishSignUpResponse);
+
+  rpc BeginSignIn(raker.v1.webauthn.BeginSignInRequest) returns (raker.v1.webauthn.BeginSignInResponse);
+  rpc FinishSignIn(raker.v1.webauthn.FinishSignInRequest) returns (raker.v1.webauthn.FinishSignInResponse);
+
   rpc SignUpInstagram(SignUpRequest) returns (google.protobuf.Empty);
 
   rpc SignInInstagram(SignInRequest) returns (google.protobuf.Empty);

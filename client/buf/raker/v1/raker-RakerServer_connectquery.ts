@@ -5,6 +5,26 @@
 import { RakerServer } from "./raker_pb";
 
 /**
+ * @generated from rpc raker.v1.RakerServer.BeginSignUp
+ */
+export const beginSignUp = RakerServer.method.beginSignUp;
+
+/**
+ * @generated from rpc raker.v1.RakerServer.FinishSignUp
+ */
+export const finishSignUp = RakerServer.method.finishSignUp;
+
+/**
+ * @generated from rpc raker.v1.RakerServer.BeginSignIn
+ */
+export const beginSignIn = RakerServer.method.beginSignIn;
+
+/**
+ * @generated from rpc raker.v1.RakerServer.FinishSignIn
+ */
+export const finishSignIn = RakerServer.method.finishSignIn;
+
+/**
  * @generated from rpc raker.v1.RakerServer.SignUpInstagram
  */
 export const signUpInstagram = RakerServer.method.signUpInstagram;

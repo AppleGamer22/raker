@@ -1,4 +1,4 @@
--- name: UserAdd :exec
+-- name: UserAdd :one
 INSERT INTO Users(
 	username,
 	password_hash,
@@ -12,7 +12,9 @@ VALUES (
 	sqlc.arg(instagram_session_id)::text,
 	sqlc.arg(instagram_user_id)::text,
 	'instagram',
-	sqlc.arg(categories)::text[]);
+	sqlc.arg(categories)::text[])
+RETURNING
+	*;
 
 -- name: UserUpdateInstagramSession :exec
 UPDATE
@@ -52,7 +54,7 @@ SET
 WHERE
 	username = sqlc.arg(username)::text;
 
--- name: UserGet :one
+-- name: UserGetByUsername :one
 SELECT
 	*
 FROM
@@ -60,13 +62,21 @@ FROM
 WHERE
 	username = sqlc.arg(username)::text;
 
--- name: UserGetPasskeysByUsername :many
+-- name: UserGetByID :one
+SELECT
+	*
+FROM
+	Users
+WHERE
+	id = sqlc.arg(user_id);
+
+-- name: UserGetPasskeysByID :many
 SELECT
 	*
 FROM
 	passkeys
 WHERE
-	username = sqlc.arg(username)::text;
+	id = sqlc.arg(user_id);
 
 -- name: UserCreatePasskey :exec
 INSERT INTO Passkeys(
@@ -76,14 +86,16 @@ INSERT INTO Passkeys(
 	public_key,
 	attestation_type,
 	aaguid,
+	sign_count,
 	transports)
 VALUES (
 	sqlc.arg(passkey_id),
-	sqlc.arg(udser_id),
+	sqlc.arg(user_id),
 	sqlc.arg(name),
 	sqlc.arg(public_key),
 	sqlc.arg(attestation_type),
 	sqlc.arg(aaguid),
+	sqlc.arg(sign_count),
 	sqlc.arg(transports));
 
 -- name: PasskeyUpdateSignCount :exec

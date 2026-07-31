@@ -1,7 +1,9 @@
 package handlers
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -9,8 +11,10 @@ import (
 	"connectrpc.com/connect"
 	"github.com/AppleGamer22/raker/server/authenticator"
 	v1 "github.com/AppleGamer22/raker/server/buf/proto/raker/v1"
+	"github.com/AppleGamer22/raker/server/buf/proto/raker/v1/webauthn"
 	"github.com/AppleGamer22/raker/server/db"
 	"github.com/charmbracelet/log"
+	"github.com/google/uuid"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
@@ -29,7 +33,7 @@ func (server *RakerServer) SignUpInstagram(ctx context.Context, request *v1.Sign
 		sessionID = *request.SessionId
 		userID = *request.UserId
 	}
-	_, err := server.DBClient.UserGet(context.Background(), username)
+	_, err := server.DBClient.UserGetByUsername(context.Background(), username)
 	if err == nil {
 		log.Error("username already exists", "username", username)
 		return &emptypb.Empty{}, connect.NewError(connect.CodeAlreadyExists, errors.New("username already exists"))
@@ -63,7 +67,7 @@ func (server *RakerServer) SignUpInstagram(ctx context.Context, request *v1.Sign
 func (server *RakerServer) SignInInstagram(ctx context.Context, request *v1.SignInRequest) (*emptypb.Empty, error) {
 	username := request.Username
 	password := request.Password
-	user, err := server.DBClient.UserGet(context.Background(), username)
+	user, err := server.DBClient.UserGetByUsername(context.Background(), username)
 	if err != nil {
 		log.Error(err)
 		return &emptypb.Empty{}, connect.NewError(connect.CodeUnauthenticated, errors.New("incorrect credentials"))
@@ -107,7 +111,7 @@ func (server *RakerServer) GetUserFromCookie(cookie *http.Cookie) (db.User, erro
 		return db.User{}, err
 	}
 
-	user, err := server.DBClient.UserGet(context.Background(), username)
+	user, err := server.DBClient.UserGetByUsername(context.Background(), username)
 	return user, err
 }
 
@@ -200,4 +204,99 @@ func (server *RakerServer) EditUserCredentials(ctx context.Context, request *v1.
 	}
 
 	return &emptypb.Empty{}, nil
+}
+
+// BeginSignUp implements [v1connect.RakerServerHandler].
+func (server *RakerServer) BeginSignUp(ctx context.Context, request *webauthn.BeginSignUpRequest) (*webauthn.BeginSignUpResponse, error) {
+	if request.Username == "" {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("username required"))
+	}
+
+	_, err := server.DBClient.UserGetByUsername(context.Background(), request.Username)
+	if err == nil {
+		log.Error("username already exists", "username", request.Username)
+		return nil, connect.NewError(connect.CodeAlreadyExists, errors.New("username already exists"))
+	}
+
+	user, err := server.DBClient.UserAdd(context.Background(), db.UserAddParams{Username: request.Username})
+	if err != nil {
+		log.Error(err)
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
+	userEntity := &authenticator.UserEntity{ID: user.ID.UUID, Username: user.Username}
+
+	options, sessionData, err := server.WebAuthn.BeginRegistration(userEntity)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
+	sessionID := uuid.NewString()
+	server.WebAuthnSessionStore.Set(sessionID, *sessionData)
+
+	optionsJSON, _ := json.Marshal(options)
+
+	return &webauthn.BeginSignUpResponse{
+		SessionId:   sessionID,
+		OptionsJson: string(optionsJSON),
+	}, nil
+}
+
+// FinishSignUp implements [v1connect.RakerServerHandler].
+func (server *RakerServer) FinishSignUp(ctx context.Context, request *webauthn.FinishSignUpRequest) (*webauthn.FinishSignUpResponse, error) {
+	sessionData, ok := server.WebAuthnSessionStore.GetAndDelete(request.SessionId)
+	if !ok {
+		return &webauthn.FinishSignUpResponse{}, connect.NewError(connect.CodeUnauthenticated, errors.New("session expired or invalid"))
+	}
+
+	var userID uuid.UUID
+	copy(userID[:], sessionData.UserID)
+
+	user, err := server.DBClient.UserGetByID(ctx, userID)
+	if err != nil {
+		return &webauthn.FinishSignUpResponse{}, connect.NewError(connect.CodeNotFound, errors.New("user not found"))
+	}
+
+	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, "", bytes.NewReader([]byte(request.GetResponseJson())))
+	if err != nil {
+		return &webauthn.FinishSignUpResponse{}, connect.NewError(connect.CodeInvalidArgument, err)
+	}
+	httpReq.Header.Set("Content-Type", "application/json")
+
+	userEntity := &authenticator.UserEntity{ID: user.ID, Username: user.Username}
+	credential, err := server.WebAuthn.FinishRegistration(userEntity, sessionData, httpReq)
+	if err != nil {
+		return &webauthn.FinishSignUpResponse{}, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("passkey verification failed: %w", err))
+	}
+
+	var transports []string
+	for _, t := range credential.Transport {
+		transports = append(transports, string(t))
+	}
+
+	err = server.DBClient.UserCreatePasskey(ctx, db.UserCreatePasskeyParams{
+		PasskeyID:       credential.ID,
+		UserID:          user.ID,
+		PublicKey:       credential.PublicKey,
+		AttestationType: credential.AttestationType,
+		Aaguid:          credential.Authenticator.AAGUID,
+		SignCount:       int64(credential.Authenticator.SignCount),
+		Transports:      transports,
+		Name:            request.PasskeyName,
+	})
+	if err != nil {
+		return &webauthn.FinishSignUpResponse{}, connect.NewError(connect.CodeInternal, err)
+	}
+
+	return &webauthn.FinishSignUpResponse{Success: true}, nil
+}
+
+// BeginSignIn implements [v1connect.RakerServerHandler].
+func (server *RakerServer) BeginSignIn(ctx context.Context, request *webauthn.BeginSignInRequest) (*webauthn.BeginSignInResponse, error) {
+	panic("unimplemented")
+}
+
+// FinishSignIn implements [v1connect.RakerServerHandler].
+func (server *RakerServer) FinishSignIn(context.Context, *webauthn.FinishSignInRequest) (*webauthn.FinishSignInResponse, error) {
+	panic("unimplemented")
 }

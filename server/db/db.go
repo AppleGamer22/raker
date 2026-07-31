@@ -84,11 +84,14 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.userCreatePasskeyStmt, err = db.PrepareContext(ctx, userCreatePasskey); err != nil {
 		return nil, fmt.Errorf("error preparing query UserCreatePasskey: %w", err)
 	}
-	if q.userGetStmt, err = db.PrepareContext(ctx, userGet); err != nil {
-		return nil, fmt.Errorf("error preparing query UserGet: %w", err)
+	if q.userGetByIDStmt, err = db.PrepareContext(ctx, userGetByID); err != nil {
+		return nil, fmt.Errorf("error preparing query UserGetByID: %w", err)
 	}
-	if q.userGetPasskeysByUsernameStmt, err = db.PrepareContext(ctx, userGetPasskeysByUsername); err != nil {
-		return nil, fmt.Errorf("error preparing query UserGetPasskeysByUsername: %w", err)
+	if q.userGetByUsernameStmt, err = db.PrepareContext(ctx, userGetByUsername); err != nil {
+		return nil, fmt.Errorf("error preparing query UserGetByUsername: %w", err)
+	}
+	if q.userGetPasskeysByIDStmt, err = db.PrepareContext(ctx, userGetPasskeysByID); err != nil {
+		return nil, fmt.Errorf("error preparing query UserGetPasskeysByID: %w", err)
 	}
 	if q.userUpdateHashStmt, err = db.PrepareContext(ctx, userUpdateHash); err != nil {
 		return nil, fmt.Errorf("error preparing query UserUpdateHash: %w", err)
@@ -201,14 +204,19 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing userCreatePasskeyStmt: %w", cerr)
 		}
 	}
-	if q.userGetStmt != nil {
-		if cerr := q.userGetStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing userGetStmt: %w", cerr)
+	if q.userGetByIDStmt != nil {
+		if cerr := q.userGetByIDStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing userGetByIDStmt: %w", cerr)
 		}
 	}
-	if q.userGetPasskeysByUsernameStmt != nil {
-		if cerr := q.userGetPasskeysByUsernameStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing userGetPasskeysByUsernameStmt: %w", cerr)
+	if q.userGetByUsernameStmt != nil {
+		if cerr := q.userGetByUsernameStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing userGetByUsernameStmt: %w", cerr)
+		}
+	}
+	if q.userGetPasskeysByIDStmt != nil {
+		if cerr := q.userGetPasskeysByIDStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing userGetPasskeysByIDStmt: %w", cerr)
 		}
 	}
 	if q.userUpdateHashStmt != nil {
@@ -280,8 +288,9 @@ type Queries struct {
 	userCategoryAddStmt            *sql.Stmt
 	userCategoryRemoveStmt         *sql.Stmt
 	userCreatePasskeyStmt          *sql.Stmt
-	userGetStmt                    *sql.Stmt
-	userGetPasskeysByUsernameStmt  *sql.Stmt
+	userGetByIDStmt                *sql.Stmt
+	userGetByUsernameStmt          *sql.Stmt
+	userGetPasskeysByIDStmt        *sql.Stmt
 	userUpdateHashStmt             *sql.Stmt
 	userUpdateInstagramSessionStmt *sql.Stmt
 }
@@ -310,8 +319,9 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		userCategoryAddStmt:            q.userCategoryAddStmt,
 		userCategoryRemoveStmt:         q.userCategoryRemoveStmt,
 		userCreatePasskeyStmt:          q.userCreatePasskeyStmt,
-		userGetStmt:                    q.userGetStmt,
-		userGetPasskeysByUsernameStmt:  q.userGetPasskeysByUsernameStmt,
+		userGetByIDStmt:                q.userGetByIDStmt,
+		userGetByUsernameStmt:          q.userGetByUsernameStmt,
+		userGetPasskeysByIDStmt:        q.userGetPasskeysByIDStmt,
 		userUpdateHashStmt:             q.userUpdateHashStmt,
 		userUpdateInstagramSessionStmt: q.userUpdateInstagramSessionStmt,
 	}

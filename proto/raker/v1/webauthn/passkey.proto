@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+// buf:lint:ignore PACKAGE_VERSION_SUFFIX
+package raker.v1.webauthn;
+
+option go_package = "github.com/AppleGamer22/raker/server/buf/proto/raker/v1/webauthn";
+
+message BeginSignUpRequest {
+  string username = 1;
+}
+
+message BeginSignUpResponse {
+  string session_id = 1;
+  string options_json = 2;
+}
+
+message FinishSignUpRequest {
+  string session_id = 1;
+  string passkey_name = 2;
+  string response_json = 3;
+}
+
+message FinishSignUpResponse {
+  bool success = 1;
+}
+
+message BeginSignInRequest {
+  string user_id = 1;
+}
+
+message BeginSignInResponse {
+  string session_id = 1;
+  string options_json = 2;
+}
+
+message FinishSignInRequest {
+  string session_id = 1;
+  string response_json = 2;
+}
+
+message FinishSignInResponse {
+  bool success = 1;
+  string user_id = 2;
+}
