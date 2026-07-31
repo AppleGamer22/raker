@@ -14,6 +14,7 @@ import (
 	"github.com/AppleGamer22/raker/server/handlers"
 	"github.com/AppleGamer22/raker/shared"
 	"github.com/charmbracelet/log"
+	"go.yaml.in/yaml/v3"
 )
 
 func main() {
@@ -30,6 +31,11 @@ func main() {
 	}
 	log.Infof("database URI: %s", rakerServer.URI)
 	log.Infof("Server is listening at http://localhost:%d", rakerServer.Port)
+	log.Infof("WebAuthn RPID: %s", rakerServer.RPID)
+	if len(rakerServer.RPOrigins) > 0 {
+		yamlRPOrigins, _ := yaml.Marshal(rakerServer.RPOrigins)
+		log.Infof("WebAuthn RPOrigins: %s", string(yamlRPOrigins))
+	}
 
 	signals := make(chan os.Signal, 2)
 	signal.Notify(signals, os.Interrupt, syscall.SIGTERM, syscall.SIGQUIT)

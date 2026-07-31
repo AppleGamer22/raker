@@ -44,7 +44,7 @@ func (server *RakerServer) SignUpInstagram(ctx context.Context, request *v1.Sign
 		return &emptypb.Empty{}, connect.NewError(connect.CodeCanceled, errors.New("failed to store credentials securely"))
 	}
 
-	err = server.DBClient.UserAdd(context.Background(), db.UserAddParams{
+	_, err = server.DBClient.UserAdd(context.Background(), db.UserAddParams{
 		Username:           username,
 		PasswordHash:       hashed,
 		InstagramSessionID: sessionID,
@@ -224,7 +224,7 @@ func (server *RakerServer) BeginSignUp(ctx context.Context, request *webauthn.Be
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
-	userEntity := &authenticator.UserEntity{ID: user.ID.UUID, Username: user.Username}
+	userEntity := &authenticator.UserEntity{ID: user.ID, Username: user.Username}
 
 	options, sessionData, err := server.WebAuthn.BeginRegistration(userEntity)
 	if err != nil {

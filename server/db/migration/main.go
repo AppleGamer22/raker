@@ -36,7 +36,7 @@ func users(ctx context.Context, pgdb *db.Queries) {
 			fmt.Println(err)
 			break
 		}
-		err := pgdb.UserAdd(ctx, db.UserAddParams{
+		_, err := pgdb.UserAdd(ctx, db.UserAddParams{
 			Username:           user.Username,
 			PasswordHash:       user.Hash,
 			InstagramSessionID: user.Instagram.SessionID,

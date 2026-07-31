@@ -86,7 +86,7 @@ func NewRakerServer() (*RakerServer, error) {
 	wa, err := webauthn.New(&webauthn.Config{
 		RPDisplayName:         "Raker",
 		RPID:                  rakerServer.Configuration.RPID,
-		RPOrigins:             rakerServer.WebAuthn.Config.RPOrigins,
+		RPOrigins:             rakerServer.Configuration.RPOrigins,
 		AttestationPreference: protocol.PreferNoAttestation,
 		AuthenticatorSelection: protocol.AuthenticatorSelection{
 			UserVerification: protocol.VerificationRequired,
