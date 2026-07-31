@@ -143,10 +143,10 @@ message RotateFileRequest {
 
 service RakerServer {
   rpc BeginSignUp(raker.v1.webauthn.BeginSignUpRequest) returns (raker.v1.webauthn.BeginSignUpResponse);
-  rpc FinishSignUp(raker.v1.webauthn.FinishSignUpRequest) returns (raker.v1.webauthn.FinishSignUpResponse);
+  rpc FinishSignUp(raker.v1.webauthn.FinishSignUpRequest) returns (raker.v1.webauthn.FinishResponse);
 
   rpc BeginSignIn(raker.v1.webauthn.BeginSignInRequest) returns (raker.v1.webauthn.BeginSignInResponse);
-  rpc FinishSignIn(raker.v1.webauthn.FinishSignInRequest) returns (raker.v1.webauthn.FinishSignInResponse);
+  rpc FinishSignIn(raker.v1.webauthn.FinishSignInRequest) returns (raker.v1.webauthn.FinishResponse);
 
   rpc SignUpInstagram(SignUpRequest) returns (google.protobuf.Empty);
 

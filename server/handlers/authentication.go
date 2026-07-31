@@ -11,9 +11,11 @@ import (
 	"connectrpc.com/connect"
 	"github.com/AppleGamer22/raker/server/authenticator"
 	v1 "github.com/AppleGamer22/raker/server/buf/proto/raker/v1"
-	"github.com/AppleGamer22/raker/server/buf/proto/raker/v1/webauthn"
+	webauthnproto "github.com/AppleGamer22/raker/server/buf/proto/raker/v1/webauthn"
 	"github.com/AppleGamer22/raker/server/db"
 	"github.com/charmbracelet/log"
+	"github.com/go-webauthn/webauthn/protocol"
+	"github.com/go-webauthn/webauthn/webauthn"
 	"github.com/google/uuid"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
@@ -21,6 +23,36 @@ import (
 var unauthenticatedProcedures = map[string]struct{}{
 	"/raker.v1.RakerServer/SignInInstagram": {},
 	"/raker.v1.RakerServer/SignUpInstagram": {},
+	"/raker.v1.RakerServer/BeginSignUp":     {},
+	"/raker.v1.RakerServer/FinishSignUp":    {},
+	"/raker.v1.RakerServer/BeginSignIn":     {},
+	"/raker.v1.RakerServer/FinishSignIn":    {},
+}
+
+func (server *RakerServer) ApproveSession(ctx context.Context, user db.User) error {
+	webToken, expiry, err := server.Authenticator.Sign(user.Username)
+	if err != nil {
+		log.Error(err, "ID", user.Username)
+		return connect.NewError(connect.CodeUnauthenticated, errors.New("incorrect credentials"))
+	}
+
+	cookie := &http.Cookie{
+		Name:     "jwt",
+		Value:    webToken,
+		Path:     "/",
+		Expires:  expiry,
+		Secure:   server.Configuration.SecureCookie,
+		HttpOnly: false,
+	}
+
+	// Based on https://connectrpc.com/docs/go/headers-and-trailers/#headers
+	callInfo, ok := connect.CallInfoForHandlerContext(ctx)
+	if !ok {
+		return errors.New("can't access headers: no CallInfo for handler context")
+	}
+
+	callInfo.ResponseHeader().Set("Set-Cookie", cookie.String())
+	return nil
 }
 
 // SignUpInstagram implements [v1connect.RakerServerHandler].
@@ -79,28 +111,10 @@ func (server *RakerServer) SignInInstagram(ctx context.Context, request *v1.Sign
 
 	}
 
-	webToken, expiry, err := server.Authenticator.Sign(user.Username)
-	if err != nil {
-		log.Error(err, "ID", user.Username)
-		return &emptypb.Empty{}, connect.NewError(connect.CodeUnauthenticated, errors.New("incorrect credentials"))
+	if err := server.ApproveSession(ctx, user); err != nil {
+		log.Error(err)
+		return nil, err
 	}
-
-	cookie := &http.Cookie{
-		Name:     "jwt",
-		Value:    webToken,
-		Path:     "/",
-		Expires:  expiry,
-		Secure:   server.Configuration.SecureCookie,
-		HttpOnly: false,
-	}
-
-	// Based on https://connectrpc.com/docs/go/headers-and-trailers/#headers
-	callInfo, ok := connect.CallInfoForHandlerContext(ctx)
-	if !ok {
-		return nil, errors.New("can't access headers: no CallInfo for handler context")
-	}
-
-	callInfo.ResponseHeader().Set("Set-Cookie", cookie.String())
 
 	return &emptypb.Empty{}, nil
 }
@@ -207,7 +221,7 @@ func (server *RakerServer) EditUserCredentials(ctx context.Context, request *v1.
 }
 
 // BeginSignUp implements [v1connect.RakerServerHandler].
-func (server *RakerServer) BeginSignUp(ctx context.Context, request *webauthn.BeginSignUpRequest) (*webauthn.BeginSignUpResponse, error) {
+func (server *RakerServer) BeginSignUp(ctx context.Context, request *webauthnproto.BeginSignUpRequest) (*webauthnproto.BeginSignUpResponse, error) {
 	if request.Username == "" {
 		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("username required"))
 	}
@@ -236,17 +250,17 @@ func (server *RakerServer) BeginSignUp(ctx context.Context, request *webauthn.Be
 
 	optionsJSON, _ := json.Marshal(options)
 
-	return &webauthn.BeginSignUpResponse{
+	return &webauthnproto.BeginSignUpResponse{
 		SessionId:   sessionID,
 		OptionsJson: string(optionsJSON),
 	}, nil
 }
 
 // FinishSignUp implements [v1connect.RakerServerHandler].
-func (server *RakerServer) FinishSignUp(ctx context.Context, request *webauthn.FinishSignUpRequest) (*webauthn.FinishSignUpResponse, error) {
+func (server *RakerServer) FinishSignUp(ctx context.Context, request *webauthnproto.FinishSignUpRequest) (*webauthnproto.FinishResponse, error) {
 	sessionData, ok := server.WebAuthnSessionStore.GetAndDelete(request.SessionId)
 	if !ok {
-		return &webauthn.FinishSignUpResponse{}, connect.NewError(connect.CodeUnauthenticated, errors.New("session expired or invalid"))
+		return &webauthnproto.FinishResponse{}, connect.NewError(connect.CodeUnauthenticated, errors.New("session expired or invalid"))
 	}
 
 	var userID uuid.UUID
@@ -254,19 +268,19 @@ func (server *RakerServer) FinishSignUp(ctx context.Context, request *webauthn.F
 
 	user, err := server.DBClient.UserGetByID(ctx, userID)
 	if err != nil {
-		return &webauthn.FinishSignUpResponse{}, connect.NewError(connect.CodeNotFound, errors.New("user not found"))
+		return &webauthnproto.FinishResponse{}, connect.NewError(connect.CodeNotFound, errors.New("user not found"))
 	}
 
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, "", bytes.NewReader([]byte(request.GetResponseJson())))
 	if err != nil {
-		return &webauthn.FinishSignUpResponse{}, connect.NewError(connect.CodeInvalidArgument, err)
+		return &webauthnproto.FinishResponse{}, connect.NewError(connect.CodeInvalidArgument, err)
 	}
 	httpReq.Header.Set("Content-Type", "application/json")
 
 	userEntity := &authenticator.UserEntity{ID: user.ID, Username: user.Username}
 	credential, err := server.WebAuthn.FinishRegistration(userEntity, sessionData, httpReq)
 	if err != nil {
-		return &webauthn.FinishSignUpResponse{}, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("passkey verification failed: %w", err))
+		return &webauthnproto.FinishResponse{}, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("passkey verification failed: %w", err))
 	}
 
 	var transports []string
@@ -285,18 +299,105 @@ func (server *RakerServer) FinishSignUp(ctx context.Context, request *webauthn.F
 		Name:            request.PasskeyName,
 	})
 	if err != nil {
-		return &webauthn.FinishSignUpResponse{}, connect.NewError(connect.CodeInternal, err)
+		return &webauthnproto.FinishResponse{}, connect.NewError(connect.CodeInternal, err)
 	}
 
-	return &webauthn.FinishSignUpResponse{Success: true}, nil
+	// if err := server.ApproveSession(ctx, user); err != nil {
+	// 	log.Error(err)
+	// 	return &webauthnproto.FinishResponse{}, err
+	// }
+
+	return &webauthnproto.FinishResponse{Success: true}, nil
 }
 
 // BeginSignIn implements [v1connect.RakerServerHandler].
-func (server *RakerServer) BeginSignIn(ctx context.Context, request *webauthn.BeginSignInRequest) (*webauthn.BeginSignInResponse, error) {
-	panic("unimplemented")
+func (server *RakerServer) BeginSignIn(ctx context.Context, request *webauthnproto.BeginSignInRequest) (*webauthnproto.BeginSignInResponse, error) {
+	username := request.GetUsername()
+	var options *protocol.CredentialAssertion
+	var sessionData *webauthn.SessionData
+	var err error
+
+	if username != "" {
+		// Traditional non-discoverable flow with explicit username lookup
+		user, err := server.DBClient.UserGetByUsername(ctx, username)
+		if err != nil {
+			return nil, connect.NewError(connect.CodeNotFound, errors.New("user not found"))
+		}
+		userEntity := &authenticator.UserEntity{ID: user.ID, Username: user.Username}
+		options, sessionData, err = server.WebAuthn.BeginLogin(userEntity)
+	} else {
+		// Discoverable/Passkey flow (allowCredentials will be empty)
+		options, sessionData, err = server.WebAuthn.BeginDiscoverableLogin()
+	}
+
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
+	sessionID := uuid.NewString()
+	server.WebAuthnSessionStore.Set(sessionID, *sessionData)
+
+	optionsJSON, _ := json.Marshal(options.Response)
+
+	return &webauthnproto.BeginSignInResponse{
+		SessionId:   sessionID,
+		OptionsJson: string(optionsJSON),
+	}, nil
 }
 
 // FinishSignIn implements [v1connect.RakerServerHandler].
-func (server *RakerServer) FinishSignIn(context.Context, *webauthn.FinishSignInRequest) (*webauthn.FinishSignInResponse, error) {
-	panic("unimplemented")
+func (server *RakerServer) FinishSignIn(ctx context.Context, request *webauthnproto.FinishSignInRequest) (*webauthnproto.FinishResponse, error) {
+	sessionData, ok := server.WebAuthnSessionStore.GetAndDelete(request.GetSessionId())
+	if !ok {
+		return &webauthnproto.FinishResponse{}, connect.NewError(connect.CodeUnauthenticated, errors.New("session expired or invalid"))
+	}
+
+	var userID uuid.UUID
+	copy(userID[:], sessionData.UserID)
+
+	user, err := server.DBClient.UserGetByID(ctx, userID)
+	if err != nil {
+		log.Error(err)
+		return &webauthnproto.FinishResponse{}, connect.NewError(connect.CodeNotFound, errors.New("user not found"))
+	}
+
+	dbKeys, err := server.DBClient.UserGetPasskeysByID(ctx, user.ID[:])
+	if err != nil {
+		log.Error(err)
+		return &webauthnproto.FinishResponse{}, connect.NewError(connect.CodeInternal, err)
+	}
+
+	var credentials []webauthn.Credential
+	for _, k := range dbKeys {
+		credentials = append(credentials, webauthn.Credential{
+			ID:              k.ID,
+			PublicKey:       k.PublicKey,
+			AttestationType: k.AttestationType,
+			Authenticator:   webauthn.Authenticator{SignCount: uint32(k.SignCount)},
+		})
+	}
+
+	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, "", bytes.NewReader([]byte(request.GetResponseJson())))
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, err)
+	}
+	httpReq.Header.Set("Content-Type", "application/json")
+
+	userEntity := &authenticator.UserEntity{ID: user.ID, Username: user.Username, Passkeys: credentials}
+	credential, err := server.WebAuthn.FinishLogin(userEntity, sessionData, httpReq)
+	if err != nil {
+		return &webauthnproto.FinishResponse{}, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("login failed: %w", err))
+	}
+
+	if err := server.DBClient.PasskeyUpdateSignCount(ctx, credential.ID); err != nil {
+		log.Error(err)
+		return &webauthnproto.FinishResponse{}, connect.NewError(connect.CodeInternal, err)
+	}
+
+	if err := server.ApproveSession(ctx, user); err != nil {
+		log.Error(err)
+		return &webauthnproto.FinishResponse{}, err
+	}
+
+	return &webauthnproto.FinishResponse{Success: true}, nil
 }

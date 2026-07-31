@@ -1,12 +1,26 @@
 import { useMutation } from "@connectrpc/connect-query";
+import {
+	startAuthentication,
+	startRegistration,
+	type PublicKeyCredentialCreationOptionsJSON,
+	type PublicKeyCredentialRequestOptionsJSON,
+} from "@simplewebauthn/browser";
 import { useForm } from "@tanstack/react-form";
 import { createFileRoute } from "@tanstack/react-router";
-import { PlusIcon, XIcon } from "lucide-react";
+import { PlusIcon, UserKeyIcon, XIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import z from "zod";
 
-import { signInInstagram, editCategory, editUserCredentials } from "@/buf/raker/v1/raker-RakerServer_connectquery";
+import {
+	signInInstagram,
+	editCategory,
+	editUserCredentials,
+	beginSignUp,
+	finishSignUp,
+	beginSignIn,
+	finishSignIn,
+} from "@/buf/raker/v1/raker-RakerServer_connectquery";
 import { Button } from "@/components/ui/button";
 import { CardContent } from "@/components/ui/card";
 import { Field, FieldContent, FieldError, FieldGroup, FieldLabel, FieldLegend, FieldSet } from "@/components/ui/field";
@@ -21,6 +35,9 @@ import { useUser } from "@/hooks/user-provider";
 export const Route = createFileRoute("/")({ component: AuthPage, ssr: false });
 
 function SignUpForm() {
+	const beginSignUpMutation = useMutation(beginSignUp);
+	const finishSignUpMutation = useMutation(finishSignUp);
+	const [username, setUsername] = useState("");
 	return (
 		<form
 			onSubmit={(e) => {
@@ -33,9 +50,13 @@ function SignUpForm() {
 					<FieldGroup>
 						<Field>
 							<FieldLabel>username</FieldLabel>
-							<Input placeholder="username" />
+							<Input
+								placeholder="username"
+								value={username}
+								onChange={(e) => setUsername(e.target.value)}
+							/>
 						</Field>
-						<Field>
+						{/* <Field>
 							<FieldLabel>password</FieldLabel>
 							<Input placeholder="password" type="password" />
 						</Field>
@@ -46,9 +67,37 @@ function SignUpForm() {
 						<Field>
 							<FieldLabel>user ID</FieldLabel>
 							<Input placeholder="user ID cookie value" />
-						</Field>
+						</Field> */}
 						<Field orientation="horizontal">
 							<Button type="submit">Sign-up</Button>
+							<Button
+								type="submit"
+								disabled={beginSignUpMutation.isPending || finishSignUpMutation.isPending}
+								onClick={async () => {
+									try {
+										const beginRes = await beginSignUpMutation.mutateAsync({ username });
+										const { publicKey } = JSON.parse(beginRes.optionsJson) as {
+											publicKey: PublicKeyCredentialCreationOptionsJSON;
+										};
+
+										const attResp = await startRegistration({ optionsJSON: publicKey });
+										await finishSignUpMutation.mutateAsync({
+											sessionId: beginRes.sessionId,
+											responseJson: JSON.stringify(attResp),
+										});
+
+										toast.success("Registered Passkey");
+										setUsername("");
+									} catch (err) {
+										console.error(err);
+										toast.error((err as Error).message, {
+											position: "top-center",
+										});
+									}
+								}}
+							>
+								<UserKeyIcon className="h-4 w-4" /> Passkey Sign-up
+							</Button>
 						</Field>
 					</FieldGroup>
 				</FieldSet>
@@ -61,6 +110,8 @@ function SignInForm() {
 	const [username, setUsername] = useState("");
 	const [password, setPassword] = useState("");
 	const signInMutation = useMutation(signInInstagram);
+	const beginSignInMutation = useMutation(beginSignIn);
+	const finishSignInMutation = useMutation(finishSignIn);
 
 	return (
 		<form
@@ -102,6 +153,32 @@ function SignInForm() {
 						<Field orientation="horizontal">
 							<Button disabled={signInMutation.isPending} type="submit">
 								{signInMutation.isPending ? "Signing in..." : "Sign-in"}
+							</Button>
+							<Button
+								// type="submit"
+								disabled={beginSignInMutation.isPending || finishSignInMutation.isPending}
+								onClick={async () => {
+									try {
+										const beginRes = await beginSignInMutation.mutateAsync({ username: "" });
+										const optionsJSON = JSON.parse(
+											beginRes.optionsJson,
+										) as PublicKeyCredentialRequestOptionsJSON;
+
+										const attResp = await startAuthentication({ optionsJSON });
+										await finishSignInMutation.mutateAsync({
+											sessionId: beginRes.sessionId,
+											responseJson: JSON.stringify(attResp),
+										});
+										location.reload();
+									} catch (err) {
+										console.error(err);
+										toast.error((err as Error).message, {
+											position: "top-center",
+										});
+									}
+								}}
+							>
+								<UserKeyIcon className="h-4 w-4" /> Passkey Sign-in
 							</Button>
 						</Field>
 					</FieldGroup>

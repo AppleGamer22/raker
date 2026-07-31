@@ -179,27 +179,27 @@ func (x *FinishSignUpRequest) GetResponseJson() string {
 	return ""
 }
 
-type FinishSignUpResponse struct {
+type FinishResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *FinishSignUpResponse) Reset() {
-	*x = FinishSignUpResponse{}
+func (x *FinishResponse) Reset() {
+	*x = FinishResponse{}
 	mi := &file_raker_v1_webauthn_passkey_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *FinishSignUpResponse) String() string {
+func (x *FinishResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*FinishSignUpResponse) ProtoMessage() {}
+func (*FinishResponse) ProtoMessage() {}
 
-func (x *FinishSignUpResponse) ProtoReflect() protoreflect.Message {
+func (x *FinishResponse) ProtoReflect() protoreflect.Message {
 	mi := &file_raker_v1_webauthn_passkey_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -211,12 +211,12 @@ func (x *FinishSignUpResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use FinishSignUpResponse.ProtoReflect.Descriptor instead.
-func (*FinishSignUpResponse) Descriptor() ([]byte, []int) {
+// Deprecated: Use FinishResponse.ProtoReflect.Descriptor instead.
+func (*FinishResponse) Descriptor() ([]byte, []int) {
 	return file_raker_v1_webauthn_passkey_proto_rawDescGZIP(), []int{3}
 }
 
-func (x *FinishSignUpResponse) GetSuccess() bool {
+func (x *FinishResponse) GetSuccess() bool {
 	if x != nil {
 		return x.Success
 	}
@@ -225,7 +225,7 @@ func (x *FinishSignUpResponse) GetSuccess() bool {
 
 type BeginSignInRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	Username      string                 `protobuf:"bytes,1,opt,name=username,proto3" json:"username,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -260,9 +260,9 @@ func (*BeginSignInRequest) Descriptor() ([]byte, []int) {
 	return file_raker_v1_webauthn_passkey_proto_rawDescGZIP(), []int{4}
 }
 
-func (x *BeginSignInRequest) GetUserId() string {
+func (x *BeginSignInRequest) GetUsername() string {
 	if x != nil {
-		return x.UserId
+		return x.Username
 	}
 	return ""
 }
@@ -371,58 +371,6 @@ func (x *FinishSignInRequest) GetResponseJson() string {
 	return ""
 }
 
-type FinishSignInResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	UserId        string                 `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *FinishSignInResponse) Reset() {
-	*x = FinishSignInResponse{}
-	mi := &file_raker_v1_webauthn_passkey_proto_msgTypes[7]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *FinishSignInResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*FinishSignInResponse) ProtoMessage() {}
-
-func (x *FinishSignInResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_raker_v1_webauthn_passkey_proto_msgTypes[7]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use FinishSignInResponse.ProtoReflect.Descriptor instead.
-func (*FinishSignInResponse) Descriptor() ([]byte, []int) {
-	return file_raker_v1_webauthn_passkey_proto_rawDescGZIP(), []int{7}
-}
-
-func (x *FinishSignInResponse) GetSuccess() bool {
-	if x != nil {
-		return x.Success
-	}
-	return false
-}
-
-func (x *FinishSignInResponse) GetUserId() string {
-	if x != nil {
-		return x.UserId
-	}
-	return ""
-}
-
 var File_raker_v1_webauthn_passkey_proto protoreflect.FileDescriptor
 
 const file_raker_v1_webauthn_passkey_proto_rawDesc = "" +
@@ -438,11 +386,11 @@ const file_raker_v1_webauthn_passkey_proto_rawDesc = "" +
 	"\n" +
 	"session_id\x18\x01 \x01(\tR\tsessionId\x12!\n" +
 	"\fpasskey_name\x18\x02 \x01(\tR\vpasskeyName\x12#\n" +
-	"\rresponse_json\x18\x03 \x01(\tR\fresponseJson\"0\n" +
-	"\x14FinishSignUpResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\"-\n" +
-	"\x12BeginSignInRequest\x12\x17\n" +
-	"\auser_id\x18\x01 \x01(\tR\x06userId\"W\n" +
+	"\rresponse_json\x18\x03 \x01(\tR\fresponseJson\"*\n" +
+	"\x0eFinishResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\"0\n" +
+	"\x12BeginSignInRequest\x12\x1a\n" +
+	"\busername\x18\x01 \x01(\tR\busername\"W\n" +
 	"\x13BeginSignInResponse\x12\x1d\n" +
 	"\n" +
 	"session_id\x18\x01 \x01(\tR\tsessionId\x12!\n" +
@@ -450,10 +398,7 @@ const file_raker_v1_webauthn_passkey_proto_rawDesc = "" +
 	"\x13FinishSignInRequest\x12\x1d\n" +
 	"\n" +
 	"session_id\x18\x01 \x01(\tR\tsessionId\x12#\n" +
-	"\rresponse_json\x18\x02 \x01(\tR\fresponseJson\"I\n" +
-	"\x14FinishSignInResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x17\n" +
-	"\auser_id\x18\x02 \x01(\tR\x06userIdB\xcd\x01\n" +
+	"\rresponse_json\x18\x02 \x01(\tR\fresponseJsonB\xcd\x01\n" +
 	"\x15com.raker.v1.webauthnB\fPasskeyProtoP\x01Z@github.com/AppleGamer22/raker/server/buf/proto/raker/v1/webauthn\xa2\x02\x03RVW\xaa\x02\x11Raker.V1.Webauthn\xca\x02\x11Raker\\V1\\Webauthn\xe2\x02\x1dRaker\\V1\\Webauthn\\GPBMetadata\xea\x02\x13Raker::V1::Webauthnb\x06proto3"
 
 var (
@@ -468,16 +413,15 @@ func file_raker_v1_webauthn_passkey_proto_rawDescGZIP() []byte {
 	return file_raker_v1_webauthn_passkey_proto_rawDescData
 }
 
-var file_raker_v1_webauthn_passkey_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
+var file_raker_v1_webauthn_passkey_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
 var file_raker_v1_webauthn_passkey_proto_goTypes = []any{
-	(*BeginSignUpRequest)(nil),   // 0: raker.v1.webauthn.BeginSignUpRequest
-	(*BeginSignUpResponse)(nil),  // 1: raker.v1.webauthn.BeginSignUpResponse
-	(*FinishSignUpRequest)(nil),  // 2: raker.v1.webauthn.FinishSignUpRequest
-	(*FinishSignUpResponse)(nil), // 3: raker.v1.webauthn.FinishSignUpResponse
-	(*BeginSignInRequest)(nil),   // 4: raker.v1.webauthn.BeginSignInRequest
-	(*BeginSignInResponse)(nil),  // 5: raker.v1.webauthn.BeginSignInResponse
-	(*FinishSignInRequest)(nil),  // 6: raker.v1.webauthn.FinishSignInRequest
-	(*FinishSignInResponse)(nil), // 7: raker.v1.webauthn.FinishSignInResponse
+	(*BeginSignUpRequest)(nil),  // 0: raker.v1.webauthn.BeginSignUpRequest
+	(*BeginSignUpResponse)(nil), // 1: raker.v1.webauthn.BeginSignUpResponse
+	(*FinishSignUpRequest)(nil), // 2: raker.v1.webauthn.FinishSignUpRequest
+	(*FinishResponse)(nil),      // 3: raker.v1.webauthn.FinishResponse
+	(*BeginSignInRequest)(nil),  // 4: raker.v1.webauthn.BeginSignInRequest
+	(*BeginSignInResponse)(nil), // 5: raker.v1.webauthn.BeginSignInResponse
+	(*FinishSignInRequest)(nil), // 6: raker.v1.webauthn.FinishSignInRequest
 }
 var file_raker_v1_webauthn_passkey_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for method output_type
@@ -498,7 +442,7 @@ func file_raker_v1_webauthn_passkey_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_raker_v1_webauthn_passkey_proto_rawDesc), len(file_raker_v1_webauthn_passkey_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   8,
+			NumMessages:   7,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

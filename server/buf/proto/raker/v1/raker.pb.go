@@ -1383,12 +1383,12 @@ const file_raker_v1_raker_proto_rawDesc = "" +
 	"\n" +
 	"\x06TikTok\x10\x03\x12\f\n" +
 	"\bSnapchat\x10\x04\x12\b\n" +
-	"\x04VSCO\x10\x052\xb1\r\n" +
+	"\x04VSCO\x10\x052\xa5\r\n" +
 	"\vRakerServer\x12\\\n" +
-	"\vBeginSignUp\x12%.raker.v1.webauthn.BeginSignUpRequest\x1a&.raker.v1.webauthn.BeginSignUpResponse\x12_\n" +
-	"\fFinishSignUp\x12&.raker.v1.webauthn.FinishSignUpRequest\x1a'.raker.v1.webauthn.FinishSignUpResponse\x12\\\n" +
-	"\vBeginSignIn\x12%.raker.v1.webauthn.BeginSignInRequest\x1a&.raker.v1.webauthn.BeginSignInResponse\x12_\n" +
-	"\fFinishSignIn\x12&.raker.v1.webauthn.FinishSignInRequest\x1a'.raker.v1.webauthn.FinishSignInResponse\x12B\n" +
+	"\vBeginSignUp\x12%.raker.v1.webauthn.BeginSignUpRequest\x1a&.raker.v1.webauthn.BeginSignUpResponse\x12Y\n" +
+	"\fFinishSignUp\x12&.raker.v1.webauthn.FinishSignUpRequest\x1a!.raker.v1.webauthn.FinishResponse\x12\\\n" +
+	"\vBeginSignIn\x12%.raker.v1.webauthn.BeginSignInRequest\x1a&.raker.v1.webauthn.BeginSignInResponse\x12Y\n" +
+	"\fFinishSignIn\x12&.raker.v1.webauthn.FinishSignInRequest\x1a!.raker.v1.webauthn.FinishResponse\x12B\n" +
 	"\x0fSignUpInstagram\x12\x17.raker.v1.SignUpRequest\x1a\x16.google.protobuf.Empty\x12B\n" +
 	"\x0fSignInInstagram\x12\x17.raker.v1.SignInRequest\x1a\x16.google.protobuf.Empty\x12E\n" +
 	"\fEditCategory\x12\x1d.raker.v1.EditCategoryRequest\x1a\x16.google.protobuf.Empty\x12S\n" +
@@ -1455,9 +1455,8 @@ var file_raker_v1_raker_proto_goTypes = []any{
 	(*webauthn.FinishSignInRequest)(nil),       // 25: raker.v1.webauthn.FinishSignInRequest
 	(*emptypb.Empty)(nil),                      // 26: google.protobuf.Empty
 	(*webauthn.BeginSignUpResponse)(nil),       // 27: raker.v1.webauthn.BeginSignUpResponse
-	(*webauthn.FinishSignUpResponse)(nil),      // 28: raker.v1.webauthn.FinishSignUpResponse
+	(*webauthn.FinishResponse)(nil),            // 28: raker.v1.webauthn.FinishResponse
 	(*webauthn.BeginSignInResponse)(nil),       // 29: raker.v1.webauthn.BeginSignInResponse
-	(*webauthn.FinishSignInResponse)(nil),      // 30: raker.v1.webauthn.FinishSignInResponse
 }
 var file_raker_v1_raker_proto_depIdxs = []int32{
 	0,  // 0: raker.v1.ScrapeResponse.post_type:type_name -> raker.v1.PostType
@@ -1498,9 +1497,9 @@ var file_raker_v1_raker_proto_depIdxs = []int32{
 	17, // 35: raker.v1.RakerServer.RotateFile:input_type -> raker.v1.RotateFileRequest
 	15, // 36: raker.v1.RakerServer.DuplicateFile:input_type -> raker.v1.FileSubRequest
 	27, // 37: raker.v1.RakerServer.BeginSignUp:output_type -> raker.v1.webauthn.BeginSignUpResponse
-	28, // 38: raker.v1.RakerServer.FinishSignUp:output_type -> raker.v1.webauthn.FinishSignUpResponse
+	28, // 38: raker.v1.RakerServer.FinishSignUp:output_type -> raker.v1.webauthn.FinishResponse
 	29, // 39: raker.v1.RakerServer.BeginSignIn:output_type -> raker.v1.webauthn.BeginSignInResponse
-	30, // 40: raker.v1.RakerServer.FinishSignIn:output_type -> raker.v1.webauthn.FinishSignInResponse
+	28, // 40: raker.v1.RakerServer.FinishSignIn:output_type -> raker.v1.webauthn.FinishResponse
 	26, // 41: raker.v1.RakerServer.SignUpInstagram:output_type -> google.protobuf.Empty
 	26, // 42: raker.v1.RakerServer.SignInInstagram:output_type -> google.protobuf.Empty
 	26, // 43: raker.v1.RakerServer.EditCategory:output_type -> google.protobuf.Empty

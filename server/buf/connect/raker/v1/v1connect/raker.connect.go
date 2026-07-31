@@ -99,9 +99,9 @@ const (
 // RakerServerClient is a client for the raker.v1.RakerServer service.
 type RakerServerClient interface {
 	BeginSignUp(context.Context, *webauthn.BeginSignUpRequest) (*webauthn.BeginSignUpResponse, error)
-	FinishSignUp(context.Context, *webauthn.FinishSignUpRequest) (*webauthn.FinishSignUpResponse, error)
+	FinishSignUp(context.Context, *webauthn.FinishSignUpRequest) (*webauthn.FinishResponse, error)
 	BeginSignIn(context.Context, *webauthn.BeginSignInRequest) (*webauthn.BeginSignInResponse, error)
-	FinishSignIn(context.Context, *webauthn.FinishSignInRequest) (*webauthn.FinishSignInResponse, error)
+	FinishSignIn(context.Context, *webauthn.FinishSignInRequest) (*webauthn.FinishResponse, error)
 	SignUpInstagram(context.Context, *v1.SignUpRequest) (*emptypb.Empty, error)
 	SignInInstagram(context.Context, *v1.SignInRequest) (*emptypb.Empty, error)
 	EditCategory(context.Context, *v1.EditCategoryRequest) (*emptypb.Empty, error)
@@ -139,7 +139,7 @@ func NewRakerServerClient(httpClient connect.HTTPClient, baseURL string, opts ..
 			connect.WithSchema(rakerServerMethods.ByName("BeginSignUp")),
 			connect.WithClientOptions(opts...),
 		),
-		finishSignUp: connect.NewClient[webauthn.FinishSignUpRequest, webauthn.FinishSignUpResponse](
+		finishSignUp: connect.NewClient[webauthn.FinishSignUpRequest, webauthn.FinishResponse](
 			httpClient,
 			baseURL+RakerServerFinishSignUpProcedure,
 			connect.WithSchema(rakerServerMethods.ByName("FinishSignUp")),
@@ -151,7 +151,7 @@ func NewRakerServerClient(httpClient connect.HTTPClient, baseURL string, opts ..
 			connect.WithSchema(rakerServerMethods.ByName("BeginSignIn")),
 			connect.WithClientOptions(opts...),
 		),
-		finishSignIn: connect.NewClient[webauthn.FinishSignInRequest, webauthn.FinishSignInResponse](
+		finishSignIn: connect.NewClient[webauthn.FinishSignInRequest, webauthn.FinishResponse](
 			httpClient,
 			baseURL+RakerServerFinishSignInProcedure,
 			connect.WithSchema(rakerServerMethods.ByName("FinishSignIn")),
@@ -271,9 +271,9 @@ func NewRakerServerClient(httpClient connect.HTTPClient, baseURL string, opts ..
 // rakerServerClient implements RakerServerClient.
 type rakerServerClient struct {
 	beginSignUp         *connect.Client[webauthn.BeginSignUpRequest, webauthn.BeginSignUpResponse]
-	finishSignUp        *connect.Client[webauthn.FinishSignUpRequest, webauthn.FinishSignUpResponse]
+	finishSignUp        *connect.Client[webauthn.FinishSignUpRequest, webauthn.FinishResponse]
 	beginSignIn         *connect.Client[webauthn.BeginSignInRequest, webauthn.BeginSignInResponse]
-	finishSignIn        *connect.Client[webauthn.FinishSignInRequest, webauthn.FinishSignInResponse]
+	finishSignIn        *connect.Client[webauthn.FinishSignInRequest, webauthn.FinishResponse]
 	signUpInstagram     *connect.Client[v1.SignUpRequest, emptypb.Empty]
 	signInInstagram     *connect.Client[v1.SignInRequest, emptypb.Empty]
 	editCategory        *connect.Client[v1.EditCategoryRequest, emptypb.Empty]
@@ -304,7 +304,7 @@ func (c *rakerServerClient) BeginSignUp(ctx context.Context, req *webauthn.Begin
 }
 
 // FinishSignUp calls raker.v1.RakerServer.FinishSignUp.
-func (c *rakerServerClient) FinishSignUp(ctx context.Context, req *webauthn.FinishSignUpRequest) (*webauthn.FinishSignUpResponse, error) {
+func (c *rakerServerClient) FinishSignUp(ctx context.Context, req *webauthn.FinishSignUpRequest) (*webauthn.FinishResponse, error) {
 	response, err := c.finishSignUp.CallUnary(ctx, connect.NewRequest(req))
 	if response != nil {
 		return response.Msg, err
@@ -322,7 +322,7 @@ func (c *rakerServerClient) BeginSignIn(ctx context.Context, req *webauthn.Begin
 }
 
 // FinishSignIn calls raker.v1.RakerServer.FinishSignIn.
-func (c *rakerServerClient) FinishSignIn(ctx context.Context, req *webauthn.FinishSignInRequest) (*webauthn.FinishSignInResponse, error) {
+func (c *rakerServerClient) FinishSignIn(ctx context.Context, req *webauthn.FinishSignInRequest) (*webauthn.FinishResponse, error) {
 	response, err := c.finishSignIn.CallUnary(ctx, connect.NewRequest(req))
 	if response != nil {
 		return response.Msg, err
@@ -495,9 +495,9 @@ func (c *rakerServerClient) DuplicateFile(ctx context.Context, req *v1.FileSubRe
 // RakerServerHandler is an implementation of the raker.v1.RakerServer service.
 type RakerServerHandler interface {
 	BeginSignUp(context.Context, *webauthn.BeginSignUpRequest) (*webauthn.BeginSignUpResponse, error)
-	FinishSignUp(context.Context, *webauthn.FinishSignUpRequest) (*webauthn.FinishSignUpResponse, error)
+	FinishSignUp(context.Context, *webauthn.FinishSignUpRequest) (*webauthn.FinishResponse, error)
 	BeginSignIn(context.Context, *webauthn.BeginSignInRequest) (*webauthn.BeginSignInResponse, error)
-	FinishSignIn(context.Context, *webauthn.FinishSignInRequest) (*webauthn.FinishSignInResponse, error)
+	FinishSignIn(context.Context, *webauthn.FinishSignInRequest) (*webauthn.FinishResponse, error)
 	SignUpInstagram(context.Context, *v1.SignUpRequest) (*emptypb.Empty, error)
 	SignInInstagram(context.Context, *v1.SignInRequest) (*emptypb.Empty, error)
 	EditCategory(context.Context, *v1.EditCategoryRequest) (*emptypb.Empty, error)
@@ -716,7 +716,7 @@ func (UnimplementedRakerServerHandler) BeginSignUp(context.Context, *webauthn.Be
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raker.v1.RakerServer.BeginSignUp is not implemented"))
 }
 
-func (UnimplementedRakerServerHandler) FinishSignUp(context.Context, *webauthn.FinishSignUpRequest) (*webauthn.FinishSignUpResponse, error) {
+func (UnimplementedRakerServerHandler) FinishSignUp(context.Context, *webauthn.FinishSignUpRequest) (*webauthn.FinishResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raker.v1.RakerServer.FinishSignUp is not implemented"))
 }
 
@@ -724,7 +724,7 @@ func (UnimplementedRakerServerHandler) BeginSignIn(context.Context, *webauthn.Be
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raker.v1.RakerServer.BeginSignIn is not implemented"))
 }
 
-func (UnimplementedRakerServerHandler) FinishSignIn(context.Context, *webauthn.FinishSignInRequest) (*webauthn.FinishSignInResponse, error) {
+func (UnimplementedRakerServerHandler) FinishSignIn(context.Context, *webauthn.FinishSignInRequest) (*webauthn.FinishResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raker.v1.RakerServer.FinishSignIn is not implemented"))
 }
 

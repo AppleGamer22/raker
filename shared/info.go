@@ -21,6 +21,7 @@ type userAgentData struct {
 
 func init() {
 	log.SetReportCaller(true)
+	log.SetCallerFormatter(log.LongCallerFormatter)
 	log.SetTimeFormat(time.RFC3339)
 	log.SetLevel(log.DebugLevel)
 	logger := slog.New(log.Default())

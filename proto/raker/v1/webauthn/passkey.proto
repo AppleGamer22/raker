@@ -20,12 +20,12 @@ message FinishSignUpRequest {
   string response_json = 3;
 }
 
-message FinishSignUpResponse {
+message FinishResponse {
   bool success = 1;
 }
 
 message BeginSignInRequest {
-  string user_id = 1;
+  string username = 1;
 }
 
 message BeginSignInResponse {
@@ -36,9 +36,4 @@ message BeginSignInResponse {
 message FinishSignInRequest {
   string session_id = 1;
   string response_json = 2;
-}
-
-message FinishSignInResponse {
-  bool success = 1;
-  string user_id = 2;
 }
