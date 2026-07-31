@@ -1,0 +1,11 @@
+format=text
+spaces=4
+tabs=1
+insert-break=1
+break-column=1
+comma-break=1
+no-space-function=1
+wrap-limit=0
+wrap-after=0
+placeholder = sqlc\.arg\([^)]+\)(?:::\w+(?:\([\d|\w]+\))?)*
+comma=end

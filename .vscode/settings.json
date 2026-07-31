@@ -23,6 +23,7 @@
 	},
 	"oxc.path.oxfmt": "node_modules/oxfmt/bin/oxfmt",
 	"oxc.path.oxlint": "node_modules/oxlint/bin/oxlint",
+	"pgFormatter.configFile": "${workspaceFolder}/.pg_format",
 	"[typescript]": {
 		"editor.defaultFormatter": "oxc.oxc-vscode",
 		"js/ts.preferences.importModuleSpecifier": "non-relative",
