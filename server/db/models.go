@@ -149,6 +149,8 @@ type Passkey struct {
 	Aaguid          []byte    `json:"aaguid"`
 	SignCount       int64     `json:"sign_count"`
 	Transports      []string  `json:"transports"`
+	BackupEligible  bool      `json:"backup_eligible"`
+	BackupState     bool      `json:"backup_state"`
 }
 
 type User struct {

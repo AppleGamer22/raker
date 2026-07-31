@@ -35,7 +35,7 @@ type Querier interface {
 	UserCreatePasskey(ctx context.Context, arg UserCreatePasskeyParams) error
 	UserGetByID(ctx context.Context, userID uuid.UUID) (User, error)
 	UserGetByUsername(ctx context.Context, username string) (User, error)
-	UserGetPasskeysByID(ctx context.Context, userID []byte) ([]Passkey, error)
+	UserGetPasskeysByID(ctx context.Context, userID uuid.UUID) ([]Passkey, error)
 	UserUpdateHash(ctx context.Context, arg UserUpdateHashParams) error
 	UserUpdateInstagramSession(ctx context.Context, arg UserUpdateInstagramSessionParams) error
 }

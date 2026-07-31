@@ -146,7 +146,9 @@ INSERT INTO Passkeys(
 	attestation_type,
 	aaguid,
 	sign_count,
-	transports)
+	transports,
+	backup_eligible,
+	backup_state)
 VALUES (
 	$1,
 	$2,
@@ -155,7 +157,9 @@ VALUES (
 	$5,
 	$6,
 	$7,
-	$8)
+	$8,
+	$9,
+	$10)
 `
 
 type UserCreatePasskeyParams struct {
@@ -167,6 +171,8 @@ type UserCreatePasskeyParams struct {
 	Aaguid          []byte    `json:"aaguid"`
 	SignCount       int64     `json:"sign_count"`
 	Transports      []string  `json:"transports"`
+	BackupEligible  bool      `json:"backup_eligible"`
+	BackupState     bool      `json:"backup_state"`
 }
 
 func (q *Queries) UserCreatePasskey(ctx context.Context, arg UserCreatePasskeyParams) error {
@@ -179,6 +185,8 @@ func (q *Queries) UserCreatePasskey(ctx context.Context, arg UserCreatePasskeyPa
 		arg.Aaguid,
 		arg.SignCount,
 		pq.Array(arg.Transports),
+		arg.BackupEligible,
+		arg.BackupState,
 	)
 	return err
 }
@@ -237,14 +245,14 @@ func (q *Queries) UserGetByUsername(ctx context.Context, username string) (User,
 
 const userGetPasskeysByID = `-- name: UserGetPasskeysByID :many
 SELECT
-	id, name, user_id, public_key, attestation_type, aaguid, sign_count, transports
+	id, name, user_id, public_key, attestation_type, aaguid, sign_count, transports, backup_eligible, backup_state
 FROM
 	passkeys
 WHERE
-	id = $1
+	user_id = $1
 `
 
-func (q *Queries) UserGetPasskeysByID(ctx context.Context, userID []byte) ([]Passkey, error) {
+func (q *Queries) UserGetPasskeysByID(ctx context.Context, userID uuid.UUID) ([]Passkey, error) {
 	rows, err := q.query(ctx, q.userGetPasskeysByIDStmt, userGetPasskeysByID, userID)
 	if err != nil {
 		return nil, err
@@ -262,6 +270,8 @@ func (q *Queries) UserGetPasskeysByID(ctx context.Context, userID []byte) ([]Pas
 			&i.Aaguid,
 			&i.SignCount,
 			pq.Array(&i.Transports),
+			&i.BackupEligible,
+			&i.BackupState,
 		); err != nil {
 			return nil, err
 		}

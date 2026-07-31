@@ -263,8 +263,10 @@ func (server *RakerServer) FinishSignUp(ctx context.Context, request *webauthnpr
 		return &webauthnproto.FinishResponse{}, connect.NewError(connect.CodeUnauthenticated, errors.New("session expired or invalid"))
 	}
 
-	var userID uuid.UUID
-	copy(userID[:], sessionData.UserID)
+	userID, err := uuid.FromBytes(sessionData.UserID)
+	if err != nil {
+		return nil, fmt.Errorf("invalid userHandle: %w", err)
+	}
 
 	user, err := server.DBClient.UserGetByID(ctx, userID)
 	if err != nil {
@@ -297,6 +299,8 @@ func (server *RakerServer) FinishSignUp(ctx context.Context, request *webauthnpr
 		SignCount:       int64(credential.Authenticator.SignCount),
 		Transports:      transports,
 		Name:            request.PasskeyName,
+		BackupEligible:  credential.Flags.BackupEligible,
+		BackupState:     credential.Flags.BackupState,
 	})
 	if err != nil {
 		return &webauthnproto.FinishResponse{}, connect.NewError(connect.CodeInternal, err)
@@ -352,40 +356,68 @@ func (server *RakerServer) FinishSignIn(ctx context.Context, request *webauthnpr
 		return &webauthnproto.FinishResponse{}, connect.NewError(connect.CodeUnauthenticated, errors.New("session expired or invalid"))
 	}
 
-	var userID uuid.UUID
-	copy(userID[:], sessionData.UserID)
-
-	user, err := server.DBClient.UserGetByID(ctx, userID)
-	if err != nil {
-		log.Error(err)
-		return &webauthnproto.FinishResponse{}, connect.NewError(connect.CodeNotFound, errors.New("user not found"))
-	}
-
-	dbKeys, err := server.DBClient.UserGetPasskeysByID(ctx, user.ID[:])
-	if err != nil {
-		log.Error(err)
-		return &webauthnproto.FinishResponse{}, connect.NewError(connect.CodeInternal, err)
-	}
-
-	var credentials []webauthn.Credential
-	for _, k := range dbKeys {
-		credentials = append(credentials, webauthn.Credential{
-			ID:              k.ID,
-			PublicKey:       k.PublicKey,
-			AttestationType: k.AttestationType,
-			Authenticator:   webauthn.Authenticator{SignCount: uint32(k.SignCount)},
-		})
-	}
-
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, "", bytes.NewReader([]byte(request.GetResponseJson())))
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
 	httpReq.Header.Set("Content-Type", "application/json")
 
-	userEntity := &authenticator.UserEntity{ID: user.ID, Username: user.Username, Passkeys: credentials}
-	credential, err := server.WebAuthn.FinishLogin(userEntity, sessionData, httpReq)
+	var loggedInUser *db.User
+
+	credential, err := server.WebAuthn.FinishDiscoverableLogin(
+		func(rawID []byte, userHandle []byte) (webauthn.User, error) {
+			// Extract UUID from passkey's userHandle
+			userID, err := uuid.FromBytes(userHandle)
+			if err != nil {
+				log.Error(err)
+				return nil, fmt.Errorf("invalid userHandle: %w", err)
+			}
+			log.Printf("Lookup User ID: %s", userID)
+
+			// 80b4ae7e-aa37-4891-a4e7-901dc1e8d332
+			// 80b4ae7e-aa37-4891-a4e7-901dc1e8d332
+			// Look up user in database
+			user, err := server.DBClient.UserGetByID(ctx, userID)
+			if err != nil {
+				log.Error(err)
+				return nil, fmt.Errorf("user not found: %w", err)
+			}
+			loggedInUser = &user
+
+			// Fetch passkeys belonging to this user
+			dbKeys, err := server.DBClient.UserGetPasskeysByID(ctx, user.ID)
+			if err != nil {
+				log.Error(err)
+				return nil, err
+			}
+			log.Printf("Found %d keys in DB for user", len(dbKeys))
+
+			var credentials []webauthn.Credential
+			for _, k := range dbKeys {
+				credentials = append(credentials, webauthn.Credential{
+					ID:              k.ID,
+					PublicKey:       k.PublicKey,
+					AttestationType: k.AttestationType,
+					Authenticator:   webauthn.Authenticator{SignCount: uint32(k.SignCount)},
+					Flags: webauthn.CredentialFlags{
+						BackupEligible: k.BackupEligible,
+						BackupState:    k.BackupState,
+					},
+				})
+			}
+
+			// Return user entity containing their public keys for signature verification
+			return &authenticator.UserEntity{
+				ID:       user.ID,
+				Username: user.Username,
+				Passkeys: credentials,
+			}, nil
+		},
+		sessionData,
+		httpReq,
+	)
 	if err != nil {
+		log.Error(err)
 		return &webauthnproto.FinishResponse{}, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("login failed: %w", err))
 	}
 
@@ -394,7 +426,7 @@ func (server *RakerServer) FinishSignIn(ctx context.Context, request *webauthnpr
 		return &webauthnproto.FinishResponse{}, connect.NewError(connect.CodeInternal, err)
 	}
 
-	if err := server.ApproveSession(ctx, user); err != nil {
+	if err := server.ApproveSession(ctx, *loggedInUser); err != nil {
 		log.Error(err)
 		return &webauthnproto.FinishResponse{}, err
 	}

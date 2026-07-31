@@ -24,6 +24,8 @@ CREATE TABLE Passkeys(
 	attestation_type varchar(64) NOT NULL,
 	aaguid bytea NOT NULL,
 	sign_count bigint NOT NULL DEFAULT 0,
-	transports text[] NOT NULL DEFAULT '{}'
+	transports text[] NOT NULL DEFAULT '{}',
+	backup_eligible boolean NOT NULL DEFAULT FALSE,
+	backup_state boolean NOT NULL DEFAULT FALSE
 );
 

@@ -86,7 +86,9 @@ function SignUpForm() {
 											responseJson: JSON.stringify(attResp),
 										});
 
-										toast.success("Registered Passkey");
+										toast.success("Registered Passkey", {
+											position: "top-center",
+										});
 										setUsername("");
 									} catch (err) {
 										console.error(err);

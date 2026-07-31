@@ -76,7 +76,7 @@ SELECT
 FROM
 	passkeys
 WHERE
-	id = sqlc.arg(user_id);
+	user_id = sqlc.arg(user_id);
 
 -- name: UserCreatePasskey :exec
 INSERT INTO Passkeys(
@@ -87,7 +87,9 @@ INSERT INTO Passkeys(
 	attestation_type,
 	aaguid,
 	sign_count,
-	transports)
+	transports,
+	backup_eligible,
+	backup_state)
 VALUES (
 	sqlc.arg(passkey_id),
 	sqlc.arg(user_id),
@@ -96,7 +98,9 @@ VALUES (
 	sqlc.arg(attestation_type),
 	sqlc.arg(aaguid),
 	sqlc.arg(sign_count),
-	sqlc.arg(transports));
+	sqlc.arg(transports),
+	sqlc.arg(backup_eligible),
+	sqlc.arg(backup_state));
 
 -- name: PasskeyUpdateSignCount :exec
 UPDATE
