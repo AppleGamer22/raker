@@ -43,7 +43,7 @@ type RakerServer struct {
 	DBClient             *db.Queries
 	Authenticator        authenticator.Authenticator
 	WebAuthn             *webauthn.WebAuthn
-	WebAuthnSessionStore authenticator.WebAuthnSessionStore
+	WebAuthnSessionStore *authenticator.WebAuthnSessionStore
 	HTTPServer           http.Server
 }
 

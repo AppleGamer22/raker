@@ -47,6 +47,7 @@ func (q *Queries) PasskeyUpdateSignCount(ctx context.Context, passkeyID []byte) 
 
 const userAdd = `-- name: UserAdd :one
 INSERT INTO Users(
+	id,
 	username,
 	password_hash,
 	instagram_session_id,
@@ -54,26 +55,29 @@ INSERT INTO Users(
 	network,
 	categories)
 VALUES (
-	$1::text,
+	$1,
 	$2::text,
 	$3::text,
 	$4::text,
+	$5::text,
 	'instagram',
-	$5::text[])
+	$6::text[])
 RETURNING
 	username, password_hash, instagram_session_id, instagram_user_id, network, categories, tiktok_session_id, tiktok_session_id_guard, id
 `
 
 type UserAddParams struct {
-	Username           string   `json:"username"`
-	PasswordHash       string   `json:"password_hash"`
-	InstagramSessionID string   `json:"instagram_session_id"`
-	InstagramUserID    string   `json:"instagram_user_id"`
-	Categories         []string `json:"categories"`
+	ID                 uuid.UUID `json:"id"`
+	Username           string    `json:"username"`
+	PasswordHash       string    `json:"password_hash"`
+	InstagramSessionID string    `json:"instagram_session_id"`
+	InstagramUserID    string    `json:"instagram_user_id"`
+	Categories         []string  `json:"categories"`
 }
 
 func (q *Queries) UserAdd(ctx context.Context, arg UserAddParams) (User, error) {
 	row := q.queryRow(ctx, q.userAddStmt, userAdd,
+		arg.ID,
 		arg.Username,
 		arg.PasswordHash,
 		arg.InstagramSessionID,

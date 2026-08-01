@@ -5,27 +5,34 @@ import (
 	"sync"
 	"time"
 
+	"github.com/AppleGamer22/raker/shared"
 	"github.com/charmbracelet/log"
 	"github.com/go-webauthn/webauthn/webauthn"
 	"github.com/google/uuid"
 	"github.com/jellydator/ttlcache/v3"
 )
 
+type WebAuthnSession struct {
+	WebAuthnSession webauthn.SessionData
+	UserID          uuid.UUID
+	Username        string
+}
+
 type WebAuthnSessionStore struct {
 	mu      sync.Mutex
-	cache   *ttlcache.Cache[string, webauthn.SessionData]
+	cache   *ttlcache.Cache[string, WebAuthnSession]
 	running bool
 }
 
-func NewSessionStore() WebAuthnSessionStore {
+func NewSessionStore() *WebAuthnSessionStore {
 	store := WebAuthnSessionStore{}
 
 	store.cache = ttlcache.New(
-		ttlcache.WithTTL[string, webauthn.SessionData](5 * time.Minute),
+		ttlcache.WithTTL[string, WebAuthnSession](5 * time.Minute),
 	)
 
 	// Stop cache cleaner when eviction empties active sessions
-	store.cache.OnEviction(func(ctx context.Context, reason ttlcache.EvictionReason, item *ttlcache.Item[string, webauthn.SessionData]) {
+	store.cache.OnEviction(func(ctx context.Context, reason ttlcache.EvictionReason, item *ttlcache.Item[string, WebAuthnSession]) {
 		store.mu.Lock()
 		defer store.mu.Unlock()
 
@@ -36,10 +43,10 @@ func NewSessionStore() WebAuthnSessionStore {
 		}
 	})
 
-	return store
+	return &store
 }
 
-func (s *WebAuthnSessionStore) Set(key string, session webauthn.SessionData) {
+func (s *WebAuthnSessionStore) Set(key string, session WebAuthnSession) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -49,23 +56,31 @@ func (s *WebAuthnSessionStore) Set(key string, session webauthn.SessionData) {
 		go s.cache.Start()
 		log.Debug("starting webauthn session cache")
 	}
-
+	if shared.Version == "development" {
+		log.Debug("set session", "id", key)
+	}
 	s.cache.Set(key, session, ttlcache.DefaultTTL)
 }
 
-func (s *WebAuthnSessionStore) GetAndDelete(key string) (webauthn.SessionData, bool) {
+func (s *WebAuthnSessionStore) Get(key string) (WebAuthnSession, bool) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
 	item := s.cache.Get(key)
 	if item == nil {
-		return webauthn.SessionData{}, false
+		return WebAuthnSession{}, false
 	}
 
 	data := item.Value()
-	s.cache.Delete(key)
 
 	return data, true
+}
+
+func (s *WebAuthnSessionStore) Delete(key string) {
+	if shared.Version == "development" {
+		log.Debug("delete session", "id", key)
+	}
+	s.cache.Delete(key)
 }
 
 type UserEntity struct {

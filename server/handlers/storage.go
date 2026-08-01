@@ -92,17 +92,17 @@ type storageHandler struct {
 
 var StorageHandler storageHandler
 
-func (server *RakerServer) NewStorageHandler(root string, directories bool) storageHandler {
+func (server *RakerServer) NewStorageHandler(root string, directories bool) *storageHandler {
 	StorageHandler = storageHandler{
 		root:        root,
 		directories: directories,
 		fileServer:  http.FileServer(http.Dir(root)),
 		server:      server,
 	}
-	return StorageHandler
+	return &StorageHandler
 }
 
-func (handler storageHandler) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
+func (handler *storageHandler) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 	cookie, err := request.Cookie("jwt")
 	if err != nil {
 		http.Error(writer, http.StatusText(http.StatusNotFound), http.StatusNotFound)

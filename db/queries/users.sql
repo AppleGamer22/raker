@@ -1,5 +1,6 @@
 -- name: UserAdd :one
 INSERT INTO Users(
+	id,
 	username,
 	password_hash,
 	instagram_session_id,
@@ -7,6 +8,7 @@ INSERT INTO Users(
 	network,
 	categories)
 VALUES (
+	sqlc.arg(id),
 	sqlc.arg(username)::text,
 	sqlc.arg(password_hash)::text,
 	sqlc.arg(instagram_session_id)::text,
