@@ -3,6 +3,7 @@ package handlers
 import (
 	"bytes"
 	"context"
+	"database/sql"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -23,10 +24,13 @@ import (
 var unauthenticatedProcedures = map[string]struct{}{
 	"/raker.v1.RakerServer/SignInInstagram": {},
 	"/raker.v1.RakerServer/SignUpInstagram": {},
-	"/raker.v1.RakerServer/BeginSignUp":     {},
-	"/raker.v1.RakerServer/FinishSignUp":    {},
 	"/raker.v1.RakerServer/BeginSignIn":     {},
 	"/raker.v1.RakerServer/FinishSignIn":    {},
+}
+
+var optionalAuthenticatedProcedures = map[string]struct{}{
+	"/raker.v1.RakerServer/BeginSignUp":  {},
+	"/raker.v1.RakerServer/FinishSignUp": {},
 }
 
 func (server *RakerServer) ApproveSession(ctx context.Context, user db.User) error {
@@ -140,6 +144,34 @@ func (server *RakerServer) NewAuthInterceptor() connect.UnaryInterceptorFunc {
 				return next(ctx, req)
 			}
 
+			if _, ok := optionalAuthenticatedProcedures[req.Spec().Procedure]; ok {
+				cookies, err := http.ParseCookie(req.Header().Get("Cookie"))
+				if err != nil {
+					log.Error(err)
+					return nil, connect.NewError(
+						connect.CodeUnauthenticated,
+						errors.New("no token provided"),
+					)
+				}
+
+				for _, cookie := range cookies {
+					if cookie.Name != "jwt" {
+						continue
+					}
+
+					user, err := server.GetUserFromCookie(cookie)
+					if err != nil {
+						log.Error(err)
+						return nil, err
+					}
+
+					ctxWithUser := context.WithValue(ctx, authenticatedUserKey, user)
+					return next(ctxWithUser, req)
+				}
+
+				return next(ctx, req)
+			}
+
 			cookies, err := http.ParseCookie(req.Header().Get("Cookie"))
 
 			if err != nil {
@@ -222,17 +254,21 @@ func (server *RakerServer) EditUserCredentials(ctx context.Context, request *v1.
 
 // BeginSignUp implements [v1connect.RakerServerHandler].
 func (server *RakerServer) BeginSignUp(ctx context.Context, request *passkey.BeginSignUpRequest) (*passkey.BeginSignUpResponse, error) {
-	if request.Username == "" {
+	user, isAuthenticated := ctx.Value(authenticatedUserKey).(db.User)
+	if !isAuthenticated && request.Username == "" {
 		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("username required"))
 	}
 
-	_, err := server.DBClient.UserGetByUsername(context.Background(), request.Username)
-	if err == nil {
-		log.Error("username already exists", "username", request.Username)
-		return nil, connect.NewError(connect.CodeAlreadyExists, errors.New("username already exists"))
+	if !isAuthenticated {
+		_, err := server.DBClient.UserGetByUsername(context.Background(), request.Username)
+		if err == nil {
+			log.Error("username already exists", "username", request.Username)
+			return nil, connect.NewError(connect.CodeAlreadyExists, errors.New("username already exists"))
+		}
+		user = db.User{ID: uuid.New(), Username: request.Username}
 	}
 
-	userEntity := &authenticator.UserEntity{ID: uuid.New(), Username: request.Username}
+	userEntity := &authenticator.UserEntity{ID: user.ID, Username: user.Username}
 	options, sessionData, err := server.WebAuthn.BeginRegistration(userEntity)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
@@ -260,6 +296,11 @@ func (server *RakerServer) FinishSignUp(ctx context.Context, request *passkey.Fi
 		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("session expired or invalid"))
 	}
 
+	signedInUser, isAuthenticated := ctx.Value(authenticatedUserKey).(db.User)
+	if isAuthenticated && signedInUser.ID != sessionData.UserID {
+		return nil, connect.NewError(connect.CodePermissionDenied, errors.New("passkey registration session does not belong to the signed-in user"))
+	}
+
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, "", bytes.NewReader([]byte(request.GetResponseJson())))
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
@@ -277,23 +318,31 @@ func (server *RakerServer) FinishSignUp(ctx context.Context, request *passkey.Fi
 		transports = append(transports, string(t))
 	}
 
-	tx, err := server.DBConnection.Begin()
-	if err != nil {
-		log.Error(err)
-		return nil, connect.NewError(connect.CodeInternal, err)
-	}
-	defer tx.Rollback()
-	qtx := server.DBClient.WithTx(tx)
+	var tx *sql.Tx
+	var qtx *db.Queries
+	targetUser := db.User{ID: sessionData.UserID, Username: sessionData.Username}
+	if isAuthenticated {
+		qtx = server.DBClient
+		targetUser = signedInUser
+	} else {
+		tx, err = server.DBConnection.Begin()
+		if err != nil {
+			log.Error(err)
+			return nil, connect.NewError(connect.CodeInternal, err)
+		}
+		defer tx.Rollback()
+		qtx = server.DBClient.WithTx(tx)
 
-	user, err := qtx.UserAdd(ctx, db.UserAddParams{Username: userEntity.Username, ID: sessionData.UserID})
-	if err != nil {
-		log.Error(err)
-		return nil, connect.NewError(connect.CodeInternal, err)
+		targetUser, err = qtx.UserAdd(ctx, db.UserAddParams{Username: userEntity.Username, ID: sessionData.UserID})
+		if err != nil {
+			log.Error(err)
+			return nil, connect.NewError(connect.CodeInternal, err)
+		}
 	}
 
 	err = qtx.UserCreatePasskey(ctx, db.UserCreatePasskeyParams{
 		PasskeyID:       credential.ID,
-		UserID:          user.ID,
+		UserID:          targetUser.ID,
 		PublicKey:       credential.PublicKey,
 		AttestationType: credential.AttestationType,
 		Aaguid:          credential.Authenticator.AAGUID,
@@ -307,9 +356,11 @@ func (server *RakerServer) FinishSignUp(ctx context.Context, request *passkey.Fi
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
-	if err := tx.Commit(); err != nil {
-		log.Error(err)
-		return nil, connect.NewError(connect.CodeInternal, err)
+	if tx != nil {
+		if err := tx.Commit(); err != nil {
+			log.Error(err)
+			return nil, connect.NewError(connect.CodeInternal, err)
+		}
 	}
 
 	// if err := server.ApproveSession(ctx, user); err != nil {

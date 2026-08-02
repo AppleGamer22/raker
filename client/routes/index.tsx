@@ -7,7 +7,7 @@ import {
 } from "@simplewebauthn/browser";
 import { useForm } from "@tanstack/react-form";
 import { createFileRoute } from "@tanstack/react-router";
-import { PlusIcon, UserKeyIcon, XIcon } from "lucide-react";
+import { CheckIcon, PlusIcon, UserKeyIcon, XIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import z from "zod";
@@ -113,8 +113,12 @@ function SignUpForm() {
 }
 
 function PasskeysForm() {
+	const { username } = useUser();
 	const { data: passkeys, error: passkeysListError, refetch } = useQuery(getPasskeysList, {});
 	const { confirm, DialogComponent } = useConfirmationDialog();
+	const beginSignUpMutation = useMutation(beginSignUp);
+	const finishSignUpMutation = useMutation(finishSignUp);
+	const [newPasskeyName, setNewPasskeyName] = useState("");
 
 	function PasskeyRow({ passkey }: { passkey: Passkey }) {
 		const renamePasskeyMutation = useMutation(renamePasskey);
@@ -129,15 +133,12 @@ function PasskeysForm() {
 		const isRenameDisabled = !trimmedName || trimmedName === passkey.name || renamePasskeyMutation.isPending;
 
 		return (
-			<div className="flex flex-col gap-3 rounded-lg border bg-card p-3 md:flex-row md:items-center">
+			<div className="flex items-center gap-3 overflow-x-auto rounded-lg border bg-card p-3">
 				<div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md border bg-muted text-[10px] font-semibold tracking-wide text-muted-foreground uppercase">
+					{/* placeholder for vendor logo derived from aaguid */}
 					Logo
 				</div>
-				<div className="min-w-0 flex-1 space-y-2">
-					<div className="flex items-center gap-2 text-sm">
-						<span className="font-medium">Passkey name</span>
-						<span className="truncate text-muted-foreground">{passkey.name}</span>
-					</div>
+				<div className="min-w-0 flex-1">
 					<Input
 						value={name}
 						onChange={(e) => setName(e.target.value)}
@@ -145,10 +146,12 @@ function PasskeysForm() {
 						aria-label={`Rename passkey ${passkey.name}`}
 					/>
 				</div>
-				<div className="flex flex-wrap items-center gap-2 md:justify-end">
+				<div className="flex shrink-0 items-center gap-2">
 					<Button
 						type="button"
 						variant="outline"
+						size="icon-xs"
+						className="sm:h-8 sm:w-auto sm:min-w-fit sm:px-2.5 sm:text-sm"
 						disabled={isRenameDisabled}
 						onClick={async () => {
 							try {
@@ -168,11 +171,15 @@ function PasskeysForm() {
 							}
 						}}
 					>
-						Save name
+						<CheckIcon className="sm:hidden" />
+						<span className="hidden sm:inline">Save name</span>
+						<span className="sr-only sm:hidden">Save name</span>
 					</Button>
 					<Button
 						type="button"
 						variant="destructive"
+						size="icon-xs"
+						className="sm:h-8 sm:w-auto sm:min-w-fit sm:px-2.5 sm:text-sm"
 						disabled={(passkeys?.passkeys ?? []).length < 2 || deletePasskeyMutation.isPending}
 						onClick={async () => {
 							const confirmed = await confirm({
@@ -204,7 +211,9 @@ function PasskeysForm() {
 							}
 						}}
 					>
-						Delete
+						<XIcon className="sm:hidden" />
+						<span className="hidden sm:inline">Delete</span>
+						<span className="sr-only sm:hidden">Delete</span>
 					</Button>
 				</div>
 			</div>
@@ -223,6 +232,54 @@ function PasskeysForm() {
 					<FieldSet>
 						<FieldLegend>Passkeys</FieldLegend>
 						<FieldGroup>
+							<Field orientation="horizontal">
+								<FieldContent>
+									<Input
+										value={newPasskeyName}
+										onChange={(e) => setNewPasskeyName(e.target.value)}
+										placeholder="New passkey name"
+										aria-label="New passkey name"
+									/>
+								</FieldContent>
+								<Button
+									type="button"
+									disabled={
+										beginSignUpMutation.isPending ||
+										finishSignUpMutation.isPending ||
+										!newPasskeyName.trim()
+									}
+									onClick={async () => {
+										try {
+											const beginRes = await beginSignUpMutation.mutateAsync({
+												username: username ?? "",
+											});
+											const { publicKey } = JSON.parse(beginRes.optionsJson) as {
+												publicKey: PublicKeyCredentialCreationOptionsJSON;
+											};
+
+											const attResp = await startRegistration({ optionsJSON: publicKey });
+											await finishSignUpMutation.mutateAsync({
+												sessionId: beginRes.sessionId,
+												passkeyName: newPasskeyName.trim(),
+												responseJson: JSON.stringify(attResp),
+											});
+
+											await refetch();
+											setNewPasskeyName("");
+											toast.success("Added passkey", {
+												position: "top-center",
+											});
+										} catch (err) {
+											console.error(err);
+											toast.error((err as Error).message, {
+												position: "top-center",
+											});
+										}
+									}}
+								>
+									<UserKeyIcon className="h-4 w-4" /> Add Passkey
+								</Button>
+							</Field>
 							{passkeysListError ? <FieldError>{passkeysListError.message}</FieldError> : null}
 							{passkeyRows.length ? (
 								passkeyRows.map((passkey) => (
