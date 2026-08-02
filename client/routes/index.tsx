@@ -1,4 +1,4 @@
-import { useMutation } from "@connectrpc/connect-query";
+import { useMutation, useQuery } from "@connectrpc/connect-query";
 import {
 	startAuthentication,
 	startRegistration,
@@ -12,6 +12,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import z from "zod";
 
+import type { Passkey } from "@/buf/raker/v1/passkey/passkey_pb";
 import {
 	signInInstagram,
 	editCategory,
@@ -20,6 +21,9 @@ import {
 	finishSignUp,
 	beginSignIn,
 	finishSignIn,
+	renamePasskey,
+	deletePasskey,
+	getPasskeysList,
 } from "@/buf/raker/v1/raker-RakerServer_connectquery";
 import { Button } from "@/components/ui/button";
 import { CardContent } from "@/components/ui/card";
@@ -105,6 +109,135 @@ function SignUpForm() {
 				</FieldSet>
 			</FieldGroup>
 		</form>
+	);
+}
+
+function PasskeysForm() {
+	const { data: passkeys, error: passkeysListError, refetch } = useQuery(getPasskeysList, {});
+	const { confirm, DialogComponent } = useConfirmationDialog();
+
+	function PasskeyRow({ passkey }: { passkey: Passkey }) {
+		const renamePasskeyMutation = useMutation(renamePasskey);
+		const deletePasskeyMutation = useMutation(deletePasskey);
+		const [name, setName] = useState(passkey.name);
+
+		useEffect(() => {
+			setName(passkey.name);
+		}, [passkey.name]);
+
+		const trimmedName = name.trim();
+		const isRenameDisabled = !trimmedName || trimmedName === passkey.name || renamePasskeyMutation.isPending;
+
+		return (
+			<div className="flex flex-col gap-3 rounded-lg border bg-card p-3 md:flex-row md:items-center">
+				<div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md border bg-muted text-[10px] font-semibold tracking-wide text-muted-foreground uppercase">
+					Logo
+				</div>
+				<div className="min-w-0 flex-1 space-y-2">
+					<div className="flex items-center gap-2 text-sm">
+						<span className="font-medium">Passkey name</span>
+						<span className="truncate text-muted-foreground">{passkey.name}</span>
+					</div>
+					<Input
+						value={name}
+						onChange={(e) => setName(e.target.value)}
+						placeholder="Rename this passkey"
+						aria-label={`Rename passkey ${passkey.name}`}
+					/>
+				</div>
+				<div className="flex flex-wrap items-center gap-2 md:justify-end">
+					<Button
+						type="button"
+						variant="outline"
+						disabled={isRenameDisabled}
+						onClick={async () => {
+							try {
+								await renamePasskeyMutation.mutateAsync({
+									id: passkey.id,
+									name: trimmedName,
+									aaguid: passkey.aaguid,
+								});
+								await refetch();
+								toast.success("Renamed passkey", {
+									position: "top-center",
+								});
+							} catch (err) {
+								toast.error((err as Error).message, {
+									position: "top-center",
+								});
+							}
+						}}
+					>
+						Save name
+					</Button>
+					<Button
+						type="button"
+						variant="destructive"
+						disabled={(passkeys?.passkeys ?? []).length < 2 || deletePasskeyMutation.isPending}
+						onClick={async () => {
+							const confirmed = await confirm({
+								title: "Delete Passkey",
+								description: `Are you sure you want to delete the passkey "${passkey.name}"? This action cannot be undone.`,
+								confirmText: "Delete",
+								cancelText: "Cancel",
+								isDestructive: true,
+							});
+
+							if (!confirmed) {
+								return;
+							}
+
+							try {
+								await deletePasskeyMutation.mutateAsync({
+									id: passkey.id,
+									name: passkey.name,
+									aaguid: passkey.aaguid,
+								});
+								await refetch();
+								toast.success("Deleted passkey", {
+									position: "top-center",
+								});
+							} catch (err) {
+								toast.error((err as Error).message, {
+									position: "top-center",
+								});
+							}
+						}}
+					>
+						Delete
+					</Button>
+				</div>
+			</div>
+		);
+	}
+
+	const passkeyRows = passkeys?.passkeys ?? [];
+	return (
+		<>
+			<form
+				onSubmit={(e) => {
+					e.preventDefault();
+				}}
+			>
+				<FieldGroup>
+					<FieldSet>
+						<FieldLegend>Passkeys</FieldLegend>
+						<FieldGroup>
+							{passkeysListError ? <FieldError>{passkeysListError.message}</FieldError> : null}
+							{passkeyRows.length ? (
+								passkeyRows.map((passkey) => (
+									<PasskeyRow key={passkey.id.toString()} passkey={passkey} />
+								))
+							) : (
+								<p className="text-sm text-muted-foreground">No passkeys have been registered yet.</p>
+							)}
+						</FieldGroup>
+					</FieldSet>
+				</FieldGroup>
+				{passkeys === undefined && <Progress value={null} className="pt-2" />}
+			</form>
+			<DialogComponent />
+		</>
 	);
 }
 
@@ -482,6 +615,8 @@ function SignedIn() {
 		<>
 			<CardContent>
 				<Categories />
+				<Separator className="my-3" />
+				<PasskeysForm />
 				<Separator className="my-3" />
 				<UpdateForm />
 			</CardContent>

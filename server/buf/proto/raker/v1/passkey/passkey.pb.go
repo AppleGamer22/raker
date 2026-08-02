@@ -327,28 +327,29 @@ func (x *FinishSignInRequest) GetResponseJson() string {
 	return ""
 }
 
-type RenamePasskeyRequest struct {
+type Passkey struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	PasskeyId     []byte                 `protobuf:"bytes,1,opt,name=passkey_id,json=passkeyId,proto3" json:"passkey_id,omitempty"`
-	NewName       string                 `protobuf:"bytes,2,opt,name=new_name,json=newName,proto3" json:"new_name,omitempty"`
+	Id            []byte                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Aaguid        []byte                 `protobuf:"bytes,3,opt,name=aaguid,proto3" json:"aaguid,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *RenamePasskeyRequest) Reset() {
-	*x = RenamePasskeyRequest{}
+func (x *Passkey) Reset() {
+	*x = Passkey{}
 	mi := &file_raker_v1_passkey_passkey_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *RenamePasskeyRequest) String() string {
+func (x *Passkey) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*RenamePasskeyRequest) ProtoMessage() {}
+func (*Passkey) ProtoMessage() {}
 
-func (x *RenamePasskeyRequest) ProtoReflect() protoreflect.Message {
+func (x *Passkey) ProtoReflect() protoreflect.Message {
 	mi := &file_raker_v1_passkey_passkey_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -360,23 +361,74 @@ func (x *RenamePasskeyRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use RenamePasskeyRequest.ProtoReflect.Descriptor instead.
-func (*RenamePasskeyRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use Passkey.ProtoReflect.Descriptor instead.
+func (*Passkey) Descriptor() ([]byte, []int) {
 	return file_raker_v1_passkey_passkey_proto_rawDescGZIP(), []int{6}
 }
 
-func (x *RenamePasskeyRequest) GetPasskeyId() []byte {
+func (x *Passkey) GetId() []byte {
 	if x != nil {
-		return x.PasskeyId
+		return x.Id
 	}
 	return nil
 }
 
-func (x *RenamePasskeyRequest) GetNewName() string {
+func (x *Passkey) GetName() string {
 	if x != nil {
-		return x.NewName
+		return x.Name
 	}
 	return ""
+}
+
+func (x *Passkey) GetAaguid() []byte {
+	if x != nil {
+		return x.Aaguid
+	}
+	return nil
+}
+
+type PasskeysSettingsDisplay struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Passkeys      []*Passkey             `protobuf:"bytes,1,rep,name=passkeys,proto3" json:"passkeys,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PasskeysSettingsDisplay) Reset() {
+	*x = PasskeysSettingsDisplay{}
+	mi := &file_raker_v1_passkey_passkey_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PasskeysSettingsDisplay) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PasskeysSettingsDisplay) ProtoMessage() {}
+
+func (x *PasskeysSettingsDisplay) ProtoReflect() protoreflect.Message {
+	mi := &file_raker_v1_passkey_passkey_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PasskeysSettingsDisplay.ProtoReflect.Descriptor instead.
+func (*PasskeysSettingsDisplay) Descriptor() ([]byte, []int) {
+	return file_raker_v1_passkey_passkey_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *PasskeysSettingsDisplay) GetPasskeys() []*Passkey {
+	if x != nil {
+		return x.Passkeys
+	}
+	return nil
 }
 
 var File_raker_v1_passkey_passkey_proto protoreflect.FileDescriptor
@@ -404,11 +456,13 @@ const file_raker_v1_passkey_passkey_proto_rawDesc = "" +
 	"\x13FinishSignInRequest\x12\x1d\n" +
 	"\n" +
 	"session_id\x18\x01 \x01(\tR\tsessionId\x12#\n" +
-	"\rresponse_json\x18\x02 \x01(\tR\fresponseJson\"P\n" +
-	"\x14RenamePasskeyRequest\x12\x1d\n" +
-	"\n" +
-	"passkey_id\x18\x01 \x01(\fR\tpasskeyId\x12\x19\n" +
-	"\bnew_name\x18\x02 \x01(\tR\anewNameB\xc7\x01\n" +
+	"\rresponse_json\x18\x02 \x01(\tR\fresponseJson\"E\n" +
+	"\aPasskey\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\fR\x02id\x12\x12\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x12\x16\n" +
+	"\x06aaguid\x18\x03 \x01(\fR\x06aaguid\"P\n" +
+	"\x17PasskeysSettingsDisplay\x125\n" +
+	"\bpasskeys\x18\x01 \x03(\v2\x19.raker.v1.passkey.PasskeyR\bpasskeysB\xc7\x01\n" +
 	"\x14com.raker.v1.passkeyB\fPasskeyProtoP\x01Z?github.com/AppleGamer22/raker/server/buf/proto/raker/v1/passkey\xa2\x02\x03RVP\xaa\x02\x10Raker.V1.Passkey\xca\x02\x10Raker\\V1\\Passkey\xe2\x02\x1cRaker\\V1\\Passkey\\GPBMetadata\xea\x02\x12Raker::V1::Passkeyb\x06proto3"
 
 var (
@@ -423,22 +477,24 @@ func file_raker_v1_passkey_passkey_proto_rawDescGZIP() []byte {
 	return file_raker_v1_passkey_passkey_proto_rawDescData
 }
 
-var file_raker_v1_passkey_passkey_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
+var file_raker_v1_passkey_passkey_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
 var file_raker_v1_passkey_passkey_proto_goTypes = []any{
-	(*BeginSignUpRequest)(nil),   // 0: raker.v1.passkey.BeginSignUpRequest
-	(*BeginSignUpResponse)(nil),  // 1: raker.v1.passkey.BeginSignUpResponse
-	(*FinishSignUpRequest)(nil),  // 2: raker.v1.passkey.FinishSignUpRequest
-	(*BeginSignInRequest)(nil),   // 3: raker.v1.passkey.BeginSignInRequest
-	(*BeginSignInResponse)(nil),  // 4: raker.v1.passkey.BeginSignInResponse
-	(*FinishSignInRequest)(nil),  // 5: raker.v1.passkey.FinishSignInRequest
-	(*RenamePasskeyRequest)(nil), // 6: raker.v1.passkey.RenamePasskeyRequest
+	(*BeginSignUpRequest)(nil),      // 0: raker.v1.passkey.BeginSignUpRequest
+	(*BeginSignUpResponse)(nil),     // 1: raker.v1.passkey.BeginSignUpResponse
+	(*FinishSignUpRequest)(nil),     // 2: raker.v1.passkey.FinishSignUpRequest
+	(*BeginSignInRequest)(nil),      // 3: raker.v1.passkey.BeginSignInRequest
+	(*BeginSignInResponse)(nil),     // 4: raker.v1.passkey.BeginSignInResponse
+	(*FinishSignInRequest)(nil),     // 5: raker.v1.passkey.FinishSignInRequest
+	(*Passkey)(nil),                 // 6: raker.v1.passkey.Passkey
+	(*PasskeysSettingsDisplay)(nil), // 7: raker.v1.passkey.PasskeysSettingsDisplay
 }
 var file_raker_v1_passkey_passkey_proto_depIdxs = []int32{
-	0, // [0:0] is the sub-list for method output_type
-	0, // [0:0] is the sub-list for method input_type
-	0, // [0:0] is the sub-list for extension type_name
-	0, // [0:0] is the sub-list for extension extendee
-	0, // [0:0] is the sub-list for field type_name
+	6, // 0: raker.v1.passkey.PasskeysSettingsDisplay.passkeys:type_name -> raker.v1.passkey.Passkey
+	1, // [1:1] is the sub-list for method output_type
+	1, // [1:1] is the sub-list for method input_type
+	1, // [1:1] is the sub-list for extension type_name
+	1, // [1:1] is the sub-list for extension extendee
+	0, // [0:1] is the sub-list for field type_name
 }
 
 func init() { file_raker_v1_passkey_passkey_proto_init() }
@@ -452,7 +508,7 @@ func file_raker_v1_passkey_passkey_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_raker_v1_passkey_passkey_proto_rawDesc), len(file_raker_v1_passkey_passkey_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   7,
+			NumMessages:   8,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

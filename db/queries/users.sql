@@ -112,11 +112,17 @@ SET
 WHERE
 	id = sqlc.arg(passkey_id)::bytea;
 
--- name: PasskeyUpdateName :exec
+-- name: PasskeyRename :exec
 UPDATE
 	Passkeys
 SET
 	name = sqlc.arg(name)::text
 WHERE
-	id = sqlc.arg(passkey_id)::bytea;
+	id = sqlc.arg(passkey_id)::bytea
+	AND user_id = sqlc.arg(user_id);
+
+-- name: PasskeyDelete :exec
+DELETE FROM Passkeys
+WHERE id = sqlc.arg(passkey_id)::bytea
+	AND user_id = sqlc.arg(user_id);
 

@@ -12,7 +12,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file raker/v1/passkey/passkey.proto.
  */
 export const file_raker_v1_passkey_passkey: GenFile = /*@__PURE__*/
-  fileDesc("Ch5yYWtlci92MS9wYXNza2V5L3Bhc3NrZXkucHJvdG8SEHJha2VyLnYxLnBhc3NrZXkiJgoSQmVnaW5TaWduVXBSZXF1ZXN0EhAKCHVzZXJuYW1lGAEgASgJIj8KE0JlZ2luU2lnblVwUmVzcG9uc2USEgoKc2Vzc2lvbl9pZBgBIAEoCRIUCgxvcHRpb25zX2pzb24YAiABKAkiVgoTRmluaXNoU2lnblVwUmVxdWVzdBISCgpzZXNzaW9uX2lkGAEgASgJEhQKDHBhc3NrZXlfbmFtZRgCIAEoCRIVCg1yZXNwb25zZV9qc29uGAMgASgJIiYKEkJlZ2luU2lnbkluUmVxdWVzdBIQCgh1c2VybmFtZRgBIAEoCSI/ChNCZWdpblNpZ25JblJlc3BvbnNlEhIKCnNlc3Npb25faWQYASABKAkSFAoMb3B0aW9uc19qc29uGAIgASgJIkAKE0ZpbmlzaFNpZ25JblJlcXVlc3QSEgoKc2Vzc2lvbl9pZBgBIAEoCRIVCg1yZXNwb25zZV9qc29uGAIgASgJIjwKFFJlbmFtZVBhc3NrZXlSZXF1ZXN0EhIKCnBhc3NrZXlfaWQYASABKAwSEAoIbmV3X25hbWUYAiABKAlCxwEKFGNvbS5yYWtlci52MS5wYXNza2V5QgxQYXNza2V5UHJvdG9QAVo/Z2l0aHViLmNvbS9BcHBsZUdhbWVyMjIvcmFrZXIvc2VydmVyL2J1Zi9wcm90by9yYWtlci92MS9wYXNza2V5ogIDUlZQqgIQUmFrZXIuVjEuUGFzc2tlecoCEFJha2VyXFYxXFBhc3NrZXniAhxSYWtlclxWMVxQYXNza2V5XEdQQk1ldGFkYXRh6gISUmFrZXI6OlYxOjpQYXNza2V5YgZwcm90bzM");
+  fileDesc("Ch5yYWtlci92MS9wYXNza2V5L3Bhc3NrZXkucHJvdG8SEHJha2VyLnYxLnBhc3NrZXkiJgoSQmVnaW5TaWduVXBSZXF1ZXN0EhAKCHVzZXJuYW1lGAEgASgJIj8KE0JlZ2luU2lnblVwUmVzcG9uc2USEgoKc2Vzc2lvbl9pZBgBIAEoCRIUCgxvcHRpb25zX2pzb24YAiABKAkiVgoTRmluaXNoU2lnblVwUmVxdWVzdBISCgpzZXNzaW9uX2lkGAEgASgJEhQKDHBhc3NrZXlfbmFtZRgCIAEoCRIVCg1yZXNwb25zZV9qc29uGAMgASgJIiYKEkJlZ2luU2lnbkluUmVxdWVzdBIQCgh1c2VybmFtZRgBIAEoCSI/ChNCZWdpblNpZ25JblJlc3BvbnNlEhIKCnNlc3Npb25faWQYASABKAkSFAoMb3B0aW9uc19qc29uGAIgASgJIkAKE0ZpbmlzaFNpZ25JblJlcXVlc3QSEgoKc2Vzc2lvbl9pZBgBIAEoCRIVCg1yZXNwb25zZV9qc29uGAIgASgJIjMKB1Bhc3NrZXkSCgoCaWQYASABKAwSDAoEbmFtZRgCIAEoCRIOCgZhYWd1aWQYAyABKAwiRgoXUGFzc2tleXNTZXR0aW5nc0Rpc3BsYXkSKwoIcGFzc2tleXMYASADKAsyGS5yYWtlci52MS5wYXNza2V5LlBhc3NrZXlCxwEKFGNvbS5yYWtlci52MS5wYXNza2V5QgxQYXNza2V5UHJvdG9QAVo/Z2l0aHViLmNvbS9BcHBsZUdhbWVyMjIvcmFrZXIvc2VydmVyL2J1Zi9wcm90by9yYWtlci92MS9wYXNza2V5ogIDUlZQqgIQUmFrZXIuVjEuUGFzc2tlecoCEFJha2VyXFYxXFBhc3NrZXniAhxSYWtlclxWMVxQYXNza2V5XEdQQk1ldGFkYXRh6gISUmFrZXI6OlYxOjpQYXNza2V5YgZwcm90bzM");
 
 /**
  * @generated from message raker.v1.passkey.BeginSignUpRequest
@@ -142,24 +142,46 @@ export const FinishSignInRequestSchema: GenMessage<FinishSignInRequest> = /*@__P
   messageDesc(file_raker_v1_passkey_passkey, 5);
 
 /**
- * @generated from message raker.v1.passkey.RenamePasskeyRequest
+ * @generated from message raker.v1.passkey.Passkey
  */
-export type RenamePasskeyRequest = Message<"raker.v1.passkey.RenamePasskeyRequest"> & {
+export type Passkey = Message<"raker.v1.passkey.Passkey"> & {
   /**
-   * @generated from field: bytes passkey_id = 1;
+   * @generated from field: bytes id = 1;
    */
-  passkeyId: Uint8Array;
+  id: Uint8Array;
 
   /**
-   * @generated from field: string new_name = 2;
+   * @generated from field: string name = 2;
    */
-  newName: string;
+  name: string;
+
+  /**
+   * @generated from field: bytes aaguid = 3;
+   */
+  aaguid: Uint8Array;
 };
 
 /**
- * Describes the message raker.v1.passkey.RenamePasskeyRequest.
- * Use `create(RenamePasskeyRequestSchema)` to create a new message.
+ * Describes the message raker.v1.passkey.Passkey.
+ * Use `create(PasskeySchema)` to create a new message.
  */
-export const RenamePasskeyRequestSchema: GenMessage<RenamePasskeyRequest> = /*@__PURE__*/
+export const PasskeySchema: GenMessage<Passkey> = /*@__PURE__*/
   messageDesc(file_raker_v1_passkey_passkey, 6);
+
+/**
+ * @generated from message raker.v1.passkey.PasskeysSettingsDisplay
+ */
+export type PasskeysSettingsDisplay = Message<"raker.v1.passkey.PasskeysSettingsDisplay"> & {
+  /**
+   * @generated from field: repeated raker.v1.passkey.Passkey passkeys = 1;
+   */
+  passkeys: Passkey[];
+};
+
+/**
+ * Describes the message raker.v1.passkey.PasskeysSettingsDisplay.
+ * Use `create(PasskeysSettingsDisplaySchema)` to create a new message.
+ */
+export const PasskeysSettingsDisplaySchema: GenMessage<PasskeysSettingsDisplay> = /*@__PURE__*/
+  messageDesc(file_raker_v1_passkey_passkey, 7);
 

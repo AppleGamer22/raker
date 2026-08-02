@@ -34,7 +34,12 @@ message FinishSignInRequest {
   string response_json = 2;
 }
 
-message RenamePasskeyRequest {
-  bytes passkey_id = 1;
-  string new_name = 2;
+message Passkey {
+  bytes id = 1;
+  string name = 2;
+  bytes aaguid = 3;
+}
+
+message PasskeysSettingsDisplay {
+  repeated Passkey passkeys = 1;
 }

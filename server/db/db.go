@@ -60,8 +60,11 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.historyUpdateOwnerStmt, err = db.PrepareContext(ctx, historyUpdateOwner); err != nil {
 		return nil, fmt.Errorf("error preparing query HistoryUpdateOwner: %w", err)
 	}
-	if q.passkeyUpdateNameStmt, err = db.PrepareContext(ctx, passkeyUpdateName); err != nil {
-		return nil, fmt.Errorf("error preparing query PasskeyUpdateName: %w", err)
+	if q.passkeyDeleteStmt, err = db.PrepareContext(ctx, passkeyDelete); err != nil {
+		return nil, fmt.Errorf("error preparing query PasskeyDelete: %w", err)
+	}
+	if q.passkeyRenameStmt, err = db.PrepareContext(ctx, passkeyRename); err != nil {
+		return nil, fmt.Errorf("error preparing query PasskeyRename: %w", err)
 	}
 	if q.passkeyUpdateSignCountStmt, err = db.PrepareContext(ctx, passkeyUpdateSignCount); err != nil {
 		return nil, fmt.Errorf("error preparing query PasskeyUpdateSignCount: %w", err)
@@ -164,9 +167,14 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing historyUpdateOwnerStmt: %w", cerr)
 		}
 	}
-	if q.passkeyUpdateNameStmt != nil {
-		if cerr := q.passkeyUpdateNameStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing passkeyUpdateNameStmt: %w", cerr)
+	if q.passkeyDeleteStmt != nil {
+		if cerr := q.passkeyDeleteStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing passkeyDeleteStmt: %w", cerr)
+		}
+	}
+	if q.passkeyRenameStmt != nil {
+		if cerr := q.passkeyRenameStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing passkeyRenameStmt: %w", cerr)
 		}
 	}
 	if q.passkeyUpdateSignCountStmt != nil {
@@ -280,7 +288,8 @@ type Queries struct {
 	historyRemoveStmt              *sql.Stmt
 	historyUpdateCategoriesStmt    *sql.Stmt
 	historyUpdateOwnerStmt         *sql.Stmt
-	passkeyUpdateNameStmt          *sql.Stmt
+	passkeyDeleteStmt              *sql.Stmt
+	passkeyRenameStmt              *sql.Stmt
 	passkeyUpdateSignCountStmt     *sql.Stmt
 	updateHistoryDuplicateFileStmt *sql.Stmt
 	updateHistoryRemoveFileStmt    *sql.Stmt
@@ -311,7 +320,8 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		historyRemoveStmt:              q.historyRemoveStmt,
 		historyUpdateCategoriesStmt:    q.historyUpdateCategoriesStmt,
 		historyUpdateOwnerStmt:         q.historyUpdateOwnerStmt,
-		passkeyUpdateNameStmt:          q.passkeyUpdateNameStmt,
+		passkeyDeleteStmt:              q.passkeyDeleteStmt,
+		passkeyRenameStmt:              q.passkeyRenameStmt,
 		passkeyUpdateSignCountStmt:     q.passkeyUpdateSignCountStmt,
 		updateHistoryDuplicateFileStmt: q.updateHistoryDuplicateFileStmt,
 		updateHistoryRemoveFileStmt:    q.updateHistoryRemoveFileStmt,

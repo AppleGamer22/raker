@@ -434,7 +434,7 @@ func (server *RakerServer) FinishSignIn(ctx context.Context, request *passkey.Fi
 
 	if err := server.ApproveSession(ctx, *loggedInUser); err != nil {
 		log.Error(err)
-		return nil, err
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
 	server.WebAuthnSessionStore.Delete(request.GetSessionId())
@@ -443,6 +443,75 @@ func (server *RakerServer) FinishSignIn(ctx context.Context, request *passkey.Fi
 }
 
 // RenamePasskey implements [v1connect.RakerServerHandler].
-func (server *RakerServer) RenamePasskey(ctx context.Context, request *passkey.RenamePasskeyRequest) (*emptypb.Empty, error) {
-	panic("unimplemented")
+func (server *RakerServer) RenamePasskey(ctx context.Context, request *passkey.Passkey) (*emptypb.Empty, error) {
+	user, ok := ctx.Value(authenticatedUserKey).(db.User)
+	if !ok {
+		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("not authenticated"))
+	}
+
+	err := server.DBClient.PasskeyRename(ctx, db.PasskeyRenameParams{
+		Name:      request.Name,
+		PasskeyID: request.Id,
+		UserID:    user.ID,
+	})
+	if err != nil {
+		log.Error(err)
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
+	return nil, nil
+}
+
+// DeletePasskey implements [v1connect.RakerServerHandler].
+func (server *RakerServer) DeletePasskey(ctx context.Context, request *passkey.Passkey) (*emptypb.Empty, error) {
+	user, ok := ctx.Value(authenticatedUserKey).(db.User)
+	if !ok {
+		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("not authenticated"))
+	}
+
+	passkeys, err := server.DBClient.UserGetPasskeysByID(ctx, user.ID)
+	if err != nil {
+		log.Error(err)
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
+	if len(passkeys) < 2 {
+		return nil, connect.NewError(connect.CodeFailedPrecondition, errors.New("you have only one passkey, you'll need to add another one before deleting this passkey."))
+	}
+
+	err = server.DBClient.PasskeyDelete(ctx, db.PasskeyDeleteParams{
+		PasskeyID: request.Id,
+		UserID:    user.ID,
+	})
+	if err != nil {
+		log.Error(err)
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
+	return nil, nil
+}
+
+// GetPasskeysList implements [v1connect.RakerServerHandler].
+func (server *RakerServer) GetPasskeysList(ctx context.Context, request *emptypb.Empty) (*passkey.PasskeysSettingsDisplay, error) {
+	user, ok := ctx.Value(authenticatedUserKey).(db.User)
+	if !ok {
+		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("not authenticated"))
+	}
+
+	passkeys, err := server.DBClient.UserGetPasskeysByID(ctx, user.ID)
+	if err != nil {
+		log.Error(err)
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
+	passkeySettingsList := make([]*passkey.Passkey, 0, len(passkeys))
+	for _, p := range passkeys {
+		passkeySettingsList = append(passkeySettingsList, &passkey.Passkey{
+			Id:     p.ID,
+			Name:   p.Name,
+			Aaguid: p.Aaguid,
+		})
+	}
+
+	return &passkey.PasskeysSettingsDisplay{Passkeys: passkeySettingsList}, nil
 }

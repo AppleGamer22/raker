@@ -30,6 +30,16 @@ export const finishSignIn = RakerServer.method.finishSignIn;
 export const renamePasskey = RakerServer.method.renamePasskey;
 
 /**
+ * @generated from rpc raker.v1.RakerServer.DeletePasskey
+ */
+export const deletePasskey = RakerServer.method.deletePasskey;
+
+/**
+ * @generated from rpc raker.v1.RakerServer.GetPasskeysList
+ */
+export const getPasskeysList = RakerServer.method.getPasskeysList;
+
+/**
  * @generated from rpc raker.v1.RakerServer.SignUpInstagram
  */
 export const signUpInstagram = RakerServer.method.signUpInstagram;

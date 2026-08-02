@@ -48,6 +48,12 @@ const (
 	// RakerServerRenamePasskeyProcedure is the fully-qualified name of the RakerServer's RenamePasskey
 	// RPC.
 	RakerServerRenamePasskeyProcedure = "/raker.v1.RakerServer/RenamePasskey"
+	// RakerServerDeletePasskeyProcedure is the fully-qualified name of the RakerServer's DeletePasskey
+	// RPC.
+	RakerServerDeletePasskeyProcedure = "/raker.v1.RakerServer/DeletePasskey"
+	// RakerServerGetPasskeysListProcedure is the fully-qualified name of the RakerServer's
+	// GetPasskeysList RPC.
+	RakerServerGetPasskeysListProcedure = "/raker.v1.RakerServer/GetPasskeysList"
 	// RakerServerSignUpInstagramProcedure is the fully-qualified name of the RakerServer's
 	// SignUpInstagram RPC.
 	RakerServerSignUpInstagramProcedure = "/raker.v1.RakerServer/SignUpInstagram"
@@ -105,7 +111,9 @@ type RakerServerClient interface {
 	FinishSignUp(context.Context, *passkey.FinishSignUpRequest) (*emptypb.Empty, error)
 	BeginSignIn(context.Context, *passkey.BeginSignInRequest) (*passkey.BeginSignInResponse, error)
 	FinishSignIn(context.Context, *passkey.FinishSignInRequest) (*emptypb.Empty, error)
-	RenamePasskey(context.Context, *passkey.RenamePasskeyRequest) (*emptypb.Empty, error)
+	RenamePasskey(context.Context, *passkey.Passkey) (*emptypb.Empty, error)
+	DeletePasskey(context.Context, *passkey.Passkey) (*emptypb.Empty, error)
+	GetPasskeysList(context.Context, *emptypb.Empty) (*passkey.PasskeysSettingsDisplay, error)
 	SignUpInstagram(context.Context, *v1.SignUpRequest) (*emptypb.Empty, error)
 	SignInInstagram(context.Context, *v1.SignInRequest) (*emptypb.Empty, error)
 	EditUserCredentials(context.Context, *v1.EditUserCredentialsRequest) (*emptypb.Empty, error)
@@ -161,10 +169,22 @@ func NewRakerServerClient(httpClient connect.HTTPClient, baseURL string, opts ..
 			connect.WithSchema(rakerServerMethods.ByName("FinishSignIn")),
 			connect.WithClientOptions(opts...),
 		),
-		renamePasskey: connect.NewClient[passkey.RenamePasskeyRequest, emptypb.Empty](
+		renamePasskey: connect.NewClient[passkey.Passkey, emptypb.Empty](
 			httpClient,
 			baseURL+RakerServerRenamePasskeyProcedure,
 			connect.WithSchema(rakerServerMethods.ByName("RenamePasskey")),
+			connect.WithClientOptions(opts...),
+		),
+		deletePasskey: connect.NewClient[passkey.Passkey, emptypb.Empty](
+			httpClient,
+			baseURL+RakerServerDeletePasskeyProcedure,
+			connect.WithSchema(rakerServerMethods.ByName("DeletePasskey")),
+			connect.WithClientOptions(opts...),
+		),
+		getPasskeysList: connect.NewClient[emptypb.Empty, passkey.PasskeysSettingsDisplay](
+			httpClient,
+			baseURL+RakerServerGetPasskeysListProcedure,
+			connect.WithSchema(rakerServerMethods.ByName("GetPasskeysList")),
 			connect.WithClientOptions(opts...),
 		),
 		signUpInstagram: connect.NewClient[v1.SignUpRequest, emptypb.Empty](
@@ -284,7 +304,9 @@ type rakerServerClient struct {
 	finishSignUp        *connect.Client[passkey.FinishSignUpRequest, emptypb.Empty]
 	beginSignIn         *connect.Client[passkey.BeginSignInRequest, passkey.BeginSignInResponse]
 	finishSignIn        *connect.Client[passkey.FinishSignInRequest, emptypb.Empty]
-	renamePasskey       *connect.Client[passkey.RenamePasskeyRequest, emptypb.Empty]
+	renamePasskey       *connect.Client[passkey.Passkey, emptypb.Empty]
+	deletePasskey       *connect.Client[passkey.Passkey, emptypb.Empty]
+	getPasskeysList     *connect.Client[emptypb.Empty, passkey.PasskeysSettingsDisplay]
 	signUpInstagram     *connect.Client[v1.SignUpRequest, emptypb.Empty]
 	signInInstagram     *connect.Client[v1.SignInRequest, emptypb.Empty]
 	editUserCredentials *connect.Client[v1.EditUserCredentialsRequest, emptypb.Empty]
@@ -342,8 +364,26 @@ func (c *rakerServerClient) FinishSignIn(ctx context.Context, req *passkey.Finis
 }
 
 // RenamePasskey calls raker.v1.RakerServer.RenamePasskey.
-func (c *rakerServerClient) RenamePasskey(ctx context.Context, req *passkey.RenamePasskeyRequest) (*emptypb.Empty, error) {
+func (c *rakerServerClient) RenamePasskey(ctx context.Context, req *passkey.Passkey) (*emptypb.Empty, error) {
 	response, err := c.renamePasskey.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
+}
+
+// DeletePasskey calls raker.v1.RakerServer.DeletePasskey.
+func (c *rakerServerClient) DeletePasskey(ctx context.Context, req *passkey.Passkey) (*emptypb.Empty, error) {
+	response, err := c.deletePasskey.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
+}
+
+// GetPasskeysList calls raker.v1.RakerServer.GetPasskeysList.
+func (c *rakerServerClient) GetPasskeysList(ctx context.Context, req *emptypb.Empty) (*passkey.PasskeysSettingsDisplay, error) {
+	response, err := c.getPasskeysList.CallUnary(ctx, connect.NewRequest(req))
 	if response != nil {
 		return response.Msg, err
 	}
@@ -518,7 +558,9 @@ type RakerServerHandler interface {
 	FinishSignUp(context.Context, *passkey.FinishSignUpRequest) (*emptypb.Empty, error)
 	BeginSignIn(context.Context, *passkey.BeginSignInRequest) (*passkey.BeginSignInResponse, error)
 	FinishSignIn(context.Context, *passkey.FinishSignInRequest) (*emptypb.Empty, error)
-	RenamePasskey(context.Context, *passkey.RenamePasskeyRequest) (*emptypb.Empty, error)
+	RenamePasskey(context.Context, *passkey.Passkey) (*emptypb.Empty, error)
+	DeletePasskey(context.Context, *passkey.Passkey) (*emptypb.Empty, error)
+	GetPasskeysList(context.Context, *emptypb.Empty) (*passkey.PasskeysSettingsDisplay, error)
 	SignUpInstagram(context.Context, *v1.SignUpRequest) (*emptypb.Empty, error)
 	SignInInstagram(context.Context, *v1.SignInRequest) (*emptypb.Empty, error)
 	EditUserCredentials(context.Context, *v1.EditUserCredentialsRequest) (*emptypb.Empty, error)
@@ -574,6 +616,18 @@ func NewRakerServerHandler(svc RakerServerHandler, opts ...connect.HandlerOption
 		RakerServerRenamePasskeyProcedure,
 		svc.RenamePasskey,
 		connect.WithSchema(rakerServerMethods.ByName("RenamePasskey")),
+		connect.WithHandlerOptions(opts...),
+	)
+	rakerServerDeletePasskeyHandler := connect.NewUnaryHandlerSimple(
+		RakerServerDeletePasskeyProcedure,
+		svc.DeletePasskey,
+		connect.WithSchema(rakerServerMethods.ByName("DeletePasskey")),
+		connect.WithHandlerOptions(opts...),
+	)
+	rakerServerGetPasskeysListHandler := connect.NewUnaryHandlerSimple(
+		RakerServerGetPasskeysListProcedure,
+		svc.GetPasskeysList,
+		connect.WithSchema(rakerServerMethods.ByName("GetPasskeysList")),
 		connect.WithHandlerOptions(opts...),
 	)
 	rakerServerSignUpInstagramHandler := connect.NewUnaryHandlerSimple(
@@ -696,6 +750,10 @@ func NewRakerServerHandler(svc RakerServerHandler, opts ...connect.HandlerOption
 			rakerServerFinishSignInHandler.ServeHTTP(w, r)
 		case RakerServerRenamePasskeyProcedure:
 			rakerServerRenamePasskeyHandler.ServeHTTP(w, r)
+		case RakerServerDeletePasskeyProcedure:
+			rakerServerDeletePasskeyHandler.ServeHTTP(w, r)
+		case RakerServerGetPasskeysListProcedure:
+			rakerServerGetPasskeysListHandler.ServeHTTP(w, r)
 		case RakerServerSignUpInstagramProcedure:
 			rakerServerSignUpInstagramHandler.ServeHTTP(w, r)
 		case RakerServerSignInInstagramProcedure:
@@ -757,8 +815,16 @@ func (UnimplementedRakerServerHandler) FinishSignIn(context.Context, *passkey.Fi
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raker.v1.RakerServer.FinishSignIn is not implemented"))
 }
 
-func (UnimplementedRakerServerHandler) RenamePasskey(context.Context, *passkey.RenamePasskeyRequest) (*emptypb.Empty, error) {
+func (UnimplementedRakerServerHandler) RenamePasskey(context.Context, *passkey.Passkey) (*emptypb.Empty, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raker.v1.RakerServer.RenamePasskey is not implemented"))
+}
+
+func (UnimplementedRakerServerHandler) DeletePasskey(context.Context, *passkey.Passkey) (*emptypb.Empty, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raker.v1.RakerServer.DeletePasskey is not implemented"))
+}
+
+func (UnimplementedRakerServerHandler) GetPasskeysList(context.Context, *emptypb.Empty) (*passkey.PasskeysSettingsDisplay, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raker.v1.RakerServer.GetPasskeysList is not implemented"))
 }
 
 func (UnimplementedRakerServerHandler) SignUpInstagram(context.Context, *v1.SignUpRequest) (*emptypb.Empty, error) {

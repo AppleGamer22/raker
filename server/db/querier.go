@@ -25,7 +25,8 @@ type Querier interface {
 	HistoryRemove(ctx context.Context, arg HistoryRemoveParams) error
 	HistoryUpdateCategories(ctx context.Context, arg HistoryUpdateCategoriesParams) (History, error)
 	HistoryUpdateOwner(ctx context.Context, arg HistoryUpdateOwnerParams) error
-	PasskeyUpdateName(ctx context.Context, arg PasskeyUpdateNameParams) error
+	PasskeyDelete(ctx context.Context, arg PasskeyDeleteParams) error
+	PasskeyRename(ctx context.Context, arg PasskeyRenameParams) error
 	PasskeyUpdateSignCount(ctx context.Context, passkeyID []byte) error
 	UpdateHistoryDuplicateFile(ctx context.Context, arg UpdateHistoryDuplicateFileParams) (History, error)
 	UpdateHistoryRemoveFile(ctx context.Context, arg UpdateHistoryRemoveFileParams) (History, error)

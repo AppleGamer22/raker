@@ -146,7 +146,9 @@ service RakerServer {
   rpc FinishSignUp(raker.v1.passkey.FinishSignUpRequest) returns (google.protobuf.Empty);
   rpc BeginSignIn(raker.v1.passkey.BeginSignInRequest) returns (raker.v1.passkey.BeginSignInResponse);
   rpc FinishSignIn(raker.v1.passkey.FinishSignInRequest) returns (google.protobuf.Empty);
-  rpc RenamePasskey(raker.v1.passkey.RenamePasskeyRequest) returns (google.protobuf.Empty);
+  rpc RenamePasskey(raker.v1.passkey.Passkey) returns (google.protobuf.Empty);
+  rpc DeletePasskey(raker.v1.passkey.Passkey) returns (google.protobuf.Empty);
+  rpc GetPasskeysList(google.protobuf.Empty) returns (raker.v1.passkey.PasskeysSettingsDisplay);
 
   rpc SignUpInstagram(SignUpRequest) returns (google.protobuf.Empty);
   rpc SignInInstagram(SignInRequest) returns (google.protobuf.Empty);

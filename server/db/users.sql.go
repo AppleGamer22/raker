@@ -12,22 +12,42 @@ import (
 	"github.com/lib/pq"
 )
 
-const passkeyUpdateName = `-- name: PasskeyUpdateName :exec
+const passkeyDelete = `-- name: PasskeyDelete :exec
+DELETE FROM
+	Passkeys
+WHERE
+	id = $1::bytea
+	AND user_id = $2
+`
+
+type PasskeyDeleteParams struct {
+	PasskeyID []byte    `json:"passkey_id"`
+	UserID    uuid.UUID `json:"user_id"`
+}
+
+func (q *Queries) PasskeyDelete(ctx context.Context, arg PasskeyDeleteParams) error {
+	_, err := q.exec(ctx, q.passkeyDeleteStmt, passkeyDelete, arg.PasskeyID, arg.UserID)
+	return err
+}
+
+const passkeyRename = `-- name: PasskeyRename :exec
 UPDATE
 	Passkeys
 SET
 	name = $1::text
 WHERE
 	id = $2::bytea
+	AND user_id = $3
 `
 
-type PasskeyUpdateNameParams struct {
-	Name      string `json:"name"`
-	PasskeyID []byte `json:"passkey_id"`
+type PasskeyRenameParams struct {
+	Name      string    `json:"name"`
+	PasskeyID []byte    `json:"passkey_id"`
+	UserID    uuid.UUID `json:"user_id"`
 }
 
-func (q *Queries) PasskeyUpdateName(ctx context.Context, arg PasskeyUpdateNameParams) error {
-	_, err := q.exec(ctx, q.passkeyUpdateNameStmt, passkeyUpdateName, arg.Name, arg.PasskeyID)
+func (q *Queries) PasskeyRename(ctx context.Context, arg PasskeyRenameParams) error {
+	_, err := q.exec(ctx, q.passkeyRenameStmt, passkeyRename, arg.Name, arg.PasskeyID, arg.UserID)
 	return err
 }
 
