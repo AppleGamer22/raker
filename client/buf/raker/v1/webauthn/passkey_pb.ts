@@ -12,7 +12,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file raker/v1/webauthn/passkey.proto.
  */
 export const file_raker_v1_webauthn_passkey: GenFile = /*@__PURE__*/
-  fileDesc("Ch9yYWtlci92MS93ZWJhdXRobi9wYXNza2V5LnByb3RvEhFyYWtlci52MS53ZWJhdXRobiImChJCZWdpblNpZ25VcFJlcXVlc3QSEAoIdXNlcm5hbWUYASABKAkiPwoTQmVnaW5TaWduVXBSZXNwb25zZRISCgpzZXNzaW9uX2lkGAEgASgJEhQKDG9wdGlvbnNfanNvbhgCIAEoCSJWChNGaW5pc2hTaWduVXBSZXF1ZXN0EhIKCnNlc3Npb25faWQYASABKAkSFAoMcGFzc2tleV9uYW1lGAIgASgJEhUKDXJlc3BvbnNlX2pzb24YAyABKAkiIQoORmluaXNoUmVzcG9uc2USDwoHc3VjY2VzcxgBIAEoCCImChJCZWdpblNpZ25JblJlcXVlc3QSEAoIdXNlcm5hbWUYASABKAkiPwoTQmVnaW5TaWduSW5SZXNwb25zZRISCgpzZXNzaW9uX2lkGAEgASgJEhQKDG9wdGlvbnNfanNvbhgCIAEoCSJAChNGaW5pc2hTaWduSW5SZXF1ZXN0EhIKCnNlc3Npb25faWQYASABKAkSFQoNcmVzcG9uc2VfanNvbhgCIAEoCULNAQoVY29tLnJha2VyLnYxLndlYmF1dGhuQgxQYXNza2V5UHJvdG9QAVpAZ2l0aHViLmNvbS9BcHBsZUdhbWVyMjIvcmFrZXIvc2VydmVyL2J1Zi9wcm90by9yYWtlci92MS93ZWJhdXRobqICA1JWV6oCEVJha2VyLlYxLldlYmF1dGhuygIRUmFrZXJcVjFcV2ViYXV0aG7iAh1SYWtlclxWMVxXZWJhdXRoblxHUEJNZXRhZGF0YeoCE1Jha2VyOjpWMTo6V2ViYXV0aG5iBnByb3RvMw");
+  fileDesc("Ch9yYWtlci92MS93ZWJhdXRobi9wYXNza2V5LnByb3RvEhFyYWtlci52MS53ZWJhdXRobiImChJCZWdpblNpZ25VcFJlcXVlc3QSEAoIdXNlcm5hbWUYASABKAkiPwoTQmVnaW5TaWduVXBSZXNwb25zZRISCgpzZXNzaW9uX2lkGAEgASgJEhQKDG9wdGlvbnNfanNvbhgCIAEoCSJWChNGaW5pc2hTaWduVXBSZXF1ZXN0EhIKCnNlc3Npb25faWQYASABKAkSFAoMcGFzc2tleV9uYW1lGAIgASgJEhUKDXJlc3BvbnNlX2pzb24YAyABKAkiJgoSQmVnaW5TaWduSW5SZXF1ZXN0EhAKCHVzZXJuYW1lGAEgASgJIj8KE0JlZ2luU2lnbkluUmVzcG9uc2USEgoKc2Vzc2lvbl9pZBgBIAEoCRIUCgxvcHRpb25zX2pzb24YAiABKAkiQAoTRmluaXNoU2lnbkluUmVxdWVzdBISCgpzZXNzaW9uX2lkGAEgASgJEhUKDXJlc3BvbnNlX2pzb24YAiABKAkiPAoUUmVuYW1lUGFzc2tleVJlcXVlc3QSEgoKcGFzc2tleV9pZBgBIAEoDBIQCghuZXdfbmFtZRgCIAEoCULNAQoVY29tLnJha2VyLnYxLndlYmF1dGhuQgxQYXNza2V5UHJvdG9QAVpAZ2l0aHViLmNvbS9BcHBsZUdhbWVyMjIvcmFrZXIvc2VydmVyL2J1Zi9wcm90by9yYWtlci92MS93ZWJhdXRobqICA1JWV6oCEVJha2VyLlYxLldlYmF1dGhuygIRUmFrZXJcVjFcV2ViYXV0aG7iAh1SYWtlclxWMVxXZWJhdXRoblxHUEJNZXRhZGF0YeoCE1Jha2VyOjpWMTo6V2ViYXV0aG5iBnByb3RvMw");
 
 /**
  * @generated from message raker.v1.webauthn.BeginSignUpRequest
@@ -81,23 +81,6 @@ export const FinishSignUpRequestSchema: GenMessage<FinishSignUpRequest> = /*@__P
   messageDesc(file_raker_v1_webauthn_passkey, 2);
 
 /**
- * @generated from message raker.v1.webauthn.FinishResponse
- */
-export type FinishResponse = Message<"raker.v1.webauthn.FinishResponse"> & {
-  /**
-   * @generated from field: bool success = 1;
-   */
-  success: boolean;
-};
-
-/**
- * Describes the message raker.v1.webauthn.FinishResponse.
- * Use `create(FinishResponseSchema)` to create a new message.
- */
-export const FinishResponseSchema: GenMessage<FinishResponse> = /*@__PURE__*/
-  messageDesc(file_raker_v1_webauthn_passkey, 3);
-
-/**
  * @generated from message raker.v1.webauthn.BeginSignInRequest
  */
 export type BeginSignInRequest = Message<"raker.v1.webauthn.BeginSignInRequest"> & {
@@ -112,7 +95,7 @@ export type BeginSignInRequest = Message<"raker.v1.webauthn.BeginSignInRequest">
  * Use `create(BeginSignInRequestSchema)` to create a new message.
  */
 export const BeginSignInRequestSchema: GenMessage<BeginSignInRequest> = /*@__PURE__*/
-  messageDesc(file_raker_v1_webauthn_passkey, 4);
+  messageDesc(file_raker_v1_webauthn_passkey, 3);
 
 /**
  * @generated from message raker.v1.webauthn.BeginSignInResponse
@@ -134,7 +117,7 @@ export type BeginSignInResponse = Message<"raker.v1.webauthn.BeginSignInResponse
  * Use `create(BeginSignInResponseSchema)` to create a new message.
  */
 export const BeginSignInResponseSchema: GenMessage<BeginSignInResponse> = /*@__PURE__*/
-  messageDesc(file_raker_v1_webauthn_passkey, 5);
+  messageDesc(file_raker_v1_webauthn_passkey, 4);
 
 /**
  * @generated from message raker.v1.webauthn.FinishSignInRequest
@@ -156,5 +139,27 @@ export type FinishSignInRequest = Message<"raker.v1.webauthn.FinishSignInRequest
  * Use `create(FinishSignInRequestSchema)` to create a new message.
  */
 export const FinishSignInRequestSchema: GenMessage<FinishSignInRequest> = /*@__PURE__*/
+  messageDesc(file_raker_v1_webauthn_passkey, 5);
+
+/**
+ * @generated from message raker.v1.webauthn.RenamePasskeyRequest
+ */
+export type RenamePasskeyRequest = Message<"raker.v1.webauthn.RenamePasskeyRequest"> & {
+  /**
+   * @generated from field: bytes passkey_id = 1;
+   */
+  passkeyId: Uint8Array;
+
+  /**
+   * @generated from field: string new_name = 2;
+   */
+  newName: string;
+};
+
+/**
+ * Describes the message raker.v1.webauthn.RenamePasskeyRequest.
+ * Use `create(RenamePasskeyRequestSchema)` to create a new message.
+ */
+export const RenamePasskeyRequestSchema: GenMessage<RenamePasskeyRequest> = /*@__PURE__*/
   messageDesc(file_raker_v1_webauthn_passkey, 6);
 

@@ -11,7 +11,7 @@ import (
 	"connectrpc.com/connect"
 	"github.com/AppleGamer22/raker/server/authenticator"
 	v1 "github.com/AppleGamer22/raker/server/buf/proto/raker/v1"
-	webauthnproto "github.com/AppleGamer22/raker/server/buf/proto/raker/v1/webauthn"
+	"github.com/AppleGamer22/raker/server/buf/proto/raker/v1/passkey"
 	"github.com/AppleGamer22/raker/server/db"
 	"github.com/charmbracelet/log"
 	"github.com/go-webauthn/webauthn/protocol"
@@ -221,7 +221,7 @@ func (server *RakerServer) EditUserCredentials(ctx context.Context, request *v1.
 }
 
 // BeginSignUp implements [v1connect.RakerServerHandler].
-func (server *RakerServer) BeginSignUp(ctx context.Context, request *webauthnproto.BeginSignUpRequest) (*webauthnproto.BeginSignUpResponse, error) {
+func (server *RakerServer) BeginSignUp(ctx context.Context, request *passkey.BeginSignUpRequest) (*passkey.BeginSignUpResponse, error) {
 	if request.Username == "" {
 		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("username required"))
 	}
@@ -247,29 +247,29 @@ func (server *RakerServer) BeginSignUp(ctx context.Context, request *webauthnpro
 
 	optionsJSON, _ := json.Marshal(options)
 
-	return &webauthnproto.BeginSignUpResponse{
+	return &passkey.BeginSignUpResponse{
 		SessionId:   sessionID,
 		OptionsJson: string(optionsJSON),
 	}, nil
 }
 
 // FinishSignUp implements [v1connect.RakerServerHandler].
-func (server *RakerServer) FinishSignUp(ctx context.Context, request *webauthnproto.FinishSignUpRequest) (*webauthnproto.FinishResponse, error) {
+func (server *RakerServer) FinishSignUp(ctx context.Context, request *passkey.FinishSignUpRequest) (*emptypb.Empty, error) {
 	sessionData, ok := server.WebAuthnSessionStore.Get(request.GetSessionId())
 	if !ok {
-		return &webauthnproto.FinishResponse{}, connect.NewError(connect.CodeUnauthenticated, errors.New("session expired or invalid"))
+		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("session expired or invalid"))
 	}
 
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, "", bytes.NewReader([]byte(request.GetResponseJson())))
 	if err != nil {
-		return &webauthnproto.FinishResponse{}, connect.NewError(connect.CodeInvalidArgument, err)
+		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
 	httpReq.Header.Set("Content-Type", "application/json")
 
 	userEntity := &authenticator.UserEntity{ID: sessionData.UserID, Username: sessionData.Username}
 	credential, err := server.WebAuthn.FinishRegistration(userEntity, sessionData.WebAuthnSession, httpReq)
 	if err != nil {
-		return &webauthnproto.FinishResponse{}, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("passkey verification failed: %w", err))
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("passkey verification failed: %w", err))
 	}
 
 	var transports []string
@@ -304,7 +304,7 @@ func (server *RakerServer) FinishSignUp(ctx context.Context, request *webauthnpr
 		BackupState:     credential.Flags.BackupState,
 	})
 	if err != nil {
-		return &webauthnproto.FinishResponse{}, connect.NewError(connect.CodeInternal, err)
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
 	if err := tx.Commit(); err != nil {
@@ -319,11 +319,11 @@ func (server *RakerServer) FinishSignUp(ctx context.Context, request *webauthnpr
 
 	server.WebAuthnSessionStore.Delete(request.GetSessionId())
 
-	return &webauthnproto.FinishResponse{Success: true}, nil
+	return nil, nil
 }
 
 // BeginSignIn implements [v1connect.RakerServerHandler].
-func (server *RakerServer) BeginSignIn(ctx context.Context, request *webauthnproto.BeginSignInRequest) (*webauthnproto.BeginSignInResponse, error) {
+func (server *RakerServer) BeginSignIn(ctx context.Context, request *passkey.BeginSignInRequest) (*passkey.BeginSignInResponse, error) {
 	username := request.GetUsername()
 	var options *protocol.CredentialAssertion
 	var sessionData *webauthn.SessionData
@@ -351,17 +351,17 @@ func (server *RakerServer) BeginSignIn(ctx context.Context, request *webauthnpro
 
 	optionsJSON, _ := json.Marshal(options.Response)
 
-	return &webauthnproto.BeginSignInResponse{
+	return &passkey.BeginSignInResponse{
 		SessionId:   sessionID,
 		OptionsJson: string(optionsJSON),
 	}, nil
 }
 
 // FinishSignIn implements [v1connect.RakerServerHandler].
-func (server *RakerServer) FinishSignIn(ctx context.Context, request *webauthnproto.FinishSignInRequest) (*webauthnproto.FinishResponse, error) {
+func (server *RakerServer) FinishSignIn(ctx context.Context, request *passkey.FinishSignInRequest) (*emptypb.Empty, error) {
 	sessionData, ok := server.WebAuthnSessionStore.Get(request.GetSessionId())
 	if !ok {
-		return &webauthnproto.FinishResponse{}, connect.NewError(connect.CodeUnauthenticated, errors.New("session expired or invalid"))
+		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("session expired or invalid"))
 	}
 
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, "", bytes.NewReader([]byte(request.GetResponseJson())))
@@ -424,20 +424,25 @@ func (server *RakerServer) FinishSignIn(ctx context.Context, request *webauthnpr
 	)
 	if err != nil {
 		log.Error(err)
-		return &webauthnproto.FinishResponse{}, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("login failed: %w", err))
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("login failed: %w", err))
 	}
 
 	if err := server.DBClient.PasskeyUpdateSignCount(ctx, credential.ID); err != nil {
 		log.Error(err)
-		return &webauthnproto.FinishResponse{}, connect.NewError(connect.CodeInternal, err)
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
 	if err := server.ApproveSession(ctx, *loggedInUser); err != nil {
 		log.Error(err)
-		return &webauthnproto.FinishResponse{}, err
+		return nil, err
 	}
 
 	server.WebAuthnSessionStore.Delete(request.GetSessionId())
 
-	return &webauthnproto.FinishResponse{Success: true}, nil
+	return nil, nil
+}
+
+// RenamePasskey implements [v1connect.RakerServerHandler].
+func (server *RakerServer) RenamePasskey(ctx context.Context, request *passkey.RenamePasskeyRequest) (*emptypb.Empty, error) {
+	panic("unimplemented")
 }

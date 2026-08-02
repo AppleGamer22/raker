@@ -2,11 +2,11 @@
 // versions:
 // 	protoc-gen-go v1.36.11
 // 	protoc        (unknown)
-// source: raker/v1/webauthn/passkey.proto
+// source: raker/v1/passkey/passkey.proto
 
 // buf:lint:ignore PACKAGE_VERSION_SUFFIX
 
-package webauthn
+package passkey
 
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
@@ -32,7 +32,7 @@ type BeginSignUpRequest struct {
 
 func (x *BeginSignUpRequest) Reset() {
 	*x = BeginSignUpRequest{}
-	mi := &file_raker_v1_webauthn_passkey_proto_msgTypes[0]
+	mi := &file_raker_v1_passkey_passkey_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -44,7 +44,7 @@ func (x *BeginSignUpRequest) String() string {
 func (*BeginSignUpRequest) ProtoMessage() {}
 
 func (x *BeginSignUpRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_raker_v1_webauthn_passkey_proto_msgTypes[0]
+	mi := &file_raker_v1_passkey_passkey_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -57,7 +57,7 @@ func (x *BeginSignUpRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BeginSignUpRequest.ProtoReflect.Descriptor instead.
 func (*BeginSignUpRequest) Descriptor() ([]byte, []int) {
-	return file_raker_v1_webauthn_passkey_proto_rawDescGZIP(), []int{0}
+	return file_raker_v1_passkey_passkey_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *BeginSignUpRequest) GetUsername() string {
@@ -77,7 +77,7 @@ type BeginSignUpResponse struct {
 
 func (x *BeginSignUpResponse) Reset() {
 	*x = BeginSignUpResponse{}
-	mi := &file_raker_v1_webauthn_passkey_proto_msgTypes[1]
+	mi := &file_raker_v1_passkey_passkey_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -89,7 +89,7 @@ func (x *BeginSignUpResponse) String() string {
 func (*BeginSignUpResponse) ProtoMessage() {}
 
 func (x *BeginSignUpResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_raker_v1_webauthn_passkey_proto_msgTypes[1]
+	mi := &file_raker_v1_passkey_passkey_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -102,7 +102,7 @@ func (x *BeginSignUpResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BeginSignUpResponse.ProtoReflect.Descriptor instead.
 func (*BeginSignUpResponse) Descriptor() ([]byte, []int) {
-	return file_raker_v1_webauthn_passkey_proto_rawDescGZIP(), []int{1}
+	return file_raker_v1_passkey_passkey_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *BeginSignUpResponse) GetSessionId() string {
@@ -130,7 +130,7 @@ type FinishSignUpRequest struct {
 
 func (x *FinishSignUpRequest) Reset() {
 	*x = FinishSignUpRequest{}
-	mi := &file_raker_v1_webauthn_passkey_proto_msgTypes[2]
+	mi := &file_raker_v1_passkey_passkey_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -142,7 +142,7 @@ func (x *FinishSignUpRequest) String() string {
 func (*FinishSignUpRequest) ProtoMessage() {}
 
 func (x *FinishSignUpRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_raker_v1_webauthn_passkey_proto_msgTypes[2]
+	mi := &file_raker_v1_passkey_passkey_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -155,7 +155,7 @@ func (x *FinishSignUpRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FinishSignUpRequest.ProtoReflect.Descriptor instead.
 func (*FinishSignUpRequest) Descriptor() ([]byte, []int) {
-	return file_raker_v1_webauthn_passkey_proto_rawDescGZIP(), []int{2}
+	return file_raker_v1_passkey_passkey_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *FinishSignUpRequest) GetSessionId() string {
@@ -188,7 +188,7 @@ type BeginSignInRequest struct {
 
 func (x *BeginSignInRequest) Reset() {
 	*x = BeginSignInRequest{}
-	mi := &file_raker_v1_webauthn_passkey_proto_msgTypes[3]
+	mi := &file_raker_v1_passkey_passkey_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -200,7 +200,7 @@ func (x *BeginSignInRequest) String() string {
 func (*BeginSignInRequest) ProtoMessage() {}
 
 func (x *BeginSignInRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_raker_v1_webauthn_passkey_proto_msgTypes[3]
+	mi := &file_raker_v1_passkey_passkey_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -213,7 +213,7 @@ func (x *BeginSignInRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BeginSignInRequest.ProtoReflect.Descriptor instead.
 func (*BeginSignInRequest) Descriptor() ([]byte, []int) {
-	return file_raker_v1_webauthn_passkey_proto_rawDescGZIP(), []int{3}
+	return file_raker_v1_passkey_passkey_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *BeginSignInRequest) GetUsername() string {
@@ -233,7 +233,7 @@ type BeginSignInResponse struct {
 
 func (x *BeginSignInResponse) Reset() {
 	*x = BeginSignInResponse{}
-	mi := &file_raker_v1_webauthn_passkey_proto_msgTypes[4]
+	mi := &file_raker_v1_passkey_passkey_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -245,7 +245,7 @@ func (x *BeginSignInResponse) String() string {
 func (*BeginSignInResponse) ProtoMessage() {}
 
 func (x *BeginSignInResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_raker_v1_webauthn_passkey_proto_msgTypes[4]
+	mi := &file_raker_v1_passkey_passkey_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -258,7 +258,7 @@ func (x *BeginSignInResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BeginSignInResponse.ProtoReflect.Descriptor instead.
 func (*BeginSignInResponse) Descriptor() ([]byte, []int) {
-	return file_raker_v1_webauthn_passkey_proto_rawDescGZIP(), []int{4}
+	return file_raker_v1_passkey_passkey_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *BeginSignInResponse) GetSessionId() string {
@@ -285,7 +285,7 @@ type FinishSignInRequest struct {
 
 func (x *FinishSignInRequest) Reset() {
 	*x = FinishSignInRequest{}
-	mi := &file_raker_v1_webauthn_passkey_proto_msgTypes[5]
+	mi := &file_raker_v1_passkey_passkey_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -297,7 +297,7 @@ func (x *FinishSignInRequest) String() string {
 func (*FinishSignInRequest) ProtoMessage() {}
 
 func (x *FinishSignInRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_raker_v1_webauthn_passkey_proto_msgTypes[5]
+	mi := &file_raker_v1_passkey_passkey_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -310,7 +310,7 @@ func (x *FinishSignInRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FinishSignInRequest.ProtoReflect.Descriptor instead.
 func (*FinishSignInRequest) Descriptor() ([]byte, []int) {
-	return file_raker_v1_webauthn_passkey_proto_rawDescGZIP(), []int{5}
+	return file_raker_v1_passkey_passkey_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *FinishSignInRequest) GetSessionId() string {
@@ -337,7 +337,7 @@ type RenamePasskeyRequest struct {
 
 func (x *RenamePasskeyRequest) Reset() {
 	*x = RenamePasskeyRequest{}
-	mi := &file_raker_v1_webauthn_passkey_proto_msgTypes[6]
+	mi := &file_raker_v1_passkey_passkey_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -349,7 +349,7 @@ func (x *RenamePasskeyRequest) String() string {
 func (*RenamePasskeyRequest) ProtoMessage() {}
 
 func (x *RenamePasskeyRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_raker_v1_webauthn_passkey_proto_msgTypes[6]
+	mi := &file_raker_v1_passkey_passkey_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -362,7 +362,7 @@ func (x *RenamePasskeyRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RenamePasskeyRequest.ProtoReflect.Descriptor instead.
 func (*RenamePasskeyRequest) Descriptor() ([]byte, []int) {
-	return file_raker_v1_webauthn_passkey_proto_rawDescGZIP(), []int{6}
+	return file_raker_v1_passkey_passkey_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *RenamePasskeyRequest) GetPasskeyId() []byte {
@@ -379,11 +379,11 @@ func (x *RenamePasskeyRequest) GetNewName() string {
 	return ""
 }
 
-var File_raker_v1_webauthn_passkey_proto protoreflect.FileDescriptor
+var File_raker_v1_passkey_passkey_proto protoreflect.FileDescriptor
 
-const file_raker_v1_webauthn_passkey_proto_rawDesc = "" +
+const file_raker_v1_passkey_passkey_proto_rawDesc = "" +
 	"\n" +
-	"\x1fraker/v1/webauthn/passkey.proto\x12\x11raker.v1.webauthn\"0\n" +
+	"\x1eraker/v1/passkey/passkey.proto\x12\x10raker.v1.passkey\"0\n" +
 	"\x12BeginSignUpRequest\x12\x1a\n" +
 	"\busername\x18\x01 \x01(\tR\busername\"W\n" +
 	"\x13BeginSignUpResponse\x12\x1d\n" +
@@ -408,32 +408,32 @@ const file_raker_v1_webauthn_passkey_proto_rawDesc = "" +
 	"\x14RenamePasskeyRequest\x12\x1d\n" +
 	"\n" +
 	"passkey_id\x18\x01 \x01(\fR\tpasskeyId\x12\x19\n" +
-	"\bnew_name\x18\x02 \x01(\tR\anewNameB\xcd\x01\n" +
-	"\x15com.raker.v1.webauthnB\fPasskeyProtoP\x01Z@github.com/AppleGamer22/raker/server/buf/proto/raker/v1/webauthn\xa2\x02\x03RVW\xaa\x02\x11Raker.V1.Webauthn\xca\x02\x11Raker\\V1\\Webauthn\xe2\x02\x1dRaker\\V1\\Webauthn\\GPBMetadata\xea\x02\x13Raker::V1::Webauthnb\x06proto3"
+	"\bnew_name\x18\x02 \x01(\tR\anewNameB\xc7\x01\n" +
+	"\x14com.raker.v1.passkeyB\fPasskeyProtoP\x01Z?github.com/AppleGamer22/raker/server/buf/proto/raker/v1/passkey\xa2\x02\x03RVP\xaa\x02\x10Raker.V1.Passkey\xca\x02\x10Raker\\V1\\Passkey\xe2\x02\x1cRaker\\V1\\Passkey\\GPBMetadata\xea\x02\x12Raker::V1::Passkeyb\x06proto3"
 
 var (
-	file_raker_v1_webauthn_passkey_proto_rawDescOnce sync.Once
-	file_raker_v1_webauthn_passkey_proto_rawDescData []byte
+	file_raker_v1_passkey_passkey_proto_rawDescOnce sync.Once
+	file_raker_v1_passkey_passkey_proto_rawDescData []byte
 )
 
-func file_raker_v1_webauthn_passkey_proto_rawDescGZIP() []byte {
-	file_raker_v1_webauthn_passkey_proto_rawDescOnce.Do(func() {
-		file_raker_v1_webauthn_passkey_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_raker_v1_webauthn_passkey_proto_rawDesc), len(file_raker_v1_webauthn_passkey_proto_rawDesc)))
+func file_raker_v1_passkey_passkey_proto_rawDescGZIP() []byte {
+	file_raker_v1_passkey_passkey_proto_rawDescOnce.Do(func() {
+		file_raker_v1_passkey_passkey_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_raker_v1_passkey_passkey_proto_rawDesc), len(file_raker_v1_passkey_passkey_proto_rawDesc)))
 	})
-	return file_raker_v1_webauthn_passkey_proto_rawDescData
+	return file_raker_v1_passkey_passkey_proto_rawDescData
 }
 
-var file_raker_v1_webauthn_passkey_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
-var file_raker_v1_webauthn_passkey_proto_goTypes = []any{
-	(*BeginSignUpRequest)(nil),   // 0: raker.v1.webauthn.BeginSignUpRequest
-	(*BeginSignUpResponse)(nil),  // 1: raker.v1.webauthn.BeginSignUpResponse
-	(*FinishSignUpRequest)(nil),  // 2: raker.v1.webauthn.FinishSignUpRequest
-	(*BeginSignInRequest)(nil),   // 3: raker.v1.webauthn.BeginSignInRequest
-	(*BeginSignInResponse)(nil),  // 4: raker.v1.webauthn.BeginSignInResponse
-	(*FinishSignInRequest)(nil),  // 5: raker.v1.webauthn.FinishSignInRequest
-	(*RenamePasskeyRequest)(nil), // 6: raker.v1.webauthn.RenamePasskeyRequest
+var file_raker_v1_passkey_passkey_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
+var file_raker_v1_passkey_passkey_proto_goTypes = []any{
+	(*BeginSignUpRequest)(nil),   // 0: raker.v1.passkey.BeginSignUpRequest
+	(*BeginSignUpResponse)(nil),  // 1: raker.v1.passkey.BeginSignUpResponse
+	(*FinishSignUpRequest)(nil),  // 2: raker.v1.passkey.FinishSignUpRequest
+	(*BeginSignInRequest)(nil),   // 3: raker.v1.passkey.BeginSignInRequest
+	(*BeginSignInResponse)(nil),  // 4: raker.v1.passkey.BeginSignInResponse
+	(*FinishSignInRequest)(nil),  // 5: raker.v1.passkey.FinishSignInRequest
+	(*RenamePasskeyRequest)(nil), // 6: raker.v1.passkey.RenamePasskeyRequest
 }
-var file_raker_v1_webauthn_passkey_proto_depIdxs = []int32{
+var file_raker_v1_passkey_passkey_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for method output_type
 	0, // [0:0] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
@@ -441,26 +441,26 @@ var file_raker_v1_webauthn_passkey_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for field type_name
 }
 
-func init() { file_raker_v1_webauthn_passkey_proto_init() }
-func file_raker_v1_webauthn_passkey_proto_init() {
-	if File_raker_v1_webauthn_passkey_proto != nil {
+func init() { file_raker_v1_passkey_passkey_proto_init() }
+func file_raker_v1_passkey_passkey_proto_init() {
+	if File_raker_v1_passkey_passkey_proto != nil {
 		return
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_raker_v1_webauthn_passkey_proto_rawDesc), len(file_raker_v1_webauthn_passkey_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_raker_v1_passkey_passkey_proto_rawDesc), len(file_raker_v1_passkey_passkey_proto_rawDesc)),
 			NumEnums:      0,
 			NumMessages:   7,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
-		GoTypes:           file_raker_v1_webauthn_passkey_proto_goTypes,
-		DependencyIndexes: file_raker_v1_webauthn_passkey_proto_depIdxs,
-		MessageInfos:      file_raker_v1_webauthn_passkey_proto_msgTypes,
+		GoTypes:           file_raker_v1_passkey_passkey_proto_goTypes,
+		DependencyIndexes: file_raker_v1_passkey_passkey_proto_depIdxs,
+		MessageInfos:      file_raker_v1_passkey_passkey_proto_msgTypes,
 	}.Build()
-	File_raker_v1_webauthn_passkey_proto = out.File
-	file_raker_v1_webauthn_passkey_proto_goTypes = nil
-	file_raker_v1_webauthn_passkey_proto_depIdxs = nil
+	File_raker_v1_passkey_passkey_proto = out.File
+	file_raker_v1_passkey_passkey_proto_goTypes = nil
+	file_raker_v1_passkey_passkey_proto_depIdxs = nil
 }

@@ -7,7 +7,7 @@
 package v1
 
 import (
-	webauthn "github.com/AppleGamer22/raker/server/buf/proto/raker/v1/webauthn"
+	passkey "github.com/AppleGamer22/raker/server/buf/proto/raker/v1/passkey"
 	latlng "google.golang.org/genproto/googleapis/type/latlng"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
@@ -1267,7 +1267,7 @@ var File_raker_v1_raker_proto protoreflect.FileDescriptor
 
 const file_raker_v1_raker_proto_rawDesc = "" +
 	"\n" +
-	"\x14raker/v1/raker.proto\x12\braker.v1\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x18google/type/latlng.proto\x1a\x1fraker/v1/webauthn/passkey.proto\"\xa4\x01\n" +
+	"\x14raker/v1/raker.proto\x12\braker.v1\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x18google/type/latlng.proto\x1a\x1eraker/v1/passkey/passkey.proto\"\xa4\x01\n" +
 	"\rSignUpRequest\x12\x1a\n" +
 	"\busername\x18\x01 \x01(\tR\busername\x12\x1a\n" +
 	"\bpassword\x18\x02 \x01(\tR\bpassword\x12\"\n" +
@@ -1383,16 +1383,17 @@ const file_raker_v1_raker_proto_rawDesc = "" +
 	"\n" +
 	"\x06TikTok\x10\x03\x12\f\n" +
 	"\bSnapchat\x10\x04\x12\b\n" +
-	"\x04VSCO\x10\x052\xa5\r\n" +
-	"\vRakerServer\x12\\\n" +
-	"\vBeginSignUp\x12%.raker.v1.webauthn.BeginSignUpRequest\x1a&.raker.v1.webauthn.BeginSignUpResponse\x12Y\n" +
-	"\fFinishSignUp\x12&.raker.v1.webauthn.FinishSignUpRequest\x1a!.raker.v1.webauthn.FinishResponse\x12\\\n" +
-	"\vBeginSignIn\x12%.raker.v1.webauthn.BeginSignInRequest\x1a&.raker.v1.webauthn.BeginSignInResponse\x12Y\n" +
-	"\fFinishSignIn\x12&.raker.v1.webauthn.FinishSignInRequest\x1a!.raker.v1.webauthn.FinishResponse\x12B\n" +
+	"\x04VSCO\x10\x052\xda\r\n" +
+	"\vRakerServer\x12Z\n" +
+	"\vBeginSignUp\x12$.raker.v1.passkey.BeginSignUpRequest\x1a%.raker.v1.passkey.BeginSignUpResponse\x12M\n" +
+	"\fFinishSignUp\x12%.raker.v1.passkey.FinishSignUpRequest\x1a\x16.google.protobuf.Empty\x12Z\n" +
+	"\vBeginSignIn\x12$.raker.v1.passkey.BeginSignInRequest\x1a%.raker.v1.passkey.BeginSignInResponse\x12M\n" +
+	"\fFinishSignIn\x12%.raker.v1.passkey.FinishSignInRequest\x1a\x16.google.protobuf.Empty\x12O\n" +
+	"\rRenamePasskey\x12&.raker.v1.passkey.RenamePasskeyRequest\x1a\x16.google.protobuf.Empty\x12B\n" +
 	"\x0fSignUpInstagram\x12\x17.raker.v1.SignUpRequest\x1a\x16.google.protobuf.Empty\x12B\n" +
-	"\x0fSignInInstagram\x12\x17.raker.v1.SignInRequest\x1a\x16.google.protobuf.Empty\x12E\n" +
-	"\fEditCategory\x12\x1d.raker.v1.EditCategoryRequest\x1a\x16.google.protobuf.Empty\x12S\n" +
-	"\x13EditUserCredentials\x12$.raker.v1.EditUserCredentialsRequest\x1a\x16.google.protobuf.Empty\x12M\n" +
+	"\x0fSignInInstagram\x12\x17.raker.v1.SignInRequest\x1a\x16.google.protobuf.Empty\x12S\n" +
+	"\x13EditUserCredentials\x12$.raker.v1.EditUserCredentialsRequest\x1a\x16.google.protobuf.Empty\x12E\n" +
+	"\fEditCategory\x12\x1d.raker.v1.EditCategoryRequest\x1a\x16.google.protobuf.Empty\x12M\n" +
 	"\x11GetUserCategories\x12\x16.google.protobuf.Empty\x1a .raker.v1.UserCategoriesResponse\x12I\n" +
 	"\x0fScrapeInstagram\x12\x1c.raker.v1.UnaryScrapeRequest\x1a\x18.raker.v1.ScrapeResponse\x12I\n" +
 	"\x0fScrapeHighlight\x12\x1c.raker.v1.UnaryScrapeRequest\x1a\x18.raker.v1.ScrapeResponse\x12E\n" +
@@ -1449,14 +1450,14 @@ var file_raker_v1_raker_proto_goTypes = []any{
 	(*CropFileRequest_PixelCoordinate)(nil),    // 19: raker.v1.CropFileRequest.PixelCoordinate
 	(*timestamppb.Timestamp)(nil),              // 20: google.protobuf.Timestamp
 	(*latlng.LatLng)(nil),                      // 21: google.type.LatLng
-	(*webauthn.BeginSignUpRequest)(nil),        // 22: raker.v1.webauthn.BeginSignUpRequest
-	(*webauthn.FinishSignUpRequest)(nil),       // 23: raker.v1.webauthn.FinishSignUpRequest
-	(*webauthn.BeginSignInRequest)(nil),        // 24: raker.v1.webauthn.BeginSignInRequest
-	(*webauthn.FinishSignInRequest)(nil),       // 25: raker.v1.webauthn.FinishSignInRequest
-	(*emptypb.Empty)(nil),                      // 26: google.protobuf.Empty
-	(*webauthn.BeginSignUpResponse)(nil),       // 27: raker.v1.webauthn.BeginSignUpResponse
-	(*webauthn.FinishResponse)(nil),            // 28: raker.v1.webauthn.FinishResponse
-	(*webauthn.BeginSignInResponse)(nil),       // 29: raker.v1.webauthn.BeginSignInResponse
+	(*passkey.BeginSignUpRequest)(nil),         // 22: raker.v1.passkey.BeginSignUpRequest
+	(*passkey.FinishSignUpRequest)(nil),        // 23: raker.v1.passkey.FinishSignUpRequest
+	(*passkey.BeginSignInRequest)(nil),         // 24: raker.v1.passkey.BeginSignInRequest
+	(*passkey.FinishSignInRequest)(nil),        // 25: raker.v1.passkey.FinishSignInRequest
+	(*passkey.RenamePasskeyRequest)(nil),       // 26: raker.v1.passkey.RenamePasskeyRequest
+	(*emptypb.Empty)(nil),                      // 27: google.protobuf.Empty
+	(*passkey.BeginSignUpResponse)(nil),        // 28: raker.v1.passkey.BeginSignUpResponse
+	(*passkey.BeginSignInResponse)(nil),        // 29: raker.v1.passkey.BeginSignInResponse
 }
 var file_raker_v1_raker_proto_depIdxs = []int32{
 	0,  // 0: raker.v1.ScrapeResponse.post_type:type_name -> raker.v1.PostType
@@ -1474,52 +1475,54 @@ var file_raker_v1_raker_proto_depIdxs = []int32{
 	19, // 12: raker.v1.CropFileRequest.corner2:type_name -> raker.v1.CropFileRequest.PixelCoordinate
 	15, // 13: raker.v1.RotateFileRequest.file_request:type_name -> raker.v1.FileSubRequest
 	0,  // 14: raker.v1.HistoryOwnersResponse.HistoryOwner.type:type_name -> raker.v1.PostType
-	22, // 15: raker.v1.RakerServer.BeginSignUp:input_type -> raker.v1.webauthn.BeginSignUpRequest
-	23, // 16: raker.v1.RakerServer.FinishSignUp:input_type -> raker.v1.webauthn.FinishSignUpRequest
-	24, // 17: raker.v1.RakerServer.BeginSignIn:input_type -> raker.v1.webauthn.BeginSignInRequest
-	25, // 18: raker.v1.RakerServer.FinishSignIn:input_type -> raker.v1.webauthn.FinishSignInRequest
-	1,  // 19: raker.v1.RakerServer.SignUpInstagram:input_type -> raker.v1.SignUpRequest
-	2,  // 20: raker.v1.RakerServer.SignInInstagram:input_type -> raker.v1.SignInRequest
-	4,  // 21: raker.v1.RakerServer.EditCategory:input_type -> raker.v1.EditCategoryRequest
+	22, // 15: raker.v1.RakerServer.BeginSignUp:input_type -> raker.v1.passkey.BeginSignUpRequest
+	23, // 16: raker.v1.RakerServer.FinishSignUp:input_type -> raker.v1.passkey.FinishSignUpRequest
+	24, // 17: raker.v1.RakerServer.BeginSignIn:input_type -> raker.v1.passkey.BeginSignInRequest
+	25, // 18: raker.v1.RakerServer.FinishSignIn:input_type -> raker.v1.passkey.FinishSignInRequest
+	26, // 19: raker.v1.RakerServer.RenamePasskey:input_type -> raker.v1.passkey.RenamePasskeyRequest
+	1,  // 20: raker.v1.RakerServer.SignUpInstagram:input_type -> raker.v1.SignUpRequest
+	2,  // 21: raker.v1.RakerServer.SignInInstagram:input_type -> raker.v1.SignInRequest
 	5,  // 22: raker.v1.RakerServer.EditUserCredentials:input_type -> raker.v1.EditUserCredentialsRequest
-	26, // 23: raker.v1.RakerServer.GetUserCategories:input_type -> google.protobuf.Empty
-	6,  // 24: raker.v1.RakerServer.ScrapeInstagram:input_type -> raker.v1.UnaryScrapeRequest
-	6,  // 25: raker.v1.RakerServer.ScrapeHighlight:input_type -> raker.v1.UnaryScrapeRequest
-	6,  // 26: raker.v1.RakerServer.ScrapeStory:input_type -> raker.v1.UnaryScrapeRequest
-	7,  // 27: raker.v1.RakerServer.ScrapeTikTok:input_type -> raker.v1.BinaryScrapeRequest
-	7,  // 28: raker.v1.RakerServer.ScrapeSnapchat:input_type -> raker.v1.BinaryScrapeRequest
-	7,  // 29: raker.v1.RakerServer.ScrapeVSCO:input_type -> raker.v1.BinaryScrapeRequest
-	9,  // 30: raker.v1.RakerServer.RemoveFiles:input_type -> raker.v1.RemoveFilesRequest
-	10, // 31: raker.v1.RakerServer.UpdateCategories:input_type -> raker.v1.UpdateCategoriesRequest
-	12, // 32: raker.v1.RakerServer.SearchHistory:input_type -> raker.v1.HistoryRequest
-	11, // 33: raker.v1.RakerServer.SearchHistoryOwners:input_type -> raker.v1.HistoryOwnersRequest
-	16, // 34: raker.v1.RakerServer.CropFile:input_type -> raker.v1.CropFileRequest
-	17, // 35: raker.v1.RakerServer.RotateFile:input_type -> raker.v1.RotateFileRequest
-	15, // 36: raker.v1.RakerServer.DuplicateFile:input_type -> raker.v1.FileSubRequest
-	27, // 37: raker.v1.RakerServer.BeginSignUp:output_type -> raker.v1.webauthn.BeginSignUpResponse
-	28, // 38: raker.v1.RakerServer.FinishSignUp:output_type -> raker.v1.webauthn.FinishResponse
-	29, // 39: raker.v1.RakerServer.BeginSignIn:output_type -> raker.v1.webauthn.BeginSignInResponse
-	28, // 40: raker.v1.RakerServer.FinishSignIn:output_type -> raker.v1.webauthn.FinishResponse
-	26, // 41: raker.v1.RakerServer.SignUpInstagram:output_type -> google.protobuf.Empty
-	26, // 42: raker.v1.RakerServer.SignInInstagram:output_type -> google.protobuf.Empty
-	26, // 43: raker.v1.RakerServer.EditCategory:output_type -> google.protobuf.Empty
-	26, // 44: raker.v1.RakerServer.EditUserCredentials:output_type -> google.protobuf.Empty
-	3,  // 45: raker.v1.RakerServer.GetUserCategories:output_type -> raker.v1.UserCategoriesResponse
-	8,  // 46: raker.v1.RakerServer.ScrapeInstagram:output_type -> raker.v1.ScrapeResponse
-	8,  // 47: raker.v1.RakerServer.ScrapeHighlight:output_type -> raker.v1.ScrapeResponse
-	8,  // 48: raker.v1.RakerServer.ScrapeStory:output_type -> raker.v1.ScrapeResponse
-	8,  // 49: raker.v1.RakerServer.ScrapeTikTok:output_type -> raker.v1.ScrapeResponse
-	8,  // 50: raker.v1.RakerServer.ScrapeSnapchat:output_type -> raker.v1.ScrapeResponse
-	8,  // 51: raker.v1.RakerServer.ScrapeVSCO:output_type -> raker.v1.ScrapeResponse
-	8,  // 52: raker.v1.RakerServer.RemoveFiles:output_type -> raker.v1.ScrapeResponse
-	26, // 53: raker.v1.RakerServer.UpdateCategories:output_type -> google.protobuf.Empty
-	13, // 54: raker.v1.RakerServer.SearchHistory:output_type -> raker.v1.HistoryResponse
-	14, // 55: raker.v1.RakerServer.SearchHistoryOwners:output_type -> raker.v1.HistoryOwnersResponse
-	26, // 56: raker.v1.RakerServer.CropFile:output_type -> google.protobuf.Empty
-	26, // 57: raker.v1.RakerServer.RotateFile:output_type -> google.protobuf.Empty
-	15, // 58: raker.v1.RakerServer.DuplicateFile:output_type -> raker.v1.FileSubRequest
-	37, // [37:59] is the sub-list for method output_type
-	15, // [15:37] is the sub-list for method input_type
+	4,  // 23: raker.v1.RakerServer.EditCategory:input_type -> raker.v1.EditCategoryRequest
+	27, // 24: raker.v1.RakerServer.GetUserCategories:input_type -> google.protobuf.Empty
+	6,  // 25: raker.v1.RakerServer.ScrapeInstagram:input_type -> raker.v1.UnaryScrapeRequest
+	6,  // 26: raker.v1.RakerServer.ScrapeHighlight:input_type -> raker.v1.UnaryScrapeRequest
+	6,  // 27: raker.v1.RakerServer.ScrapeStory:input_type -> raker.v1.UnaryScrapeRequest
+	7,  // 28: raker.v1.RakerServer.ScrapeTikTok:input_type -> raker.v1.BinaryScrapeRequest
+	7,  // 29: raker.v1.RakerServer.ScrapeSnapchat:input_type -> raker.v1.BinaryScrapeRequest
+	7,  // 30: raker.v1.RakerServer.ScrapeVSCO:input_type -> raker.v1.BinaryScrapeRequest
+	9,  // 31: raker.v1.RakerServer.RemoveFiles:input_type -> raker.v1.RemoveFilesRequest
+	10, // 32: raker.v1.RakerServer.UpdateCategories:input_type -> raker.v1.UpdateCategoriesRequest
+	12, // 33: raker.v1.RakerServer.SearchHistory:input_type -> raker.v1.HistoryRequest
+	11, // 34: raker.v1.RakerServer.SearchHistoryOwners:input_type -> raker.v1.HistoryOwnersRequest
+	16, // 35: raker.v1.RakerServer.CropFile:input_type -> raker.v1.CropFileRequest
+	17, // 36: raker.v1.RakerServer.RotateFile:input_type -> raker.v1.RotateFileRequest
+	15, // 37: raker.v1.RakerServer.DuplicateFile:input_type -> raker.v1.FileSubRequest
+	28, // 38: raker.v1.RakerServer.BeginSignUp:output_type -> raker.v1.passkey.BeginSignUpResponse
+	27, // 39: raker.v1.RakerServer.FinishSignUp:output_type -> google.protobuf.Empty
+	29, // 40: raker.v1.RakerServer.BeginSignIn:output_type -> raker.v1.passkey.BeginSignInResponse
+	27, // 41: raker.v1.RakerServer.FinishSignIn:output_type -> google.protobuf.Empty
+	27, // 42: raker.v1.RakerServer.RenamePasskey:output_type -> google.protobuf.Empty
+	27, // 43: raker.v1.RakerServer.SignUpInstagram:output_type -> google.protobuf.Empty
+	27, // 44: raker.v1.RakerServer.SignInInstagram:output_type -> google.protobuf.Empty
+	27, // 45: raker.v1.RakerServer.EditUserCredentials:output_type -> google.protobuf.Empty
+	27, // 46: raker.v1.RakerServer.EditCategory:output_type -> google.protobuf.Empty
+	3,  // 47: raker.v1.RakerServer.GetUserCategories:output_type -> raker.v1.UserCategoriesResponse
+	8,  // 48: raker.v1.RakerServer.ScrapeInstagram:output_type -> raker.v1.ScrapeResponse
+	8,  // 49: raker.v1.RakerServer.ScrapeHighlight:output_type -> raker.v1.ScrapeResponse
+	8,  // 50: raker.v1.RakerServer.ScrapeStory:output_type -> raker.v1.ScrapeResponse
+	8,  // 51: raker.v1.RakerServer.ScrapeTikTok:output_type -> raker.v1.ScrapeResponse
+	8,  // 52: raker.v1.RakerServer.ScrapeSnapchat:output_type -> raker.v1.ScrapeResponse
+	8,  // 53: raker.v1.RakerServer.ScrapeVSCO:output_type -> raker.v1.ScrapeResponse
+	8,  // 54: raker.v1.RakerServer.RemoveFiles:output_type -> raker.v1.ScrapeResponse
+	27, // 55: raker.v1.RakerServer.UpdateCategories:output_type -> google.protobuf.Empty
+	13, // 56: raker.v1.RakerServer.SearchHistory:output_type -> raker.v1.HistoryResponse
+	14, // 57: raker.v1.RakerServer.SearchHistoryOwners:output_type -> raker.v1.HistoryOwnersResponse
+	27, // 58: raker.v1.RakerServer.CropFile:output_type -> google.protobuf.Empty
+	27, // 59: raker.v1.RakerServer.RotateFile:output_type -> google.protobuf.Empty
+	15, // 60: raker.v1.RakerServer.DuplicateFile:output_type -> raker.v1.FileSubRequest
+	38, // [38:61] is the sub-list for method output_type
+	15, // [15:38] is the sub-list for method input_type
 	15, // [15:15] is the sub-list for extension type_name
 	15, // [15:15] is the sub-list for extension extendee
 	0,  // [0:15] is the sub-list for field type_name

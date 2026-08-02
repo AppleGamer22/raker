@@ -5,7 +5,7 @@ package raker.v1;
 import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
 import "google/type/latlng.proto";
-import "raker/v1/webauthn/passkey.proto";
+import "raker/v1/passkey/passkey.proto";
 
 option go_package = "github.com/AppleGamer22/raker/server/buf/proto/raker/v1";
 
@@ -142,32 +142,25 @@ message RotateFileRequest {
 }
 
 service RakerServer {
-  rpc BeginSignUp(raker.v1.webauthn.BeginSignUpRequest) returns (raker.v1.webauthn.BeginSignUpResponse);
-  rpc FinishSignUp(raker.v1.webauthn.FinishSignUpRequest) returns (raker.v1.webauthn.FinishResponse);
-
-  rpc BeginSignIn(raker.v1.webauthn.BeginSignInRequest) returns (raker.v1.webauthn.BeginSignInResponse);
-  rpc FinishSignIn(raker.v1.webauthn.FinishSignInRequest) returns (raker.v1.webauthn.FinishResponse);
+  rpc BeginSignUp(raker.v1.passkey.BeginSignUpRequest) returns (raker.v1.passkey.BeginSignUpResponse);
+  rpc FinishSignUp(raker.v1.passkey.FinishSignUpRequest) returns (google.protobuf.Empty);
+  rpc BeginSignIn(raker.v1.passkey.BeginSignInRequest) returns (raker.v1.passkey.BeginSignInResponse);
+  rpc FinishSignIn(raker.v1.passkey.FinishSignInRequest) returns (google.protobuf.Empty);
+  rpc RenamePasskey(raker.v1.passkey.RenamePasskeyRequest) returns (google.protobuf.Empty);
 
   rpc SignUpInstagram(SignUpRequest) returns (google.protobuf.Empty);
-
   rpc SignInInstagram(SignInRequest) returns (google.protobuf.Empty);
+  rpc EditUserCredentials(EditUserCredentialsRequest) returns (google.protobuf.Empty);
 
   rpc EditCategory(EditCategoryRequest) returns (google.protobuf.Empty);
-
-  rpc EditUserCredentials(EditUserCredentialsRequest) returns (google.protobuf.Empty);
 
   rpc GetUserCategories(google.protobuf.Empty) returns (UserCategoriesResponse);
 
   rpc ScrapeInstagram(UnaryScrapeRequest) returns (ScrapeResponse);
-
   rpc ScrapeHighlight(UnaryScrapeRequest) returns (ScrapeResponse);
-
   rpc ScrapeStory(UnaryScrapeRequest) returns (ScrapeResponse);
-
   rpc ScrapeTikTok(BinaryScrapeRequest) returns (ScrapeResponse);
-
   rpc ScrapeSnapchat(BinaryScrapeRequest) returns (ScrapeResponse);
-
   rpc ScrapeVSCO(BinaryScrapeRequest) returns (ScrapeResponse);
 
   rpc RemoveFiles(RemoveFilesRequest) returns (ScrapeResponse);
@@ -175,12 +168,9 @@ service RakerServer {
   rpc UpdateCategories(UpdateCategoriesRequest) returns (google.protobuf.Empty);
 
   rpc SearchHistory(HistoryRequest) returns (HistoryResponse);
-
   rpc SearchHistoryOwners(HistoryOwnersRequest) returns (HistoryOwnersResponse);
 
   rpc CropFile(CropFileRequest) returns (google.protobuf.Empty);
-
   rpc RotateFile(RotateFileRequest) returns (google.protobuf.Empty);
-
   rpc DuplicateFile(FileSubRequest) returns (FileSubRequest);
 }

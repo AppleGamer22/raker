@@ -25,6 +25,11 @@ export const beginSignIn = RakerServer.method.beginSignIn;
 export const finishSignIn = RakerServer.method.finishSignIn;
 
 /**
+ * @generated from rpc raker.v1.RakerServer.RenamePasskey
+ */
+export const renamePasskey = RakerServer.method.renamePasskey;
+
+/**
  * @generated from rpc raker.v1.RakerServer.SignUpInstagram
  */
 export const signUpInstagram = RakerServer.method.signUpInstagram;
@@ -35,14 +40,14 @@ export const signUpInstagram = RakerServer.method.signUpInstagram;
 export const signInInstagram = RakerServer.method.signInInstagram;
 
 /**
- * @generated from rpc raker.v1.RakerServer.EditCategory
- */
-export const editCategory = RakerServer.method.editCategory;
-
-/**
  * @generated from rpc raker.v1.RakerServer.EditUserCredentials
  */
 export const editUserCredentials = RakerServer.method.editUserCredentials;
+
+/**
+ * @generated from rpc raker.v1.RakerServer.EditCategory
+ */
+export const editCategory = RakerServer.method.editCategory;
 
 /**
  * @generated from rpc raker.v1.RakerServer.GetUserCategories

@@ -9,7 +9,7 @@ import (
 	context "context"
 	errors "errors"
 	v1 "github.com/AppleGamer22/raker/server/buf/proto/raker/v1"
-	webauthn "github.com/AppleGamer22/raker/server/buf/proto/raker/v1/webauthn"
+	passkey "github.com/AppleGamer22/raker/server/buf/proto/raker/v1/passkey"
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
 	http "net/http"
 	strings "strings"
@@ -45,18 +45,21 @@ const (
 	// RakerServerFinishSignInProcedure is the fully-qualified name of the RakerServer's FinishSignIn
 	// RPC.
 	RakerServerFinishSignInProcedure = "/raker.v1.RakerServer/FinishSignIn"
+	// RakerServerRenamePasskeyProcedure is the fully-qualified name of the RakerServer's RenamePasskey
+	// RPC.
+	RakerServerRenamePasskeyProcedure = "/raker.v1.RakerServer/RenamePasskey"
 	// RakerServerSignUpInstagramProcedure is the fully-qualified name of the RakerServer's
 	// SignUpInstagram RPC.
 	RakerServerSignUpInstagramProcedure = "/raker.v1.RakerServer/SignUpInstagram"
 	// RakerServerSignInInstagramProcedure is the fully-qualified name of the RakerServer's
 	// SignInInstagram RPC.
 	RakerServerSignInInstagramProcedure = "/raker.v1.RakerServer/SignInInstagram"
-	// RakerServerEditCategoryProcedure is the fully-qualified name of the RakerServer's EditCategory
-	// RPC.
-	RakerServerEditCategoryProcedure = "/raker.v1.RakerServer/EditCategory"
 	// RakerServerEditUserCredentialsProcedure is the fully-qualified name of the RakerServer's
 	// EditUserCredentials RPC.
 	RakerServerEditUserCredentialsProcedure = "/raker.v1.RakerServer/EditUserCredentials"
+	// RakerServerEditCategoryProcedure is the fully-qualified name of the RakerServer's EditCategory
+	// RPC.
+	RakerServerEditCategoryProcedure = "/raker.v1.RakerServer/EditCategory"
 	// RakerServerGetUserCategoriesProcedure is the fully-qualified name of the RakerServer's
 	// GetUserCategories RPC.
 	RakerServerGetUserCategoriesProcedure = "/raker.v1.RakerServer/GetUserCategories"
@@ -98,14 +101,15 @@ const (
 
 // RakerServerClient is a client for the raker.v1.RakerServer service.
 type RakerServerClient interface {
-	BeginSignUp(context.Context, *webauthn.BeginSignUpRequest) (*webauthn.BeginSignUpResponse, error)
-	FinishSignUp(context.Context, *webauthn.FinishSignUpRequest) (*webauthn.FinishResponse, error)
-	BeginSignIn(context.Context, *webauthn.BeginSignInRequest) (*webauthn.BeginSignInResponse, error)
-	FinishSignIn(context.Context, *webauthn.FinishSignInRequest) (*webauthn.FinishResponse, error)
+	BeginSignUp(context.Context, *passkey.BeginSignUpRequest) (*passkey.BeginSignUpResponse, error)
+	FinishSignUp(context.Context, *passkey.FinishSignUpRequest) (*emptypb.Empty, error)
+	BeginSignIn(context.Context, *passkey.BeginSignInRequest) (*passkey.BeginSignInResponse, error)
+	FinishSignIn(context.Context, *passkey.FinishSignInRequest) (*emptypb.Empty, error)
+	RenamePasskey(context.Context, *passkey.RenamePasskeyRequest) (*emptypb.Empty, error)
 	SignUpInstagram(context.Context, *v1.SignUpRequest) (*emptypb.Empty, error)
 	SignInInstagram(context.Context, *v1.SignInRequest) (*emptypb.Empty, error)
-	EditCategory(context.Context, *v1.EditCategoryRequest) (*emptypb.Empty, error)
 	EditUserCredentials(context.Context, *v1.EditUserCredentialsRequest) (*emptypb.Empty, error)
+	EditCategory(context.Context, *v1.EditCategoryRequest) (*emptypb.Empty, error)
 	GetUserCategories(context.Context, *emptypb.Empty) (*v1.UserCategoriesResponse, error)
 	ScrapeInstagram(context.Context, *v1.UnaryScrapeRequest) (*v1.ScrapeResponse, error)
 	ScrapeHighlight(context.Context, *v1.UnaryScrapeRequest) (*v1.ScrapeResponse, error)
@@ -133,28 +137,34 @@ func NewRakerServerClient(httpClient connect.HTTPClient, baseURL string, opts ..
 	baseURL = strings.TrimRight(baseURL, "/")
 	rakerServerMethods := v1.File_raker_v1_raker_proto.Services().ByName("RakerServer").Methods()
 	return &rakerServerClient{
-		beginSignUp: connect.NewClient[webauthn.BeginSignUpRequest, webauthn.BeginSignUpResponse](
+		beginSignUp: connect.NewClient[passkey.BeginSignUpRequest, passkey.BeginSignUpResponse](
 			httpClient,
 			baseURL+RakerServerBeginSignUpProcedure,
 			connect.WithSchema(rakerServerMethods.ByName("BeginSignUp")),
 			connect.WithClientOptions(opts...),
 		),
-		finishSignUp: connect.NewClient[webauthn.FinishSignUpRequest, webauthn.FinishResponse](
+		finishSignUp: connect.NewClient[passkey.FinishSignUpRequest, emptypb.Empty](
 			httpClient,
 			baseURL+RakerServerFinishSignUpProcedure,
 			connect.WithSchema(rakerServerMethods.ByName("FinishSignUp")),
 			connect.WithClientOptions(opts...),
 		),
-		beginSignIn: connect.NewClient[webauthn.BeginSignInRequest, webauthn.BeginSignInResponse](
+		beginSignIn: connect.NewClient[passkey.BeginSignInRequest, passkey.BeginSignInResponse](
 			httpClient,
 			baseURL+RakerServerBeginSignInProcedure,
 			connect.WithSchema(rakerServerMethods.ByName("BeginSignIn")),
 			connect.WithClientOptions(opts...),
 		),
-		finishSignIn: connect.NewClient[webauthn.FinishSignInRequest, webauthn.FinishResponse](
+		finishSignIn: connect.NewClient[passkey.FinishSignInRequest, emptypb.Empty](
 			httpClient,
 			baseURL+RakerServerFinishSignInProcedure,
 			connect.WithSchema(rakerServerMethods.ByName("FinishSignIn")),
+			connect.WithClientOptions(opts...),
+		),
+		renamePasskey: connect.NewClient[passkey.RenamePasskeyRequest, emptypb.Empty](
+			httpClient,
+			baseURL+RakerServerRenamePasskeyProcedure,
+			connect.WithSchema(rakerServerMethods.ByName("RenamePasskey")),
 			connect.WithClientOptions(opts...),
 		),
 		signUpInstagram: connect.NewClient[v1.SignUpRequest, emptypb.Empty](
@@ -169,16 +179,16 @@ func NewRakerServerClient(httpClient connect.HTTPClient, baseURL string, opts ..
 			connect.WithSchema(rakerServerMethods.ByName("SignInInstagram")),
 			connect.WithClientOptions(opts...),
 		),
-		editCategory: connect.NewClient[v1.EditCategoryRequest, emptypb.Empty](
-			httpClient,
-			baseURL+RakerServerEditCategoryProcedure,
-			connect.WithSchema(rakerServerMethods.ByName("EditCategory")),
-			connect.WithClientOptions(opts...),
-		),
 		editUserCredentials: connect.NewClient[v1.EditUserCredentialsRequest, emptypb.Empty](
 			httpClient,
 			baseURL+RakerServerEditUserCredentialsProcedure,
 			connect.WithSchema(rakerServerMethods.ByName("EditUserCredentials")),
+			connect.WithClientOptions(opts...),
+		),
+		editCategory: connect.NewClient[v1.EditCategoryRequest, emptypb.Empty](
+			httpClient,
+			baseURL+RakerServerEditCategoryProcedure,
+			connect.WithSchema(rakerServerMethods.ByName("EditCategory")),
 			connect.WithClientOptions(opts...),
 		),
 		getUserCategories: connect.NewClient[emptypb.Empty, v1.UserCategoriesResponse](
@@ -270,14 +280,15 @@ func NewRakerServerClient(httpClient connect.HTTPClient, baseURL string, opts ..
 
 // rakerServerClient implements RakerServerClient.
 type rakerServerClient struct {
-	beginSignUp         *connect.Client[webauthn.BeginSignUpRequest, webauthn.BeginSignUpResponse]
-	finishSignUp        *connect.Client[webauthn.FinishSignUpRequest, webauthn.FinishResponse]
-	beginSignIn         *connect.Client[webauthn.BeginSignInRequest, webauthn.BeginSignInResponse]
-	finishSignIn        *connect.Client[webauthn.FinishSignInRequest, webauthn.FinishResponse]
+	beginSignUp         *connect.Client[passkey.BeginSignUpRequest, passkey.BeginSignUpResponse]
+	finishSignUp        *connect.Client[passkey.FinishSignUpRequest, emptypb.Empty]
+	beginSignIn         *connect.Client[passkey.BeginSignInRequest, passkey.BeginSignInResponse]
+	finishSignIn        *connect.Client[passkey.FinishSignInRequest, emptypb.Empty]
+	renamePasskey       *connect.Client[passkey.RenamePasskeyRequest, emptypb.Empty]
 	signUpInstagram     *connect.Client[v1.SignUpRequest, emptypb.Empty]
 	signInInstagram     *connect.Client[v1.SignInRequest, emptypb.Empty]
-	editCategory        *connect.Client[v1.EditCategoryRequest, emptypb.Empty]
 	editUserCredentials *connect.Client[v1.EditUserCredentialsRequest, emptypb.Empty]
+	editCategory        *connect.Client[v1.EditCategoryRequest, emptypb.Empty]
 	getUserCategories   *connect.Client[emptypb.Empty, v1.UserCategoriesResponse]
 	scrapeInstagram     *connect.Client[v1.UnaryScrapeRequest, v1.ScrapeResponse]
 	scrapeHighlight     *connect.Client[v1.UnaryScrapeRequest, v1.ScrapeResponse]
@@ -295,7 +306,7 @@ type rakerServerClient struct {
 }
 
 // BeginSignUp calls raker.v1.RakerServer.BeginSignUp.
-func (c *rakerServerClient) BeginSignUp(ctx context.Context, req *webauthn.BeginSignUpRequest) (*webauthn.BeginSignUpResponse, error) {
+func (c *rakerServerClient) BeginSignUp(ctx context.Context, req *passkey.BeginSignUpRequest) (*passkey.BeginSignUpResponse, error) {
 	response, err := c.beginSignUp.CallUnary(ctx, connect.NewRequest(req))
 	if response != nil {
 		return response.Msg, err
@@ -304,7 +315,7 @@ func (c *rakerServerClient) BeginSignUp(ctx context.Context, req *webauthn.Begin
 }
 
 // FinishSignUp calls raker.v1.RakerServer.FinishSignUp.
-func (c *rakerServerClient) FinishSignUp(ctx context.Context, req *webauthn.FinishSignUpRequest) (*webauthn.FinishResponse, error) {
+func (c *rakerServerClient) FinishSignUp(ctx context.Context, req *passkey.FinishSignUpRequest) (*emptypb.Empty, error) {
 	response, err := c.finishSignUp.CallUnary(ctx, connect.NewRequest(req))
 	if response != nil {
 		return response.Msg, err
@@ -313,7 +324,7 @@ func (c *rakerServerClient) FinishSignUp(ctx context.Context, req *webauthn.Fini
 }
 
 // BeginSignIn calls raker.v1.RakerServer.BeginSignIn.
-func (c *rakerServerClient) BeginSignIn(ctx context.Context, req *webauthn.BeginSignInRequest) (*webauthn.BeginSignInResponse, error) {
+func (c *rakerServerClient) BeginSignIn(ctx context.Context, req *passkey.BeginSignInRequest) (*passkey.BeginSignInResponse, error) {
 	response, err := c.beginSignIn.CallUnary(ctx, connect.NewRequest(req))
 	if response != nil {
 		return response.Msg, err
@@ -322,8 +333,17 @@ func (c *rakerServerClient) BeginSignIn(ctx context.Context, req *webauthn.Begin
 }
 
 // FinishSignIn calls raker.v1.RakerServer.FinishSignIn.
-func (c *rakerServerClient) FinishSignIn(ctx context.Context, req *webauthn.FinishSignInRequest) (*webauthn.FinishResponse, error) {
+func (c *rakerServerClient) FinishSignIn(ctx context.Context, req *passkey.FinishSignInRequest) (*emptypb.Empty, error) {
 	response, err := c.finishSignIn.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
+}
+
+// RenamePasskey calls raker.v1.RakerServer.RenamePasskey.
+func (c *rakerServerClient) RenamePasskey(ctx context.Context, req *passkey.RenamePasskeyRequest) (*emptypb.Empty, error) {
+	response, err := c.renamePasskey.CallUnary(ctx, connect.NewRequest(req))
 	if response != nil {
 		return response.Msg, err
 	}
@@ -348,18 +368,18 @@ func (c *rakerServerClient) SignInInstagram(ctx context.Context, req *v1.SignInR
 	return nil, err
 }
 
-// EditCategory calls raker.v1.RakerServer.EditCategory.
-func (c *rakerServerClient) EditCategory(ctx context.Context, req *v1.EditCategoryRequest) (*emptypb.Empty, error) {
-	response, err := c.editCategory.CallUnary(ctx, connect.NewRequest(req))
+// EditUserCredentials calls raker.v1.RakerServer.EditUserCredentials.
+func (c *rakerServerClient) EditUserCredentials(ctx context.Context, req *v1.EditUserCredentialsRequest) (*emptypb.Empty, error) {
+	response, err := c.editUserCredentials.CallUnary(ctx, connect.NewRequest(req))
 	if response != nil {
 		return response.Msg, err
 	}
 	return nil, err
 }
 
-// EditUserCredentials calls raker.v1.RakerServer.EditUserCredentials.
-func (c *rakerServerClient) EditUserCredentials(ctx context.Context, req *v1.EditUserCredentialsRequest) (*emptypb.Empty, error) {
-	response, err := c.editUserCredentials.CallUnary(ctx, connect.NewRequest(req))
+// EditCategory calls raker.v1.RakerServer.EditCategory.
+func (c *rakerServerClient) EditCategory(ctx context.Context, req *v1.EditCategoryRequest) (*emptypb.Empty, error) {
+	response, err := c.editCategory.CallUnary(ctx, connect.NewRequest(req))
 	if response != nil {
 		return response.Msg, err
 	}
@@ -494,14 +514,15 @@ func (c *rakerServerClient) DuplicateFile(ctx context.Context, req *v1.FileSubRe
 
 // RakerServerHandler is an implementation of the raker.v1.RakerServer service.
 type RakerServerHandler interface {
-	BeginSignUp(context.Context, *webauthn.BeginSignUpRequest) (*webauthn.BeginSignUpResponse, error)
-	FinishSignUp(context.Context, *webauthn.FinishSignUpRequest) (*webauthn.FinishResponse, error)
-	BeginSignIn(context.Context, *webauthn.BeginSignInRequest) (*webauthn.BeginSignInResponse, error)
-	FinishSignIn(context.Context, *webauthn.FinishSignInRequest) (*webauthn.FinishResponse, error)
+	BeginSignUp(context.Context, *passkey.BeginSignUpRequest) (*passkey.BeginSignUpResponse, error)
+	FinishSignUp(context.Context, *passkey.FinishSignUpRequest) (*emptypb.Empty, error)
+	BeginSignIn(context.Context, *passkey.BeginSignInRequest) (*passkey.BeginSignInResponse, error)
+	FinishSignIn(context.Context, *passkey.FinishSignInRequest) (*emptypb.Empty, error)
+	RenamePasskey(context.Context, *passkey.RenamePasskeyRequest) (*emptypb.Empty, error)
 	SignUpInstagram(context.Context, *v1.SignUpRequest) (*emptypb.Empty, error)
 	SignInInstagram(context.Context, *v1.SignInRequest) (*emptypb.Empty, error)
-	EditCategory(context.Context, *v1.EditCategoryRequest) (*emptypb.Empty, error)
 	EditUserCredentials(context.Context, *v1.EditUserCredentialsRequest) (*emptypb.Empty, error)
+	EditCategory(context.Context, *v1.EditCategoryRequest) (*emptypb.Empty, error)
 	GetUserCategories(context.Context, *emptypb.Empty) (*v1.UserCategoriesResponse, error)
 	ScrapeInstagram(context.Context, *v1.UnaryScrapeRequest) (*v1.ScrapeResponse, error)
 	ScrapeHighlight(context.Context, *v1.UnaryScrapeRequest) (*v1.ScrapeResponse, error)
@@ -549,6 +570,12 @@ func NewRakerServerHandler(svc RakerServerHandler, opts ...connect.HandlerOption
 		connect.WithSchema(rakerServerMethods.ByName("FinishSignIn")),
 		connect.WithHandlerOptions(opts...),
 	)
+	rakerServerRenamePasskeyHandler := connect.NewUnaryHandlerSimple(
+		RakerServerRenamePasskeyProcedure,
+		svc.RenamePasskey,
+		connect.WithSchema(rakerServerMethods.ByName("RenamePasskey")),
+		connect.WithHandlerOptions(opts...),
+	)
 	rakerServerSignUpInstagramHandler := connect.NewUnaryHandlerSimple(
 		RakerServerSignUpInstagramProcedure,
 		svc.SignUpInstagram,
@@ -561,16 +588,16 @@ func NewRakerServerHandler(svc RakerServerHandler, opts ...connect.HandlerOption
 		connect.WithSchema(rakerServerMethods.ByName("SignInInstagram")),
 		connect.WithHandlerOptions(opts...),
 	)
-	rakerServerEditCategoryHandler := connect.NewUnaryHandlerSimple(
-		RakerServerEditCategoryProcedure,
-		svc.EditCategory,
-		connect.WithSchema(rakerServerMethods.ByName("EditCategory")),
-		connect.WithHandlerOptions(opts...),
-	)
 	rakerServerEditUserCredentialsHandler := connect.NewUnaryHandlerSimple(
 		RakerServerEditUserCredentialsProcedure,
 		svc.EditUserCredentials,
 		connect.WithSchema(rakerServerMethods.ByName("EditUserCredentials")),
+		connect.WithHandlerOptions(opts...),
+	)
+	rakerServerEditCategoryHandler := connect.NewUnaryHandlerSimple(
+		RakerServerEditCategoryProcedure,
+		svc.EditCategory,
+		connect.WithSchema(rakerServerMethods.ByName("EditCategory")),
 		connect.WithHandlerOptions(opts...),
 	)
 	rakerServerGetUserCategoriesHandler := connect.NewUnaryHandlerSimple(
@@ -667,14 +694,16 @@ func NewRakerServerHandler(svc RakerServerHandler, opts ...connect.HandlerOption
 			rakerServerBeginSignInHandler.ServeHTTP(w, r)
 		case RakerServerFinishSignInProcedure:
 			rakerServerFinishSignInHandler.ServeHTTP(w, r)
+		case RakerServerRenamePasskeyProcedure:
+			rakerServerRenamePasskeyHandler.ServeHTTP(w, r)
 		case RakerServerSignUpInstagramProcedure:
 			rakerServerSignUpInstagramHandler.ServeHTTP(w, r)
 		case RakerServerSignInInstagramProcedure:
 			rakerServerSignInInstagramHandler.ServeHTTP(w, r)
-		case RakerServerEditCategoryProcedure:
-			rakerServerEditCategoryHandler.ServeHTTP(w, r)
 		case RakerServerEditUserCredentialsProcedure:
 			rakerServerEditUserCredentialsHandler.ServeHTTP(w, r)
+		case RakerServerEditCategoryProcedure:
+			rakerServerEditCategoryHandler.ServeHTTP(w, r)
 		case RakerServerGetUserCategoriesProcedure:
 			rakerServerGetUserCategoriesHandler.ServeHTTP(w, r)
 		case RakerServerScrapeInstagramProcedure:
@@ -712,20 +741,24 @@ func NewRakerServerHandler(svc RakerServerHandler, opts ...connect.HandlerOption
 // UnimplementedRakerServerHandler returns CodeUnimplemented from all methods.
 type UnimplementedRakerServerHandler struct{}
 
-func (UnimplementedRakerServerHandler) BeginSignUp(context.Context, *webauthn.BeginSignUpRequest) (*webauthn.BeginSignUpResponse, error) {
+func (UnimplementedRakerServerHandler) BeginSignUp(context.Context, *passkey.BeginSignUpRequest) (*passkey.BeginSignUpResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raker.v1.RakerServer.BeginSignUp is not implemented"))
 }
 
-func (UnimplementedRakerServerHandler) FinishSignUp(context.Context, *webauthn.FinishSignUpRequest) (*webauthn.FinishResponse, error) {
+func (UnimplementedRakerServerHandler) FinishSignUp(context.Context, *passkey.FinishSignUpRequest) (*emptypb.Empty, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raker.v1.RakerServer.FinishSignUp is not implemented"))
 }
 
-func (UnimplementedRakerServerHandler) BeginSignIn(context.Context, *webauthn.BeginSignInRequest) (*webauthn.BeginSignInResponse, error) {
+func (UnimplementedRakerServerHandler) BeginSignIn(context.Context, *passkey.BeginSignInRequest) (*passkey.BeginSignInResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raker.v1.RakerServer.BeginSignIn is not implemented"))
 }
 
-func (UnimplementedRakerServerHandler) FinishSignIn(context.Context, *webauthn.FinishSignInRequest) (*webauthn.FinishResponse, error) {
+func (UnimplementedRakerServerHandler) FinishSignIn(context.Context, *passkey.FinishSignInRequest) (*emptypb.Empty, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raker.v1.RakerServer.FinishSignIn is not implemented"))
+}
+
+func (UnimplementedRakerServerHandler) RenamePasskey(context.Context, *passkey.RenamePasskeyRequest) (*emptypb.Empty, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raker.v1.RakerServer.RenamePasskey is not implemented"))
 }
 
 func (UnimplementedRakerServerHandler) SignUpInstagram(context.Context, *v1.SignUpRequest) (*emptypb.Empty, error) {
@@ -736,12 +769,12 @@ func (UnimplementedRakerServerHandler) SignInInstagram(context.Context, *v1.Sign
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raker.v1.RakerServer.SignInInstagram is not implemented"))
 }
 
-func (UnimplementedRakerServerHandler) EditCategory(context.Context, *v1.EditCategoryRequest) (*emptypb.Empty, error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raker.v1.RakerServer.EditCategory is not implemented"))
-}
-
 func (UnimplementedRakerServerHandler) EditUserCredentials(context.Context, *v1.EditUserCredentialsRequest) (*emptypb.Empty, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raker.v1.RakerServer.EditUserCredentials is not implemented"))
+}
+
+func (UnimplementedRakerServerHandler) EditCategory(context.Context, *v1.EditCategoryRequest) (*emptypb.Empty, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raker.v1.RakerServer.EditCategory is not implemented"))
 }
 
 func (UnimplementedRakerServerHandler) GetUserCategories(context.Context, *emptypb.Empty) (*v1.UserCategoriesResponse, error) {
