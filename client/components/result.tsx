@@ -301,14 +301,16 @@ export function ResultHeader({
 	);
 }
 
-export function Result({
+export function EditHistoryCategoriesForm({
+	availableCategories,
 	result,
 	setResult,
 }: {
+	availableCategories: string[];
 	result: ScrapeResponse;
-	setResult: Dispatch<SetStateAction<ScrapeResponse | null>>;
+	setResult: Dispatch<SetStateAction<ScrapeResponse>>;
 }) {
-	const { username, categories: availableCategories } = useUser();
+	const updateCategoriesMutation = useMutation(updateCategories);
 	const form = useForm({
 		defaultValues: {
 			categories: result.categories,
@@ -347,8 +349,73 @@ export function Result({
 			}
 		},
 	});
+
+	useEffect(() => {
+		form.setFieldValue("categories", result.categories);
+	}, [form, result.categories]);
+
+	return (
+		<div className="w-full">
+			<form.Field name="categories" mode="array">
+				{(categoriesField) => {
+					const hasUnsavedCategories = !uniqueArraysEqualAsSets(
+						categoriesField.state.value,
+						result.categories,
+					);
+					return (
+						<div className="flex flex-col gap-3 rounded-lg border border-border/60 bg-background/70 p-3">
+							<HistoryPostCategoryForm
+								availableCategories={availableCategories}
+								showExclusive={false}
+								legendBadge={
+									hasUnsavedCategories ? <Badge className="mr-1 h-2 w-2 rounded-full p-0" /> : null
+								}
+								categoriesField={{
+									name: categoriesField.name,
+									value: categoriesField.state.value,
+									onToggleCategory: (category, checked) => {
+										if (checked) {
+											if (!categoriesField.state.value.includes(category)) {
+												categoriesField.pushValue(category);
+											}
+										} else {
+											const index = categoriesField.state.value.indexOf(category);
+											if (index > -1) {
+												categoriesField.removeValue(index);
+											}
+										}
+									},
+								}}
+							/>
+							<div>
+								{updateCategoriesMutation.isPending && <Progress value={null} className="pb-2" />}
+								<Button
+									className="w-full sm:w-auto"
+									type="button"
+									size="sm"
+									disabled={updateCategoriesMutation.isPending || !hasUnsavedCategories}
+									onClick={form.handleSubmit}
+								>
+									Save Categories
+								</Button>
+							</div>
+						</div>
+					);
+				}}
+			</form.Field>
+		</div>
+	);
+}
+
+export function Result({
+	result,
+	setResult,
+}: {
+	result: ScrapeResponse;
+	setResult: Dispatch<SetStateAction<ScrapeResponse | null>>;
+}) {
+	const { username, categories: availableCategories } = useUser();
 	const { confirm, DialogComponent } = useConfirmationDialog();
-	const updateCategoriesMutation = useMutation(updateCategories);
 	const removeFilesMutation = useMutation(removeFiles);
 	const [selection, setSelection] = useState<{ selectedFiles: string[]; anchorFile: string | null }>({
 		selectedFiles: [],
@@ -356,10 +423,6 @@ export function Result({
 	});
 	const [fileCacheBusters, setFileCacheBusters] = useState<Record<string, number | string>>({});
 	const files = result.files;
-
-	useEffect(() => {
-		form.setFieldValue("categories", result.categories);
-	}, [form, result]);
 
 	useEffect(() => {
 		setSelection((current) => {
@@ -507,7 +570,7 @@ export function Result({
 
 	return (
 		<section className="my-3 flex w-full flex-col items-center gap-3">
-			{(updateCategoriesMutation.isPending || removeFilesMutation.isPending) && (
+			{removeFilesMutation.isPending && (
 				<div className="w-full">
 					<Progress value={null} className="pb-2" />
 				</div>
@@ -516,56 +579,11 @@ export function Result({
 				<ResultHeader categories={availableCategories} exclusive={false} result={result} />
 			</div>
 			<Label>{timestampFormat(result.postDate!)}</Label>
-			<div className="w-full">
-				<form.Field name="categories" mode="array">
-					{(categoriesField) => {
-						const hasUnsavedCategories = !uniqueArraysEqualAsSets(
-							categoriesField.state.value,
-							result.categories,
-						);
-						return (
-							<div className="flex flex-col gap-3 rounded-lg border border-border/60 bg-background/70 p-3">
-								<HistoryPostCategoryForm
-									availableCategories={availableCategories}
-									showExclusive={false}
-									legendBadge={
-										hasUnsavedCategories ? (
-											<Badge className="mr-1 h-2 w-2 rounded-full p-0" />
-										) : null
-									}
-									categoriesField={{
-										name: categoriesField.name,
-										value: categoriesField.state.value,
-										onToggleCategory: (category, checked) => {
-											if (checked) {
-												if (!categoriesField.state.value.includes(category)) {
-													categoriesField.pushValue(category);
-												}
-											} else {
-												const index = categoriesField.state.value.indexOf(category);
-												if (index > -1) {
-													categoriesField.removeValue(index);
-												}
-											}
-										},
-									}}
-								/>
-								<div>
-									<Button
-										className="w-full sm:w-auto"
-										type="button"
-										size="sm"
-										disabled={updateCategoriesMutation.isPending || !hasUnsavedCategories}
-										onClick={form.handleSubmit}
-									>
-										Save Categories
-									</Button>
-								</div>
-							</div>
-						);
-					}}
-				</form.Field>
-			</div>
+			<EditHistoryCategoriesForm
+				availableCategories={availableCategories}
+				result={result}
+				setResult={setResult as Dispatch<SetStateAction<ScrapeResponse>>}
+			/>
 			<Tabs className="w-full">
 				<div className="mx-auto flex w-full items-center gap-2 sm:w-1/2">
 					<TabsList className="flex-1">

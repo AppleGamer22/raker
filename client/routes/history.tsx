@@ -1,7 +1,7 @@
 import { useMutation } from "@connectrpc/connect-query";
 import { useForm } from "@tanstack/react-form";
 import { createFileRoute, Link, stripSearchParams, useNavigate } from "@tanstack/react-router";
-import { SearchIcon } from "lucide-react";
+import { EllipsisIcon, SearchIcon } from "lucide-react";
 import { Fragment, useEffect, useRef, useState, type ReactNode } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -9,7 +9,13 @@ import { z } from "zod";
 import { searchHistory, searchHistoryOwners } from "@/buf/raker/v1/raker-RakerServer_connectquery";
 import { PostType, type ScrapeResponse } from "@/buf/raker/v1/raker_pb";
 import { FilesCarousel } from "@/components/file-display";
-import { PlatformIcon, PostOwnerContextMenuContext, PostTypeIconLabel, ResultHeader } from "@/components/result";
+import {
+	EditHistoryCategoriesForm,
+	PlatformIcon,
+	PostOwnerContextMenuContext,
+	PostTypeIconLabel,
+	ResultHeader,
+} from "@/components/result";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -43,6 +49,7 @@ import {
 } from "@/components/ui/pagination";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { InstagramIcon } from "@/components/ui/svgs/instagram";
 import { SnapchatIcon } from "@/components/ui/svgs/snapchat";
 import { TikTokIcon } from "@/components/ui/svgs/tiktok";
@@ -312,6 +319,79 @@ function HistoryPostTypeForm({ typesField }: HistoryPostTypeFormProps) {
 				</FieldGroup>
 			</FieldSet>
 		</FieldGroup>
+	);
+}
+
+function HistoryCard({
+	history,
+	username,
+	exclusive,
+	linkTarget,
+}: {
+	history: ScrapeResponse;
+	username: string | undefined;
+	exclusive: boolean;
+	linkTarget: string | undefined;
+}) {
+	const { categories: availableCategories } = useUser();
+	const [result, setResult] = useState(history);
+	const [open, setOpen] = useState(false);
+
+	return (
+		<Card key={`post-${history.postType}-${history.postOwner}-${history.post}`}>
+			<CardHeader className="w-full wrap-break-word">
+				<div className="flex max-w-full flex-wrap items-center gap-x-1 gap-y-1 leading-none">
+					<ResultHeader result={history} categories={availableCategories} exclusive={exclusive} showPost />
+					<label className="basis-full">{timestampFormat(history.postDate!)}</label>
+					<span className="inline-flex flex-wrap items-center gap-1">
+						{result.categories.map((category) => (
+							<Badge
+								key={`category-${history.postType}-${history.postOwner}-${history.post}-${category}`}
+								variant="secondary"
+							>
+								<Link
+									to="/history"
+									search={{
+										categories: [category],
+										exclusive: exclusive,
+										page: 1n,
+										owners: [],
+										types: defaultPostTypes,
+									}}
+									target={linkTarget}
+								>
+									{category}
+								</Link>
+							</Badge>
+						))}
+						<Sheet open={open} onOpenChange={setOpen}>
+							<SheetTrigger>
+								<Badge
+									className="cursor-pointer hover:bg-secondary/80"
+									variant="secondary"
+									onClick={() => setOpen(true)}
+								>
+									<EllipsisIcon />
+								</Badge>
+							</SheetTrigger>
+							<SheetContent side="bottom">
+								<EditHistoryCategoriesForm
+									availableCategories={availableCategories}
+									result={result}
+									setResult={(result) => {
+										setResult(result);
+										setOpen(false);
+									}}
+								/>
+							</SheetContent>
+						</Sheet>
+					</span>
+				</div>
+			</CardHeader>
+			<CardContent>
+				<FilesCarousel post={result} username={username!} />
+			</CardContent>
+		</Card>
 	);
 }
 
@@ -681,48 +761,14 @@ function History() {
 			{totalCount > 0 && <Label className="my-2 justify-center">{totalCount} results</Label>}
 			<HistoryPageinationButtons />
 			<div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-				{histories.map(({ postType, postOwner, post, postDate, categories, files, coordinates }) => (
-					<Card key={`post-${postType}-${postOwner}-${post}`}>
-						<CardHeader className="w-full wrap-break-word">
-							<div className="flex max-w-full flex-wrap items-center gap-x-1 gap-y-1 leading-none">
-								<ResultHeader
-									result={{ postType, postOwner, post, incognito: false } as ScrapeResponse}
-									categories={form.getFieldValue("categories")}
-									exclusive={form.getFieldValue("exclusive")}
-									showPost
-								/>
-								<label className="basis-full">{timestampFormat(postDate!)}</label>
-								<span className="inline-flex flex-wrap items-center gap-1">
-									{categories.map((category) => (
-										<Badge
-											key={`category-${postType}-${postOwner}-${post}-${category}`}
-											variant="secondary"
-										>
-											<Link
-												to="/history"
-												search={{
-													categories: [category],
-													exclusive: form.getFieldValue("exclusive"),
-													page: 1n,
-													owners: [],
-													types: defaultPostTypes,
-												}}
-												target={linkTarget}
-											>
-												{category}
-											</Link>
-										</Badge>
-									))}
-								</span>
-							</div>
-						</CardHeader>
-						<CardContent>
-							<FilesCarousel
-								post={{ postType, postOwner, post, files, coordinates } as ScrapeResponse}
-								username={username!}
-							/>
-						</CardContent>
-					</Card>
+				{histories.map((history) => (
+					<HistoryCard
+						key={`${history.postType}-${history.postOwner}-${history.post}`}
+						history={history}
+						exclusive={form.getFieldValue("exclusive")}
+						linkTarget={linkTarget}
+						username={username ?? undefined}
+					/>
 				))}
 			</div>
 			{histories.length > 0 && <HistoryPageinationButtons />}
