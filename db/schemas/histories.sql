@@ -18,3 +18,13 @@ ALTER TABLE Histories
 ALTER TABLE Histories
 	ADD COLUMN coordinates point DEFAULT NULL;
 
+UPDATE
+	histories
+SET
+	coordinates = NULL;
+
+SELECT DISTINCT
+	coordinates::text
+FROM
+	histories;
+

@@ -95,6 +95,7 @@ SET
 WHERE
 	post_type = sqlc.arg(post_type)::post_type
 	AND post_owner = sqlc.arg(post_owner)::text
+	AND post = sqlc.arg(post)::text
 	AND username = sqlc.arg(username)::text;
 
 -- name: HistoriesCategoryRename :exec
@@ -145,7 +146,7 @@ WHERE
 -- https://docs.sqlc.dev/en/stable/howto/select.html#passing-a-slice-as-a-parameter-to-a-query
 -- https://docs.sqlc.dev/en/stable/howto/named_parameters.html
 -- name: HistoryGetPage :many
-SELECT DISTINCT
+SELECT
 	*
 FROM
 	Histories
@@ -155,7 +156,8 @@ WHERE
 			AND categories = COALESCE(sqlc.slice(categories)::text[], ARRAY[]::text[]))
 		OR (NOT sqlc.arg(exclusive)::boolean
 			AND (categories && COALESCE(sqlc.slice(categories)::text[], ARRAY[]::text[])
-				OR COALESCE(sqlc.slice(categories)::text[], ARRAY[]::text[]) = COALESCE(sqlc.slice(user_categories)::text[], ARRAY[]::text[]))))
+				OR (COALESCE(sqlc.slice(categories)::text[], ARRAY[]::text[]) = COALESCE(sqlc.slice(user_categories)::text[], ARRAY[]::text[]))
+				AND cardinality(categories) = 0)))
 	AND (cardinality(COALESCE(sqlc.slice(post_owners)::text[], ARRAY[]::text[])) = 0
 		OR EXISTS (
 			SELECT
@@ -180,7 +182,8 @@ WHERE
 			AND categories = COALESCE(sqlc.slice(categories)::text[], ARRAY[]::text[]))
 		OR (NOT sqlc.arg(exclusive)::boolean
 			AND (categories && COALESCE(sqlc.slice(categories)::text[], ARRAY[]::text[])
-				OR COALESCE(sqlc.slice(categories)::text[], ARRAY[]::text[]) = COALESCE(sqlc.slice(user_categories)::text[], ARRAY[]::text[]))))
+				OR (COALESCE(sqlc.slice(categories)::text[], ARRAY[]::text[]) = COALESCE(sqlc.slice(user_categories)::text[], ARRAY[]::text[]))
+				AND cardinality(categories) = 0)))
 	AND (cardinality(COALESCE(sqlc.slice(post_owners)::text[], ARRAY[]::text[])) = 0
 		OR EXISTS (
 			SELECT
@@ -207,7 +210,8 @@ WHERE
 			AND categories = COALESCE(sqlc.slice(categories)::text[], ARRAY[]::text[]))
 		OR (NOT sqlc.arg(exclusive)::boolean
 			AND (categories && COALESCE(sqlc.slice(categories)::text[], ARRAY[]::text[])
-				OR COALESCE(sqlc.slice(categories)::text[], ARRAY[]::text[]) = COALESCE(sqlc.slice(user_categories)::text[], ARRAY[]::text[]))))
+				OR (COALESCE(sqlc.slice(categories)::text[], ARRAY[]::text[]) = COALESCE(sqlc.slice(user_categories)::text[], ARRAY[]::text[]))
+				AND cardinality(categories) = 0)))
 	AND post_owner LIKE FORMAT('%%%s%%', sqlc.arg(post_owner)::text)
 	AND username = sqlc.arg(username)::text;
 

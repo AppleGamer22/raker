@@ -158,7 +158,8 @@ WHERE
 			AND categories = COALESCE($3::text[], ARRAY[]::text[]))
 		OR (NOT $2::boolean
 			AND (categories && COALESCE($3::text[], ARRAY[]::text[])
-				OR COALESCE($3::text[], ARRAY[]::text[]) = COALESCE($4::text[], ARRAY[]::text[]))))
+				OR (COALESCE($3::text[], ARRAY[]::text[]) = COALESCE($4::text[], ARRAY[]::text[]))
+				AND cardinality(categories) = 0)))
 	AND (cardinality(COALESCE($5::text[], ARRAY[]::text[])) = 0
 		OR EXISTS (
 			SELECT
@@ -300,7 +301,7 @@ func (q *Queries) HistoryGetByOwner(ctx context.Context, arg HistoryGetByOwnerPa
 }
 
 const historyGetPage = `-- name: HistoryGetPage :many
-SELECT DISTINCT
+SELECT
 	username, post_type, post_owner, post, post_date, files, categories, incognito, coordinates
 FROM
 	Histories
@@ -310,7 +311,8 @@ WHERE
 			AND categories = COALESCE($3::text[], ARRAY[]::text[]))
 		OR (NOT $2::boolean
 			AND (categories && COALESCE($3::text[], ARRAY[]::text[])
-				OR COALESCE($3::text[], ARRAY[]::text[]) = COALESCE($4::text[], ARRAY[]::text[]))))
+				OR (COALESCE($3::text[], ARRAY[]::text[]) = COALESCE($4::text[], ARRAY[]::text[]))
+				AND cardinality(categories) = 0)))
 	AND (cardinality(COALESCE($5::text[], ARRAY[]::text[])) = 0
 		OR EXISTS (
 			SELECT
@@ -396,7 +398,8 @@ WHERE
 			AND categories = COALESCE($3::text[], ARRAY[]::text[]))
 		OR (NOT $2::boolean
 			AND (categories && COALESCE($3::text[], ARRAY[]::text[])
-				OR COALESCE($3::text[], ARRAY[]::text[]) = COALESCE($4::text[], ARRAY[]::text[]))))
+				OR (COALESCE($3::text[], ARRAY[]::text[]) = COALESCE($4::text[], ARRAY[]::text[]))
+				AND cardinality(categories) = 0)))
 	AND post_owner LIKE FORMAT('%%%s%%', $5::text)
 	AND username = $6::text
 `
@@ -523,7 +526,8 @@ SET
 WHERE
 	post_type = $3::post_type
 	AND post_owner = $4::text
-	AND username = $5::text
+	AND post = $5::text
+	AND username = $6::text
 `
 
 type HistoryUpdateCoordinatesParams struct {
@@ -531,6 +535,7 @@ type HistoryUpdateCoordinatesParams struct {
 	Longitude float64  `json:"longitude"`
 	PostType  PostType `json:"post_type"`
 	PostOwner string   `json:"post_owner"`
+	Post      string   `json:"post"`
 	Username  string   `json:"username"`
 }
 
@@ -540,6 +545,7 @@ func (q *Queries) HistoryUpdateCoordinates(ctx context.Context, arg HistoryUpdat
 		arg.Longitude,
 		arg.PostType,
 		arg.PostOwner,
+		arg.Post,
 		arg.Username,
 	)
 	return err

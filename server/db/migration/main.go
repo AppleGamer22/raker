@@ -102,7 +102,7 @@ func histories(ctx context.Context, pgdb *db.Queries) {
 	}
 }
 
-func coordinates(ctx context.Context, username, storageRoot string, pgdb *db.Queries) {
+func coordinates(ctx context.Context, exclusive bool, username, storageRoot string, pgdb *db.Queries) {
 	storage := rakerServer.NewStorageHandler(rakerServer.Configuration.Storage, rakerServer.Configuration.Directories)
 
 	user, err := pgdb.UserGetByUsername(ctx, username)
@@ -110,26 +110,32 @@ func coordinates(ctx context.Context, username, storageRoot string, pgdb *db.Que
 		log.Fatal(err)
 	}
 
+	log.Debug(user.Categories)
+
 	count, err := pgdb.HistoryCount(ctx, db.HistoryCountParams{
 		PostTypes:      []db.PostType{db.PostTypeVsco},
 		Categories:     user.Categories,
 		UserCategories: user.Categories,
 		Username:       user.Username,
+		Exclusive:      exclusive,
+		PostOwners:     []string{},
 	})
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	pageSize := 50.0
+	pageSize := 30.0
 	pages := int(math.Ceil(float64(count) / pageSize))
-
+	log.Debugf("%d rows, %d pages of %d rows each", count, pages, int(pageSize))
 	for page := 0; page < pages; page++ {
 		histories, err := pgdb.HistoryGetPage(ctx, db.HistoryGetPageParams{
 			PostTypes:      []db.PostType{db.PostTypeVsco},
+			Exclusive:      exclusive,
+			PostOwners:     []string{},
 			Categories:     user.Categories,
 			UserCategories: user.Categories,
 			Username:       user.Username,
-			Page:           int32(page),
+			Page:           int32(page) * int32(pageSize),
 			PageSize:       int32(pageSize),
 		})
 		if err != nil {
@@ -139,14 +145,16 @@ func coordinates(ctx context.Context, username, storageRoot string, pgdb *db.Que
 			latitude, longitude := storage.LocationEXIF(user, history.PostType, history.PostOwner, history.Files[0])
 			if latitude == 0 && longitude == 0 {
 				continue
-			} else if history.Coordinates.Valid {
+			}
+			if history.Coordinates.Valid {
 				log.Debug(
 					"skipping",
 					"page", page,
-					"pageSize", pageSize,
+					"pageSize", int(pageSize),
 					"history", fmt.Sprintf("%s/%s/%s", history.PostType, history.PostOwner, history.Post),
 					"coordinates", history.Coordinates.Point.String(),
 				)
+				continue
 			}
 
 			err := pgdb.HistoryUpdateCoordinates(ctx, db.HistoryUpdateCoordinatesParams{
@@ -154,15 +162,23 @@ func coordinates(ctx context.Context, username, storageRoot string, pgdb *db.Que
 				Longitude: longitude,
 				PostType:  history.PostType,
 				PostOwner: history.PostOwner,
+				Post:      history.Post,
 				Username:  history.Username,
 			})
 
 			if err != nil {
-				log.Fatal(err, "page", page, "pageSize", pageSize, "history", history)
+				log.Error(err, "page", page, "pageSize", pageSize, "history", history)
+				continue
 			}
+			log.Info(
+				"writing",
+				"page", page,
+				"pageSize", int(pageSize),
+				"history", fmt.Sprintf("%s/%s/%s", history.PostType, history.PostOwner, history.Post),
+				"coordinates", fmt.Sprintf("(%f,%f)", latitude, longitude),
+			)
 		}
 	}
-
 }
 
 var rakerServer handlers.RakerServer
@@ -192,5 +208,6 @@ func main() {
 
 	// users(ctx, pgdb)
 	// histories(ctx, pgdb)
-	coordinates(ctx, rakerServer.Configuration.Database, rakerServer.Configuration.Storage, pgdb)
+	// coordinates(ctx, true, rakerServer.Configuration.Database, rakerServer.Configuration.Storage, pgdb)
+	coordinates(ctx, false, rakerServer.Configuration.Database, rakerServer.Configuration.Storage, pgdb)
 }
