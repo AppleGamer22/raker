@@ -7,7 +7,6 @@ package db
 
 import (
 	"context"
-	"database/sql"
 	"time"
 
 	"github.com/lib/pq"
@@ -56,7 +55,7 @@ VALUES (
 	$5::text[],
 	$6::text[])
 RETURNING
-	username, post_type, post_owner, post, post_date, files, categories, incognito, latitude, longitude
+	username, post_type, post_owner, post, post_date, files, categories, incognito, coordinates
 `
 
 type HistoryAddParams struct {
@@ -87,8 +86,7 @@ func (q *Queries) HistoryAdd(ctx context.Context, arg HistoryAddParams) (History
 		pq.Array(&i.Files),
 		pq.Array(&i.Categories),
 		&i.Incognito,
-		&i.Latitude,
-		&i.Longitude,
+		&i.Coordinates,
 	)
 	return i, err
 }
@@ -111,7 +109,7 @@ VALUES (
 	$6::text[],
 	$7::text[])
 RETURNING
-	username, post_type, post_owner, post, post_date, files, categories, incognito, latitude, longitude
+	username, post_type, post_owner, post, post_date, files, categories, incognito, coordinates
 `
 
 type HistoryAddFromArchiveParams struct {
@@ -144,8 +142,7 @@ func (q *Queries) HistoryAddFromArchive(ctx context.Context, arg HistoryAddFromA
 		pq.Array(&i.Files),
 		pq.Array(&i.Categories),
 		&i.Incognito,
-		&i.Latitude,
-		&i.Longitude,
+		&i.Coordinates,
 	)
 	return i, err
 }
@@ -229,7 +226,7 @@ func (q *Queries) HistoryCountByFile(ctx context.Context, arg HistoryCountByFile
 
 const historyGet = `-- name: HistoryGet :one
 SELECT
-	username, post_type, post_owner, post, post_date, files, categories, incognito, latitude, longitude
+	username, post_type, post_owner, post, post_date, files, categories, incognito, coordinates
 FROM
 	Histories
 WHERE
@@ -256,15 +253,14 @@ func (q *Queries) HistoryGet(ctx context.Context, arg HistoryGetParams) (History
 		pq.Array(&i.Files),
 		pq.Array(&i.Categories),
 		&i.Incognito,
-		&i.Latitude,
-		&i.Longitude,
+		&i.Coordinates,
 	)
 	return i, err
 }
 
 const historyGetByOwner = `-- name: HistoryGetByOwner :one
 SELECT
-	username, post_type, post_owner, post, post_date, files, categories, incognito, latitude, longitude
+	username, post_type, post_owner, post, post_date, files, categories, incognito, coordinates
 FROM
 	Histories
 WHERE
@@ -298,15 +294,14 @@ func (q *Queries) HistoryGetByOwner(ctx context.Context, arg HistoryGetByOwnerPa
 		pq.Array(&i.Files),
 		pq.Array(&i.Categories),
 		&i.Incognito,
-		&i.Latitude,
-		&i.Longitude,
+		&i.Coordinates,
 	)
 	return i, err
 }
 
 const historyGetPage = `-- name: HistoryGetPage :many
 SELECT DISTINCT
-	username, post_type, post_owner, post, post_date, files, categories, incognito, latitude, longitude
+	username, post_type, post_owner, post, post_date, files, categories, incognito, coordinates
 FROM
 	Histories
 WHERE
@@ -370,8 +365,7 @@ func (q *Queries) HistoryGetPage(ctx context.Context, arg HistoryGetPageParams) 
 			pq.Array(&i.Files),
 			pq.Array(&i.Categories),
 			&i.Incognito,
-			&i.Latitude,
-			&i.Longitude,
+			&i.Coordinates,
 		); err != nil {
 			return nil, err
 		}
@@ -487,7 +481,7 @@ WHERE
 	AND post_owner = $4::text
 	AND username = $5::text
 RETURNING
-	username, post_type, post_owner, post, post_date, files, categories, incognito, latitude, longitude
+	username, post_type, post_owner, post, post_date, files, categories, incognito, coordinates
 `
 
 type HistoryUpdateCategoriesParams struct {
@@ -516,8 +510,7 @@ func (q *Queries) HistoryUpdateCategories(ctx context.Context, arg HistoryUpdate
 		pq.Array(&i.Files),
 		pq.Array(&i.Categories),
 		&i.Incognito,
-		&i.Latitude,
-		&i.Longitude,
+		&i.Coordinates,
 	)
 	return i, err
 }
@@ -526,8 +519,7 @@ const historyUpdateCoordinates = `-- name: HistoryUpdateCoordinates :exec
 UPDATE
 	Histories
 SET
-	latitude = $1,
-	longitude = $2
+	coordinates = point($1, $2)
 WHERE
 	post_type = $3::post_type
 	AND post_owner = $4::text
@@ -535,11 +527,11 @@ WHERE
 `
 
 type HistoryUpdateCoordinatesParams struct {
-	Latitude  sql.NullString `json:"latitude"`
-	Longitude sql.NullString `json:"longitude"`
-	PostType  PostType       `json:"post_type"`
-	PostOwner string         `json:"post_owner"`
-	Username  string         `json:"username"`
+	Latitude  float64  `json:"latitude"`
+	Longitude float64  `json:"longitude"`
+	PostType  PostType `json:"post_type"`
+	PostOwner string   `json:"post_owner"`
+	Username  string   `json:"username"`
 }
 
 func (q *Queries) HistoryUpdateCoordinates(ctx context.Context, arg HistoryUpdateCoordinatesParams) error {
@@ -592,7 +584,7 @@ WHERE
 	AND post_owner = $5::text
 	AND username = $6::text
 RETURNING
-	username, post_type, post_owner, post, post_date, files, categories, incognito, latitude, longitude
+	username, post_type, post_owner, post, post_date, files, categories, incognito, coordinates
 `
 
 type UpdateHistoryDuplicateFileParams struct {
@@ -623,8 +615,7 @@ func (q *Queries) UpdateHistoryDuplicateFile(ctx context.Context, arg UpdateHist
 		pq.Array(&i.Files),
 		pq.Array(&i.Categories),
 		&i.Incognito,
-		&i.Latitude,
-		&i.Longitude,
+		&i.Coordinates,
 	)
 	return i, err
 }
@@ -640,7 +631,7 @@ WHERE
 	AND post_owner = $4::text
 	AND username = $5::text
 RETURNING
-	username, post_type, post_owner, post, post_date, files, categories, incognito, latitude, longitude
+	username, post_type, post_owner, post, post_date, files, categories, incognito, coordinates
 `
 
 type UpdateHistoryRemoveFileParams struct {
@@ -669,8 +660,7 @@ func (q *Queries) UpdateHistoryRemoveFile(ctx context.Context, arg UpdateHistory
 		pq.Array(&i.Files),
 		pq.Array(&i.Categories),
 		&i.Incognito,
-		&i.Latitude,
-		&i.Longitude,
+		&i.Coordinates,
 	)
 	return i, err
 }

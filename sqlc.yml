@@ -27,9 +27,8 @@ sql:
             go_type:
               import: github.com/google/uuid
               type: UUID
-          - db_type: numeric
-            go_type: float64
+          - db_type: point
             nullable: true
-          - db_type: decimal
-            go_type: float64
-            nullable: true
+            go_type:
+              import: github.com/AppleGamer22/raker/server/db/types
+              type: NullPoint

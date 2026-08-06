@@ -139,8 +139,14 @@ func coordinates(ctx context.Context, username, storageRoot string, pgdb *db.Que
 			latitude, longitude := storage.LocationEXIF(user, history.PostType, history.PostOwner, history.Files[0])
 			if latitude == 0 && longitude == 0 {
 				continue
-			} else if history.Latitude {
-				log.Debug("skipping", "page", page, "pageSize", pageSize, "history", history)
+			} else if history.Coordinates.Valid {
+				log.Debug(
+					"skipping",
+					"page", page,
+					"pageSize", pageSize,
+					"history", fmt.Sprintf("%s/%s/%s", history.PostType, history.PostOwner, history.Post),
+					"coordinates", history.Coordinates.Point.String(),
+				)
 			}
 
 			err := pgdb.HistoryUpdateCoordinates(ctx, db.HistoryUpdateCoordinatesParams{

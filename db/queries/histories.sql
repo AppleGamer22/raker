@@ -91,8 +91,7 @@ WHERE
 UPDATE
 	Histories
 SET
-	latitude = sqlc.arg(latitude),
-	longitude = sqlc.arg(longitude)
+	coordinates = point(sqlc.arg(latitude), sqlc.arg(longitude))
 WHERE
 	post_type = sqlc.arg(post_type)::post_type
 	AND post_owner = sqlc.arg(post_owner)::text
