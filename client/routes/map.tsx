@@ -11,7 +11,7 @@ function MapSearch() {
 	return (
 		<CardContent className="h-[calc(100dvh-2*var(--header-height))] overflow-hidden sm:h-[calc(100dvh-var(--header-height))]">
 			<Map className="rounded-xl">
-				<MapControls showCompass showLocate showZoom />
+				<MapControls showCompass showZoom />
 			</Map>
 		</CardContent>
 	);
