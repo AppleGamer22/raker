@@ -156,8 +156,8 @@ WHERE
 			AND categories = COALESCE(sqlc.slice(categories)::text[], ARRAY[]::text[]))
 		OR (NOT sqlc.arg(exclusive)::boolean
 			AND (categories && COALESCE(sqlc.slice(categories)::text[], ARRAY[]::text[])
-				OR (COALESCE(sqlc.slice(categories)::text[], ARRAY[]::text[]) = COALESCE(sqlc.slice(user_categories)::text[], ARRAY[]::text[]))
-				AND cardinality(categories) = 0)))
+				OR (COALESCE(sqlc.slice(categories)::text[], ARRAY[]::text[]) = COALESCE(sqlc.slice(user_categories)::text[], ARRAY[]::text[])
+					AND cardinality(categories) = 0))))
 	AND (cardinality(COALESCE(sqlc.slice(post_owners)::text[], ARRAY[]::text[])) = 0
 		OR EXISTS (
 			SELECT
@@ -182,8 +182,8 @@ WHERE
 			AND categories = COALESCE(sqlc.slice(categories)::text[], ARRAY[]::text[]))
 		OR (NOT sqlc.arg(exclusive)::boolean
 			AND (categories && COALESCE(sqlc.slice(categories)::text[], ARRAY[]::text[])
-				OR (COALESCE(sqlc.slice(categories)::text[], ARRAY[]::text[]) = COALESCE(sqlc.slice(user_categories)::text[], ARRAY[]::text[]))
-				AND cardinality(categories) = 0)))
+				OR (COALESCE(sqlc.slice(categories)::text[], ARRAY[]::text[]) = COALESCE(sqlc.slice(user_categories)::text[], ARRAY[]::text[])
+					AND cardinality(categories) = 0))))
 	AND (cardinality(COALESCE(sqlc.slice(post_owners)::text[], ARRAY[]::text[])) = 0
 		OR EXISTS (
 			SELECT
@@ -210,8 +210,8 @@ WHERE
 			AND categories = COALESCE(sqlc.slice(categories)::text[], ARRAY[]::text[]))
 		OR (NOT sqlc.arg(exclusive)::boolean
 			AND (categories && COALESCE(sqlc.slice(categories)::text[], ARRAY[]::text[])
-				OR (COALESCE(sqlc.slice(categories)::text[], ARRAY[]::text[]) = COALESCE(sqlc.slice(user_categories)::text[], ARRAY[]::text[]))
-				AND cardinality(categories) = 0)))
+				OR (COALESCE(sqlc.slice(categories)::text[], ARRAY[]::text[]) = COALESCE(sqlc.slice(user_categories)::text[], ARRAY[]::text[])
+					AND cardinality(categories) = 0))))
 	AND post_owner LIKE FORMAT('%%%s%%', sqlc.arg(post_owner)::text)
 	AND username = sqlc.arg(username)::text;
 

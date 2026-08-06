@@ -158,8 +158,8 @@ WHERE
 			AND categories = COALESCE($3::text[], ARRAY[]::text[]))
 		OR (NOT $2::boolean
 			AND (categories && COALESCE($3::text[], ARRAY[]::text[])
-				OR (COALESCE($3::text[], ARRAY[]::text[]) = COALESCE($4::text[], ARRAY[]::text[]))
-				AND cardinality(categories) = 0)))
+				OR (COALESCE($3::text[], ARRAY[]::text[]) = COALESCE($4::text[], ARRAY[]::text[])
+					AND cardinality(categories) = 0))))
 	AND (cardinality(COALESCE($5::text[], ARRAY[]::text[])) = 0
 		OR EXISTS (
 			SELECT
@@ -311,8 +311,8 @@ WHERE
 			AND categories = COALESCE($3::text[], ARRAY[]::text[]))
 		OR (NOT $2::boolean
 			AND (categories && COALESCE($3::text[], ARRAY[]::text[])
-				OR (COALESCE($3::text[], ARRAY[]::text[]) = COALESCE($4::text[], ARRAY[]::text[]))
-				AND cardinality(categories) = 0)))
+				OR (COALESCE($3::text[], ARRAY[]::text[]) = COALESCE($4::text[], ARRAY[]::text[])
+					AND cardinality(categories) = 0))))
 	AND (cardinality(COALESCE($5::text[], ARRAY[]::text[])) = 0
 		OR EXISTS (
 			SELECT
@@ -398,8 +398,8 @@ WHERE
 			AND categories = COALESCE($3::text[], ARRAY[]::text[]))
 		OR (NOT $2::boolean
 			AND (categories && COALESCE($3::text[], ARRAY[]::text[])
-				OR (COALESCE($3::text[], ARRAY[]::text[]) = COALESCE($4::text[], ARRAY[]::text[]))
-				AND cardinality(categories) = 0)))
+				OR (COALESCE($3::text[], ARRAY[]::text[]) = COALESCE($4::text[], ARRAY[]::text[])
+					AND cardinality(categories) = 0))))
 	AND post_owner LIKE FORMAT('%%%s%%', $5::text)
 	AND username = $6::text
 `

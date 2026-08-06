@@ -110,7 +110,7 @@ func coordinates(ctx context.Context, exclusive bool, username, storageRoot stri
 		log.Fatal(err)
 	}
 
-	log.Debug(user.Categories)
+	// log.Debug(user.Categories)
 
 	count, err := pgdb.HistoryCount(ctx, db.HistoryCountParams{
 		PostTypes:      []db.PostType{db.PostTypeVsco},
