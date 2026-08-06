@@ -8,13 +8,20 @@ INSERT INTO Histories(
 	files,
 	categories)
 VALUES (
-	sqlc.arg(username)::text,
-	sqlc.arg(post_type)::post_type,
-	sqlc.arg(post_owner)::text,
-	sqlc.arg(post)::text,
-	sqlc.arg(post_date)::TIMESTAMPTZ,
-	sqlc.arg(files)::text[],
-	sqlc.arg(categories)::text[])
+	sqlc.arg(
+		username) ::text,
+	sqlc.arg(
+		post_type) ::post_type,
+	sqlc.arg(
+		post_owner) ::text,
+	sqlc.arg(
+		post) ::text,
+	sqlc.arg(
+		post_date) ::timestamptz,
+	sqlc.arg(
+		files) ::text[],
+	sqlc.arg(
+		categories) ::text[])
 RETURNING
 	*;
 
@@ -26,15 +33,34 @@ INSERT INTO Histories(
 	post,
 	post_date,
 	files,
-	categories)
-VALUES (
-	sqlc.arg(username)::text,
-	sqlc.arg(post_type)::post_type,
-	sqlc.arg(post_owner)::text,
-	sqlc.arg(post)::text,
-	NOW(),
-	sqlc.arg(files)::text[],
-	sqlc.arg(categories)::text[])
+	categories,
+	coordinates)
+VALUES
+	(
+		sqlc.arg(
+		username) ::text,
+		sqlc.arg(
+		post_type) ::post_type,
+		sqlc.arg(
+		post_owner) ::text,
+		sqlc.arg(
+		post) ::text,
+		NOW(),
+		sqlc.arg(
+		files) ::text[],
+		sqlc.arg(
+		categories) ::text[]),
+(
+		CASE WHEN sqlc.arg(
+	latitude) != 0
+			AND sqlc.arg(
+		longitude) != 0 THEN
+			point(
+				sqlc.arg(latitude), sqlc.arg(
+		longitude))
+		ELSE
+			NULL
+		END)
 RETURNING
 	*;
 

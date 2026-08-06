@@ -9,6 +9,7 @@ import (
 	"connectrpc.com/connect"
 	v1 "github.com/AppleGamer22/raker/server/buf/proto/raker/v1"
 	"github.com/AppleGamer22/raker/server/db"
+	"google.golang.org/genproto/googleapis/type/latlng"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -51,7 +52,7 @@ func PostTypePB2DB(pt v1.PostType) db.PostType {
 }
 
 func HistoryToScrapeResponse(user db.User, history db.History) *v1.ScrapeResponse {
-	return resolveVSCOMetadata(user, &v1.ScrapeResponse{
+	return &v1.ScrapeResponse{
 		PostOwner:  history.PostOwner,
 		Post:       history.Post,
 		Files:      history.Files,
@@ -59,7 +60,16 @@ func HistoryToScrapeResponse(user db.User, history db.History) *v1.ScrapeRespons
 		Categories: history.Categories,
 		Incognito:  history.Incognito,
 		PostType:   PostTypeDB2PB(history.PostType),
-	})
+		Coordinates: func() *latlng.LatLng {
+			if !history.Coordinates.Valid || (history.Coordinates.Point.X == 0 && history.Coordinates.Point.Y == 0) {
+				return nil
+			}
+			return &latlng.LatLng{
+				Latitude:  history.Coordinates.Point.X,
+				Longitude: history.Coordinates.Point.Y,
+			}
+		}(),
+	}
 }
 
 // SearchHistory implements [v1connect.RakerServerHandler].

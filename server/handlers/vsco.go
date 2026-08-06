@@ -17,18 +17,18 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func resolveVSCOMetadata(user db.User, result *v1.ScrapeResponse) *v1.ScrapeResponse {
-	if result.PostType == v1.PostType_VSCO && len(result.Files) == 1 {
-		latitude, longitude := StorageHandler.LocationEXIF(user, db.PostTypeVsco, result.PostOwner, result.Files[0])
-		if latitude != 0 && longitude != 0 {
-			result.Coordinates = &latlng.LatLng{
-				Latitude:  latitude,
-				Longitude: longitude,
-			}
-		}
-	}
-	return result
-}
+// func resolveVSCOMetadata(user db.User, result *v1.ScrapeResponse) *v1.ScrapeResponse {
+// 	if result.PostType == v1.PostType_VSCO && len(result.Files) == 1 {
+// 		latitude, longitude := StorageHandler.LocationEXIF(user, db.PostTypeVsco, result.PostOwner, result.Files[0])
+// 		if latitude != 0 && longitude != 0 {
+// 			result.Coordinates = &latlng.LatLng{
+// 				Latitude:  latitude,
+// 				Longitude: longitude,
+// 			}
+// 		}
+// 	}
+// 	return result
+// }
 
 // ScrapeVSCO implements [v1connect.RakerServerHandler].
 func (server *RakerServer) ScrapeVSCO(ctx context.Context, request *v1.BinaryScrapeRequest) (*v1.ScrapeResponse, error) {
@@ -43,7 +43,7 @@ func (server *RakerServer) ScrapeVSCO(ctx context.Context, request *v1.BinaryScr
 		Username: user.Username,
 	})
 	if err == nil {
-		return resolveVSCOMetadata(user, &v1.ScrapeResponse{
+		return &v1.ScrapeResponse{
 			PostType:   v1.PostType_VSCO,
 			PostOwner:  history.PostOwner,
 			Post:       history.Post,
@@ -51,7 +51,16 @@ func (server *RakerServer) ScrapeVSCO(ctx context.Context, request *v1.BinaryScr
 			Files:      history.Files,
 			Categories: history.Categories,
 			Incognito:  history.Incognito,
-		}), nil
+			Coordinates: func() *latlng.LatLng {
+				if !history.Coordinates.Valid || (history.Coordinates.Point.X == 0 && history.Coordinates.Point.Y == 0) {
+					return nil
+				}
+				return &latlng.LatLng{
+					Latitude:  history.Coordinates.Point.X,
+					Longitude: history.Coordinates.Point.Y,
+				}
+			}(),
+		}, nil
 	}
 
 	URLs, username, cookies, err := shared.VSCO(request.Owner, request.Post)
@@ -89,6 +98,8 @@ func (server *RakerServer) ScrapeVSCO(ctx context.Context, request *v1.BinaryScr
 		return nil, connect.NewError(connect.CodeInternal, errors.New("no files could be saved"))
 	}
 
+	latitude, longitude := StorageHandler.LocationEXIF(user, db.PostTypeVsco, username, localURLs[0])
+
 	history, err2 = server.DBClient.HistoryAdd(context.Background(), db.HistoryAddParams{
 		Username:   user.Username,
 		PostType:   db.PostTypeVsco,
@@ -96,13 +107,15 @@ func (server *RakerServer) ScrapeVSCO(ctx context.Context, request *v1.BinaryScr
 		Post:       request.Post,
 		Files:      localURLs,
 		Categories: []string{},
+		Latitude:   latitude,
+		Longitude:  longitude,
 	})
 
 	if err2 != nil {
 		return nil, connect.NewError(connect.CodeInternal, errors.Join(err, err2))
 	}
 
-	return resolveVSCOMetadata(user, &v1.ScrapeResponse{
+	return &v1.ScrapeResponse{
 		PostType:   v1.PostType_VSCO,
 		PostOwner:  history.PostOwner,
 		Post:       history.Post,
@@ -110,6 +123,15 @@ func (server *RakerServer) ScrapeVSCO(ctx context.Context, request *v1.BinaryScr
 		Files:      history.Files,
 		Categories: history.Categories,
 		Incognito:  history.Incognito,
-	}), nil
+		Coordinates: func() *latlng.LatLng {
+			if !history.Coordinates.Valid || (history.Coordinates.Point.X == 0 && history.Coordinates.Point.Y == 0) {
+				return nil
+			}
+			return &latlng.LatLng{
+				Latitude:  history.Coordinates.Point.X,
+				Longitude: history.Coordinates.Point.Y,
+			}
+		}(),
+	}, nil
 
 }

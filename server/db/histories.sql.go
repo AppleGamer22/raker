@@ -45,26 +45,38 @@ INSERT INTO Histories(
 	post,
 	post_date,
 	files,
-	categories)
-VALUES (
-	$1::text,
-	$2::post_type,
-	$3::text,
-	$4::text,
-	NOW(),
-	$5::text[],
-	$6::text[])
+	categories,
+	coordinates)
+VALUES
+	(
+		$1 ::text,
+		$2 ::post_type,
+		$3 ::text,
+		$4 ::text,
+		NOW(),
+		$5 ::text[],
+		$6 ::text[]),
+(
+		CASE WHEN $7 != 0
+			AND $8 != 0 THEN
+			point(
+				$7, $8)
+		ELSE
+			NULL
+		END)
 RETURNING
 	username, post_type, post_owner, post, post_date, files, categories, incognito, coordinates
 `
 
 type HistoryAddParams struct {
-	Username   string   `json:"username"`
-	PostType   PostType `json:"post_type"`
-	PostOwner  string   `json:"post_owner"`
-	Post       string   `json:"post"`
-	Files      []string `json:"files"`
-	Categories []string `json:"categories"`
+	Username   string      `json:"username"`
+	PostType   PostType    `json:"post_type"`
+	PostOwner  string      `json:"post_owner"`
+	Post       string      `json:"post"`
+	Files      []string    `json:"files"`
+	Categories []string    `json:"categories"`
+	Latitude   interface{} `json:"latitude"`
+	Longitude  interface{} `json:"longitude"`
 }
 
 func (q *Queries) HistoryAdd(ctx context.Context, arg HistoryAddParams) (History, error) {
@@ -75,6 +87,8 @@ func (q *Queries) HistoryAdd(ctx context.Context, arg HistoryAddParams) (History
 		arg.Post,
 		pq.Array(arg.Files),
 		pq.Array(arg.Categories),
+		arg.Latitude,
+		arg.Longitude,
 	)
 	var i History
 	err := row.Scan(
@@ -101,13 +115,13 @@ INSERT INTO Histories(
 	files,
 	categories)
 VALUES (
-	$1::text,
-	$2::post_type,
-	$3::text,
-	$4::text,
-	$5::TIMESTAMPTZ,
-	$6::text[],
-	$7::text[])
+	$1 ::text,
+	$2 ::post_type,
+	$3 ::text,
+	$4 ::text,
+	$5 ::timestamptz,
+	$6 ::text[],
+	$7 ::text[])
 RETURNING
 	username, post_type, post_owner, post, post_date, files, categories, incognito, coordinates
 `
