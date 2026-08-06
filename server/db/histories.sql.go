@@ -47,36 +47,35 @@ INSERT INTO Histories(
 	files,
 	categories,
 	coordinates)
-VALUES
-	(
-		$1 ::text,
-		$2 ::post_type,
-		$3 ::text,
-		$4 ::text,
-		NOW(),
-		$5 ::text[],
-		$6 ::text[]),
+VALUES (
+	$1 ::text,
+	$2 ::post_type,
+	$3 ::text,
+	$4 ::text,
+	NOW(),
+	$5 ::text[],
+	$6 ::text[],
 (
-		CASE WHEN $7 != 0
-			AND $8 != 0 THEN
+		CASE WHEN $7::DOUBLE PRECISION != 0
+			AND $8::DOUBLE PRECISION != 0 THEN
 			point(
-				$7, $8)
+				$7::DOUBLE PRECISION, $8::DOUBLE PRECISION)
 		ELSE
 			NULL
-		END)
+		END))
 RETURNING
 	username, post_type, post_owner, post, post_date, files, categories, incognito, coordinates
 `
 
 type HistoryAddParams struct {
-	Username   string      `json:"username"`
-	PostType   PostType    `json:"post_type"`
-	PostOwner  string      `json:"post_owner"`
-	Post       string      `json:"post"`
-	Files      []string    `json:"files"`
-	Categories []string    `json:"categories"`
-	Latitude   interface{} `json:"latitude"`
-	Longitude  interface{} `json:"longitude"`
+	Username   string   `json:"username"`
+	PostType   PostType `json:"post_type"`
+	PostOwner  string   `json:"post_owner"`
+	Post       string   `json:"post"`
+	Files      []string `json:"files"`
+	Categories []string `json:"categories"`
+	Latitude   float64  `json:"latitude"`
+	Longitude  float64  `json:"longitude"`
 }
 
 func (q *Queries) HistoryAdd(ctx context.Context, arg HistoryAddParams) (History, error) {

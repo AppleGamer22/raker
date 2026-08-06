@@ -112,6 +112,7 @@ func (server *RakerServer) ScrapeVSCO(ctx context.Context, request *v1.BinaryScr
 	})
 
 	if err2 != nil {
+		log.Error(err)
 		return nil, connect.NewError(connect.CodeInternal, errors.Join(err, err2))
 	}
 

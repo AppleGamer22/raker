@@ -35,32 +35,29 @@ INSERT INTO Histories(
 	files,
 	categories,
 	coordinates)
-VALUES
-	(
-		sqlc.arg(
+VALUES (
+	sqlc.arg(
 		username) ::text,
-		sqlc.arg(
+	sqlc.arg(
 		post_type) ::post_type,
-		sqlc.arg(
+	sqlc.arg(
 		post_owner) ::text,
-		sqlc.arg(
+	sqlc.arg(
 		post) ::text,
-		NOW(),
-		sqlc.arg(
+	NOW(),
+	sqlc.arg(
 		files) ::text[],
-		sqlc.arg(
-		categories) ::text[]),
+	sqlc.arg(categories) ::text[],
 (
 		CASE WHEN sqlc.arg(
-	latitude) != 0
+	latitude)::DOUBLE PRECISION != 0
 			AND sqlc.arg(
-		longitude) != 0 THEN
+		longitude)::DOUBLE PRECISION != 0 THEN
 			point(
-				sqlc.arg(latitude), sqlc.arg(
-		longitude))
+				sqlc.arg(latitude)::DOUBLE PRECISION, sqlc.arg(longitude)::DOUBLE PRECISION)
 		ELSE
 			NULL
-		END)
+		END))
 RETURNING
 	*;
 
