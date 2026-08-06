@@ -57,6 +57,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.historyUpdateCategoriesStmt, err = db.PrepareContext(ctx, historyUpdateCategories); err != nil {
 		return nil, fmt.Errorf("error preparing query HistoryUpdateCategories: %w", err)
 	}
+	if q.historyUpdateCoordinatesStmt, err = db.PrepareContext(ctx, historyUpdateCoordinates); err != nil {
+		return nil, fmt.Errorf("error preparing query HistoryUpdateCoordinates: %w", err)
+	}
 	if q.historyUpdateOwnerStmt, err = db.PrepareContext(ctx, historyUpdateOwner); err != nil {
 		return nil, fmt.Errorf("error preparing query HistoryUpdateOwner: %w", err)
 	}
@@ -160,6 +163,11 @@ func (q *Queries) Close() error {
 	if q.historyUpdateCategoriesStmt != nil {
 		if cerr := q.historyUpdateCategoriesStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing historyUpdateCategoriesStmt: %w", cerr)
+		}
+	}
+	if q.historyUpdateCoordinatesStmt != nil {
+		if cerr := q.historyUpdateCoordinatesStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing historyUpdateCoordinatesStmt: %w", cerr)
 		}
 	}
 	if q.historyUpdateOwnerStmt != nil {
@@ -287,6 +295,7 @@ type Queries struct {
 	historyOwnersStmt              *sql.Stmt
 	historyRemoveStmt              *sql.Stmt
 	historyUpdateCategoriesStmt    *sql.Stmt
+	historyUpdateCoordinatesStmt   *sql.Stmt
 	historyUpdateOwnerStmt         *sql.Stmt
 	passkeyDeleteStmt              *sql.Stmt
 	passkeyRenameStmt              *sql.Stmt
@@ -319,6 +328,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		historyOwnersStmt:              q.historyOwnersStmt,
 		historyRemoveStmt:              q.historyRemoveStmt,
 		historyUpdateCategoriesStmt:    q.historyUpdateCategoriesStmt,
+		historyUpdateCoordinatesStmt:   q.historyUpdateCoordinatesStmt,
 		historyUpdateOwnerStmt:         q.historyUpdateOwnerStmt,
 		passkeyDeleteStmt:              q.passkeyDeleteStmt,
 		passkeyRenameStmt:              q.passkeyRenameStmt,

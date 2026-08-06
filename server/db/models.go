@@ -5,6 +5,7 @@
 package db
 
 import (
+	"database/sql"
 	"database/sql/driver"
 	"fmt"
 	"time"
@@ -125,14 +126,16 @@ func (e PostType) Valid() bool {
 }
 
 type History struct {
-	Username   string    `json:"username"`
-	PostType   PostType  `json:"post_type"`
-	PostOwner  string    `json:"post_owner"`
-	Post       string    `json:"post"`
-	PostDate   time.Time `json:"post_date"`
-	Files      []string  `json:"files"`
-	Categories []string  `json:"categories"`
-	Incognito  bool      `json:"incognito"`
+	Username   string         `json:"username"`
+	PostType   PostType       `json:"post_type"`
+	PostOwner  string         `json:"post_owner"`
+	Post       string         `json:"post"`
+	PostDate   time.Time      `json:"post_date"`
+	Files      []string       `json:"files"`
+	Categories []string       `json:"categories"`
+	Incognito  bool           `json:"incognito"`
+	Latitude   sql.NullString `json:"latitude"`
+	Longitude  sql.NullString `json:"longitude"`
 }
 
 type Owner struct {

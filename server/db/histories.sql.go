@@ -7,28 +7,24 @@ package db
 
 import (
 	"context"
+	"database/sql"
 	"time"
 
 	"github.com/lib/pq"
 )
 
 const historiesCategoryRename = `-- name: HistoriesCategoryRename :exec
-UPDATE Histories
-SET categories = (
-		SELECT array_agg(
-				c
-				ORDER BY c
-			)
-		FROM unnest(
-				array_replace(
-					categories,
-					$1::text,
-					$2::text
-				)
-			) AS c
-	)
-WHERE username = $3::text
-	AND $1::text = ANY(categories)
+UPDATE
+	Histories
+SET
+	categories =(
+		SELECT
+			array_agg(c ORDER BY c)
+		FROM
+			unnest(array_replace(categories, $1::text, $2::text)) AS c)
+WHERE
+	username = $3::text
+	AND $1::text = ANY (categories)
 `
 
 type HistoriesCategoryRenameParams struct {
@@ -44,24 +40,23 @@ func (q *Queries) HistoriesCategoryRename(ctx context.Context, arg HistoriesCate
 
 const historyAdd = `-- name: HistoryAdd :one
 INSERT INTO Histories(
-		username,
-		post_type,
-		post_owner,
-		post,
-		post_date,
-		files,
-		categories
-	)
+	username,
+	post_type,
+	post_owner,
+	post,
+	post_date,
+	files,
+	categories)
 VALUES (
-		$1::text,
-		$2::post_type,
-		$3::text,
-		$4::text,
-		NOW(),
-		$5::text [],
-		$6::text []
-	)
-RETURNING username, post_type, post_owner, post, post_date, files, categories, incognito
+	$1::text,
+	$2::post_type,
+	$3::text,
+	$4::text,
+	NOW(),
+	$5::text[],
+	$6::text[])
+RETURNING
+	username, post_type, post_owner, post, post_date, files, categories, incognito, latitude, longitude
 `
 
 type HistoryAddParams struct {
@@ -92,30 +87,31 @@ func (q *Queries) HistoryAdd(ctx context.Context, arg HistoryAddParams) (History
 		pq.Array(&i.Files),
 		pq.Array(&i.Categories),
 		&i.Incognito,
+		&i.Latitude,
+		&i.Longitude,
 	)
 	return i, err
 }
 
 const historyAddFromArchive = `-- name: HistoryAddFromArchive :one
 INSERT INTO Histories(
-		username,
-		post_type,
-		post_owner,
-		post,
-		post_date,
-		files,
-		categories
-	)
+	username,
+	post_type,
+	post_owner,
+	post,
+	post_date,
+	files,
+	categories)
 VALUES (
-		$1::text,
-		$2::post_type,
-		$3::text,
-		$4::text,
-		$5::TIMESTAMPTZ,
-		$6::text [],
-		$7::text []
-	)
-RETURNING username, post_type, post_owner, post, post_date, files, categories, incognito
+	$1::text,
+	$2::post_type,
+	$3::text,
+	$4::text,
+	$5::TIMESTAMPTZ,
+	$6::text[],
+	$7::text[])
+RETURNING
+	username, post_type, post_owner, post, post_date, files, categories, incognito, latitude, longitude
 `
 
 type HistoryAddFromArchiveParams struct {
@@ -148,32 +144,32 @@ func (q *Queries) HistoryAddFromArchive(ctx context.Context, arg HistoryAddFromA
 		pq.Array(&i.Files),
 		pq.Array(&i.Categories),
 		&i.Incognito,
+		&i.Latitude,
+		&i.Longitude,
 	)
 	return i, err
 }
 
 const historyCount = `-- name: HistoryCount :one
-select count(*)
-from Histories
-WHERE post_type = ANY ($1::post_type [])
-	AND (
-		(
-			$2::boolean
-			and categories = COALESCE($3::text[], ARRAY[]::text[])
-		)
-		or (
-			not $2::boolean
-			and (
-				categories && COALESCE($3::text[], ARRAY[]::text[])
-				or COALESCE($3::text[], ARRAY[]::text[]) = COALESCE($4::text[], ARRAY[]::text[])
-			)
-		)
-	)
-	AND (cardinality(COALESCE($5::text[], ARRAY[]::text[])) = 0 or EXISTS(
-		SELECT 1
-		FROM unnest($5::text[]) AS owner_filter(owner)
-		WHERE Histories.post_owner LIKE FORMAT('%%%s%%', owner_filter.owner)
-	))
+SELECT
+	count(*)
+FROM
+	Histories
+WHERE
+	post_type = ANY ($1::post_type[])
+	AND (($2::boolean
+			AND categories = COALESCE($3::text[], ARRAY[]::text[]))
+		OR (NOT $2::boolean
+			AND (categories && COALESCE($3::text[], ARRAY[]::text[])
+				OR COALESCE($3::text[], ARRAY[]::text[]) = COALESCE($4::text[], ARRAY[]::text[]))))
+	AND (cardinality(COALESCE($5::text[], ARRAY[]::text[])) = 0
+		OR EXISTS (
+			SELECT
+				1
+			FROM
+				unnest($5::text[]) AS owner_filter(OWNER)
+			WHERE
+				Histories.post_owner LIKE FORMAT('%%%s%%', owner_filter.owner)))
 	AND username = $6::text
 `
 
@@ -201,11 +197,14 @@ func (q *Queries) HistoryCount(ctx context.Context, arg HistoryCountParams) (int
 }
 
 const historyCountByFile = `-- name: HistoryCountByFile :one
-SELECT count(*)
-FROM Histories
-WHERE post_type = $1::post_type
+SELECT
+	count(*)
+FROM
+	Histories
+WHERE
+	post_type = $1::post_type
 	AND post_owner = $2::text
-	AND $3::text = ANY(files)
+	AND $3::text = ANY (files)
 	AND username = $4::text
 `
 
@@ -229,9 +228,12 @@ func (q *Queries) HistoryCountByFile(ctx context.Context, arg HistoryCountByFile
 }
 
 const historyGet = `-- name: HistoryGet :one
-SELECT username, post_type, post_owner, post, post_date, files, categories, incognito
-FROM Histories
-WHERE post_type = $1::post_type
+SELECT
+	username, post_type, post_owner, post, post_date, files, categories, incognito, latitude, longitude
+FROM
+	Histories
+WHERE
+	post_type = $1::post_type
 	AND post = $2::text
 	AND username = $3::text
 `
@@ -254,14 +256,19 @@ func (q *Queries) HistoryGet(ctx context.Context, arg HistoryGetParams) (History
 		pq.Array(&i.Files),
 		pq.Array(&i.Categories),
 		&i.Incognito,
+		&i.Latitude,
+		&i.Longitude,
 	)
 	return i, err
 }
 
 const historyGetByOwner = `-- name: HistoryGetByOwner :one
-SELECT username, post_type, post_owner, post, post_date, files, categories, incognito
-FROM Histories
-WHERE post_type = $1::post_type
+SELECT
+	username, post_type, post_owner, post, post_date, files, categories, incognito, latitude, longitude
+FROM
+	Histories
+WHERE
+	post_type = $1::post_type
 	AND post_owner = $2::text
 	AND post = $3::text
 	AND username = $4::text
@@ -291,35 +298,35 @@ func (q *Queries) HistoryGetByOwner(ctx context.Context, arg HistoryGetByOwnerPa
 		pq.Array(&i.Files),
 		pq.Array(&i.Categories),
 		&i.Incognito,
+		&i.Latitude,
+		&i.Longitude,
 	)
 	return i, err
 }
 
 const historyGetPage = `-- name: HistoryGetPage :many
-
-SELECT DISTINCT username, post_type, post_owner, post, post_date, files, categories, incognito
-FROM Histories
-WHERE post_type = ANY ($1::post_type [])
-	AND (
-		(
-			$2::boolean
-			and categories = COALESCE($3::text[], ARRAY[]::text[])
-		)
-		or (
-			not $2::boolean
-			and (
-				categories && COALESCE($3::text[], ARRAY[]::text[])
-				or COALESCE($3::text[], ARRAY[]::text[]) = COALESCE($4::text[], ARRAY[]::text[])
-			)
-		)
-	)
-	AND (cardinality(COALESCE($5::text[], ARRAY[]::text[])) = 0 or EXISTS(
-		SELECT 1
-		FROM unnest($5::text[]) AS owner_filter(owner)
-		WHERE Histories.post_owner LIKE FORMAT('%%%s%%', owner_filter.owner)
-	))
+SELECT DISTINCT
+	username, post_type, post_owner, post, post_date, files, categories, incognito, latitude, longitude
+FROM
+	Histories
+WHERE
+	post_type = ANY ($1::post_type[])
+	AND (($2::boolean
+			AND categories = COALESCE($3::text[], ARRAY[]::text[]))
+		OR (NOT $2::boolean
+			AND (categories && COALESCE($3::text[], ARRAY[]::text[])
+				OR COALESCE($3::text[], ARRAY[]::text[]) = COALESCE($4::text[], ARRAY[]::text[]))))
+	AND (cardinality(COALESCE($5::text[], ARRAY[]::text[])) = 0
+		OR EXISTS (
+			SELECT
+				1
+			FROM
+				unnest($5::text[]) AS owner_filter(OWNER)
+			WHERE
+				Histories.post_owner LIKE FORMAT('%%%s%%', owner_filter.owner)))
 	AND username = $6::text
-order by post_date DESC
+ORDER BY
+	post_date DESC
 LIMIT $8::int OFFSET $7::int
 `
 
@@ -363,6 +370,8 @@ func (q *Queries) HistoryGetPage(ctx context.Context, arg HistoryGetPageParams) 
 			pq.Array(&i.Files),
 			pq.Array(&i.Categories),
 			&i.Incognito,
+			&i.Latitude,
+			&i.Longitude,
 		); err != nil {
 			return nil, err
 		}
@@ -378,27 +387,22 @@ func (q *Queries) HistoryGetPage(ctx context.Context, arg HistoryGetPageParams) 
 }
 
 const historyOwners = `-- name: HistoryOwners :many
-select distinct
-post_owner,
-case 
-	when post_type in ('instagram', 'highlight', 'story') then 'instagram'::post_type
-	else post_type::post_type
-end as post_type
-from Histories
-WHERE post_type = ANY ($1::post_type [])
-	AND (
-		(
-			$2::boolean
-			and categories = COALESCE($3::text[], ARRAY[]::text[])
-		)
-		or (
-			not $2::boolean
-			and (
-				categories && COALESCE($3::text[], ARRAY[]::text[])
-				or COALESCE($3::text[], ARRAY[]::text[]) = COALESCE($4::text[], ARRAY[]::text[])
-			)
-		)
-	)
+SELECT DISTINCT
+	post_owner,
+	CASE WHEN post_type IN ('instagram', 'highlight', 'story') THEN
+		'instagram'::post_type
+	ELSE
+		post_type::post_type
+	END AS post_type
+FROM
+	Histories
+WHERE
+	post_type = ANY ($1::post_type[])
+	AND (($2::boolean
+			AND categories = COALESCE($3::text[], ARRAY[]::text[]))
+		OR (NOT $2::boolean
+			AND (categories && COALESCE($3::text[], ARRAY[]::text[])
+				OR COALESCE($3::text[], ARRAY[]::text[]) = COALESCE($4::text[], ARRAY[]::text[]))))
 	AND post_owner LIKE FORMAT('%%%s%%', $5::text)
 	AND username = $6::text
 `
@@ -473,13 +477,17 @@ func (q *Queries) HistoryRemove(ctx context.Context, arg HistoryRemoveParams) er
 }
 
 const historyUpdateCategories = `-- name: HistoryUpdateCategories :one
-UPDATE Histories
-SET categories = $1::text []
-WHERE post_type = $2::post_type
+UPDATE
+	Histories
+SET
+	categories = $1::text[]
+WHERE
+	post_type = $2::post_type
 	AND post = $3::text
 	AND post_owner = $4::text
 	AND username = $5::text
-RETURNING username, post_type, post_owner, post, post_date, files, categories, incognito
+RETURNING
+	username, post_type, post_owner, post, post_date, files, categories, incognito, latitude, longitude
 `
 
 type HistoryUpdateCategoriesParams struct {
@@ -508,14 +516,50 @@ func (q *Queries) HistoryUpdateCategories(ctx context.Context, arg HistoryUpdate
 		pq.Array(&i.Files),
 		pq.Array(&i.Categories),
 		&i.Incognito,
+		&i.Latitude,
+		&i.Longitude,
 	)
 	return i, err
 }
 
+const historyUpdateCoordinates = `-- name: HistoryUpdateCoordinates :exec
+UPDATE
+	Histories
+SET
+	latitude = $1,
+	longitude = $2
+WHERE
+	post_type = $3::post_type
+	AND post_owner = $4::text
+	AND username = $5::text
+`
+
+type HistoryUpdateCoordinatesParams struct {
+	Latitude  sql.NullString `json:"latitude"`
+	Longitude sql.NullString `json:"longitude"`
+	PostType  PostType       `json:"post_type"`
+	PostOwner string         `json:"post_owner"`
+	Username  string         `json:"username"`
+}
+
+func (q *Queries) HistoryUpdateCoordinates(ctx context.Context, arg HistoryUpdateCoordinatesParams) error {
+	_, err := q.exec(ctx, q.historyUpdateCoordinatesStmt, historyUpdateCoordinates,
+		arg.Latitude,
+		arg.Longitude,
+		arg.PostType,
+		arg.PostOwner,
+		arg.Username,
+	)
+	return err
+}
+
 const historyUpdateOwner = `-- name: HistoryUpdateOwner :exec
-UPDATE Histories
-SET post_owner = $1::text
-WHERE post_type = $2::post_type
+UPDATE
+	Histories
+SET
+	post_owner = $1::text
+WHERE
+	post_type = $2::post_type
 	AND post_owner = $3::text
 	AND username = $4::text
 `
@@ -538,15 +582,17 @@ func (q *Queries) HistoryUpdateOwner(ctx context.Context, arg HistoryUpdateOwner
 }
 
 const updateHistoryDuplicateFile = `-- name: UpdateHistoryDuplicateFile :one
-UPDATE Histories
-SET files = files[1 : array_position(files, $1::text)]
-	|| ARRAY[$2::text]
-	|| files[array_position(files, $1::text) + 1 : array_length(files, 1)]
-WHERE post_type = $3::post_type
+UPDATE
+	Histories
+SET
+	files = files[1 : array_position(files, $1::text)] || ARRAY[$2::text] || files[array_position(files, $1::text) + 1 : array_length(files, 1)]
+WHERE
+	post_type = $3::post_type
 	AND post = $4::text
 	AND post_owner = $5::text
 	AND username = $6::text
-RETURNING username, post_type, post_owner, post, post_date, files, categories, incognito
+RETURNING
+	username, post_type, post_owner, post, post_date, files, categories, incognito, latitude, longitude
 `
 
 type UpdateHistoryDuplicateFileParams struct {
@@ -577,18 +623,24 @@ func (q *Queries) UpdateHistoryDuplicateFile(ctx context.Context, arg UpdateHist
 		pq.Array(&i.Files),
 		pq.Array(&i.Categories),
 		&i.Incognito,
+		&i.Latitude,
+		&i.Longitude,
 	)
 	return i, err
 }
 
 const updateHistoryRemoveFile = `-- name: UpdateHistoryRemoveFile :one
-UPDATE Histories
-SET files = array_remove(files, $1::text)
-WHERE post_type = $2::post_type
+UPDATE
+	Histories
+SET
+	files = array_remove(files, $1::text)
+WHERE
+	post_type = $2::post_type
 	AND post = $3::text
 	AND post_owner = $4::text
 	AND username = $5::text
-RETURNING username, post_type, post_owner, post, post_date, files, categories, incognito
+RETURNING
+	username, post_type, post_owner, post, post_date, files, categories, incognito, latitude, longitude
 `
 
 type UpdateHistoryRemoveFileParams struct {
@@ -617,6 +669,8 @@ func (q *Queries) UpdateHistoryRemoveFile(ctx context.Context, arg UpdateHistory
 		pq.Array(&i.Files),
 		pq.Array(&i.Categories),
 		&i.Incognito,
+		&i.Latitude,
+		&i.Longitude,
 	)
 	return i, err
 }

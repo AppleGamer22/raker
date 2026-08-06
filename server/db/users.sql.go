@@ -13,10 +13,8 @@ import (
 )
 
 const passkeyDelete = `-- name: PasskeyDelete :exec
-DELETE FROM
-	Passkeys
-WHERE
-	id = $1::bytea
+DELETE FROM Passkeys
+WHERE id = $1::bytea
 	AND user_id = $2
 `
 

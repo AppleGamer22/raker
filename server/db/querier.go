@@ -24,6 +24,7 @@ type Querier interface {
 	HistoryOwners(ctx context.Context, arg HistoryOwnersParams) ([]HistoryOwnersRow, error)
 	HistoryRemove(ctx context.Context, arg HistoryRemoveParams) error
 	HistoryUpdateCategories(ctx context.Context, arg HistoryUpdateCategoriesParams) (History, error)
+	HistoryUpdateCoordinates(ctx context.Context, arg HistoryUpdateCoordinatesParams) error
 	HistoryUpdateOwner(ctx context.Context, arg HistoryUpdateOwnerParams) error
 	PasskeyDelete(ctx context.Context, arg PasskeyDeleteParams) error
 	PasskeyRename(ctx context.Context, arg PasskeyRenameParams) error

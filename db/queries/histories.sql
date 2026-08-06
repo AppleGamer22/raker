@@ -1,197 +1,214 @@
 -- name: HistoryAddFromArchive :one
 INSERT INTO Histories(
-		username,
-		post_type,
-		post_owner,
-		post,
-		post_date,
-		files,
-		categories
-	)
+	username,
+	post_type,
+	post_owner,
+	post,
+	post_date,
+	files,
+	categories)
 VALUES (
-		sqlc.arg(username)::text,
-		sqlc.arg(post_type)::post_type,
-		sqlc.arg(post_owner)::text,
-		sqlc.arg(post)::text,
-		sqlc.arg(post_date)::TIMESTAMPTZ,
-		sqlc.arg(files)::text [],
-		sqlc.arg(categories)::text []
-	)
-RETURNING *;
+	sqlc.arg(username)::text,
+	sqlc.arg(post_type)::post_type,
+	sqlc.arg(post_owner)::text,
+	sqlc.arg(post)::text,
+	sqlc.arg(post_date)::TIMESTAMPTZ,
+	sqlc.arg(files)::text[],
+	sqlc.arg(categories)::text[])
+RETURNING
+	*;
 
 -- name: HistoryAdd :one
 INSERT INTO Histories(
-		username,
-		post_type,
-		post_owner,
-		post,
-		post_date,
-		files,
-		categories
-	)
+	username,
+	post_type,
+	post_owner,
+	post,
+	post_date,
+	files,
+	categories)
 VALUES (
-		sqlc.arg(username)::text,
-		sqlc.arg(post_type)::post_type,
-		sqlc.arg(post_owner)::text,
-		sqlc.arg(post)::text,
-		NOW(),
-		sqlc.arg(files)::text [],
-		sqlc.arg(categories)::text []
-	)
-RETURNING *;
+	sqlc.arg(username)::text,
+	sqlc.arg(post_type)::post_type,
+	sqlc.arg(post_owner)::text,
+	sqlc.arg(post)::text,
+	NOW(),
+	sqlc.arg(files)::text[],
+	sqlc.arg(categories)::text[])
+RETURNING
+	*;
 
 -- name: HistoryUpdateCategories :one
-UPDATE Histories
-SET categories = sqlc.slice(categories)::text []
-WHERE post_type = sqlc.arg(post_type)::post_type
+UPDATE
+	Histories
+SET
+	categories = sqlc.slice(categories)::text[]
+WHERE
+	post_type = sqlc.arg(post_type)::post_type
 	AND post = sqlc.arg(post)::text
 	AND post_owner = sqlc.arg(post_owner)::text
 	AND username = sqlc.arg(username)::text
-RETURNING *;
+RETURNING
+	*;
 
 -- name: UpdateHistoryRemoveFile :one
-UPDATE Histories
-SET files = array_remove(files, sqlc.arg(file)::text)
-WHERE post_type = sqlc.arg(post_type)::post_type
+UPDATE
+	Histories
+SET
+	files = array_remove(files, sqlc.arg(file)::text)
+WHERE
+	post_type = sqlc.arg(post_type)::post_type
 	AND post = sqlc.arg(post)::text
 	AND post_owner = sqlc.arg(post_owner)::text
 	AND username = sqlc.arg(username)::text
-RETURNING *;
+RETURNING
+	*;
 
 -- name: UpdateHistoryDuplicateFile :one
-UPDATE Histories
-SET files = files[1 : array_position(files, sqlc.arg(file)::text)]
-	|| ARRAY[sqlc.arg(duplicate)::text]
-	|| files[array_position(files, sqlc.arg(file)::text) + 1 : array_length(files, 1)]
-WHERE post_type = sqlc.arg(post_type)::post_type
+UPDATE
+	Histories
+SET
+	files = files[1 : array_position(files, sqlc.arg(file)::text)] || ARRAY[sqlc.arg(duplicate)::text] || files[array_position(files, sqlc.arg(file)::text) + 1 : array_length(files, 1)]
+WHERE
+	post_type = sqlc.arg(post_type)::post_type
 	AND post = sqlc.arg(post)::text
 	AND post_owner = sqlc.arg(post_owner)::text
 	AND username = sqlc.arg(username)::text
-RETURNING *;
+RETURNING
+	*;
 
 -- name: HistoryUpdateOwner :exec
-UPDATE Histories
-SET post_owner = sqlc.arg(new_owner)::text
-WHERE post_type = sqlc.arg(post_type)::post_type
+UPDATE
+	Histories
+SET
+	post_owner = sqlc.arg(new_owner)::text
+WHERE
+	post_type = sqlc.arg(post_type)::post_type
 	AND post_owner = sqlc.arg(old_owner)::text
 	AND username = sqlc.arg(username)::text;
 
+-- name: HistoryUpdateCoordinates :exec
+UPDATE
+	Histories
+SET
+	latitude = sqlc.arg(latitude),
+	longitude = sqlc.arg(longitude)
+WHERE
+	post_type = sqlc.arg(post_type)::post_type
+	AND post_owner = sqlc.arg(post_owner)::text
+	AND username = sqlc.arg(username)::text;
+
 -- name: HistoriesCategoryRename :exec
-UPDATE Histories
-SET categories = (
-		SELECT array_agg(
-				c
-				ORDER BY c
-			)
-		FROM unnest(
-				array_replace(
-					categories,
-					sqlc.arg(old_category)::text,
-					sqlc.arg(new_category)::text
-				)
-			) AS c
-	)
-WHERE username = sqlc.arg(username)::text
-	AND sqlc.arg(old_category)::text = ANY(categories);
+UPDATE
+	Histories
+SET
+	categories =(
+		SELECT
+			array_agg(c ORDER BY c)
+		FROM
+			unnest(array_replace(categories, sqlc.arg(old_category)::text, sqlc.arg(new_category)::text)) AS c)
+WHERE
+	username = sqlc.arg(username)::text
+	AND sqlc.arg(old_category)::text = ANY (categories);
 
 -- name: HistoryGet :one
-SELECT *
-FROM Histories
-WHERE post_type = sqlc.arg(post_type)::post_type
+SELECT
+	*
+FROM
+	Histories
+WHERE
+	post_type = sqlc.arg(post_type)::post_type
 	AND post = sqlc.arg(post)::text
 	AND username = sqlc.arg(username)::text;
 
 -- name: HistoryGetByOwner :one
-SELECT *
-FROM Histories
-WHERE post_type = sqlc.arg(post_type)::post_type
+SELECT
+	*
+FROM
+	Histories
+WHERE
+	post_type = sqlc.arg(post_type)::post_type
 	AND post_owner = sqlc.arg(post_owner)::text
 	AND post = sqlc.arg(post)::text
 	AND username = sqlc.arg(username)::text;
 
 -- name: HistoryCountByFile :one
-SELECT count(*)
-FROM Histories
-WHERE post_type = sqlc.arg(post_type)::post_type
+SELECT
+	count(*)
+FROM
+	Histories
+WHERE
+	post_type = sqlc.arg(post_type)::post_type
 	AND post_owner = sqlc.arg(post_owner)::text
-	AND sqlc.arg(file)::text = ANY(files)
+	AND sqlc.arg(file)::text = ANY (files)
 	AND username = sqlc.arg(username)::text;
 
 -- https://docs.sqlc.dev/en/stable/howto/select.html#passing-a-slice-as-a-parameter-to-a-query
 -- https://docs.sqlc.dev/en/stable/howto/named_parameters.html
-
 -- name: HistoryGetPage :many
-SELECT DISTINCT *
-FROM Histories
-WHERE post_type = ANY (sqlc.slice(post_types)::post_type [])
-	AND (
-		(
-			sqlc.arg(exclusive)::boolean
-			and categories = COALESCE(sqlc.slice(categories)::text[], ARRAY[]::text[])
-		)
-		or (
-			not sqlc.arg(exclusive)::boolean
-			and (
-				categories && COALESCE(sqlc.slice(categories)::text[], ARRAY[]::text[])
-				or COALESCE(sqlc.slice(categories)::text[], ARRAY[]::text[]) = COALESCE(sqlc.slice(user_categories)::text[], ARRAY[]::text[])
-			)
-		)
-	)
-	AND (cardinality(COALESCE(sqlc.slice(post_owners)::text[], ARRAY[]::text[])) = 0 or EXISTS(
-		SELECT 1
-		FROM unnest(sqlc.slice(post_owners)::text[]) AS owner_filter(owner)
-		WHERE Histories.post_owner LIKE FORMAT('%%%s%%', owner_filter.owner)
-	))
+SELECT DISTINCT
+	*
+FROM
+	Histories
+WHERE
+	post_type = ANY (sqlc.slice(post_types)::post_type[])
+	AND ((sqlc.arg(exclusive)::boolean
+			AND categories = COALESCE(sqlc.slice(categories)::text[], ARRAY[]::text[]))
+		OR (NOT sqlc.arg(exclusive)::boolean
+			AND (categories && COALESCE(sqlc.slice(categories)::text[], ARRAY[]::text[])
+				OR COALESCE(sqlc.slice(categories)::text[], ARRAY[]::text[]) = COALESCE(sqlc.slice(user_categories)::text[], ARRAY[]::text[]))))
+	AND (cardinality(COALESCE(sqlc.slice(post_owners)::text[], ARRAY[]::text[])) = 0
+		OR EXISTS (
+			SELECT
+				1
+			FROM
+				unnest(sqlc.slice(post_owners)::text[]) AS owner_filter(OWNER)
+			WHERE
+				Histories.post_owner LIKE FORMAT('%%%s%%', owner_filter.owner)))
 	AND username = sqlc.arg(username)::text
-order by post_date DESC
+ORDER BY
+	post_date DESC
 LIMIT sqlc.arg(page_size)::int OFFSET sqlc.arg(page)::int;
 
 -- name: HistoryCount :one
-select count(*)
-from Histories
-WHERE post_type = ANY (sqlc.slice(post_types)::post_type [])
-	AND (
-		(
-			sqlc.arg(exclusive)::boolean
-			and categories = COALESCE(sqlc.slice(categories)::text[], ARRAY[]::text[])
-		)
-		or (
-			not sqlc.arg(exclusive)::boolean
-			and (
-				categories && COALESCE(sqlc.slice(categories)::text[], ARRAY[]::text[])
-				or COALESCE(sqlc.slice(categories)::text[], ARRAY[]::text[]) = COALESCE(sqlc.slice(user_categories)::text[], ARRAY[]::text[])
-			)
-		)
-	)
-	AND (cardinality(COALESCE(sqlc.slice(post_owners)::text[], ARRAY[]::text[])) = 0 or EXISTS(
-		SELECT 1
-		FROM unnest(sqlc.slice(post_owners)::text[]) AS owner_filter(owner)
-		WHERE Histories.post_owner LIKE FORMAT('%%%s%%', owner_filter.owner)
-	))
+SELECT
+	count(*)
+FROM
+	Histories
+WHERE
+	post_type = ANY (sqlc.slice(post_types)::post_type[])
+	AND ((sqlc.arg(exclusive)::boolean
+			AND categories = COALESCE(sqlc.slice(categories)::text[], ARRAY[]::text[]))
+		OR (NOT sqlc.arg(exclusive)::boolean
+			AND (categories && COALESCE(sqlc.slice(categories)::text[], ARRAY[]::text[])
+				OR COALESCE(sqlc.slice(categories)::text[], ARRAY[]::text[]) = COALESCE(sqlc.slice(user_categories)::text[], ARRAY[]::text[]))))
+	AND (cardinality(COALESCE(sqlc.slice(post_owners)::text[], ARRAY[]::text[])) = 0
+		OR EXISTS (
+			SELECT
+				1
+			FROM
+				unnest(sqlc.slice(post_owners)::text[]) AS owner_filter(OWNER)
+			WHERE
+				Histories.post_owner LIKE FORMAT('%%%s%%', owner_filter.owner)))
 	AND username = sqlc.arg(username)::text;
 
 -- name: HistoryOwners :many
-select distinct
-post_owner,
-case 
-	when post_type in ('instagram', 'highlight', 'story') then 'instagram'::post_type
-	else post_type::post_type
-end as post_type
-from Histories
-WHERE post_type = ANY (sqlc.slice(post_types)::post_type [])
-	AND (
-		(
-			sqlc.arg(exclusive)::boolean
-			and categories = COALESCE(sqlc.slice(categories)::text[], ARRAY[]::text[])
-		)
-		or (
-			not sqlc.arg(exclusive)::boolean
-			and (
-				categories && COALESCE(sqlc.slice(categories)::text[], ARRAY[]::text[])
-				or COALESCE(sqlc.slice(categories)::text[], ARRAY[]::text[]) = COALESCE(sqlc.slice(user_categories)::text[], ARRAY[]::text[])
-			)
-		)
-	)
+SELECT DISTINCT
+	post_owner,
+	CASE WHEN post_type IN ('instagram', 'highlight', 'story') THEN
+		'instagram'::post_type
+	ELSE
+		post_type::post_type
+	END AS post_type
+FROM
+	Histories
+WHERE
+	post_type = ANY (sqlc.slice(post_types)::post_type[])
+	AND ((sqlc.arg(exclusive)::boolean
+			AND categories = COALESCE(sqlc.slice(categories)::text[], ARRAY[]::text[]))
+		OR (NOT sqlc.arg(exclusive)::boolean
+			AND (categories && COALESCE(sqlc.slice(categories)::text[], ARRAY[]::text[])
+				OR COALESCE(sqlc.slice(categories)::text[], ARRAY[]::text[]) = COALESCE(sqlc.slice(user_categories)::text[], ARRAY[]::text[]))))
 	AND post_owner LIKE FORMAT('%%%s%%', sqlc.arg(post_owner)::text)
 	AND username = sqlc.arg(username)::text;
 
@@ -201,3 +218,4 @@ WHERE post_type = sqlc.arg(post_type)::post_type
 	AND post_owner = sqlc.arg(post_owner)::text
 	AND post = sqlc.arg(post)::text
 	AND username = sqlc.arg(username)::text;
+

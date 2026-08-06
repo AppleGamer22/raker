@@ -1,17 +1,23 @@
-CREATE TABLE Histories (
-	username TEXT REFERENCES Users(username),
+CREATE TABLE Histories(
+	username text REFERENCES Users(username),
 	post_type post_type NOT NULL,
-	post_owner TEXT NOT NULL,
-	post TEXT NOT NULL,
-	PRIMARY KEY(username, post_type, post_owner, post),
-	post_date TIMESTAMPTZ NOT NULL,
-	files TEXT [],
-	categories TEXT []
+	post_owner text NOT NULL,
+	post text NOT NULL,
+	PRIMARY KEY (username, post_type, post_owner, post),
+	post_date timestamptz NOT NULL,
+	files text[],
+	categories text[]
 );
 
-alter table Histories
-add column incognito boolean not null default false;
+ALTER TABLE Histories
+	ADD COLUMN incognito boolean NOT NULL DEFAULT FALSE;
 
-alter table Histories
-alter column categories
-set not null;
+ALTER TABLE Histories
+	ALTER COLUMN categories SET NOT NULL;
+
+ALTER TABLE Histories
+	ADD COLUMN latitude DECIMAL DEFAULT NULL;
+
+ALTER TABLE Histories
+	ADD COLUMN longitude DECIMAL DEFAULT NULL;
+

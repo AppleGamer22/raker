@@ -27,3 +27,9 @@ sql:
             go_type:
               import: github.com/google/uuid
               type: UUID
+          - db_type: numeric
+            go_type: float64
+            nullable: true
+          - db_type: decimal
+            go_type: float64
+            nullable: true

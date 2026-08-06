@@ -1,6 +1,33 @@
 package db
 
-import "github.com/AppleGamer22/raker/shared/types"
+import (
+	"database/sql/driver"
+	"fmt"
+
+	"github.com/AppleGamer22/raker/shared/types"
+)
+
+type Point struct {
+	X float64
+	Y float64
+}
+
+func (p *Point) Scan(src any) error {
+	switch v := src.(type) {
+	case string:
+		_, err := fmt.Sscanf(v, "(%f,%f)", &p.X, &p.Y)
+		return err
+	case []byte:
+		_, err := fmt.Sscanf(string(v), "(%f,%f)", &p.X, &p.Y)
+		return err
+	default:
+		return fmt.Errorf("cannot scan %T into Point", src)
+	}
+}
+
+func (p Point) Value() (driver.Value, error) {
+	return fmt.Sprintf("(%f,%f)", p.X, p.Y), nil
+}
 
 func (user *User) SelectedCategories(categories []string) map[string]bool {
 	result := make(map[string]bool)
