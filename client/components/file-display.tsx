@@ -230,7 +230,7 @@ export function FileDisplay({
 		return withCrop || withCoordinates ? (
 			<div className="relative inline-block w-full rounded-xl">
 				{imgResult}
-				<div className="absolute top-2 left-2 z-10 flex flex-row gap-2">
+				<div className="absolute top-2 left-2 z-10 flex flex-row md:gap-2">
 					{withCrop && /\.(jpe?g)$/.test(file) && (
 						<FileSheet
 							file={file}
