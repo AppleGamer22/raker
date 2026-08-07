@@ -260,42 +260,46 @@ export function ResultHeader({
 						<code className="align-middle leading-none">{result.post}</code>
 					</Badge>
 				</ContextMenuTrigger>
-				<ContextMenuContent>
-					<ContextMenuGroup>
-						{showPost && (
-							<ResultLink result={result}>
-								<ContextMenuItem>
-									<ExternalLinkIcon /> History Result
-								</ContextMenuItem>
-							</ResultLink>
-						)}
-						{![PostType.Highlight, PostType.Story].includes(result.postType) &&
-							(result.postType == PostType.Snapchat ? result.post.includes("-") : true) && (
-								<a
-									target="_blank"
-									rel="noopener noreferrer"
-									href={(() => {
-										switch (result.postType) {
-											case PostType.Instagram:
-											case PostType.Highlight:
-											case PostType.Story:
-												return `https://www.instagram.com/p/${result.post}`;
-											case PostType.TikTok:
-												return `https://www.tiktok.com/@${result.postOwner}/video/${result.post}`;
-											case PostType.Snapchat:
-												return `https://www.snapchat.com/@${result.postOwner}/highlight/${result.post}`;
-											case PostType.VSCO:
-												return `https://vsco.co/${result.postOwner}/media/${result.post}`;
-										}
-									})()}
-								>
+				{(showPost ||
+					(![PostType.Highlight, PostType.Story].includes(result.postType) &&
+						(result.postType == PostType.Snapchat ? result.post.includes("-") : true))) && (
+					<ContextMenuContent>
+						<ContextMenuGroup>
+							{showPost && (
+								<ResultLink result={result}>
 									<ContextMenuItem>
-										<PlatformIcon type={result.postType} /> Open Original Post
+										<ExternalLinkIcon /> History Result
 									</ContextMenuItem>
-								</a>
+								</ResultLink>
 							)}
-					</ContextMenuGroup>
-				</ContextMenuContent>
+							{![PostType.Highlight, PostType.Story].includes(result.postType) &&
+								(result.postType == PostType.Snapchat ? result.post.includes("-") : true) && (
+									<a
+										target="_blank"
+										rel="noopener noreferrer"
+										href={(() => {
+											switch (result.postType) {
+												case PostType.Instagram:
+												case PostType.Highlight:
+												case PostType.Story:
+													return `https://www.instagram.com/p/${result.post}`;
+												case PostType.TikTok:
+													return `https://www.tiktok.com/@${result.postOwner}/video/${result.post}`;
+												case PostType.Snapchat:
+													return `https://www.snapchat.com/@${result.postOwner}/highlight/${result.post}`;
+												case PostType.VSCO:
+													return `https://vsco.co/${result.postOwner}/media/${result.post}`;
+											}
+										})()}
+									>
+										<ContextMenuItem>
+											<PlatformIcon type={result.postType} /> Open Original Post
+										</ContextMenuItem>
+									</a>
+								)}
+						</ContextMenuGroup>
+					</ContextMenuContent>
+				)}
 			</ContextMenu>
 		</span>
 	);
