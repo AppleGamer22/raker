@@ -340,7 +340,7 @@ export function EditHistoryCategoriesForm({
 
 					return {
 						...previousResult,
-						categories,
+						categories: availableCategories.filter((category) => categories.includes(category)),
 					};
 				});
 				toast.success("Updated", {
