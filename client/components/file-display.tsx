@@ -231,7 +231,7 @@ export function FileDisplay({
 			<div className="relative inline-block w-full rounded-xl">
 				{imgResult}
 				<div className="absolute top-2 left-2 z-10 flex flex-row md:gap-2">
-					{withCrop && /\.(jpe?g)$/.test(file) && (
+					{withCrop && /\.(jpe?g)|(webp)$/.test(file) && (
 						<FileSheet
 							file={file}
 							post={{ postType, postOwner, coordinates } as ScrapeResponse}
@@ -859,7 +859,7 @@ export function FileSheet({
 							<ImageIcon />
 							View
 						</TabsTrigger>
-						{/\.(jpe?g)$/.test(file) && (
+						{/\.(jpe?g)|(webp)$/.test(file) && (
 							<TabsTrigger value="crop">
 								<CropIcon />
 								Crop

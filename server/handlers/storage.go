@@ -9,14 +9,19 @@ import (
 	"image/color"
 	"image/draw"
 	"image/jpeg"
+	_ "image/jpeg"
 	"io"
 	"net/http"
 	"os"
 	"os/exec"
 	"path"
+	"regexp"
 	"slices"
 	"strings"
 	"sync"
+
+	_ "github.com/HugoSmits86/nativewebp"
+	webp "github.com/HugoSmits86/nativewebp"
 
 	"connectrpc.com/connect"
 	v1 "github.com/AppleGamer22/raker/server/buf/proto/raker/v1"
@@ -313,7 +318,13 @@ func (handler *storageHandler) LocationEXIF(user db.User, media db.PostType, own
 	return gpsInfo.Latitude.Decimal(), gpsInfo.Longitude.Decimal()
 }
 
-func (handler *storageHandler) transformJPEG(user db.User, media db.PostType, owner, fileName string, transform func(image.Image) (image.Image, error)) error {
+var imageFileTypeRegexp = regexp.MustCompile(`\.(jpe?g)|(webp)$`)
+
+func (handler *storageHandler) transformImage(user db.User, media db.PostType, owner, fileName string, transform func(image.Image) (image.Image, error)) error {
+	if !imageFileTypeRegexp.Match([]byte(fileName)) {
+		return fmt.Errorf("Unsupported file type: %s", fileName)
+	}
+
 	filePath := path.Join(user.Username, string(media), owner, fileName)
 	mediaPath := path.Join(handler.root, filePath)
 	mediaPath = cleaner.Path(mediaPath)
@@ -325,26 +336,28 @@ func (handler *storageHandler) transformJPEG(user db.User, media db.PostType, ow
 	mu.Lock()
 	defer mu.Unlock()
 
-	tempFile, err := os.CreateTemp(path.Dir(mediaPath), fileName+".*.jpg")
+	tempFile, err := os.CreateTemp(path.Dir(mediaPath), "*"+fileName)
 	if err != nil {
 		return err
 	}
 	defer os.Remove(tempFile.Name())
 
-	intfc, err := jpegstructure.NewJpegMediaParser().ParseFile(mediaPath)
-	if err != nil {
-		return err
+	var exifData *exif.Ifd
+	if !strings.HasSuffix(fileName, ".webp") {
+		intfc, err := jpegstructure.NewJpegMediaParser().ParseFile(mediaPath)
+		if err != nil {
+			return err
+		}
+		sl := intfc.(*jpegstructure.SegmentList)
+		exifData, _, _ = sl.Exif()
 	}
-
-	sl := intfc.(*jpegstructure.SegmentList)
-	exifData, _, _ := sl.Exif()
 
 	file, err := os.Open(mediaPath)
 	if err != nil {
 		return err
 	}
 
-	source, err := jpeg.Decode(file)
+	source, format, err := image.Decode(file)
 	if closeErr := file.Close(); closeErr != nil {
 		return closeErr
 	}
@@ -358,22 +371,35 @@ func (handler *storageHandler) transformJPEG(user db.User, media db.PostType, ow
 	}
 
 	var buf bytes.Buffer
-	if err := jpeg.Encode(&buf, transformed, &jpeg.Options{Quality: 100}); err != nil {
-		return err
+	switch format {
+	case "jpeg":
+		if err := jpeg.Encode(&buf, transformed, &jpeg.Options{Quality: 100}); err != nil {
+			return err
+		}
+	case "webp":
+		if err := webp.Encode(&buf, transformed, &webp.Options{}); err != nil {
+			return err
+		}
 	}
 
-	newIntfc, err := jpegstructure.NewJpegMediaParser().ParseBytes(buf.Bytes())
-	if err != nil {
-		return err
-	}
-	newSL := newIntfc.(*jpegstructure.SegmentList)
+	if !strings.HasSuffix(fileName, ".webp") {
+		newIntfc, err := jpegstructure.NewJpegMediaParser().ParseBytes(buf.Bytes())
+		if err != nil {
+			return err
+		}
+		newSL := newIntfc.(*jpegstructure.SegmentList)
 
-	if err := preserveExifMetadata(newSL, exifData); err != nil {
-		log.Warnf("skipping EXIF preservation for %s: %v", filePath, err)
-	}
+		if err := preserveExifMetadata(newSL, exifData); err != nil {
+			log.Warnf("skipping EXIF preservation for %s: %v", filePath, err)
+		}
 
-	if err := newSL.Write(tempFile); err != nil {
-		return err
+		if err := newSL.Write(tempFile); err != nil {
+			return err
+		}
+	} else {
+		if _, err := tempFile.Write(buf.Bytes()); err != nil {
+			return err
+		}
 	}
 
 	if err := tempFile.Close(); err != nil {
@@ -503,7 +529,7 @@ func findChildIfdForEntry(children []*exif.Ifd, parentTagIndex int) *exif.Ifd {
 }
 
 func (handler *storageHandler) CropImage(user db.User, media db.PostType, owner, fileName string, crop image.Rectangle) error {
-	return handler.transformJPEG(user, media, owner, fileName, func(source image.Image) (image.Image, error) {
+	return handler.transformImage(user, media, owner, fileName, func(source image.Image) (image.Image, error) {
 		bounds := source.Bounds()
 		if crop.Min.X < bounds.Min.X || crop.Min.Y < bounds.Min.Y || crop.Max.X > bounds.Max.X || crop.Max.Y > bounds.Max.Y {
 			return nil, fmt.Errorf("crop rectangle %v is outside image bounds %v", crop, bounds)
@@ -516,7 +542,7 @@ func (handler *storageHandler) CropImage(user db.User, media db.PostType, owner,
 }
 
 func (handler *storageHandler) RotateImage(user db.User, media db.PostType, owner, fileName string, amount int) error {
-	return handler.transformJPEG(user, media, owner, fileName, func(source image.Image) (image.Image, error) {
+	return handler.transformImage(user, media, owner, fileName, func(source image.Image) (image.Image, error) {
 		return imaging.Rotate(source, float64(amount), color.White), nil
 	})
 }
@@ -606,7 +632,7 @@ func (server *RakerServer) RotateFile(ctx context.Context, request *v1.RotateFil
 	}
 
 	switch {
-	case strings.HasSuffix(request.FileRequest.File, ".jpg"), strings.HasSuffix(request.FileRequest.File, ".jpeg"):
+	case imageFileTypeRegexp.Match([]byte(request.FileRequest.File)):
 		err := StorageHandler.RotateImage(user, PostTypePB2DB(request.FileRequest.PostType), request.FileRequest.PostOwner, request.FileRequest.File, -int(request.Amount))
 		if err != nil {
 			log.Error(err)
