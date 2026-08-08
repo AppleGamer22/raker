@@ -60,3 +60,20 @@ export const dateFormatter = new Intl.DateTimeFormat(navigator.language, {
 export function timestampFormat(date: Timestamp): string {
 	return dateFormatter.format(timestampDate(date));
 }
+
+enum FileTypePatterns {
+	JPEG = "jpe?g",
+	WebP = "webp",
+	WebM = "webm",
+	HEIC = "heic",
+	MP4 = "mp4",
+}
+
+export const imageTypesRegexp = new RegExp(
+	`\\.(${FileTypePatterns.JPEG})|(${FileTypePatterns.WebP})|(${FileTypePatterns.HEIC})\$`,
+);
+export const videoTypesRegexp = new RegExp(`\\.(${FileTypePatterns.MP4})|(${FileTypePatterns.WebM})\$`);
+export const editFileTypesRegexp = new RegExp(
+	`\\.(${FileTypePatterns.JPEG})|(${FileTypePatterns.WebP})|(${FileTypePatterns.MP4})\$`,
+);
+export const cropFileTypesRegexp = new RegExp(`\\.(${FileTypePatterns.JPEG})|(${FileTypePatterns.WebP})\$`);

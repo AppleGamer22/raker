@@ -33,7 +33,7 @@ import { Progress } from "@/components/ui/progress";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { GoogleMapsLink } from "@/components/ui/svgs/google";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { cn } from "@/lib/utils";
+import { cn, cropFileTypesRegexp, imageTypesRegexp, videoTypesRegexp } from "@/lib/utils";
 
 export function postTypeString(type: PostType): string {
 	switch (type) {
@@ -225,13 +225,13 @@ export function FileDisplay({
 	const url =
 		`/api/storage/${username}/${postTypeString(postType)}/${postOwner}/${file}` +
 		(cacheBusterState ? `?v=${cacheBusterState}` : "");
-	if (/\.(jpe?g)|(webp)|(heic)$/.test(file)) {
+	if (imageTypesRegexp.test(file)) {
 		const imgResult = <img src={url} onLoad={onMediaLoad} loading="lazy" className={className} />;
 		return withCrop || withCoordinates ? (
 			<div className="relative inline-block w-full rounded-xl">
 				{imgResult}
 				<div className="absolute top-2 left-2 z-10 flex flex-row md:gap-2">
-					{withCrop && /\.(jpe?g)|(webp)$/.test(file) && (
+					{withCrop && cropFileTypesRegexp.test(file) && (
 						<FileSheet
 							file={file}
 							post={{ postType, postOwner, coordinates } as ScrapeResponse}
@@ -260,7 +260,7 @@ export function FileDisplay({
 		) : (
 			imgResult
 		);
-	} else if (/\.(mp4)|(webm)$/.test(file)) {
+	} else if (videoTypesRegexp.test(file)) {
 		return withCrop ? (
 			<div className="relative inline-block w-full rounded-xl">
 				<video
@@ -859,7 +859,7 @@ export function FileSheet({
 							<ImageIcon />
 							View
 						</TabsTrigger>
-						{/\.(jpe?g)|(webp)$/.test(file) && (
+						{cropFileTypesRegexp.test(file) && (
 							<TabsTrigger value="crop">
 								<CropIcon />
 								Crop

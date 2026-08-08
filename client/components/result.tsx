@@ -39,7 +39,7 @@ import { VSCOIcon } from "@/components/ui/svgs/vsco";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useConfirmationDialog } from "@/hooks/use-confirmation-dialog";
 import { useUser } from "@/hooks/user-provider";
-import { timestampFormat } from "@/lib/utils";
+import { editFileTypesRegexp, timestampFormat } from "@/lib/utils";
 import { cn, writeClipboard, defaultPostTypes, inPWA, uniqueArraysEqualAsSets } from "@/lib/utils";
 import { HistoryPostCategoryForm } from "@/routes/history";
 
@@ -660,7 +660,7 @@ export function Result({
 										>
 											<ExternalLinkIcon className="h-4 w-4" />
 										</Button>
-										{/\.(jpe?g)|(webp)|(mp4)$/.test(file) && (
+										{editFileTypesRegexp.test(file) && (
 											<FileSheet
 												file={file}
 												post={result}
