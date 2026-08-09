@@ -2,7 +2,7 @@ import { useMutation } from "@connectrpc/connect-query";
 import { useForm } from "@tanstack/react-form";
 import { createFileRoute, Link, stripSearchParams, useNavigate } from "@tanstack/react-router";
 import { EllipsisIcon, SearchIcon } from "lucide-react";
-import { Fragment, useEffect, useRef, useState, type ReactNode } from "react";
+import { Fragment, useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -108,30 +108,6 @@ const historyFormSchema = z.object({
 
 type HistoryFormValues = z.infer<typeof historyFormSchema>;
 
-type HistoryPostCategoryFormProps = {
-	availableCategories: string[];
-	showExclusive?: boolean;
-	legendBadge?: ReactNode;
-	exclusiveField?: {
-		name: string;
-		value: HistoryFormValues["exclusive"];
-		onChange: (checked: boolean) => void;
-	};
-	categoriesField: {
-		name: string;
-		value: HistoryFormValues["categories"];
-		onToggleCategory: (category: string, checked: boolean) => void;
-	};
-};
-
-type HistoryPostTypeFormProps = {
-	typesField: {
-		name: string;
-		value: HistoryFormValues["types"];
-		onToggleType: (type: PostType, checked: boolean) => void;
-	};
-};
-
 const postTypeOptions = [
 	{ id: "post-type-instagram", value: PostType.Instagram, label: "Post", Icon: InstagramIcon },
 	{ id: "post-type-highlight", value: PostType.Highlight, label: "Highlight", Icon: InstagramIcon },
@@ -228,9 +204,27 @@ export function HistoryPostCategoryForm({
 	availableCategories,
 	showExclusive = true,
 	legendBadge,
+	formPrefix,
 	exclusiveField,
 	categoriesField,
-}: HistoryPostCategoryFormProps) {
+}: {
+	availableCategories: string[];
+	showExclusive?: boolean;
+	legendBadge?: ReactNode;
+	formPrefix?: string;
+	exclusiveField?: {
+		name: string;
+		value: HistoryFormValues["exclusive"];
+		onChange: (checked: boolean) => void;
+	};
+	categoriesField: {
+		name: string;
+		value: HistoryFormValues["categories"];
+		onToggleCategory: (category: string, checked: boolean) => void;
+	};
+}) {
+	const prefix = formPrefix ?? useId();
+
 	return (
 		<FieldGroup>
 			<FieldSet>
@@ -241,10 +235,10 @@ export function HistoryPostCategoryForm({
 				<FieldGroup className="flex flex-row flex-wrap gap-1 *:w-auto">
 					{showExclusive && exclusiveField ? (
 						<>
-							<FieldLabel htmlFor="category-exclusive" className="max-w-fit">
+							<FieldLabel htmlFor={`${prefix}-category-exclusive`} className="max-w-fit">
 								<Field orientation="horizontal">
 									<Switch
-										id="category-exclusive"
+										id={`${prefix}-category-exclusive`}
 										name={exclusiveField.name}
 										checked={exclusiveField.value}
 										onCheckedChange={(checked) => {
@@ -256,9 +250,9 @@ export function HistoryPostCategoryForm({
 									</FieldContent>
 								</Field>
 							</FieldLabel>
-							<FieldLabel htmlFor="category-exclusive" className="max-w-fit">
+							<FieldLabel htmlFor={`${prefix}-category-only-video`} className="max-w-fit">
 								<Field orientation="horizontal">
-									<Switch id="category-only-video" />
+									<Switch id={`${prefix}-category-only-video`} />
 									<FieldContent>
 										<FieldTitle>Only Video</FieldTitle>
 									</FieldContent>
@@ -268,10 +262,14 @@ export function HistoryPostCategoryForm({
 						</>
 					) : null}
 					{availableCategories.map((category) => (
-						<FieldLabel key={`category-${category}`} htmlFor={`category-${category}`} className="max-w-fit">
+						<FieldLabel
+							key={`category-${category}`}
+							htmlFor={`${prefix}-category-${category}`}
+							className="max-w-fit"
+						>
 							<Field orientation="horizontal">
 								<Checkbox
-									id={`category-${category}`}
+									id={`${prefix}-category-${category}`}
 									name={categoriesField.name}
 									checked={categoriesField.value.includes(category)}
 									onCheckedChange={(checked) => {
@@ -290,17 +288,29 @@ export function HistoryPostCategoryForm({
 	);
 }
 
-function HistoryPostTypeForm({ typesField }: HistoryPostTypeFormProps) {
+function HistoryPostTypeForm({
+	formPrefix,
+	typesField,
+}: {
+	formPrefix?: string;
+	typesField: {
+		name: string;
+		value: HistoryFormValues["types"];
+		onToggleType: (type: PostType, checked: boolean) => void;
+	};
+}) {
+	const prefix = formPrefix ?? useId();
+
 	return (
 		<FieldGroup>
 			<FieldSet>
 				<FieldLegend>Post Types</FieldLegend>
 				<FieldGroup className="flex flex-row flex-wrap gap-1 *:w-auto">
 					{postTypeOptions.map(({ id, value, label, Icon }) => (
-						<FieldLabel key={id} htmlFor={id} className="max-w-fit">
+						<FieldLabel key={id} htmlFor={`${prefix}-${id}`} className="max-w-fit">
 							<Field orientation="horizontal">
 								<Checkbox
-									id={id}
+									id={`${prefix}-${id}`}
 									name={typesField.name}
 									checked={typesField.value.includes(value)}
 									onCheckedChange={(checked) => {
@@ -588,6 +598,7 @@ function History() {
 												value: exclusiveField.state.value,
 												onChange: exclusiveField.handleChange,
 											}}
+											formPrefix="search"
 											categoriesField={{
 												name: categoriesField.name,
 												value: categoriesField.state.value,

@@ -374,6 +374,7 @@ export function EditHistoryCategoriesForm({
 								legendBadge={
 									hasUnsavedCategories ? <Badge className="mr-1 h-2 w-2 rounded-full p-0" /> : null
 								}
+								formPrefix={result.post}
 								categoriesField={{
 									name: categoriesField.name,
 									value: categoriesField.state.value,
