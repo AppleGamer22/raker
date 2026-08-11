@@ -69,6 +69,6 @@
 		"editor.useTabStops": false,
 		"editor.tabSize": 2
 	},
-	"go.testFlags": ["-v"],
+	"go.testFlags": ["-v", "-test.v"],
 	"go.testTimeout": "180s"
 }
