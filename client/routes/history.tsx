@@ -2,7 +2,16 @@ import { useMutation } from "@connectrpc/connect-query";
 import { useForm } from "@tanstack/react-form";
 import { createFileRoute, Link, stripSearchParams, useNavigate } from "@tanstack/react-router";
 import { EllipsisIcon, SearchIcon } from "lucide-react";
-import { Fragment, useEffect, useId, useRef, useState, type ReactNode } from "react";
+import {
+	Fragment,
+	useEffect,
+	useId,
+	useRef,
+	useState,
+	type Dispatch,
+	type ReactNode,
+	type SetStateAction,
+} from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -402,6 +411,336 @@ function HistoryCard({
 				<FilesCarousel post={result} username={username!} />
 			</CardContent>
 		</Card>
+	);
+}
+
+export function HistorySearchForm({
+	owners,
+	types,
+	exclusive,
+	categories,
+	setHistories,
+	currentPage,
+	setTotalCount,
+	onResult,
+}: {
+	owners?: OwnerPostType[];
+	types: PostType[];
+	exclusive: boolean;
+	categories: string[];
+	histories: ScrapeResponse[];
+	setHistories: Dispatch<SetStateAction<ScrapeResponse[]>>;
+	currentPage: bigint;
+	setCurrentPage: Dispatch<SetStateAction<bigint>>;
+	totalCount: bigint;
+	setTotalCount: Dispatch<SetStateAction<bigint>>;
+	onResult: () => void;
+}) {
+	const { username, categories: availableCategories, isCategoriesPending } = useUser();
+
+	const ownersMutation = useMutation(searchHistoryOwners);
+	const searchHistoryMutation = useMutation(searchHistory);
+
+	const [isOpen, setIsOpen] = useState(false);
+	const [ownersSearchOptions, setOwnersSearchOptions] = useState<OwnerPostType[]>(owners ?? []);
+
+	const anchor = useComboboxAnchor();
+
+	const form = useForm({
+		defaultValues: {
+			types,
+			exclusive,
+			categories,
+			ownerSearchTerm: "",
+			ownersSearchValue: owners,
+		} as HistoryFormValues,
+		validators: {
+			onChange: historyFormSchema,
+			onSubmit: historyFormSchema,
+		},
+		onSubmit: async ({ value: { categories, exclusive, ownersSearchValue, types } }) => {
+			try {
+				const { histories, totalCount } = await searchHistoryMutation.mutateAsync({
+					categories,
+					exclusive,
+					types,
+					owners: ownersSearchValue.map(({ owner }) => owner),
+					page: currentPage,
+					pageSize: 30,
+				});
+				setTotalCount(totalCount);
+				setHistories(histories);
+				onResult();
+			} catch (err) {
+				toast.error((err as Error).message, {
+					position: "top-center",
+				});
+			}
+		},
+	});
+
+	useEffect(() => {
+		if (isCategoriesPending) {
+			return;
+		}
+
+		const validSearchCategories = categories.filter((category) => availableCategories.includes(category));
+
+		form.setFieldValue("types", types);
+		form.setFieldValue("exclusive", exclusive);
+		form.setFieldValue("categories", validSearchCategories);
+		form.setFieldValue("ownersSearchValue", owners ?? []);
+
+		form.handleSubmit();
+	}, [availableCategories, categories, exclusive, form, isCategoriesPending, owners, types, username]);
+
+	return (
+		<form
+			onSubmit={(e) => {
+				e.preventDefault();
+				e.stopPropagation();
+				form.handleSubmit();
+			}}
+		>
+			<Collapsible open={isOpen} onOpenChange={setIsOpen}>
+				<form.Subscribe selector={(state) => state.values}>
+					{({ types, exclusive, categories }) => (
+						<CollapsibleTrigger className="w-full rounded-md border px-3 py-2 text-left hover:bg-muted/40">
+							<div className="flex flex-wrap items-center gap-2">
+								{types.length > 0 ? (
+									types.map((type, index) => (
+										<Badge key={`type-summary-${type}-${index}`} variant="secondary">
+											<PostTypeIconLabel type={type} />
+										</Badge>
+									))
+								) : (
+									<Badge variant="ghost">No post types selected</Badge>
+								)}
+							</div>
+							<Separator className="my-2" />
+							<div className="flex flex-wrap items-center gap-2">
+								<Badge variant={exclusive ? "default" : "outline"}>
+									Exclusive: {exclusive ? "On" : "Off"}
+								</Badge>
+								{categories.length > 0 ? (
+									categories.map((category, index) => (
+										<Badge key={`category-summary-${category}-${index}`} variant="default">
+											{category}
+										</Badge>
+									))
+								) : (
+									<Badge variant="ghost">No categories selected</Badge>
+								)}
+							</div>
+						</CollapsibleTrigger>
+					)}
+				</form.Subscribe>
+				<CollapsibleContent className="mt-1">
+					<form.Field name="types" mode="array">
+						{(typesField) => (
+							<HistoryPostTypeForm
+								typesField={{
+									name: typesField.name,
+									value: typesField.state.value,
+									onToggleType: (type, checked) => {
+										if (checked) {
+											if (!typesField.state.value.includes(type)) {
+												typesField.pushValue(type);
+											}
+										} else {
+											const index = typesField.state.value.indexOf(type);
+											if (index > -1) {
+												typesField.removeValue(index);
+											}
+										}
+									},
+								}}
+							/>
+						)}
+					</form.Field>
+					<Separator className="my-2" />
+					<form.Field name="exclusive">
+						{(exclusiveField) => (
+							<form.Field name="categories" mode="array">
+								{(categoriesField) => (
+									<HistoryPostCategoryForm
+										availableCategories={availableCategories}
+										exclusiveField={{
+											name: exclusiveField.name,
+											value: exclusiveField.state.value,
+											onChange: exclusiveField.handleChange,
+										}}
+										formPrefix="search"
+										categoriesField={{
+											name: categoriesField.name,
+											value: categoriesField.state.value,
+											onToggleCategory: (category, checked) => {
+												if (checked) {
+													if (!categoriesField.state.value.includes(category)) {
+														categoriesField.pushValue(category);
+													}
+												} else {
+													const index = categoriesField.state.value.indexOf(category);
+													if (index > -1) {
+														categoriesField.removeValue(index);
+													}
+												}
+											},
+										}}
+									/>
+								)}
+							</form.Field>
+						)}
+					</form.Field>
+				</CollapsibleContent>
+			</Collapsible>
+
+			<form.Field name="ownerSearchTerm">
+				{(searchField) => (
+					<form.Field name="ownersSearchValue">
+						{(ownersField) => {
+							const searchOptions = ownersSearchOptions.filter(
+								(item1) =>
+									item1.owner.includes(searchField.state.value) &&
+									ownersField.state.value.filter(
+										(item2) => item2.owner === item1.owner && item2.type === item1.type,
+									).length === 0,
+							);
+							const showTypedSearchQuery =
+								ownersField.state.value.filter(
+									({ owner, type }) => owner === searchField.state.value && type === -1,
+								).length === 0;
+							return (
+								<Combobox
+									multiple
+									items={
+										searchField.state.value.length > 0
+											? [searchField.state.value, ...ownersSearchOptions]
+											: ownersSearchOptions
+									}
+									value={ownersField.state.value}
+									onValueChange={(value) => {
+										if (value !== null) {
+											ownersField.handleChange(value);
+											searchField.handleChange("");
+										}
+									}}
+								>
+									<ComboboxChips className="my-2" ref={anchor}>
+										<ComboboxValue>
+											{(values: OwnerPostType[]) => (
+												<Fragment>
+													{values.map(({ owner, type }) => (
+														<ContextMenu key={`${owner}-${type}`}>
+															<ContextMenuTrigger>
+																<ComboboxChip key={`search-chip-${type}-${owner}`}>
+																	<PlatformIcon type={type} />
+																	{owner}
+																</ComboboxChip>
+															</ContextMenuTrigger>
+															<PostOwnerContextMenuContext
+																result={
+																	{
+																		postOwner: owner,
+																		postType: type,
+																	} as ScrapeResponse
+																}
+																categories={availableCategories}
+																exclusive={exclusive}
+															/>
+														</ContextMenu>
+													))}
+													<ComboboxChipsInput
+														placeholder="post owner search"
+														value={searchField.state.value}
+														onChange={async (e) => {
+															let ownerSearchQuery = e.target.value;
+															if (
+																searchField.state.value.substring(0, 4) !==
+																ownerSearchQuery.substring(0, 4)
+															) {
+																ownerSearchQuery = ownerSearchQuery.substring(0, 4);
+															}
+															searchField.handleChange(e.target.value);
+															if (ownerSearchQuery.length === 4) {
+																try {
+																	const { owners } = await ownersMutation.mutateAsync(
+																		{
+																			categories:
+																				form.getFieldValue("categories"),
+																			exclusive: form.getFieldValue("exclusive"),
+																			types: form.getFieldValue("types"),
+																			owner: ownerSearchQuery,
+																		},
+																	);
+																	setOwnersSearchOptions(owners);
+																} catch (err) {
+																	toast.error((err as Error).message, {
+																		position: "top-center",
+																	});
+																}
+															} else if (ownerSearchQuery.length === 0) {
+																setOwnersSearchOptions([]);
+															}
+														}}
+													/>
+													<InputGroupAddon>
+														<SearchIcon />
+													</InputGroupAddon>
+												</Fragment>
+											)}
+										</ComboboxValue>
+									</ComboboxChips>
+									{searchField.state.value.length > 0 &&
+									(showTypedSearchQuery || searchOptions.length > 0) ? (
+										<ComboboxContent>
+											<ComboboxList>
+												{showTypedSearchQuery && (
+													<ComboboxGroup>
+														<ComboboxLabel>Search Term</ComboboxLabel>
+														{
+															<ComboboxItem
+																key="search-term"
+																value={
+																	{
+																		owner: searchField.state.value,
+																		type: -1,
+																	} as OwnerPostType
+																}
+															>
+																{searchField.state.value}
+															</ComboboxItem>
+														}
+													</ComboboxGroup>
+												)}
+												{searchOptions.length > 0 && (
+													<ComboboxGroup>
+														<ComboboxLabel>Post Owners</ComboboxLabel>
+														{searchOptions.map((item) => (
+															<ComboboxItem
+																key={`search-${item.type}-${item.owner}`}
+																value={item}
+															>
+																<PlatformIcon type={item.type} />
+																{item.owner}
+															</ComboboxItem>
+														))}
+													</ComboboxGroup>
+												)}
+											</ComboboxList>
+										</ComboboxContent>
+									) : null}
+								</Combobox>
+							);
+						}}
+					</form.Field>
+				)}
+			</form.Field>
+
+			<Button className="w-full" type="submit" disabled={searchHistoryMutation.isPending}>
+				Search
+			</Button>
+		</form>
 	);
 }
 
