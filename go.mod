@@ -5,6 +5,7 @@ go 1.25.0
 require (
 	connectrpc.com/connect v1.20.0
 	connectrpc.com/validate v0.6.0
+	github.com/HugoSmits86/nativewebp v1.3.0
 	github.com/charmbracelet/log v1.0.0
 	github.com/disintegration/imaging v1.6.2
 	github.com/dsoprea/go-exif/v3 v3.0.1
@@ -22,14 +23,13 @@ require (
 	golang.org/x/crypto v0.54.0
 	golang.org/x/net v0.57.0
 	google.golang.org/genproto v0.0.0-20260414002931-afd174a4e478
-	google.golang.org/protobuf v1.36.11
+	google.golang.org/protobuf v1.36.12
 )
 
 require (
 	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.36.9-20250912141014-52f32327d4b0.1 // indirect
 	buf.build/go/protovalidate v1.0.0 // indirect
 	cel.dev/expr v0.25.1 // indirect
-	github.com/HugoSmits86/nativewebp v1.3.0 // indirect
 	github.com/andybalholm/brotli v1.0.6 // indirect
 	github.com/antlr4-go/antlr/v4 v4.13.1 // indirect
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
