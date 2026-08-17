@@ -44,7 +44,7 @@
 	},
 	"devDependencies": {
 		"@bufbuild/buf": "^1.72.0",
-		"@bufbuild/protoc-gen-es": "^2.13.0",
+		"@bufbuild/protoc-gen-es": "^2.14.0",
 		"@rolldown/plugin-babel": "^0.2.3",
 		"@tailwindcss/typography": "^0.5.20",
 		"@tanstack/devtools-vite": "^0.8.3",
