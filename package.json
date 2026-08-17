@@ -57,7 +57,7 @@
 		"@vitejs/plugin-react": "^6.0.5",
 		"babel-plugin-react-compiler": "^1.0.0",
 		"jsdom": "^30.0.1",
-		"oxfmt": "^0.62.0",
+		"oxfmt": "^0.63.0",
 		"oxlint": "^1.78.0",
 		"typescript": "^7.0.2",
 		"vite": "^8.2.1",
