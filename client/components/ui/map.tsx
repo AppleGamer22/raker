@@ -3,7 +3,10 @@
 import { X, Minus, Plus, Locate, Maximize, Loader2 } from "lucide-react";
 
 import "maplibre-gl/dist/maplibre-gl.css";
-import MapLibreGL, { type PopupOptions, type MarkerOptions } from "maplibre-gl";
+import { type PopupOptions, type MarkerOptions } from "maplibre-gl";
+import * as MapLibreGL from "maplibre-gl";
+// Import the worker file as a URL using Vite's ?url suffix
+import workerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?url";
 import {
 	createContext,
 	forwardRef,
@@ -20,6 +23,9 @@ import {
 import { createPortal } from "react-dom";
 
 import { cn } from "@/lib/utils";
+
+// Set the worker URL using the resolved asset path
+MapLibreGL.setWorkerUrl(new URL(workerUrl, document.baseURI).href);
 
 const defaultStyles = {
 	dark: "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
@@ -250,6 +256,8 @@ const Map = forwardRef<MapRef, MapProps>(function Map(
 		map.on("load", loadHandler);
 		map.on("styledata", styleDataHandler);
 		map.on("move", handleMove);
+		map.on("error", (e) => console.error("MapLibre error:", e));
+
 		setMapInstance(map);
 
 		return () => {
