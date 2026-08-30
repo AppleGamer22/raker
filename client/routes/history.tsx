@@ -3,7 +3,6 @@ import { useForm } from "@tanstack/react-form";
 import { createFileRoute, Link, stripSearchParams, useNavigate } from "@tanstack/react-router";
 import { EllipsisIcon, SearchIcon } from "lucide-react";
 import { Fragment, useEffect, useId, useState, type Dispatch, type ReactNode, type SetStateAction } from "react";
-import { toast } from "sonner";
 import { z } from "zod";
 
 import { searchHistory, searchHistoryOwners } from "@/buf/raker/v1/raker-RakerServer_connectquery";
@@ -56,7 +55,7 @@ import { TikTokIcon } from "@/components/ui/svgs/tiktok";
 import { VSCOIcon } from "@/components/ui/svgs/vsco";
 import { Switch } from "@/components/ui/switch";
 import { useUser } from "@/hooks/user-provider";
-import { timestampFormat } from "@/lib/utils";
+import { timestampFormat, Toaster } from "@/lib/utils";
 import { defaultPostTypes, inPWA } from "@/lib/utils";
 
 const historySearchDefaults = {
@@ -471,9 +470,7 @@ export function HistorySearchForm({
 				setExclusive(exclusive);
 				onResult({ categories, exclusive, ownersSearchValue, types });
 			} catch (err) {
-				toast.error((err as Error).message, {
-					position: "top-center",
-				});
+				Toaster.error(err as Error);
 			}
 			setHistorySearchPending(false);
 		},
@@ -675,9 +672,7 @@ export function HistorySearchForm({
 																	);
 																	setOwnersSearchOptions(owners);
 																} catch (err) {
-																	toast.error((err as Error).message, {
-																		position: "top-center",
-																	});
+																	Toaster.error(err as Error);
 																}
 															} else if (ownerSearchQuery.length === 0) {
 																setOwnersSearchOptions([]);

@@ -1,9 +1,9 @@
 import { timestampDate, type Timestamp } from "@bufbuild/protobuf/wkt";
 import { clsx, type ClassValue } from "clsx";
-import { toast } from "sonner";
 import { twMerge } from "tailwind-merge";
 
 import { PostType } from "@/buf/raker/v1/raker_pb";
+import { toast } from "@/components/ui/toast";
 
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));
@@ -12,13 +12,9 @@ export function cn(...inputs: ClassValue[]) {
 export async function writeClipboard(text: string) {
 	try {
 		await navigator.clipboard.writeText(text);
-		toast.success(`${text} was copied to your clipboard`, {
-			position: "top-center",
-		});
+		Toaster.success(`${text} was copied to your clipboard`);
 	} catch (err) {
-		toast.error((err as Error).message, {
-			position: "top-center",
-		});
+		Toaster.error(err as Error);
 	}
 }
 
@@ -30,6 +26,23 @@ export const defaultPostTypes = [
 	PostType.Snapchat,
 	PostType.VSCO,
 ];
+
+export class Toaster {
+	static success(message: string) {
+		toast.add<string>({
+			title: message,
+			type: "success",
+		});
+	}
+
+	static error(err: Error) {
+		toast.add<string>({
+			description: (err as Error).message,
+			title: (err as Error).name,
+			type: "error",
+		});
+	}
+}
 
 export function inPWA(): boolean {
 	return (

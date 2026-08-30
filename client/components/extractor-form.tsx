@@ -5,7 +5,6 @@ import { useForm } from "@tanstack/react-form";
 import type { StandardSchemaV1 } from "@tanstack/react-form";
 import type { UseNavigateResult } from "@tanstack/router-core";
 import { useEffect, useRef, useState, type Dispatch, type ReactNode, type SetStateAction } from "react";
-import { toast } from "sonner";
 
 import type { ScrapeResponse } from "@/buf/raker/v1/raker_pb";
 import { Result } from "@/components/result";
@@ -16,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { Switch } from "@/components/ui/switch";
 import { useUser } from "@/hooks/user-provider";
+import { Toaster } from "@/lib/utils";
 
 type ExtractorSearchValues = Record<string, string | boolean>;
 
@@ -62,9 +62,7 @@ export function useExtractorForm<
 				setResult(result);
 				await navigate({ search: buildSearch(value, result) as never, replace: true });
 			} catch (err) {
-				toast.error((err as Error).message, {
-					position: "top-center",
-				});
+				Toaster.error(err as Error);
 			}
 		},
 	});

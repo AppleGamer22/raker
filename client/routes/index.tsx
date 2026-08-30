@@ -9,7 +9,6 @@ import { useForm } from "@tanstack/react-form";
 import { createFileRoute } from "@tanstack/react-router";
 import { CheckIcon, PlusIcon, UserKeyIcon, XIcon } from "lucide-react";
 import { useEffect, useState } from "react";
-import { toast } from "sonner";
 import z from "zod";
 
 import type { Passkey } from "@/buf/raker/v1/passkey/passkey_pb";
@@ -34,6 +33,7 @@ import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { useConfirmationDialog } from "@/hooks/use-confirmation-dialog";
 import { useUser } from "@/hooks/user-provider";
+import { Toaster } from "@/lib/utils";
 // import { createRootRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/")({ component: AuthPage, ssr: false });
@@ -90,15 +90,10 @@ function SignUpForm() {
 											responseJson: JSON.stringify(attResp),
 										});
 
-										toast.success("Registered Passkey", {
-											position: "top-center",
-										});
+										Toaster.success("Registered Passkey");
 										setUsername("");
 									} catch (err) {
-										console.error(err);
-										toast.error((err as Error).message, {
-											position: "top-center",
-										});
+										Toaster.error(err as Error);
 									}
 								}}
 							>
@@ -161,13 +156,9 @@ function PasskeysForm() {
 									aaguid: passkey.aaguid,
 								});
 								await refetch();
-								toast.success("Renamed passkey", {
-									position: "top-center",
-								});
+								Toaster.success("Renamed passkey");
 							} catch (err) {
-								toast.error((err as Error).message, {
-									position: "top-center",
-								});
+								Toaster.error(err as Error);
 							}
 						}}
 					>
@@ -201,13 +192,9 @@ function PasskeysForm() {
 									aaguid: passkey.aaguid,
 								});
 								await refetch();
-								toast.success("Deleted passkey", {
-									position: "top-center",
-								});
+								Toaster.success("Deleted passkey");
 							} catch (err) {
-								toast.error((err as Error).message, {
-									position: "top-center",
-								});
+								Toaster.error(err as Error);
 							}
 						}}
 					>
@@ -266,14 +253,9 @@ function PasskeysForm() {
 
 											await refetch();
 											setNewPasskeyName("");
-											toast.success("Added passkey", {
-												position: "top-center",
-											});
+											Toaster.success("Added passkey");
 										} catch (err) {
-											console.error(err);
-											toast.error((err as Error).message, {
-												position: "top-center",
-											});
+											Toaster.error(err as Error);
 										}
 									}}
 								>
@@ -313,9 +295,7 @@ function SignInForm() {
 					await signInMutation.mutateAsync({ username, password });
 					location.reload();
 				} catch (err) {
-					toast.error((err as Error).message, {
-						position: "top-center",
-					});
+					Toaster.error(err as Error);
 				}
 			}}
 		>
@@ -363,10 +343,7 @@ function SignInForm() {
 										});
 										location.reload();
 									} catch (err) {
-										console.error(err);
-										toast.error((err as Error).message, {
-											position: "top-center",
-										});
+										Toaster.error(err as Error);
 									}
 								}}
 							>
@@ -446,13 +423,9 @@ function UpdateForm() {
 										setPassword("");
 										setSessionID("");
 										setUserID("");
-										toast.success("Updated credentials", {
-											position: "top-center",
-										});
+										Toaster.success("Updated credentials");
 									} catch (err) {
-										toast.error((err as Error).message, {
-											position: "top-center",
-										});
+										Toaster.error(err as Error);
 									}
 								}}
 							>
@@ -465,9 +438,7 @@ function UpdateForm() {
 										await cookieStore.delete("jwt");
 										location.reload();
 									} catch (err) {
-										toast.error((err as Error).message, {
-											position: "top-center",
-										});
+										Toaster.error(err as Error);
 									}
 								}}
 							>
@@ -568,9 +539,7 @@ function Categories() {
 																				field.removeValue(i);
 																				setShouldRefetchCategories(true);
 																			} catch (err) {
-																				toast.error((err as Error).message, {
-																					position: "top-center",
-																				});
+																				Toaster.error(err as Error);
 																			}
 																		}}
 																		aria-label={`Remove Category ${i + 1}`}
@@ -618,14 +587,10 @@ function Categories() {
 														if (!newCategory) {
 															return;
 														} else if (field.state.value.includes(trimmedNewCategoryName)) {
-															toast.error(
-																<label>
-																	Category name <b>{trimmedNewCategoryName}</b> is
-																	already part of the categories list
-																</label>,
-																{
-																	position: "top-center",
-																},
+															Toaster.error(
+																new Error(
+																	`Category name ${trimmedNewCategoryName} is already part of the categories list`,
+																),
 															);
 															return;
 														}
@@ -640,9 +605,7 @@ function Categories() {
 															field.pushValue(trimmedNewCategoryName);
 															setNewCategory("");
 														} catch (err) {
-															toast.error((err as Error).message, {
-																position: "top-center",
-															});
+															Toaster.error(err as Error);
 														}
 													}}
 													disabled={!newCategory.trim()}

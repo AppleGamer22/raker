@@ -15,7 +15,6 @@ import {
 	type PointerEvent as ReactPointerEvent,
 } from "react";
 import { ResizableBox, type ResizeCallbackData } from "react-resizable";
-import { toast } from "sonner";
 
 import { cropFile, duplicateFile, rotateFile } from "@/buf/raker/v1/raker-RakerServer_connectquery";
 import { PostType, type ScrapeResponse } from "@/buf/raker/v1/raker_pb";
@@ -33,7 +32,7 @@ import { Progress } from "@/components/ui/progress";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { GoogleMapsLink } from "@/components/ui/svgs/google";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { cn, cropFileTypesRegexp, imageTypesRegexp, videoTypesRegexp } from "@/lib/utils";
+import { cn, cropFileTypesRegexp, imageTypesRegexp, Toaster, videoTypesRegexp } from "@/lib/utils";
 
 export function postTypeString(type: PostType): string {
 	switch (type) {
@@ -329,9 +328,7 @@ export function DuplicateButton({
 					});
 					onDuplicateFile(duplicateFileName);
 				} catch (err) {
-					toast.error((err as Error).message, {
-						position: "top-center",
-					});
+					Toaster.error(err as Error);
 				}
 			}}
 		>
@@ -830,9 +827,7 @@ export function FileSheet({
 				});
 				refreshEditedFile();
 			} catch (err) {
-				toast.error((err as Error).message, {
-					position: "top-center",
-				});
+				Toaster.error(err as Error);
 			}
 		},
 		[file, post, refreshEditedFile, rotateMutation],
@@ -925,9 +920,7 @@ export function FileSheet({
 												setSelectedTab("view");
 												refreshEditedFile();
 											} catch (err) {
-												toast.error((err as Error).message, {
-													position: "top-center",
-												});
+												Toaster.error(err as Error);
 											}
 										}}
 									>

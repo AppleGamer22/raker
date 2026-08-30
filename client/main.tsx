@@ -9,7 +9,7 @@ import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { StrictMode } from "react";
 import ReactDOM from "react-dom/client";
 
-import { Toaster } from "@/components/ui/sonner";
+import { Toaster } from "@/components/ui/toast";
 import { ThemeProvider } from "@/hooks/theme-provider";
 import { UserProvider } from "@/hooks/user-provider";
 
@@ -44,7 +44,7 @@ if (!rootElement || !rootElement.innerHTML) {
 						/>
 					</QueryClientProvider>
 				</TransportProvider>
-				<Toaster closeButton />
+				<Toaster />
 			</ThemeProvider>
 		</StrictMode>,
 	);

@@ -12,7 +12,6 @@ import {
 	ImageIcon,
 } from "lucide-react";
 import { useEffect, useState, type Dispatch, type ReactNode, type SetStateAction } from "react";
-import { toast } from "sonner";
 import z from "zod";
 
 import { removeFiles, updateCategories } from "@/buf/raker/v1/raker-RakerServer_connectquery";
@@ -39,7 +38,7 @@ import { VSCOIcon } from "@/components/ui/svgs/vsco";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useConfirmationDialog } from "@/hooks/use-confirmation-dialog";
 import { useUser } from "@/hooks/user-provider";
-import { editFileTypesRegexp, timestampFormat } from "@/lib/utils";
+import { editFileTypesRegexp, timestampFormat, Toaster } from "@/lib/utils";
 import { cn, writeClipboard, defaultPostTypes, inPWA, uniqueArraysEqualAsSets } from "@/lib/utils";
 import { HistoryPostCategoryForm } from "@/routes/history";
 
@@ -343,13 +342,9 @@ export function EditHistoryCategoriesForm({
 						categories: availableCategories.filter((category) => categories.includes(category)),
 					};
 				});
-				toast.success("Updated", {
-					position: "top-center",
-				});
+				Toaster.success("Updated");
 			} catch (err) {
-				toast.error((err as Error).message, {
-					position: "top-center",
-				});
+				Toaster.error(err as Error);
 			}
 		},
 	});
@@ -563,9 +558,7 @@ export function Result({
 			setResult(updatedResult.files.length === 0 ? null : updatedResult);
 			setSelection({ selectedFiles: [], anchorFile: null });
 		} catch (err) {
-			toast.error((err as Error).message, {
-				position: "top-center",
-			});
+			Toaster.error(err as Error);
 		}
 	};
 
