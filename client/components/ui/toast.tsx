@@ -5,8 +5,6 @@ import * as React from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-const toast = ToastPrimitive.createToastManager();
-
 function ToastProvider({ ...props }: ToastPrimitive.Provider.Props) {
 	return <ToastPrimitive.Provider {...props} />;
 }
@@ -16,6 +14,15 @@ function ToastPortal({ ...props }: ToastPrimitive.Portal.Props) {
 }
 
 export type ToastPosition = "top-left" | "top-center" | "top-right" | "bottom-left" | "bottom-center" | "bottom-right";
+
+export interface ToastData {
+	// type?: "success" | "error" | "info" | "warning" | "loading";
+	// title?: React.ReactNode;
+	// description?: React.ReactNode;
+	position?: ToastPosition;
+}
+
+const toast = ToastPrimitive.createToastManager<ToastData>();
 
 const positionClasses: Record<ToastPosition, string> = {
 	"top-left": "top-9 left-4 flex-col",
@@ -34,8 +41,9 @@ function ToastViewport({ className, position = "top-center", ...props }: ToastVi
 	return (
 		<ToastPrimitive.Viewport
 			data-slot="toast-viewport"
+			data-position={position}
 			className={cn(
-				"pointer-events-none fixed z-50 flex max-h-screen w-full max-w-sm p-4 outline-none",
+				"group/viewport pointer-events-none fixed z-50 flex max-h-screen w-full max-w-sm p-4 outline-none",
 				positionClasses[position],
 				className,
 			)}
@@ -49,13 +57,19 @@ function Toast({ className, ...props }: ToastPrimitive.Root.Props) {
 		<ToastPrimitive.Root
 			data-slot="toast"
 			className={cn(
-				"group/toast pointer-events-auto absolute right-0 bottom-0 z-[calc(1000-var(--toast-index))] w-full origin-bottom rounded-2xl border bg-popover text-popover-foreground shadow-lg will-change-transform outline-none select-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50",
-				"[--gap:0.75rem] [--height:var(--toast-frontmost-height,var(--toast-height))] [--offset-y:calc(var(--toast-offset-y)*-1+calc(var(--toast-index)*var(--gap)*-1)+var(--toast-swipe-movement-y))] [--peek:0.75rem] [--scale:calc(max(0,1-(var(--toast-index)*0.1)))] [--shrink:calc(1-var(--scale))]",
-				"h-(--height) [transform:translateX(var(--toast-swipe-movement-x))_translateY(calc(var(--toast-swipe-movement-y)-(var(--toast-index)*var(--peek))-(var(--shrink)*var(--height))))_scale(var(--scale))] [transition:transform_500ms_cubic-bezier(0.22,1,0.36,1),opacity_500ms,height_150ms]",
-				"after:absolute after:top-full after:left-0 after:h-[calc(var(--gap)+1px)] after:w-full after:content-['']",
+				"group/toast pointer-events-auto absolute right-0 z-[calc(1000-var(--toast-index))] w-full rounded-2xl border bg-popover text-popover-foreground shadow-lg will-change-transform outline-none select-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50",
+				"group-data-[position^=bottom]/viewport:bottom-0 group-data-[position^=bottom]/viewport:origin-bottom",
+				"group-data-[position^=top]/viewport:top-0 group-data-[position^=top]/viewport:origin-top",
+				"[--y-sign:-1] group-data-[position^=top]/viewport:[--y-sign:1]",
+				"[--gap:0.75rem] [--height:var(--toast-frontmost-height,var(--toast-height))] [--peek:0.75rem] [--scale:calc(max(0,1-(var(--toast-index)*0.1)))] [--shrink:calc(1-var(--scale))]",
+				"[--offset-y:calc(var(--toast-offset-y)*var(--y-sign)+calc(var(--toast-index)*var(--gap)*var(--y-sign))+var(--toast-swipe-movement-y))]",
+				"h-(--height) [transform:translateX(var(--toast-swipe-movement-x))_translateY(calc(var(--toast-swipe-movement-y)+(var(--toast-index)*var(--peek)*var(--y-sign))+(var(--shrink)*var(--height)*var(--y-sign))))_scale(var(--scale))] [transition:transform_500ms_cubic-bezier(0.22,1,0.36,1),opacity_500ms,height_150ms]",
+				"after:absolute after:left-0 after:h-[calc(var(--gap)+1px)] after:w-full after:content-['']",
+				"group-data-[position^=bottom]/viewport:after:top-full",
+				"group-data-[position^=top]/viewport:after:bottom-full",
 				"data-expanded:h-(--toast-height) data-expanded:[transform:translateX(var(--toast-swipe-movement-x))_translateY(var(--offset-y))]",
-				"data-limited:opacity-0 data-starting-style:[transform:translateY(150%)]",
-				"[&[data-ending-style]:not([data-limited]):not([data-swipe-direction])]:[transform:translateY(150%)]",
+				"data-limited:opacity-0 data-starting-style:[transform:translateY(calc(150%*var(--y-sign)*-1))]",
+				"[&[data-ending-style]:not([data-limited]):not([data-swipe-direction])]:[transform:translateY(calc(150%*var(--y-sign)*-1))]",
 				"data-ending-style:data-[swipe-direction=down]:[transform:translateY(calc(var(--toast-swipe-movement-y)+150%))]",
 				"data-ending-style:data-[swipe-direction=left]:[transform:translateX(calc(var(--toast-swipe-movement-x)-150%))_translateY(var(--offset-y))]",
 				"data-ending-style:data-[swipe-direction=right]:[transform:translateX(calc(var(--toast-swipe-movement-x)+150%))_translateY(var(--offset-y))]",
@@ -151,7 +165,8 @@ function ToastIcon({ type }: { type: string | undefined }) {
 	}
 
 	if (type === "error") {
-		icon = <OctagonXIcon className="text-destructive" aria-hidden="true" />;
+		// className="text-destructive"
+		icon = <OctagonXIcon aria-hidden="true" />;
 	}
 
 	if (type === "loading") {
@@ -172,10 +187,12 @@ function ToastIcon({ type }: { type: string | undefined }) {
 	);
 }
 
-function ToastList() {
-	const { toasts } = ToastPrimitive.useToastManager();
+function ToastList({ position, defaultPosition }: { position: ToastPosition; defaultPosition: ToastPosition }) {
+	const { toasts } = ToastPrimitive.useToastManager<ToastData>();
 
-	return toasts.map((toastItem) => (
+	const filteredToasts = toasts.filter((toastItem) => (toastItem.data?.position || defaultPosition) === position);
+
+	return filteredToasts.map((toastItem) => (
 		<Toast key={toastItem.id} toast={toastItem}>
 			<ToastContent>
 				<ToastIcon type={toastItem.type} />
@@ -190,14 +207,20 @@ function ToastList() {
 	));
 }
 
-function Toaster({ children, toastManager = toast, ...props }: ToastPrimitive.Provider.Props) {
+interface ToasterProps extends ToastPrimitive.Provider.Props {
+	position?: ToastPosition;
+}
+
+function Toaster({ children, position: defaultPosition = "top-center", toastManager = toast, ...props }: ToasterProps) {
 	return (
 		<ToastProvider toastManager={toastManager} {...props}>
 			{children}
 			<ToastPortal>
-				<ToastViewport>
-					<ToastList />
-				</ToastViewport>
+				{(Object.keys(positionClasses) as ToastPosition[]).map((pos) => (
+					<ToastViewport key={pos} position={pos}>
+						<ToastList position={pos} defaultPosition={defaultPosition} />
+					</ToastViewport>
+				))}
 			</ToastPortal>
 		</ToastProvider>
 	);

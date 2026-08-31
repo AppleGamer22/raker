@@ -3,7 +3,7 @@ import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
 import { PostType } from "@/buf/raker/v1/raker_pb";
-import { toast } from "@/components/ui/toast";
+import { toast, type ToastPosition } from "@/components/ui/toast";
 
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));
@@ -28,18 +28,24 @@ export const defaultPostTypes = [
 ];
 
 export class Toaster {
-	static success(message: string) {
-		toast.add<string>({
+	static success(message: string, position: ToastPosition = "top-center") {
+		toast.add({
 			title: message,
 			type: "success",
+			data: {
+				position,
+			},
 		});
 	}
 
-	static error(err: Error) {
-		toast.add<string>({
+	static error(err: Error, position: ToastPosition = "top-center") {
+		toast.add({
 			description: (err as Error).message,
 			title: (err as Error).name,
 			type: "error",
+			data: {
+				position,
+			},
 		});
 	}
 }
