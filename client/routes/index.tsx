@@ -31,6 +31,7 @@ import { Input } from "@/components/ui/input";
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from "@/components/ui/input-group";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
+import { Textarea } from "@/components/ui/textarea";
 import { useConfirmationDialog } from "@/hooks/use-confirmation-dialog";
 import { useUser } from "@/hooks/user-provider";
 import { Toaster } from "@/lib/utils";
@@ -134,7 +135,9 @@ function PasskeysForm() {
 					Logo
 				</div>
 				<div className="min-w-0 flex-1">
-					<Input
+					<Textarea
+						rows={1}
+						className="min-h-fit resize-none overflow-hidden"
 						value={name}
 						onChange={(e) => setName(e.target.value)}
 						placeholder="Rename this passkey"
