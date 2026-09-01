@@ -32,7 +32,17 @@ export const Route = createFileRoute("/tiktok")({
 function TikTok() {
 	const { owner, post, incognito } = Route.useSearch();
 	const navigate = Route.useNavigate();
-	const { form, result, setResult, isPending } = useExtractorForm({
+	const {
+		form,
+		result,
+		setResult,
+		isPending,
+		sprayModeEnabled,
+		setSprayModeEnabled,
+		sprayTimes,
+		setSprayTimes,
+		sprayConfigEnabled,
+	} = useExtractorForm({
 		navigate,
 		search: { owner, post, incognito },
 		validators: {
@@ -46,10 +56,25 @@ function TikTok() {
 		autoSubmitWhen: ({ owner, post }) => owner.length > 0 || post.length > 0,
 		buildMutationArgs: ({ owner, post, incognito }) => ({ owner, post, incognito }),
 		buildSearch: ({ owner, post, incognito }) => ({ owner, post, incognito }),
+		sprayConfig: {
+			enabled: true,
+			isSuccessResult: (result) => result.issueLog.length === 0,
+			delayMs: 500,
+		},
 	});
 
 	return (
-		<ExtractorFormShell form={form} isPending={isPending} result={result} setResult={setResult}>
+		<ExtractorFormShell
+			form={form}
+			isPending={isPending}
+			result={result}
+			setResult={setResult}
+			sprayConfigEnabled={sprayConfigEnabled}
+			sprayModeEnabled={sprayModeEnabled}
+			sprayTimes={sprayTimes}
+			onSprayModeChange={setSprayModeEnabled}
+			onSprayTimesChange={setSprayTimes}
+		>
 			<form.Field name="owner">
 				{(field) => (
 					<ExtractorTextField field={field} label="owner" placeholder="https://tiktok.com/@OWNER/video/id" />

@@ -19,6 +19,12 @@ import { Toaster } from "@/lib/utils";
 
 type ExtractorSearchValues = Record<string, string | boolean>;
 
+type ExtractorSprayConfig<TMutation extends DescMethodUnary> = {
+	enabled: boolean;
+	isSuccessResult?: (result: MessageShape<TMutation["output"]>) => boolean;
+	delayMs?: number;
+};
+
 type ExtractorFormConfig<
 	TFrom extends string,
 	TSearch extends ExtractorSearchValues,
@@ -34,6 +40,7 @@ type ExtractorFormConfig<
 	autoSubmitWhen: (search: TSearch) => boolean;
 	buildMutationArgs: (search: TSearch) => MessageInitShape<TMutation["input"]>;
 	buildSearch: (search: TSearch, result: MessageShape<TMutation["output"]>) => TSearch;
+	sprayConfig?: ExtractorSprayConfig<TMutation>;
 };
 
 export function useExtractorForm<
@@ -48,21 +55,54 @@ export function useExtractorForm<
 	autoSubmitWhen,
 	buildMutationArgs,
 	buildSearch,
+	sprayConfig,
 }: ExtractorFormConfig<TFrom, TSearch, TMutation>) {
 	const { username } = useUser();
 	const extractorMutation = useMutation<TMutation["input"], TMutation["output"]>(mutation);
 	const [result, setResult] = useState<MessageShape<TMutation["output"]> | null>(null);
+	const [sprayModeEnabled, setSprayModeEnabled] = useState(false);
+	const [sprayTimes, setSprayTimes] = useState(3);
 
 	const form = useForm({
 		defaultValues: search,
 		validators,
 		onSubmit: async ({ value }) => {
-			try {
-				const result = await extractorMutation.mutateAsync(buildMutationArgs(value));
-				setResult(result);
-				await navigate({ search: buildSearch(value, result) as never, replace: true });
-			} catch (err) {
-				Toaster.error(err as Error);
+			if (sprayModeEnabled && sprayConfig?.enabled) {
+				// Spray mode: loop until success or max times reached
+				let currentResult: MessageShape<TMutation["output"]> | null = null;
+				const isSuccess = sprayConfig.isSuccessResult ?? (() => true);
+				const delayMs = sprayConfig.delayMs ?? 500;
+
+				for (let i = 0; i < sprayTimes; i++) {
+					try {
+						currentResult = await extractorMutation.mutateAsync(buildMutationArgs(value));
+
+						if (isSuccess(currentResult)) {
+							setResult(currentResult);
+							await navigate({
+								search: buildSearch(value, currentResult) as never,
+								replace: true,
+							});
+							break;
+						}
+
+						// Add a small delay between attempts
+						if (i < sprayTimes - 1) {
+							await new Promise((resolve) => setTimeout(resolve, delayMs));
+						}
+					} catch (err) {
+						Toaster.error(err as Error);
+					}
+				}
+			} else {
+				try {
+					// Normal mode: single execution
+					const result = await extractorMutation.mutateAsync(buildMutationArgs(value));
+					setResult(result);
+					await navigate({ search: buildSearch(value, result) as never, replace: true });
+				} catch (err) {
+					Toaster.error(err as Error);
+				}
 			}
 		},
 	});
@@ -95,6 +135,11 @@ export function useExtractorForm<
 		result,
 		setResult,
 		isPending: extractorMutation.isPending,
+		sprayModeEnabled,
+		setSprayModeEnabled,
+		sprayTimes,
+		setSprayTimes,
+		sprayConfigEnabled: sprayConfig?.enabled ?? false,
 	};
 }
 
@@ -143,18 +188,63 @@ export function ExtractorSwitchField({ field, label }: { field: AnyFieldApi; lab
 	);
 }
 
+export function ExtractorSprayControls({
+	enabled,
+	onEnabledChange,
+	times,
+	onTimesChange,
+}: {
+	enabled: boolean;
+	onEnabledChange: (enabled: boolean) => void;
+	times: number;
+	onTimesChange: (times: number) => void;
+}) {
+	return (
+		<div className="flex flex-row items-center gap-2 sm:gap-4">
+			<Field orientation="horizontal" className="w-fit">
+				<FieldLabel htmlFor="spray-mode">Spray Mode</FieldLabel>
+				<Switch id="spray-mode" checked={enabled} onCheckedChange={onEnabledChange} />
+			</Field>
+			<Field className="w-fit">
+				{/* <FieldLabel htmlFor="spray-times">Spray Times</FieldLabel> */}
+				<Input
+					id="spray-times"
+					type="number"
+					min="1"
+					max="100"
+					value={times}
+					onChange={(e) => onTimesChange(Math.max(1, parseInt(e.target.value) || 1))}
+					disabled={!enabled}
+					placeholder="Number of attempts"
+					className="w-20"
+				/>
+			</Field>
+		</div>
+	);
+}
+
 export function ExtractorFormShell({
 	form,
 	isPending,
 	result,
 	setResult,
 	children,
+	sprayConfigEnabled = false,
+	sprayModeEnabled = false,
+	sprayTimes = 3,
+	onSprayModeChange,
+	onSprayTimesChange,
 }: {
 	form: { handleSubmit: () => void };
 	isPending: boolean;
 	result: ScrapeResponse | null;
 	setResult: Dispatch<SetStateAction<ScrapeResponse | null>>;
 	children: ReactNode;
+	sprayConfigEnabled?: boolean;
+	sprayModeEnabled?: boolean;
+	sprayTimes?: number;
+	onSprayModeChange?: (enabled: boolean) => void;
+	onSprayTimesChange?: (times: number) => void;
 }) {
 	return (
 		<form
@@ -166,6 +256,14 @@ export function ExtractorFormShell({
 			<CardContent>
 				<FieldGroup>
 					{children}
+					{sprayConfigEnabled && (
+						<ExtractorSprayControls
+							enabled={sprayModeEnabled}
+							onEnabledChange={onSprayModeChange || (() => {})}
+							times={sprayTimes}
+							onTimesChange={onSprayTimesChange || (() => {})}
+						/>
+					)}
 					<Field orientation="horizontal">
 						<Button type="submit" disabled={isPending} className="mb-3 w-full sm:w-auto">
 							Submit
