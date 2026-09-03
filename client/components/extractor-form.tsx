@@ -15,6 +15,7 @@ import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { Switch } from "@/components/ui/switch";
+import { toast } from "@/components/ui/toast";
 import { useUser } from "@/hooks/user-provider";
 import { Toaster } from "@/lib/utils";
 
@@ -80,6 +81,7 @@ export function useExtractorForm<
 
 						if (isSuccess(currentResult)) {
 							setResult(currentResult);
+							toast.close();
 							await navigate({
 								search: buildSearch(value, currentResult) as never,
 								replace: true,
