@@ -5,6 +5,14 @@
 	"version": "0.2.0",
 	"configurations": [
 		{
+			"name": "client",
+			"request": "launch",
+			"type": "chrome",
+			"browserLaunchLocation": null,
+			"url": "http://localhost:5173",
+			"webRoot": "${workspaceFolder}"
+		},
+		{
 			"name": "server",
 			"type": "go",
 			"request": "launch",

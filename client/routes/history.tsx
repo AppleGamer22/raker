@@ -2,7 +2,16 @@ import { useMutation } from "@connectrpc/connect-query";
 import { useForm } from "@tanstack/react-form";
 import { createFileRoute, Link, stripSearchParams, useNavigate } from "@tanstack/react-router";
 import { EllipsisIcon, SearchIcon } from "lucide-react";
-import { Fragment, useEffect, useId, useState, type Dispatch, type ReactNode, type SetStateAction } from "react";
+import {
+	Fragment,
+	useEffect,
+	useId,
+	useRef,
+	useState,
+	type Dispatch,
+	type ReactNode,
+	type SetStateAction,
+} from "react";
 import { z } from "zod";
 
 import { searchHistory, searchHistoryOwners } from "@/buf/raker/v1/raker-RakerServer_connectquery";
@@ -404,35 +413,75 @@ function HistoryCard({
 	);
 }
 
-export function HistorySearchForm({
-	owners,
+function serializeSearchParams({
 	types,
 	exclusive,
-	setExclusive,
 	categories,
+	owners,
+	page,
+}: {
+	types: PostType[];
+	exclusive: boolean;
+	categories: string[];
+	owners?: OwnerPostType[];
+	page: bigint;
+}) {
+	return JSON.stringify({
+		types: [...types].sort(),
+		exclusive,
+		categories: [...categories].sort(),
+		owners: (owners ?? [])
+			.map(({ owner, type }) => ({ owner, type }))
+			.sort((a, b) => a.owner.localeCompare(b.owner) || a.type - b.type),
+		page: page.toString(),
+	});
+}
+
+export function HistorySearchForm({
+	owners = [],
+	types = defaultPostTypes,
+	exclusive = false,
+	categories = [],
+	currentPage = 1n,
+	pageSize = 30,
+	autoSubmit = true,
 	setHistories,
-	currentPage,
 	setTotalCount,
 	setHistorySearchPending,
+	setExclusive,
+	onSuccess,
+	onError,
+	onSearchSubmit,
 	onResult,
 }: {
 	owners?: OwnerPostType[];
-	types: PostType[];
-	exclusive: boolean;
-	setExclusive: Dispatch<SetStateAction<boolean>>;
-	categories: string[];
-	setHistories: Dispatch<SetStateAction<ScrapeResponse[]>>;
-	currentPage: bigint;
-	setTotalCount: Dispatch<SetStateAction<bigint>>;
-	setHistorySearchPending: Dispatch<SetStateAction<boolean>>;
-	onResult: (formValue: {
+	types?: PostType[];
+	exclusive?: boolean;
+	categories?: string[];
+	currentPage?: bigint;
+	pageSize?: number;
+	autoSubmit?: boolean;
+	setHistories?: Dispatch<SetStateAction<ScrapeResponse[]>>;
+	setTotalCount?: Dispatch<SetStateAction<bigint>>;
+	setHistorySearchPending?: Dispatch<SetStateAction<boolean>>;
+	setExclusive?: Dispatch<SetStateAction<boolean>>;
+	onSuccess?: (result: { histories: ScrapeResponse[]; totalCount: bigint }) => void;
+	onError?: (error: Error) => void;
+	onSearchSubmit?: (values: {
+		categories: string[];
+		exclusive: boolean;
+		ownersSearchValue: OwnerPostType[];
+		types: PostType[];
+		page: bigint;
+	}) => void;
+	onResult?: (formValue: {
 		categories: string[];
 		exclusive: boolean;
 		ownersSearchValue: OwnerPostType[];
 		types: PostType[];
 	}) => void;
 }) {
-	const { username, categories: availableCategories, isCategoriesPending } = useUser();
+	const { username, isCategoriesPending, categories: availableCategories } = useUser();
 
 	const ownersMutation = useMutation(searchHistoryOwners);
 	const searchHistoryMutation = useMutation(searchHistory);
@@ -441,6 +490,56 @@ export function HistorySearchForm({
 	const [ownersSearchOptions, setOwnersSearchOptions] = useState<OwnerPostType[]>(owners ?? []);
 
 	const anchor = useComboboxAnchor();
+	const lastExecutedSearch = useRef<string>("");
+
+	const executeSearch = async (searchParams: {
+		categories: string[];
+		exclusive: boolean;
+		types: PostType[];
+		owners: OwnerPostType[];
+		page: bigint;
+	}) => {
+		const key = serializeSearchParams({
+			types: searchParams.types,
+			exclusive: searchParams.exclusive,
+			categories: searchParams.categories,
+			owners: searchParams.owners,
+			page: searchParams.page,
+		});
+
+		lastExecutedSearch.current = key;
+		setHistorySearchPending?.(true);
+
+		const handleSearchSubmit = onSearchSubmit ?? onResult;
+		handleSearchSubmit?.({
+			categories: searchParams.categories,
+			exclusive: searchParams.exclusive,
+			ownersSearchValue: searchParams.owners,
+			types: searchParams.types,
+			page: searchParams.page,
+		});
+
+		try {
+			const { histories, totalCount } = await searchHistoryMutation.mutateAsync({
+				categories: searchParams.categories,
+				exclusive: searchParams.exclusive,
+				types: searchParams.types,
+				owners: searchParams.owners.map(({ owner }) => owner),
+				page: searchParams.page,
+				pageSize,
+			});
+
+			setTotalCount?.(totalCount);
+			setHistories?.(histories);
+			setExclusive?.(searchParams.exclusive);
+			onSuccess?.({ histories, totalCount });
+		} catch (err) {
+			onError?.(err as Error);
+			Toaster.error(err as Error);
+		} finally {
+			setHistorySearchPending?.(false);
+		}
+	};
 
 	const form = useForm({
 		defaultValues: {
@@ -448,48 +547,54 @@ export function HistorySearchForm({
 			exclusive,
 			categories,
 			ownerSearchTerm: "",
-			ownersSearchValue: owners,
+			ownersSearchValue: owners ?? [],
 		} as HistoryFormValues,
 		validators: {
 			onChange: historyFormSchema,
 			onSubmit: historyFormSchema,
 		},
 		onSubmit: async ({ value: { categories, exclusive, ownersSearchValue, types } }) => {
-			setHistorySearchPending(true);
-			try {
-				const { histories, totalCount } = await searchHistoryMutation.mutateAsync({
-					categories,
-					exclusive,
-					types,
-					owners: ownersSearchValue.map(({ owner }) => owner),
-					page: currentPage,
-					pageSize: 30,
-				});
-				setTotalCount(totalCount);
-				setHistories(histories);
-				setExclusive(exclusive);
-				onResult({ categories, exclusive, ownersSearchValue, types });
-			} catch (err) {
-				Toaster.error(err as Error);
-			}
-			setHistorySearchPending(false);
+			await executeSearch({
+				categories,
+				exclusive,
+				types,
+				owners: ownersSearchValue,
+				page: currentPage,
+			});
 		},
 	});
 
+	const validSearchCategories = categories.filter((category) => availableCategories.includes(category));
+	const incomingSearchKey = serializeSearchParams({
+		types,
+		exclusive,
+		categories: validSearchCategories,
+		owners,
+		page: currentPage,
+	});
+
 	useEffect(() => {
-		if (isCategoriesPending) {
+		if (!autoSubmit || isCategoriesPending || username === null) {
 			return;
 		}
 
-		const validSearchCategories = categories.filter((category) => availableCategories.includes(category));
+		if (lastExecutedSearch.current === incomingSearchKey) {
+			return;
+		}
 
 		form.setFieldValue("types", types);
 		form.setFieldValue("exclusive", exclusive);
 		form.setFieldValue("categories", validSearchCategories);
 		form.setFieldValue("ownersSearchValue", owners ?? []);
 
-		form.handleSubmit();
-	}, [availableCategories, categories, exclusive, form, isCategoriesPending, currentPage, owners, types, username]);
+		executeSearch({
+			categories: validSearchCategories,
+			exclusive,
+			types,
+			owners: owners ?? [],
+			page: currentPage,
+		});
+	}, [autoSubmit, incomingSearchKey, isCategoriesPending, username]);
 
 	return (
 		<form
@@ -740,20 +845,13 @@ export function HistorySearchForm({
 }
 
 function History() {
-	const { types, exclusive: initialExclusive, categories, owners, page } = Route.useSearch();
+	const { types, exclusive, categories, owners, page } = Route.useSearch();
 	const navigate = useNavigate({ from: Route.fullPath });
 	const { username } = useUser();
 	const linkTarget = inPWA() ? undefined : "_blank";
-	const [exclusive, setExclusive] = useState(false);
-	const [searchHistoryPending, setSearchHistoryPending] = useState(initialExclusive);
 	const [totalCount, setTotalCount] = useState(0n);
-	const [currentPage, setCurrentPage] = useState(BigInt(page));
 	const [histories, setHistories] = useState<ScrapeResponse[]>([]);
-
-	useEffect(() => {
-		const normalizedPage = BigInt(page);
-		setCurrentPage(normalizedPage);
-	}, [page]);
+	const [isSearching, setIsSearching] = useState(false);
 
 	useEffect(() => {
 		if (username === null) {
@@ -763,11 +861,19 @@ function History() {
 
 	const HistoryPageinationButtons = () => (
 		<>
-			{searchHistoryPending && <Progress className="pt-2" value={null} />}
+			{isSearching && <Progress className="pt-2" value={null} />}
 			<HistoryPagination
-				current={currentPage}
+				current={page}
 				total={totalCount / 30n + (totalCount % 30n ? 1n : 0n)}
-				onChange={setCurrentPage}
+				onChange={(nextPage) => {
+					navigate({
+						search: (prev) => ({
+							...prev,
+							page: nextPage,
+						}),
+						replace: true,
+					});
+				}}
 			/>
 		</>
 	);
@@ -777,20 +883,20 @@ function History() {
 			<HistorySearchForm
 				owners={owners}
 				categories={categories}
-				currentPage={currentPage}
 				exclusive={exclusive}
-				setExclusive={setExclusive}
 				types={types}
+				currentPage={page}
+				autoSubmit={true}
 				setHistories={setHistories}
 				setTotalCount={setTotalCount}
-				setHistorySearchPending={setSearchHistoryPending}
-				onResult={async ({ categories, exclusive, ownersSearchValue, types }) => {
+				setHistorySearchPending={setIsSearching}
+				onSearchSubmit={async ({ categories, exclusive, ownersSearchValue, types, page }) => {
 					await navigate({
 						search: {
 							types,
 							exclusive,
 							categories,
-							page: currentPage,
+							page,
 							owners: ownersSearchValue,
 						},
 						replace: true,
