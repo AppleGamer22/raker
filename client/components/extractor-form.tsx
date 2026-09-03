@@ -4,6 +4,7 @@ import type { AnyFieldApi } from "@tanstack/form-core";
 import { useForm } from "@tanstack/react-form";
 import type { StandardSchemaV1 } from "@tanstack/react-form";
 import type { UseNavigateResult } from "@tanstack/router-core";
+import { SprayCanIcon } from "lucide-react";
 import { useEffect, useRef, useState, type Dispatch, type ReactNode, type SetStateAction } from "react";
 
 import type { ScrapeResponse } from "@/buf/raker/v1/raker_pb";
@@ -202,8 +203,9 @@ export function ExtractorSprayControls({
 	return (
 		<div className="flex flex-row items-center gap-2 sm:gap-4">
 			<Field orientation="horizontal" className="w-fit">
-				<FieldLabel htmlFor="spray-mode">Spray Mode</FieldLabel>
 				<Switch id="spray-mode" checked={enabled} onCheckedChange={onEnabledChange} />
+				<SprayCanIcon />
+				{/* <FieldLabel htmlFor="spray-mode">Spray Mode</FieldLabel> */}
 			</Field>
 			<Field className="w-fit">
 				{/* <FieldLabel htmlFor="spray-times">Spray Times</FieldLabel> */}
