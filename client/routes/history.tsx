@@ -859,7 +859,7 @@ function History() {
 		}
 	}, [navigate, username]);
 
-	const HistoryPageinationButtons = () => (
+	const historyPageinationButtons = (
 		<>
 			{isSearching && <Progress className="pt-2" value={null} />}
 			<HistoryPagination
@@ -904,7 +904,7 @@ function History() {
 				}}
 			/>
 			{totalCount > 0 && <Label className="my-2 justify-center">{totalCount} results</Label>}
-			<HistoryPageinationButtons />
+			{historyPageinationButtons}
 			<div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
 				{histories.map((history) => (
 					<HistoryCard
@@ -916,7 +916,7 @@ function History() {
 					/>
 				))}
 			</div>
-			{histories.length > 0 && <HistoryPageinationButtons />}
+			{histories.length > 0 && historyPageinationButtons}
 		</CardContent>
 	);
 }
