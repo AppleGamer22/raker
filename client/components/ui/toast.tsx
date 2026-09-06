@@ -3,6 +3,7 @@ import { XIcon, CircleCheckIcon, InfoIcon, TriangleAlertIcon, OctagonXIcon, Load
 import * as React from "react";
 
 import { Button } from "@/components/ui/button";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 
 function ToastProvider({ ...props }: ToastPrimitive.Provider.Props) {
@@ -33,29 +34,68 @@ const positionClasses: Record<ToastPosition, string> = {
 	"bottom-right": "bottom-9 right-4 flex-col-reverse",
 };
 
+const ToastPositionContext = React.createContext<ToastPosition | undefined>(undefined);
+
+function getSwipeDirection(position: ToastPosition, isMobile: boolean): ToastPrimitive.Root.Props["swipeDirection"] {
+	const isTop = position.startsWith("top");
+
+	if (isMobile) {
+		return isTop ? ["up", "left", "right"] : ["down", "left", "right"];
+	}
+
+	switch (position) {
+		case "top-left":
+			return ["up", "left"];
+		case "top-center":
+			return ["up", "left", "right"];
+		case "top-right":
+			return ["up", "right"];
+		case "bottom-left":
+			return ["down", "left"];
+		case "bottom-center":
+			return ["down", "left", "right"];
+		case "bottom-right":
+			return ["down", "right"];
+	}
+}
+
 interface ToastViewportProps extends ToastPrimitive.Viewport.Props {
 	position?: ToastPosition;
 }
 
 function ToastViewport({ className, position = "top-center", ...props }: ToastViewportProps) {
 	return (
-		<ToastPrimitive.Viewport
-			data-slot="toast-viewport"
-			data-position={position}
-			className={cn(
-				"group/viewport pointer-events-none fixed z-50 flex max-h-screen w-full max-w-sm p-4 outline-none",
-				positionClasses[position],
-				className,
-			)}
-			{...props}
-		/>
+		<ToastPositionContext.Provider value={position}>
+			<ToastPrimitive.Viewport
+				data-slot="toast-viewport"
+				data-position={position}
+				className={cn(
+					"group/viewport pointer-events-none fixed z-50 flex max-h-screen w-full max-w-sm p-4 outline-none",
+					positionClasses[position],
+					className,
+				)}
+				{...props}
+			/>
+		</ToastPositionContext.Provider>
 	);
 }
 
-function Toast({ className, ...props }: ToastPrimitive.Root.Props) {
+interface ToastProps extends ToastPrimitive.Root.Props {
+	position?: ToastPosition;
+}
+
+function Toast({ className, position: positionProp, swipeDirection: swipeDirectionProp, ...props }: ToastProps) {
+	const contextPosition = React.useContext(ToastPositionContext);
+	const resolvedPosition =
+		positionProp ?? (props.toast?.data as ToastData | undefined)?.position ?? contextPosition ?? "top-center";
+
+	const isMobile = useIsMobile();
+	const swipeDirection = swipeDirectionProp ?? getSwipeDirection(resolvedPosition, isMobile);
+
 	return (
 		<ToastPrimitive.Root
 			data-slot="toast"
+			swipeDirection={swipeDirection}
 			className={cn(
 				"group/toast pointer-events-auto absolute right-0 z-[calc(1000-var(--toast-index))] w-full rounded-2xl border bg-popover text-popover-foreground shadow-lg will-change-transform outline-none select-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50",
 				"group-data-[position^=bottom]/viewport:bottom-0 group-data-[position^=bottom]/viewport:origin-bottom",
@@ -193,7 +233,7 @@ function ToastList({ position, defaultPosition }: { position: ToastPosition; def
 	const filteredToasts = toasts.filter((toastItem) => (toastItem.data?.position || defaultPosition) === position);
 
 	return filteredToasts.map((toastItem) => (
-		<Toast key={toastItem.id} toast={toastItem}>
+		<Toast key={toastItem.id} toast={toastItem} position={position}>
 			<ToastContent>
 				<ToastIcon type={toastItem.type} />
 				<div className="flex min-w-0 flex-1 flex-col gap-1">
@@ -241,6 +281,8 @@ export {
 	ToastTitle,
 	ToastViewport,
 	createToastManager,
+	getSwipeDirection,
 	toast,
 	useToastManager,
 };
+export type { ToastProps };
