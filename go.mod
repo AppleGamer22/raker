@@ -1,6 +1,6 @@
 module github.com/AppleGamer22/raker
 
-go 1.25.0
+go 1.26.0
 
 require (
 	connectrpc.com/connect v1.20.0
@@ -20,7 +20,7 @@ require (
 	github.com/stretchr/testify v1.12.1
 	go.mongodb.org/mongo-driver v1.17.9
 	go.yaml.in/yaml/v3 v3.0.5
-	golang.org/x/crypto v0.55.0
+	golang.org/x/crypto v0.56.0
 	golang.org/x/net v0.58.0
 	google.golang.org/genproto v0.0.0-20260414002931-afd174a4e478
 	google.golang.org/protobuf v1.36.12
