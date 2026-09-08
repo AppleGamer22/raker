@@ -5,8 +5,10 @@ import { X, Minus, Plus, Locate, Maximize, Loader2 } from "lucide-react";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { type PopupOptions, type MarkerOptions } from "maplibre-gl";
 import * as MapLibreGL from "maplibre-gl";
-// Import the worker file as a URL using Vite's ?url suffix
-import workerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?url";
+// Import the worker file as a URL using Vite's ?worker&url suffix
+// https://vite.dev/guide/assets#importing-script-as-a-worker
+// https://vite.dev/guide/assets#explicit-url-imports
+import workerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url";
 import {
 	createContext,
 	forwardRef,
