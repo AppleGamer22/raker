@@ -345,7 +345,15 @@ WHERE
 			AND coordinates IS NOT NULL))
 ORDER BY
 	post_date DESC
-LIMIT $9::int OFFSET $8::int
+LIMIT CASE WHEN NOT $7::boolean THEN
+	$9::int
+ELSE
+	NULL
+END OFFSET CASE WHEN NOT $7::boolean THEN
+	$8::int
+ELSE
+	0
+END
 `
 
 type HistoryGetPageParams struct {

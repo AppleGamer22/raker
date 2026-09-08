@@ -84,17 +84,22 @@ func (server *RakerServer) SearchHistory(ctx context.Context, request *v1.Histor
 		postTypes = append(postTypes, PostTypePB2DB(postType))
 	}
 
-	count, err := server.DBClient.HistoryCount(context.Background(), db.HistoryCountParams{
-		PostTypes:           postTypes,
-		Exclusive:           request.Exclusive,
-		Categories:          request.Categories,
-		UserCategories:      user.Categories,
-		PostOwners:          request.Owners,
-		Username:            user.Username,
-		OnlyWithCoordinates: request.OnlyWithCoordinates,
-	})
-	if err != nil {
-		return &v1.HistoryResponse{}, connect.NewError(connect.CodeInternal, err)
+	var count int64
+	var err error
+
+	if !request.OnlyWithCoordinates {
+		count, err = server.DBClient.HistoryCount(context.Background(), db.HistoryCountParams{
+			PostTypes:           postTypes,
+			Exclusive:           request.Exclusive,
+			Categories:          request.Categories,
+			UserCategories:      user.Categories,
+			PostOwners:          request.Owners,
+			Username:            user.Username,
+			OnlyWithCoordinates: request.OnlyWithCoordinates,
+		})
+		if err != nil {
+			return &v1.HistoryResponse{}, connect.NewError(connect.CodeInternal, err)
+		}
 	}
 
 	page := request.Page
@@ -124,6 +129,10 @@ func (server *RakerServer) SearchHistory(ctx context.Context, request *v1.Histor
 
 	if err != nil {
 		return &v1.HistoryResponse{}, connect.NewError(connect.CodeInternal, err)
+	}
+
+	if request.OnlyWithCoordinates {
+		count = int64(len(histories))
 	}
 
 	return &v1.HistoryResponse{

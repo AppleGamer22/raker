@@ -195,7 +195,15 @@ WHERE
 			AND coordinates IS NOT NULL))
 ORDER BY
 	post_date DESC
-LIMIT sqlc.arg(page_size)::int OFFSET sqlc.arg(page)::int;
+LIMIT CASE WHEN NOT sqlc.arg(only_with_coordinates)::boolean THEN
+	sqlc.arg(page_size)::int
+ELSE
+	NULL
+END OFFSET CASE WHEN NOT sqlc.arg(only_with_coordinates)::boolean THEN
+	sqlc.arg(page)::int
+ELSE
+	0
+END;
 
 -- name: HistoryCount :one
 SELECT

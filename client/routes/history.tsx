@@ -340,7 +340,7 @@ function HistoryPostTypeForm({
 	);
 }
 
-function HistoryCard({
+export function HistoryCard({
 	history,
 	username,
 	exclusive,
@@ -441,6 +441,7 @@ export function HistorySearchForm({
 	owners = [],
 	types = defaultPostTypes,
 	exclusive = false,
+	onlyWithCoordinates = false,
 	categories = [],
 	currentPage = 1n,
 	pageSize = 30,
@@ -461,6 +462,7 @@ export function HistorySearchForm({
 	currentPage?: bigint;
 	pageSize?: number;
 	autoSubmit?: boolean;
+	onlyWithCoordinates?: boolean;
 	setHistories?: Dispatch<SetStateAction<ScrapeResponse[]>>;
 	setTotalCount?: Dispatch<SetStateAction<bigint>>;
 	setHistorySearchPending?: Dispatch<SetStateAction<boolean>>;
@@ -527,6 +529,7 @@ export function HistorySearchForm({
 				owners: searchParams.owners.map(({ owner }) => owner),
 				page: searchParams.page,
 				pageSize,
+				onlyWithCoordinates,
 			});
 
 			setTotalCount?.(totalCount);
