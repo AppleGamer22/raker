@@ -211,7 +211,20 @@ export function Menu({
 								<SidebarMenuButton
 									disabled={!isSignedIn}
 									isActive={isActiveRoute("/map")}
-									render={<Link disabled={!isSignedIn} to="/map" onClick={() => onNavigate?.()} />}
+									render={
+										<Link
+											disabled={!isSignedIn}
+											to="/map"
+											search={{
+												categories: isCategoriesPending ? [] : categories,
+												exclusive: false,
+												owners: [],
+												types: defaultPostTypes,
+												page: 1n,
+											}}
+											onClick={() => onNavigate?.()}
+										/>
+									}
 								>
 									<MapIcon className="w-4" />
 									Map

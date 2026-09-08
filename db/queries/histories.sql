@@ -190,6 +190,9 @@ WHERE
 			WHERE
 				Histories.post_owner LIKE FORMAT('%%%s%%', owner_filter.owner)))
 	AND username = sqlc.arg(username)::text
+	AND (NOT sqlc.arg(only_with_coordinates)::boolean
+		OR (sqlc.arg(only_with_coordinates)::boolean
+			AND coordinates IS NOT NULL))
 ORDER BY
 	post_date DESC
 LIMIT sqlc.arg(page_size)::int OFFSET sqlc.arg(page)::int;
@@ -215,7 +218,10 @@ WHERE
 				unnest(sqlc.slice(post_owners)::text[]) AS owner_filter(OWNER)
 			WHERE
 				Histories.post_owner LIKE FORMAT('%%%s%%', owner_filter.owner)))
-	AND username = sqlc.arg(username)::text;
+	AND username = sqlc.arg(username)::text
+	AND (NOT sqlc.arg(only_with_coordinates)::boolean
+		OR (sqlc.arg(only_with_coordinates)::boolean
+			AND coordinates IS NOT NULL));
 
 -- name: HistoryOwners :many
 SELECT DISTINCT
@@ -236,7 +242,10 @@ WHERE
 				OR (COALESCE(sqlc.slice(categories)::text[], ARRAY[]::text[]) = COALESCE(sqlc.slice(user_categories)::text[], ARRAY[]::text[])
 					AND cardinality(categories) = 0))))
 	AND post_owner LIKE FORMAT('%%%s%%', sqlc.arg(post_owner)::text)
-	AND username = sqlc.arg(username)::text;
+	AND username = sqlc.arg(username)::text
+	AND (NOT sqlc.arg(only_with_coordinates)::boolean
+		OR (sqlc.arg(only_with_coordinates)::boolean
+			AND coordinates IS NOT NULL));
 
 -- name: HistoryRemove :exec
 DELETE FROM Histories

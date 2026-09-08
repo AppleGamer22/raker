@@ -67,7 +67,7 @@ import { useUser } from "@/hooks/user-provider";
 import { timestampFormat, Toaster } from "@/lib/utils";
 import { defaultPostTypes, inPWA } from "@/lib/utils";
 
-const historySearchDefaults = {
+export const historySearchDefaults = {
 	exclusive: false,
 	categories: [],
 	page: 1n,

@@ -424,25 +424,26 @@ export function Result({
 	const [fileCacheBusters, setFileCacheBusters] = useState<Record<string, number | string>>({});
 	const files = result.files;
 
-	useEffect(() => {
-		setSelection((current) => {
-			const selectedFiles = files.filter((file) => current.selectedFiles.includes(file));
-			const anchorFile =
-				current.anchorFile !== null && files.includes(current.anchorFile)
-					? current.anchorFile
-					: (selectedFiles[0] ?? null);
+	const [prevFiles, setPrevFiles] = useState(files);
+	if (prevFiles !== files) {
+		setPrevFiles(files);
+		const selectedFiles = files.filter((file) => selection.selectedFiles.includes(file));
+		const anchorFile =
+			selection.anchorFile !== null && files.includes(selection.anchorFile)
+				? selection.anchorFile
+				: (selectedFiles[0] ?? null);
 
-			if (selectedFiles.length === current.selectedFiles.length && anchorFile === current.anchorFile) {
-				return current;
-			}
+		if (selectedFiles.length !== selection.selectedFiles.length || anchorFile !== selection.anchorFile) {
+			setSelection({ selectedFiles, anchorFile });
+		}
+	}
 
-			return { selectedFiles, anchorFile };
-		});
-	}, [files]);
-
-	useEffect(() => {
+	const [prevResultKey, setPrevResultKey] = useState(`${result.postType}:${result.postOwner}:${result.post}`);
+	const currentResultKey = `${result.postType}:${result.postOwner}:${result.post}`;
+	if (prevResultKey !== currentResultKey) {
+		setPrevResultKey(currentResultKey);
 		setFileCacheBusters({});
-	}, [result.postType, result.postOwner, result.post]);
+	}
 
 	useEffect(() => {
 		const handler = (ev: Event) => {

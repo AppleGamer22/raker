@@ -89,21 +89,23 @@ message UpdateCategoriesRequest {
 }
 
 message HistoryOwnersRequest {
-  string owner = 1;
+  bool only_with_coordinates = 1;
   bool exclusive = 2;
-  int64 page = 3;
-  int32 page_size = 4;
-  repeated string categories = 5;
-  repeated PostType types = 6;
+  string owner = 3;
+  int64 page = 4;
+  int32 page_size = 5;
+  repeated string categories = 6;
+  repeated PostType types = 7;
 }
 
 message HistoryRequest {
-  bool exclusive = 1;
-  int64 page = 2;
-  int32 page_size = 3;
-  repeated string owners = 4;
-  repeated string categories = 5;
-  repeated PostType types = 6;
+  bool only_with_coordinates = 1;
+  bool exclusive = 2;
+  int64 page = 3;
+  int32 page_size = 4;
+  repeated string owners = 5;
+  repeated string categories = 6;
+  repeated PostType types = 7;
 }
 
 message HistoryResponse {

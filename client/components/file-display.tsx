@@ -7,6 +7,7 @@ import "react-resizable/css/styles.css";
 import {
 	useCallback,
 	useEffect,
+	useMemo,
 	useRef,
 	useState,
 	type CSSProperties,
@@ -195,11 +196,13 @@ export function FileDisplay({
 	cacheBuster?: number | string;
 	onDuplicateFile?: (duplicateFileName: string) => void;
 }) {
+	const [prevCacheBuster, setPrevCacheBuster] = useState(cacheBuster);
 	const [cacheBusterState, setCacheBusterState] = useState<number | string | undefined>(cacheBuster ?? undefined);
 
-	useEffect(() => {
+	if (prevCacheBuster !== cacheBuster) {
+		setPrevCacheBuster(cacheBuster);
 		setCacheBusterState(cacheBuster ?? undefined);
-	}, [cacheBuster]);
+	}
 
 	useEffect(() => {
 		const handler = (ev: Event) => {
@@ -504,6 +507,25 @@ function CropPreview({
 	const [displaySize, setDisplaySize] = useState({ width: 0, height: 0 });
 	const [cropNatural, setCropNatural] = useState<CropRect | null>(null);
 
+	const [prevFile, setPrevFile] = useState(file);
+	const [prevResetSignal, setPrevResetSignal] = useState(resetSignal);
+
+	if (prevFile !== file) {
+		setPrevFile(file);
+		setCropNatural(null);
+		setNaturalSize({ width: 0, height: 0 });
+		setDisplaySize({ width: 0, height: 0 });
+	}
+
+	if (prevResetSignal !== resetSignal) {
+		setPrevResetSignal(resetSignal);
+		setCropNatural(null);
+	}
+
+	useEffect(() => {
+		latestCropNaturalRef.current = null;
+	}, [file, resetSignal]);
+
 	const updateDisplaySize = useCallback(() => {
 		const img = imageRef.current;
 		if (!img) {
@@ -514,13 +536,6 @@ function CropPreview({
 		const height = Math.round(rect.height);
 		setDisplaySize((prev) => (prev.width === width && prev.height === height ? prev : { width, height }));
 	}, []);
-
-	useEffect(() => {
-		setCropNatural(null);
-		setNaturalSize({ width: 0, height: 0 });
-		setDisplaySize({ width: 0, height: 0 });
-		latestCropNaturalRef.current = null;
-	}, [file]);
 
 	useEffect(() => {
 		const img = imageRef.current;
@@ -543,37 +558,18 @@ function CropPreview({
 
 	const scaleX = naturalSize.width > 0 && displaySize.width > 0 ? naturalSize.width / displaySize.width : 1;
 	const scaleY = naturalSize.height > 0 && displaySize.height > 0 ? naturalSize.height / displaySize.height : 1;
-	const getFullDisplayRect = useCallback(() => {
-		return clampRect(
-			{
-				x1: 0,
-				y1: 0,
-				x2: displaySize.width,
-				y2: displaySize.height,
-			},
-			displaySize.width,
-			displaySize.height,
-		);
-	}, [displaySize.height, displaySize.width]);
 
-	useEffect(() => {
-		if (
-			cropNatural ||
-			displaySize.width === 0 ||
-			displaySize.height === 0 ||
-			naturalSize.width === 0 ||
-			naturalSize.height === 0
-		) {
-			return;
-		}
-		const initialDisplay = getFullDisplayRect();
-		const initialNatural = displayToNatural(initialDisplay, scaleX, scaleY);
-		latestCropNaturalRef.current = initialNatural;
-		setCropNatural(initialNatural);
-	}, [cropNatural, displaySize, naturalSize, scaleX, scaleY, getFullDisplayRect]);
+	const initialNatural = useMemo(
+		() =>
+			naturalSize.width > 0 && naturalSize.height > 0
+				? { x1: 0, y1: 0, x2: naturalSize.width, y2: naturalSize.height }
+				: null,
+		[naturalSize.height, naturalSize.width],
+	);
+	const activeCropNatural = cropNatural ?? initialNatural;
 
-	const cropDisplay = cropNatural
-		? clampRect(naturalToDisplay(cropNatural, scaleX, scaleY), displaySize.width, displaySize.height)
+	const cropDisplay = activeCropNatural
+		? clampRect(naturalToDisplay(activeCropNatural, scaleX, scaleY), displaySize.width, displaySize.height)
 		: null;
 	const cropDisplayBox = cropDisplay ? cropRectToBox(cropDisplay) : null;
 	const edgeContact =
@@ -589,7 +585,7 @@ function CropPreview({
 			: { left: false, right: false, top: false, bottom: false };
 	const maxConstraints: [number, number] = cropDisplay
 		? (() => {
-				const handle = activeHandle ?? resizeHandleRef.current ?? "se";
+				const handle = activeHandle ?? "se";
 				const maxWidth = handle.includes("w")
 					? (cropDisplayBox?.x ?? 0) + (cropDisplayBox?.width ?? 0)
 					: displaySize.width - (cropDisplayBox?.x ?? 0);
@@ -612,7 +608,7 @@ function CropPreview({
 			latestCropNaturalRef.current = nextNatural;
 			setCropNatural(nextNatural);
 		},
-		[displaySize, scaleX, scaleY],
+		[displaySize, scaleX, scaleY, setCropNatural],
 	);
 
 	const emitCropChange = useCallback(
@@ -628,23 +624,6 @@ function CropPreview({
 		},
 		[onCropChange, naturalSize],
 	);
-
-	useEffect(() => {
-		if (
-			resetSignal === undefined ||
-			displaySize.width === 0 ||
-			displaySize.height === 0 ||
-			naturalSize.width === 0 ||
-			naturalSize.height === 0
-		) {
-			return;
-		}
-		const fullDisplay = getFullDisplayRect();
-		const fullNatural = displayToNatural(fullDisplay, scaleX, scaleY);
-		latestCropNaturalRef.current = fullNatural;
-		setCropNatural(fullNatural);
-		emitCropChange(fullNatural);
-	}, [resetSignal, displaySize, naturalSize, scaleX, scaleY, emitCropChange, getFullDisplayRect]);
 
 	const handleResize = useCallback(
 		(_event: SyntheticEvent, data: ResizeCallbackData) => {
@@ -672,8 +651,8 @@ function CropPreview({
 	const handleResizeStop = useCallback(() => {
 		resizeHandleRef.current = null;
 		setActiveHandle(null);
-		emitCropChange(latestCropNaturalRef.current);
-	}, [emitCropChange]);
+		emitCropChange(latestCropNaturalRef.current ?? initialNatural);
+	}, [emitCropChange, initialNatural]);
 
 	const handleDragStart = useCallback(
 		(event: ReactPointerEvent<HTMLDivElement>) => {
@@ -721,14 +700,14 @@ function CropPreview({
 				if (target.releasePointerCapture) {
 					target.releasePointerCapture(event.pointerId);
 				}
-				emitCropChange(latestCropNaturalRef.current);
+				emitCropChange(latestCropNaturalRef.current ?? initialNatural);
 			};
 
 			target.addEventListener("pointermove", handleMove);
 			target.addEventListener("pointerup", handleUp);
 			target.addEventListener("pointercancel", handleUp);
 		},
-		[cropDisplay, cropDisplayBox, updateFromDisplay, emitCropChange],
+		[cropDisplay, cropDisplayBox, updateFromDisplay, emitCropChange, initialNatural],
 	);
 
 	const url =
@@ -837,12 +816,22 @@ export function FileSheet({
 		setIsFullImageCrop(nextIsFullImageCrop);
 	}, []);
 
-	useEffect(() => {
+	const [prevFile, setPrevFile] = useState(file);
+	const [prevSelectedTab, setPrevSelectedTab] = useState(selectedTab);
+
+	if (prevFile !== file) {
+		setPrevFile(file);
+		setCropRect(null);
+		setIsFullImageCrop(true);
+	}
+
+	if (prevSelectedTab !== selectedTab) {
+		setPrevSelectedTab(selectedTab);
 		if (selectedTab !== "crop") {
 			setCropRect(null);
 			setIsFullImageCrop(true);
 		}
-	}, [selectedTab, file]);
+	}
 
 	return (
 		<Sheet>

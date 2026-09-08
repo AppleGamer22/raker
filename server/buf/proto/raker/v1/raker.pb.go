@@ -800,15 +800,16 @@ func (x *HistoryOwnersRequest) GetTypes() []PostType {
 }
 
 type HistoryRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Exclusive     bool                   `protobuf:"varint,1,opt,name=exclusive,proto3" json:"exclusive,omitempty"`
-	Page          int64                  `protobuf:"varint,2,opt,name=page,proto3" json:"page,omitempty"`
-	PageSize      int32                  `protobuf:"varint,3,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
-	Owners        []string               `protobuf:"bytes,4,rep,name=owners,proto3" json:"owners,omitempty"`
-	Categories    []string               `protobuf:"bytes,5,rep,name=categories,proto3" json:"categories,omitempty"`
-	Types         []PostType             `protobuf:"varint,6,rep,packed,name=types,proto3,enum=raker.v1.PostType" json:"types,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state               protoimpl.MessageState `protogen:"open.v1"`
+	OnlyWithCoordinates bool                   `protobuf:"varint,1,opt,name=only_with_coordinates,json=onlyWithCoordinates,proto3" json:"only_with_coordinates,omitempty"`
+	Exclusive           bool                   `protobuf:"varint,2,opt,name=exclusive,proto3" json:"exclusive,omitempty"`
+	Page                int64                  `protobuf:"varint,3,opt,name=page,proto3" json:"page,omitempty"`
+	PageSize            int32                  `protobuf:"varint,4,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	Owners              []string               `protobuf:"bytes,5,rep,name=owners,proto3" json:"owners,omitempty"`
+	Categories          []string               `protobuf:"bytes,6,rep,name=categories,proto3" json:"categories,omitempty"`
+	Types               []PostType             `protobuf:"varint,7,rep,packed,name=types,proto3,enum=raker.v1.PostType" json:"types,omitempty"`
+	unknownFields       protoimpl.UnknownFields
+	sizeCache           protoimpl.SizeCache
 }
 
 func (x *HistoryRequest) Reset() {
@@ -839,6 +840,13 @@ func (x *HistoryRequest) ProtoReflect() protoreflect.Message {
 // Deprecated: Use HistoryRequest.ProtoReflect.Descriptor instead.
 func (*HistoryRequest) Descriptor() ([]byte, []int) {
 	return file_raker_v1_raker_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *HistoryRequest) GetOnlyWithCoordinates() bool {
+	if x != nil {
+		return x.OnlyWithCoordinates
+	}
+	return false
 }
 
 func (x *HistoryRequest) GetExclusive() bool {
@@ -1341,16 +1349,17 @@ const file_raker_v1_raker_proto_rawDesc = "" +
 	"\n" +
 	"categories\x18\x05 \x03(\tR\n" +
 	"categories\x12(\n" +
-	"\x05types\x18\x06 \x03(\x0e2\x12.raker.v1.PostTypeR\x05types\"\xc1\x01\n" +
-	"\x0eHistoryRequest\x12\x1c\n" +
-	"\texclusive\x18\x01 \x01(\bR\texclusive\x12\x12\n" +
-	"\x04page\x18\x02 \x01(\x03R\x04page\x12\x1b\n" +
-	"\tpage_size\x18\x03 \x01(\x05R\bpageSize\x12\x16\n" +
-	"\x06owners\x18\x04 \x03(\tR\x06owners\x12\x1e\n" +
+	"\x05types\x18\x06 \x03(\x0e2\x12.raker.v1.PostTypeR\x05types\"\xf5\x01\n" +
+	"\x0eHistoryRequest\x122\n" +
+	"\x15only_with_coordinates\x18\x01 \x01(\bR\x13onlyWithCoordinates\x12\x1c\n" +
+	"\texclusive\x18\x02 \x01(\bR\texclusive\x12\x12\n" +
+	"\x04page\x18\x03 \x01(\x03R\x04page\x12\x1b\n" +
+	"\tpage_size\x18\x04 \x01(\x05R\bpageSize\x12\x16\n" +
+	"\x06owners\x18\x05 \x03(\tR\x06owners\x12\x1e\n" +
 	"\n" +
-	"categories\x18\x05 \x03(\tR\n" +
+	"categories\x18\x06 \x03(\tR\n" +
 	"categories\x12(\n" +
-	"\x05types\x18\x06 \x03(\x0e2\x12.raker.v1.PostTypeR\x05types\"j\n" +
+	"\x05types\x18\a \x03(\x0e2\x12.raker.v1.PostTypeR\x05types\"j\n" +
 	"\x0fHistoryResponse\x12\x1f\n" +
 	"\vtotal_count\x18\x01 \x01(\x03R\n" +
 	"totalCount\x126\n" +
