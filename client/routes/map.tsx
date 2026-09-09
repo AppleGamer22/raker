@@ -147,7 +147,7 @@ function MapSearch() {
 	const [_totalCount, setTotalCount] = useState(0n);
 	const [isSearching, setIsSearching] = useState(false);
 	return (
-		<CardContent className="h-[calc(100dvh-2*var(--header-height))] overflow-hidden sm:h-[calc(100dvh-var(--header-height))]">
+		<CardContent className="flex h-[calc(100dvh-2*var(--header-height))] flex-col overflow-hidden sm:h-[calc(100dvh-var(--header-height))]">
 			<HistorySearchForm
 				owners={owners}
 				categories={categories}
@@ -173,7 +173,7 @@ function MapSearch() {
 				onlyWithCoordinates
 			/>
 			{isSearching && <Progress className="pt-2" value={null} />}
-			<Map className="rounded-xl">
+			<Map className="min-h-0 flex-1 rounded-xl">
 				{/* {histories.map((history) => (
 					<MapMarker
 						key={`${history.postType}-${history.postOwner}-${history.post}`}
