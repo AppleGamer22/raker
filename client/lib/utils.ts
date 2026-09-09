@@ -96,3 +96,5 @@ export const editFileTypesRegexp = new RegExp(
 	`\\.(${FileTypePatterns.JPEG})|(${FileTypePatterns.WebP})|(${FileTypePatterns.MP4})\$`,
 );
 export const cropFileTypesRegexp = new RegExp(`\\.(${FileTypePatterns.JPEG})|(${FileTypePatterns.WebP})\$`);
+
+export const primaryColor = getComputedStyle(document.documentElement).getPropertyValue("--color-primary").trim();

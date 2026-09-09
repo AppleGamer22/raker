@@ -7,8 +7,9 @@ import { PostType, type ScrapeResponse } from "@/buf/raker/v1/raker_pb";
 import { CardContent } from "@/components/ui/card";
 import { Map, MapControls, MapPopup, useMap } from "@/components/ui/map";
 import { Progress } from "@/components/ui/progress";
+import { useTheme } from "@/hooks/theme-provider";
 import { useUser } from "@/hooks/user-provider";
-import { inPWA } from "@/lib/utils";
+import { inPWA, primaryColor } from "@/lib/utils";
 
 import { HistoryCard, historySearchDefaults, HistorySearchForm } from "./history";
 export const Route = createFileRoute("/map")({
@@ -34,6 +35,7 @@ export const Route = createFileRoute("/map")({
 
 function MarkersLayer({ histories }: { histories: ScrapeResponse[] }) {
 	const { username } = useUser();
+	const { computedTheme } = useTheme();
 	const { exclusive } = Route.useSearch();
 	const linkTarget = inPWA() ? undefined : "_blank";
 	const { map, isLoaded } = useMap();
@@ -66,10 +68,11 @@ function MarkersLayer({ histories }: { histories: ScrapeResponse[] }) {
 			type: "circle",
 			source: sourceId,
 			paint: {
+				// size-4 rounded-full border-2 border-black bg-primary shadow-lg dark:border-white
 				"circle-radius": 6,
-				"circle-color": "#3b82f6",
+				"circle-color": primaryColor,
 				"circle-stroke-width": 2,
-				"circle-stroke-color": "#ffffff",
+				"circle-stroke-color": computedTheme === "dark" ? "white" : "black",
 				// add more paint properties here to customize the appearance of the markers
 			},
 		});
@@ -111,7 +114,7 @@ function MarkersLayer({ histories }: { histories: ScrapeResponse[] }) {
 				// ignore cleanup errors
 			}
 		};
-	}, [map, isLoaded, sourceId, layerId, histories]);
+	}, [map, isLoaded, sourceId, layerId, computedTheme, histories]);
 
 	return (
 		<>
