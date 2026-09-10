@@ -15,7 +15,7 @@
 		"@bufbuild/protobuf": "^2.14.1",
 		"@connectrpc/connect": "^2.1.1",
 		"@connectrpc/connect-query": "^2.3.1",
-		"@connectrpc/connect-web": "^2.1.2",
+		"@connectrpc/connect-web": "^2.2.0",
 		"@simplewebauthn/browser": "^14.0.0",
 		"@tailwindcss/vite": "^4.3.3",
 		"@tanstack/react-devtools": "^0.10.12",
