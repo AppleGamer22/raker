@@ -3,7 +3,7 @@ module github.com/AppleGamer22/raker
 go 1.26.0
 
 require (
-	connectrpc.com/connect v1.20.0
+	connectrpc.com/connect v1.21.0
 	connectrpc.com/validate v0.6.0
 	github.com/HugoSmits86/nativewebp v1.3.0
 	github.com/charmbracelet/log v1.0.0
