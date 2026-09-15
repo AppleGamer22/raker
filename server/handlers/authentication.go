@@ -133,75 +133,57 @@ func (server *RakerServer) GetUserFromCookie(cookie *http.Cookie) (db.User, erro
 	return user, err
 }
 
-func (server *RakerServer) NewAuthInterceptor() connect.UnaryInterceptorFunc {
-	return func(next connect.UnaryFunc) connect.UnaryFunc {
-		return func(
-			ctx context.Context,
-			req connect.AnyRequest,
-		) (connect.AnyResponse, error) {
-			if _, ok := unauthenticatedProcedures[req.Spec().Procedure]; ok {
-				// sign-in/up
-				return next(ctx, req)
-			}
+func (server *RakerServer) GetUserFromHeader(header http.Header) (*db.User, error) {
+	cookies, err := http.ParseCookie(header.Get("Cookie"))
+	if err != nil {
+		log.Error(err)
+		return nil, connect.NewError(
+			connect.CodeUnauthenticated,
+			errors.New("no token provided"),
+		)
+	}
 
-			if _, ok := optionalAuthenticatedProcedures[req.Spec().Procedure]; ok {
-				cookies, err := http.ParseCookie(req.Header().Get("Cookie"))
-				if err != nil {
-					log.Error(err)
-					return nil, connect.NewError(
-						connect.CodeUnauthenticated,
-						errors.New("no token provided"),
-					)
-				}
-
-				for _, cookie := range cookies {
-					if cookie.Name != "jwt" {
-						continue
-					}
-
-					user, err := server.GetUserFromCookie(cookie)
-					if err != nil {
-						log.Error(err)
-						return nil, err
-					}
-
-					ctxWithUser := context.WithValue(ctx, authenticatedUserKey, user)
-					return next(ctxWithUser, req)
-				}
-
-				return next(ctx, req)
-			}
-
-			cookies, err := http.ParseCookie(req.Header().Get("Cookie"))
-
-			if err != nil {
-				log.Error(err)
-				return nil, connect.NewError(
-					connect.CodeUnauthenticated,
-					errors.New("no token provided"),
-				)
-			}
-
-			for _, cookie := range cookies {
-				if cookie.Name != "jwt" {
-					continue
-				}
-
-				user, err := server.GetUserFromCookie(cookie)
-				if err != nil {
-					log.Error(err)
-					return nil, err
-				}
-
-				ctxWithUser := context.WithValue(ctx, authenticatedUserKey, user)
-				return next(ctxWithUser, req)
-			}
-
-			return nil, connect.NewError(
-				connect.CodeUnauthenticated,
-				errors.New("no token provided"),
-			)
+	for _, cookie := range cookies {
+		if cookie.Name != "jwt" {
+			continue
 		}
+
+		user, err := server.GetUserFromCookie(cookie)
+		if err != nil {
+			log.Error(err)
+			return nil, err
+		}
+
+		return &user, nil
+	}
+
+	return nil, nil
+}
+
+func (server *RakerServer) NewAuthGate() connect.RequestGateFunc {
+	return func(ctx context.Context, spec connect.Spec, peer connect.Peer, header http.Header) (context.Context, error) {
+		if _, ok := unauthenticatedProcedures[spec.Procedure]; ok {
+			// sign-in/up
+			return ctx, nil
+		}
+
+		user, err := server.GetUserFromHeader(header)
+		if err != nil {
+			return nil, err
+		}
+
+		if user != nil {
+			return context.WithValue(ctx, authenticatedUserKey, *user), nil
+		}
+
+		if _, ok := optionalAuthenticatedProcedures[spec.Procedure]; ok {
+			return ctx, nil
+		}
+
+		return nil, connect.NewError(
+			connect.CodeUnauthenticated,
+			errors.New("no token provided"),
+		)
 	}
 }
 

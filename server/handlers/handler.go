@@ -131,7 +131,8 @@ func NewRakerServer() (*RakerServer, error) {
 
 	rpcPath, handler := v1connect.NewRakerServerHandler(
 		&rakerServer,
-		connect.WithInterceptors(rakerServer.NewAuthInterceptor(), validate.NewInterceptor()),
+		connect.WithRequestGate(rakerServer.NewAuthGate()),
+		connect.WithInterceptors(validate.NewInterceptor()),
 	)
 
 	mux := http.NewServeMux()
