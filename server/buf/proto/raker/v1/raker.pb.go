@@ -716,15 +716,16 @@ func (x *UpdateCategoriesRequest) GetCategories() []string {
 }
 
 type HistoryOwnersRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Owner         string                 `protobuf:"bytes,1,opt,name=owner,proto3" json:"owner,omitempty"`
-	Exclusive     bool                   `protobuf:"varint,2,opt,name=exclusive,proto3" json:"exclusive,omitempty"`
-	Page          int64                  `protobuf:"varint,3,opt,name=page,proto3" json:"page,omitempty"`
-	PageSize      int32                  `protobuf:"varint,4,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
-	Categories    []string               `protobuf:"bytes,5,rep,name=categories,proto3" json:"categories,omitempty"`
-	Types         []PostType             `protobuf:"varint,6,rep,packed,name=types,proto3,enum=raker.v1.PostType" json:"types,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state               protoimpl.MessageState `protogen:"open.v1"`
+	OnlyWithCoordinates bool                   `protobuf:"varint,1,opt,name=only_with_coordinates,json=onlyWithCoordinates,proto3" json:"only_with_coordinates,omitempty"`
+	Exclusive           bool                   `protobuf:"varint,2,opt,name=exclusive,proto3" json:"exclusive,omitempty"`
+	Owner               string                 `protobuf:"bytes,3,opt,name=owner,proto3" json:"owner,omitempty"`
+	Page                int64                  `protobuf:"varint,4,opt,name=page,proto3" json:"page,omitempty"`
+	PageSize            int32                  `protobuf:"varint,5,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	Categories          []string               `protobuf:"bytes,6,rep,name=categories,proto3" json:"categories,omitempty"`
+	Types               []PostType             `protobuf:"varint,7,rep,packed,name=types,proto3,enum=raker.v1.PostType" json:"types,omitempty"`
+	unknownFields       protoimpl.UnknownFields
+	sizeCache           protoimpl.SizeCache
 }
 
 func (x *HistoryOwnersRequest) Reset() {
@@ -757,11 +758,11 @@ func (*HistoryOwnersRequest) Descriptor() ([]byte, []int) {
 	return file_raker_v1_raker_proto_rawDescGZIP(), []int{10}
 }
 
-func (x *HistoryOwnersRequest) GetOwner() string {
+func (x *HistoryOwnersRequest) GetOnlyWithCoordinates() bool {
 	if x != nil {
-		return x.Owner
+		return x.OnlyWithCoordinates
 	}
-	return ""
+	return false
 }
 
 func (x *HistoryOwnersRequest) GetExclusive() bool {
@@ -769,6 +770,13 @@ func (x *HistoryOwnersRequest) GetExclusive() bool {
 		return x.Exclusive
 	}
 	return false
+}
+
+func (x *HistoryOwnersRequest) GetOwner() string {
+	if x != nil {
+		return x.Owner
+	}
+	return ""
 }
 
 func (x *HistoryOwnersRequest) GetPage() int64 {
@@ -1340,16 +1348,17 @@ const file_raker_v1_raker_proto_rawDesc = "" +
 	"\x04post\x18\x03 \x01(\tR\x04post\x12\x1e\n" +
 	"\n" +
 	"categories\x18\x04 \x03(\tR\n" +
-	"categories\"\xc5\x01\n" +
-	"\x14HistoryOwnersRequest\x12\x14\n" +
-	"\x05owner\x18\x01 \x01(\tR\x05owner\x12\x1c\n" +
-	"\texclusive\x18\x02 \x01(\bR\texclusive\x12\x12\n" +
-	"\x04page\x18\x03 \x01(\x03R\x04page\x12\x1b\n" +
-	"\tpage_size\x18\x04 \x01(\x05R\bpageSize\x12\x1e\n" +
+	"categories\"\xf9\x01\n" +
+	"\x14HistoryOwnersRequest\x122\n" +
+	"\x15only_with_coordinates\x18\x01 \x01(\bR\x13onlyWithCoordinates\x12\x1c\n" +
+	"\texclusive\x18\x02 \x01(\bR\texclusive\x12\x14\n" +
+	"\x05owner\x18\x03 \x01(\tR\x05owner\x12\x12\n" +
+	"\x04page\x18\x04 \x01(\x03R\x04page\x12\x1b\n" +
+	"\tpage_size\x18\x05 \x01(\x05R\bpageSize\x12\x1e\n" +
 	"\n" +
-	"categories\x18\x05 \x03(\tR\n" +
+	"categories\x18\x06 \x03(\tR\n" +
 	"categories\x12(\n" +
-	"\x05types\x18\x06 \x03(\x0e2\x12.raker.v1.PostTypeR\x05types\"\xf5\x01\n" +
+	"\x05types\x18\a \x03(\x0e2\x12.raker.v1.PostTypeR\x05types\"\xf5\x01\n" +
 	"\x0eHistoryRequest\x122\n" +
 	"\x15only_with_coordinates\x18\x01 \x01(\bR\x13onlyWithCoordinates\x12\x1c\n" +
 	"\texclusive\x18\x02 \x01(\bR\texclusive\x12\x12\n" +

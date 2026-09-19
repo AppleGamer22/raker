@@ -789,6 +789,7 @@ export function HistorySearchForm({
 																			exclusive: form.getFieldValue("exclusive"),
 																			types: form.getFieldValue("types"),
 																			owner: ownerSearchQuery,
+																			onlyWithCoordinates,
 																		},
 																	);
 																	setOwnersSearchOptions(owners);

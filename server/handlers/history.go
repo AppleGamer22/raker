@@ -160,12 +160,13 @@ func (server *RakerServer) SearchHistoryOwners(ctx context.Context, request *v1.
 	}
 
 	result, err := server.DBClient.HistoryOwners(ctx, db.HistoryOwnersParams{
-		PostTypes:      postTypes,
-		Exclusive:      request.Exclusive,
-		Categories:     request.Categories,
-		UserCategories: user.Categories,
-		PostOwner:      request.Owner,
-		Username:       user.Username,
+		PostTypes:           postTypes,
+		Exclusive:           request.Exclusive,
+		Categories:          request.Categories,
+		UserCategories:      user.Categories,
+		PostOwner:           request.Owner,
+		Username:            user.Username,
+		OnlyWithCoordinates: request.OnlyWithCoordinates,
 	})
 
 	if err != nil {
