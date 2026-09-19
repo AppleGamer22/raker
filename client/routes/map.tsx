@@ -1,16 +1,16 @@
 import { createFileRoute, stripSearchParams, useNavigate } from "@tanstack/react-router";
 import * as maplibregl from "maplibre-gl";
-import workerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url";
 
 import "maplibre-gl/dist/maplibre-gl.css";
+import workerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url";
 import { useMemo, useState, useCallback, createElement, type ComponentProps } from "react";
 import Map, {
-	NavigationControl,
 	Popup,
 	Source,
 	Layer,
 	type LayerProps,
 	type MapLayerMouseEvent,
+	NavigationControl,
 } from "react-map-gl/maplibre";
 import z from "zod";
 
@@ -176,7 +176,7 @@ function MapSearch() {
 						<CleanLayer {...layerStyle} />
 					</CleanSource>
 
-					<NavigationControl position="bottom-right" showCompass showZoom />
+					<NavigationControl position="bottom-right" />
 
 					{selectedPoint && (
 						<Popup

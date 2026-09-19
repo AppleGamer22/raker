@@ -188,3 +188,30 @@
 		height: 26px;
 	}
 }
+
+@layer components {
+	/* Override MapLibre control group to use Shadcn borders and backgrounds */
+	.maplibregl-ctrl-group {
+		@apply overflow-hidden !rounded-md !border !border-border !bg-background !shadow-sm;
+	}
+
+	/* Fix the transparent buttons caused by Tailwind preflight */
+	.maplibregl-ctrl-group button {
+		@apply flex h-8 w-8 items-center justify-center !bg-background transition-colors;
+	}
+
+	/* Shadcn hover effect */
+	.maplibregl-ctrl-group button:hover {
+		@apply !bg-muted;
+	}
+
+	/* Add borders between the buttons */
+	.maplibregl-ctrl-group button:not(:last-child) {
+		@apply !border-b !border-border;
+	}
+
+	/* MapLibre's default icons are black. If you use a dark theme, invert them to white */
+	.dark .maplibregl-ctrl-icon {
+		filter: invert(1) opacity(0.8);
+	}
+}
