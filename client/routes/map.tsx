@@ -134,6 +134,7 @@ function MapSearch() {
 			<HistorySearchForm
 				owners={owners}
 				categories={categories}
+				availablePostTypes={[PostType.VSCO]}
 				exclusive={exclusive}
 				types={types}
 				currentPage={page}

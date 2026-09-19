@@ -233,7 +233,7 @@ export function HistoryPostCategoryForm({
 }) {
 	const prefix = formPrefix ?? useId();
 
-	return (
+	return availableCategories.length <= 1 ? null : (
 		<FieldGroup>
 			<FieldSet>
 				<FieldLegend className="flex items-center">
@@ -299,8 +299,10 @@ export function HistoryPostCategoryForm({
 function HistoryPostTypeForm({
 	formPrefix,
 	typesField,
+	availablePostTypes = defaultPostTypes,
 }: {
 	formPrefix?: string;
+	availablePostTypes?: PostType[];
 	typesField: {
 		name: string;
 		value: HistoryFormValues["types"];
@@ -309,31 +311,33 @@ function HistoryPostTypeForm({
 }) {
 	const prefix = formPrefix ?? useId();
 
-	return (
+	return availablePostTypes.length <= 1 ? null : (
 		<FieldGroup>
 			<FieldSet>
 				<FieldLegend>Post Types</FieldLegend>
 				<FieldGroup className="flex flex-row flex-wrap gap-1 *:w-auto">
-					{postTypeOptions.map(({ id, value, label, Icon }) => (
-						<FieldLabel key={id} htmlFor={`${prefix}-${id}`} className="max-w-fit">
-							<Field orientation="horizontal">
-								<Checkbox
-									id={`${prefix}-${id}`}
-									name={typesField.name}
-									checked={typesField.value.includes(value)}
-									onCheckedChange={(checked) => {
-										typesField.onToggleType(value, !!checked);
-									}}
-								/>
-								<FieldContent>
-									<FieldTitle>
-										<Icon className="w-4" />
-										{label}
-									</FieldTitle>
-								</FieldContent>
-							</Field>
-						</FieldLabel>
-					))}
+					{postTypeOptions
+						.filter(({ value }) => availablePostTypes.includes(value))
+						.map(({ id, value, label, Icon }) => (
+							<FieldLabel key={id} htmlFor={`${prefix}-${id}`} className="max-w-fit">
+								<Field orientation="horizontal">
+									<Checkbox
+										id={`${prefix}-${id}`}
+										name={typesField.name}
+										checked={typesField.value.includes(value)}
+										onCheckedChange={(checked) => {
+											typesField.onToggleType(value, !!checked);
+										}}
+									/>
+									<FieldContent>
+										<FieldTitle>
+											<Icon className="w-4" />
+											{label}
+										</FieldTitle>
+									</FieldContent>
+								</Field>
+							</FieldLabel>
+						))}
 				</FieldGroup>
 			</FieldSet>
 		</FieldGroup>
@@ -440,6 +444,7 @@ function serializeSearchParams({
 export function HistorySearchForm({
 	owners = [],
 	types = defaultPostTypes,
+	availablePostTypes = defaultPostTypes,
 	exclusive = false,
 	onlyWithCoordinates = false,
 	categories = [],
@@ -457,6 +462,7 @@ export function HistorySearchForm({
 }: {
 	owners?: OwnerPostType[];
 	types?: PostType[];
+	availablePostTypes?: PostType[];
 	exclusive?: boolean;
 	categories?: string[];
 	currentPage?: bigint;
@@ -546,7 +552,7 @@ export function HistorySearchForm({
 
 	const form = useForm({
 		defaultValues: {
-			types,
+			types: types.filter((type) => availablePostTypes.includes(type)),
 			exclusive,
 			categories,
 			ownerSearchTerm: "",
@@ -611,18 +617,24 @@ export function HistorySearchForm({
 				<form.Subscribe selector={(state) => state.values}>
 					{({ types, exclusive, categories }) => (
 						<CollapsibleTrigger className="w-full rounded-md border px-3 py-2 text-left hover:bg-muted/40">
-							<div className="flex flex-wrap items-center gap-2">
-								{types.length > 0 ? (
-									types.map((type, index) => (
-										<Badge key={`type-summary-${type}-${index}`} variant="secondary">
-											<PostTypeIconLabel type={type} />
-										</Badge>
-									))
-								) : (
-									<Badge variant="ghost">No post types selected</Badge>
-								)}
-							</div>
-							<Separator className="my-2" />
+							{availablePostTypes.length > 1 && (
+								<div className="flex flex-wrap items-center gap-2">
+									{types.length > 0 ? (
+										types
+											.filter((type) => availablePostTypes.includes(type))
+											.map((type, index) => (
+												<Badge key={`type-summary-${type}-${index}`} variant="secondary">
+													<PostTypeIconLabel type={type} />
+												</Badge>
+											))
+									) : (
+										<Badge variant="ghost">No post types selected</Badge>
+									)}
+								</div>
+							)}
+							{availablePostTypes.length > 1 && availableCategories.length > 1 && (
+								<Separator className="my-2" />
+							)}
 							<div className="flex flex-wrap items-center gap-2">
 								<Badge variant={exclusive ? "default" : "outline"}>
 									Exclusive: {exclusive ? "On" : "Off"}
@@ -644,6 +656,7 @@ export function HistorySearchForm({
 					<form.Field name="types" mode="array">
 						{(typesField) => (
 							<HistoryPostTypeForm
+								availablePostTypes={availablePostTypes}
 								typesField={{
 									name: typesField.name,
 									value: typesField.state.value,
@@ -663,7 +676,7 @@ export function HistorySearchForm({
 							/>
 						)}
 					</form.Field>
-					<Separator className="my-2" />
+					{availablePostTypes.length > 1 && availableCategories.length > 1 && <Separator className="my-2" />}
 					<form.Field name="exclusive">
 						{(exclusiveField) => (
 							<form.Field name="categories" mode="array">
