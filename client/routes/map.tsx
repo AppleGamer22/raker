@@ -1,17 +1,30 @@
 import { createFileRoute, stripSearchParams, useNavigate } from "@tanstack/react-router";
-import type { MapGeoJSONFeature, MapMouseEvent } from "maplibre-gl";
-import { useEffect, useId, useState } from "react";
+import * as maplibregl from "maplibre-gl";
+import workerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url";
+
+import "maplibre-gl/dist/maplibre-gl.css";
+import { useMemo, useState, useCallback, createElement, type ComponentProps } from "react";
+import Map, {
+	NavigationControl,
+	Popup,
+	Source,
+	Layer,
+	type LayerProps,
+	type MapLayerMouseEvent,
+} from "react-map-gl/maplibre";
 import z from "zod";
+
+maplibregl.setWorkerUrl(new URL(workerUrl, document.baseURI).href);
 
 import { PostType, type ScrapeResponse } from "@/buf/raker/v1/raker_pb";
 import { CardContent } from "@/components/ui/card";
-import { Map, MapControls, MapPopup, useMap } from "@/components/ui/map";
 import { Progress } from "@/components/ui/progress";
 import { useTheme } from "@/hooks/theme-provider";
 import { useUser } from "@/hooks/user-provider";
 import { inPWA, primaryColor } from "@/lib/utils";
 
 import { HistoryCard, historySearchDefaults, HistorySearchForm } from "./history";
+
 export const Route = createFileRoute("/map")({
 	component: MapSearch,
 	validateSearch: z.object({
@@ -33,119 +46,89 @@ export const Route = createFileRoute("/map")({
 	},
 });
 
-function MarkersLayer({ histories }: { histories: ScrapeResponse[] }) {
-	const { username } = useUser();
-	const { computedTheme } = useTheme();
-	const { exclusive } = Route.useSearch();
-	const linkTarget = inPWA() ? undefined : "_blank";
-	const { map, isLoaded } = useMap();
-	const id = useId();
-	const sourceId = `markers-source-${id}`;
-	const layerId = `markers-layer-${id}`;
-	const [selectedPoint, setSelectedPoint] = useState<ScrapeResponse | null>(null);
+function CleanSource(props: ComponentProps<typeof Source>) {
+	const cleanProps: Record<string, unknown> = {};
+	for (const [key, value] of Object.entries(props)) {
+		if (!key.startsWith("data-")) {
+			cleanProps[key] = value;
+		}
+	}
+	return createElement(Source, cleanProps as ComponentProps<typeof Source>);
+}
 
-	useEffect(() => {
-		if (!map || !isLoaded) return;
-		map.addSource(sourceId, {
-			type: "geojson",
-			data: {
-				type: "FeatureCollection" as const,
-				features: histories.map((history, i) => ({
-					type: "Feature" as const,
-					properties: {
-						i,
-					},
-					geometry: {
-						type: "Point" as const,
-						coordinates: [history.coordinates?.longitude ?? 0, history.coordinates?.latitude ?? 0],
-					},
-				})),
-			},
-		});
-
-		map.addLayer({
-			id: layerId,
-			type: "circle",
-			source: sourceId,
-			paint: {
-				// size-4 rounded-full border-2 border-black bg-primary shadow-lg dark:border-white
-				"circle-radius": 6,
-				"circle-color": primaryColor,
-				"circle-stroke-width": 2,
-				"circle-stroke-color": computedTheme === "dark" ? "white" : "black",
-				// add more paint properties here to customize the appearance of the markers
-			},
-		});
-
-		const handleClick = (
-			e: MapMouseEvent & {
-				features?: MapGeoJSONFeature[];
-			},
-		) => {
-			if (!e.features?.length) return;
-
-			const feature = e.features[0];
-			// const coords = (feature.geometry as GeoJSON.Point).coordinates as [number, number];
-
-			setSelectedPoint(histories[feature.properties.i as number]);
-		};
-
-		const handleMouseEnter = () => {
-			map.getCanvas().style.cursor = "pointer";
-		};
-
-		const handleMouseLeave = () => {
-			map.getCanvas().style.cursor = "";
-		};
-
-		map.on("click", layerId, handleClick);
-		map.on("mouseenter", layerId, handleMouseEnter);
-		map.on("mouseleave", layerId, handleMouseLeave);
-
-		return () => {
-			map.off("click", layerId, handleClick);
-			map.off("mouseenter", layerId, handleMouseEnter);
-			map.off("mouseleave", layerId, handleMouseLeave);
-
-			try {
-				if (map.getLayer(layerId)) map.removeLayer(layerId);
-				if (map.getSource(sourceId)) map.removeSource(sourceId);
-			} catch {
-				// ignore cleanup errors
-			}
-		};
-	}, [map, isLoaded, sourceId, layerId, computedTheme, histories]);
-
-	return (
-		<>
-			{selectedPoint && (
-				<MapPopup
-					latitude={selectedPoint.coordinates?.latitude ?? 0}
-					longitude={selectedPoint.coordinates?.longitude ?? 0}
-					onClose={() => setSelectedPoint(null)}
-					closeOnClick={true}
-					focusAfterOpen={false}
-					offset={10}
-				>
-					<HistoryCard
-						key={`${selectedPoint}-${selectedPoint.postOwner}-${selectedPoint.post}`}
-						history={selectedPoint}
-						exclusive={exclusive}
-						linkTarget={linkTarget}
-						username={username ?? undefined}
-					/>
-				</MapPopup>
-			)}
-		</>
-	);
+function CleanLayer(props: ComponentProps<typeof Layer>) {
+	const cleanProps: Record<string, unknown> = {};
+	for (const [key, value] of Object.entries(props)) {
+		if (!key.startsWith("data-")) {
+			cleanProps[key] = value;
+		}
+	}
+	return createElement(Layer, cleanProps as ComponentProps<typeof Layer>);
 }
 
 function MapSearch() {
 	const { types, exclusive, categories, owners, page } = Route.useSearch();
 	const navigate = useNavigate({ from: Route.fullPath });
+	const { username } = useUser();
+	const { computedTheme } = useTheme();
+	const linkTarget = inPWA() ? undefined : "_blank";
+
 	const [histories, setHistories] = useState<ScrapeResponse[]>([]);
 	const [_totalCount, setTotalCount] = useState(0n);
 	const [isSearching, setIsSearching] = useState(false);
+	const [selectedPoint, setSelectedPoint] = useState<ScrapeResponse | null>(null);
+	const [cursor, setCursor] = useState<string>("");
+
+	const geojsonData = useMemo(() => {
+		return {
+			type: "FeatureCollection" as const,
+			features: histories.map((history, i) => ({
+				type: "Feature" as const,
+				properties: { i },
+				geometry: {
+					type: "Point" as const,
+					coordinates: [history.coordinates?.longitude ?? 0, history.coordinates?.latitude ?? 0],
+				},
+			})),
+		};
+	}, [histories]);
+
+	const layerStyle = useMemo<LayerProps>(() => {
+		return {
+			id: "markers-layer",
+			type: "circle",
+			paint: {
+				"circle-radius": 6,
+				"circle-color": primaryColor,
+				"circle-stroke-width": 2,
+				"circle-stroke-color": computedTheme === "dark" ? "white" : "black",
+			},
+		};
+	}, [computedTheme]);
+
+	const mapStyle =
+		computedTheme === "dark"
+			? "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json"
+			: "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json";
+
+	const onClick = useCallback(
+		(event: MapLayerMouseEvent) => {
+			const feature = event.features?.[0];
+			if (feature) {
+				const historyIndex = feature.properties?.i as number;
+				if (historyIndex !== undefined && histories[historyIndex]) {
+					setSelectedPoint(histories[historyIndex]);
+				}
+			} else {
+				setSelectedPoint(null);
+			}
+		},
+		[histories],
+	);
+
+	const onMouseEnter = useCallback(() => setCursor("pointer"), []);
+	const onMouseLeave = useCallback(() => setCursor(""), []);
+
 	return (
 		<CardContent className="flex h-[calc(100dvh-2*var(--header-height))] flex-col overflow-hidden sm:h-[calc(100dvh-var(--header-height))]">
 			<HistorySearchForm
@@ -173,33 +156,53 @@ function MapSearch() {
 				onlyWithCoordinates
 			/>
 			{isSearching && <Progress className="pt-2" value={null} />}
-			<Map className="min-h-0 flex-1 rounded-xl">
-				{/* {histories.map((history) => (
-					<MapMarker
-						key={`${history.postType}-${history.postOwner}-${history.post}`}
-						latitude={history.coordinates?.latitude ?? 0}
-						longitude={history.coordinates?.longitude ?? 0}
-					>
-						<MarkerContent>
-							<div className="size-4 rounded-full border-2 border-black bg-primary shadow-lg dark:border-white" />
-						</MarkerContent>
-						<MarkerTooltip>
-							<ResultHeader categories={categories} exclusive={exclusive} result={history} showPost />
-						</MarkerTooltip>
-						<MarkerPopup>
-							<HistoryCard
-								key={`${history.postType}-${history.postOwner}-${history.post}`}
-								history={history}
-								exclusive={exclusive}
-								linkTarget={linkTarget}
-								username={username ?? undefined}
-							/>
-						</MarkerPopup>
-					</MapMarker>
-				))} */}
-				<MarkersLayer histories={histories} />
-				<MapControls showCompass showZoom />
-			</Map>
+			<div className="relative isolate min-h-0 flex-1 overflow-hidden rounded-xl">
+				<Map
+					mapLib={maplibregl}
+					initialViewState={{
+						longitude: 0,
+						latitude: 0,
+						zoom: 2,
+					}}
+					mapStyle={mapStyle}
+					interactiveLayerIds={["markers-layer"]}
+					onClick={onClick}
+					onMouseEnter={onMouseEnter}
+					onMouseLeave={onMouseLeave}
+					cursor={cursor}
+					attributionControl={false}
+				>
+					<CleanSource id="markers-source" type="geojson" data={geojsonData}>
+						<CleanLayer {...layerStyle} />
+					</CleanSource>
+
+					<NavigationControl position="bottom-right" showCompass showZoom />
+
+					{selectedPoint && (
+						<Popup
+							longitude={selectedPoint.coordinates?.longitude ?? 0}
+							latitude={selectedPoint.coordinates?.latitude ?? 0}
+							onClose={() => setSelectedPoint(null)}
+							closeOnClick={true}
+							closeButton={false}
+							focusAfterOpen={false}
+							offset={10}
+							maxWidth="none"
+							className="[&_.maplibregl-popup-content]:bg-transparent [&_.maplibregl-popup-content]:p-0 [&_.maplibregl-popup-content]:shadow-none [&_.maplibregl-popup-tip]:hidden"
+						>
+							<div className="relative max-w-62 animate-in rounded-md border bg-popover p-3 text-popover-foreground shadow-md duration-200 ease-out fade-in-0 zoom-in-95">
+								<HistoryCard
+									key={`${selectedPoint.postType}-${selectedPoint.postOwner}-${selectedPoint.post}`}
+									history={selectedPoint}
+									exclusive={exclusive}
+									linkTarget={linkTarget}
+									username={username ?? undefined}
+								/>
+							</div>
+						</Popup>
+					)}
+				</Map>
+			</div>
 		</CardContent>
 	);
 }
