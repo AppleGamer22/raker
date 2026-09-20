@@ -172,6 +172,7 @@ function MapSearch() {
 					onMouseLeave={onMouseLeave}
 					cursor={cursor}
 					attributionControl={false}
+					renderWorldCopies={false}
 				>
 					<CleanSource id="markers-source" type="geojson" data={geojsonData}>
 						<CleanLayer {...layerStyle} />
