@@ -24,7 +24,7 @@
 		"@tanstack/react-query-devtools": "^5.102.8",
 		"@tanstack/react-router": "^1.170.36",
 		"@tanstack/react-router-devtools": "^1.167.2",
-		"@tanstack/router-plugin": "^1.168.38",
+		"@tanstack/router-plugin": "^1.168.40",
 		"class-variance-authority": "^0.7.1",
 		"clsx": "^2.1.1",
 		"date-fns": "^4.4.0",
