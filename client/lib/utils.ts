@@ -1,13 +1,9 @@
 import { timestampDate, type Timestamp } from "@bufbuild/protobuf/wkt";
-import { clsx, type ClassValue } from "clsx";
-import { twMerge } from "tailwind-merge";
 
 import { PostType } from "@/buf/raker/v1/raker_pb";
 import { toast, type ToastPosition } from "@/components/ui/toast";
 
-export function cn(...inputs: ClassValue[]) {
-	return twMerge(clsx(inputs));
-}
+export { cn } from "cn";
 
 export async function writeClipboard(text: string) {
 	try {
