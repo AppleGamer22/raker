@@ -608,6 +608,7 @@ export function Result({
 							size="sm"
 							className="shrink-0"
 							onClick={() => deleteFiles(selection.selectedFiles)}
+							disabled={removeFilesMutation.isPending}
 						>
 							Delete {selection.selectedFiles.length}
 						</Button>
