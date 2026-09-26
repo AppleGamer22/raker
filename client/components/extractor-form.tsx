@@ -206,7 +206,7 @@ export function ExtractorSprayControls({
 		<div className="flex flex-row items-center gap-2 sm:gap-4">
 			<Field orientation="horizontal" className="w-fit">
 				<Switch id="spray-mode" checked={enabled} onCheckedChange={onEnabledChange} />
-				<SprayCanIcon />
+				<SprayCanIcon onClick={() => onEnabledChange(!enabled)} />
 				{/* <FieldLabel htmlFor="spray-mode">Spray Mode</FieldLabel> */}
 			</Field>
 			<Field className="w-fit">
