@@ -1,4 +1,5 @@
 import { timestampDate, type Timestamp } from "@bufbuild/protobuf/wkt";
+import type { ReactNode } from "react";
 
 import { PostType } from "@/buf/raker/v1/raker_pb";
 import { toast, type ToastPosition } from "@/components/ui/toast";
@@ -8,7 +9,14 @@ export { cn } from "cn";
 export async function writeClipboard(text: string) {
 	try {
 		await navigator.clipboard.writeText(text);
-		Toaster.success(`${text} was copied to your clipboard`);
+		Toaster.success(
+			<>
+				<b>
+					<code>{text}</code>
+				</b>{" "}
+				was copied to your clipboard
+			</>,
+		);
 	} catch (err) {
 		Toaster.error(err as Error);
 	}
@@ -24,7 +32,7 @@ export const defaultPostTypes = [
 ];
 
 export class Toaster {
-	static success(message: string, position: ToastPosition = "top-center") {
+	static success(message: ReactNode, position: ToastPosition = "top-center") {
 		toast.add({
 			title: message,
 			type: "success",
@@ -35,9 +43,10 @@ export class Toaster {
 	}
 
 	static error(err: Error, position: ToastPosition = "top-center") {
+		console.error(err);
 		toast.add({
-			description: (err as Error).message,
-			title: (err as Error).name,
+			description: err.message,
+			title: err.name,
 			type: "error",
 			data: {
 				position,
