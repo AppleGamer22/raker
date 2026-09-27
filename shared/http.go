@@ -167,7 +167,7 @@ func (b *BrowserHeaderRoundTripper) RoundTrip(req *http.Request) (*http.Response
 		req.Header.Set("Sec-Fetch-Dest", "document")
 	}
 	if req.Header.Get("sec-ch-ua") == "" {
-		req.Header.Set("sec-ch-ua", `"Google Chrome";v="147", "Not.A/Brand";v="8", "Chromium";v="147"`)
+		req.Header.Set("sec-ch-ua", `"Google Chrome";v="153", "Not.A/Brand";v="8", "Chromium";v="153"`)
 	}
 
 	return b.transport.RoundTrip(req)

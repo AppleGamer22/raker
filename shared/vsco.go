@@ -9,6 +9,8 @@ import (
 	"net/http"
 	"regexp"
 	"strings"
+
+	"github.com/charmbracelet/log"
 )
 
 type VSCOPost struct {
@@ -97,7 +99,11 @@ func VSCO(owner, post string) ([]string, string, []*http.Cookie, error) {
 		return []string{}, "", []*http.Cookie{}, err
 	}
 
-	media := vscoPost.Medias.ByID[post]
+	media, ok := vscoPost.Medias.ByID[post]
+	if !ok {
+		log.Error("post not found in JSON", "post", post)
+		return []string{}, "", []*http.Cookie{}, fmt.Errorf("post %s not found in JSON", post)
+	}
 	username := media.Media.PermaSubdomain
 	URLs := make([]string, 0, 2)
 
