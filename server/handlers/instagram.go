@@ -46,11 +46,7 @@ func (server *RakerServer) ScrapeInstagram(ctx context.Context, request *v1.Unar
 		URLs     []string
 	)
 
-	if request.GetIncognito() {
-		URLs, username, _, err = shared.InstagramIncognito(request.Post)
-	} else {
-		URLs, username, err = instagram.Post(request.Post)
-	}
+	URLs, username, err = instagram.Post(request.Post, request.GetIncognito())
 
 	if err != nil {
 		log.Error(err)

@@ -136,6 +136,7 @@ var (
 	instagramRegExpScriptWithDocumentID = regexp.MustCompile(`<link rel=\"preload\" href=\"(.*?)\" as=\"script\" crossorigin=\"anonymous\" nonce=".*?" />`)
 	instagramRegExpDocumentID           = regexp.MustCompile(`__d\(\"PolarisPostActionLoadPostQueryQuery_instagramRelayOperation\",\[\],\(function\(a,b,c,d,e,f\){e\.exports=\"([0-9]+)\"}\),null\);`)
 	instagramRegExpPostJSON             = regexp.MustCompile(`<script type="application/json"\s*data-content-len="\d*"\s*data-sjs>.*"data":{"xdt_api__v1__media__shortcode__web_info":(.*)},"extensions":{"is_final":true}.*</script>`)
+	instagramIncognitoRegExpPostJSON    = regexp.MustCompile(`<script type="application/json"\s*data-content-len="\d*"\s*data-sjs>.*"if_not_gated_logged_out":(.*),"gating_ruling":null,.*</script>`)
 )
 
 const scriptWithDocumentMatch = 1
@@ -167,7 +168,7 @@ func NewInstagram(sessionID, userID string) Instagram {
 	}
 }
 
-func (instagram *Instagram) Post(post string) ([]string, string, error) {
+func (instagram *Instagram) Post(post string, incognito bool) ([]string, string, error) {
 	htmlURL := fmt.Sprintf("https://www.instagram.com/p/%s", post)
 	htmlRequest, err := http.NewRequest(http.MethodGet, htmlURL, nil)
 	if err != nil {
@@ -175,8 +176,10 @@ func (instagram *Instagram) Post(post string) ([]string, string, error) {
 	}
 
 	// htmlRequest.AddCookie(&instagram.fbsrCookie)
-	htmlRequest.AddCookie(&instagram.sessionCookie)
-	htmlRequest.AddCookie(&instagram.userCookie)
+	if !incognito {
+		htmlRequest.AddCookie(&instagram.sessionCookie)
+		htmlRequest.AddCookie(&instagram.userCookie)
+	}
 
 	htmlRequest.Header.Add("referer", "https://www.instagram.com/")
 	htmlRequest.Header.Add("Connection", "keep-alive")
@@ -194,7 +197,12 @@ func (instagram *Instagram) Post(post string) ([]string, string, error) {
 		return []string{}, "", err
 	}
 
-	jsonMatch := instagramRegExpPostJSON.FindStringSubmatch(string(htmlBody))
+	jsonMatch := (func() []string {
+		if incognito {
+			return instagramIncognitoRegExpPostJSON.FindStringSubmatch(string(htmlBody))
+		}
+		return instagramRegExpPostJSON.FindStringSubmatch(string(htmlBody))
+	})()
 	if len(jsonMatch) != 2 {
 		// filename := fmt.Sprintf("instagram_%s.html", time.Now().Format("20060102_150405"))
 		// if err := os.WriteFile(filename, htmlBody, 0644); err != nil {
@@ -206,8 +214,16 @@ func (instagram *Instagram) Post(post string) ([]string, string, error) {
 	}
 
 	var instagramPost InstagramPost
-	if err := json.Unmarshal([]byte(jsonMatch[1]), &instagramPost); err != nil {
-		return []string{}, "", err
+	if incognito {
+		var instagramItem InstagramItem
+		if err := json.Unmarshal([]byte(jsonMatch[1]), &instagramItem); err != nil {
+			return []string{}, "", err
+		}
+		instagramPost.Items = [1]InstagramItem{instagramItem}
+	} else {
+		if err := json.Unmarshal([]byte(jsonMatch[1]), &instagramPost); err != nil {
+			return []string{}, "", err
+		}
 	}
 
 	media := instagramPost.Items[0]
