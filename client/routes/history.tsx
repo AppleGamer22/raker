@@ -621,8 +621,8 @@ export function HistorySearchForm({
 							{availablePostTypes.length > 1 && (
 								<div className="flex flex-wrap items-center gap-2">
 									{types.length > 0 ? (
-										types
-											.filter((type) => availablePostTypes.includes(type))
+										availablePostTypes
+											.filter((type) => types.includes(type))
 											.map((type, index) => (
 												<Badge key={`type-summary-${type}-${index}`} variant="secondary">
 													<PostTypeIconLabel type={type} />
@@ -641,11 +641,13 @@ export function HistorySearchForm({
 									Exclusive: {exclusive ? "On" : "Off"}
 								</Badge>
 								{categories.length > 0 ? (
-									categories.map((category, index) => (
-										<Badge key={`category-summary-${category}-${index}`} variant="default">
-											{category}
-										</Badge>
-									))
+									availableCategories
+										.filter((category) => categories.includes(category))
+										.map((category, index) => (
+											<Badge key={`category-summary-${category}-${index}`} variant="default">
+												{category}
+											</Badge>
+										))
 								) : (
 									<Badge variant="ghost">No categories selected</Badge>
 								)}
