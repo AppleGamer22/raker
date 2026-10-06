@@ -2,22 +2,21 @@ package shared
 
 import (
 	"log/slog"
-	"regexp"
 	"time"
 
 	"github.com/charmbracelet/log"
 )
 
 var (
-	Version        = "development"
-	Hash           = "development"
-	UserAgent      = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
-	textareaRegExp = regexp.MustCompile(`<textarea class="form-control" rows="8">(.*?)</textarea>`)
+	Version   = "development"
+	Hash      = "development"
+	UserAgent = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+	// textareaRegExp = regexp.MustCompile(`<textarea class="form-control" rows="8">(.*?)</textarea>`)
 )
 
-type userAgentData struct {
-	UserAgent string `json:"ua"`
-}
+// type userAgentData struct {
+// 	UserAgent string `json:"ua"`
+// }
 
 func init() {
 	log.SetReportCaller(true)

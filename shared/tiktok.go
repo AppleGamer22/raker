@@ -59,7 +59,7 @@ func NewTikTok(sessionID, sessionIDGuard string) TikTok {
 }
 
 func (tikok *TikTok) MSToken(owner string) (*http.Client, error) {
-	client := NewClient(false)
+	client := NewClient(nil)
 	ownerURL := fmt.Sprintf("https://www.tiktok.com/@%s", owner)
 	request, err := http.NewRequest(http.MethodGet, ownerURL, nil)
 	if err != nil {

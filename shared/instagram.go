@@ -130,7 +130,7 @@ type Instagram struct {
 }
 
 var (
-	instagramRegExpMediaID              = regexp.MustCompile(`media_id\":\"([0-9]+)`)
+	// instagramRegExpMediaID              = regexp.MustCompile(`media_id\":\"([0-9]+)`)
 	instagramRegExpDATR                 = regexp.MustCompile(`_js_datr\":{\"value":\"([0-9a-zA-Z-]+)`)
 	instagramRegExpLSD                  = regexp.MustCompile(`lsd\":\"([0-9a-zA-Z-]+)`)
 	instagramRegExpScriptWithDocumentID = regexp.MustCompile(`<link rel=\"preload\" href=\"(.*?)\" as=\"script\" crossorigin=\"anonymous\" nonce=".*?" />`)
@@ -184,7 +184,7 @@ func (instagram *Instagram) Post(post string, incognito bool) ([]string, string,
 	htmlRequest.Header.Add("referer", "https://www.instagram.com/")
 	htmlRequest.Header.Add("Connection", "keep-alive")
 
-	client := NewClient(false)
+	client := NewClient(nil)
 
 	htmlResponse, err := client.Do(htmlRequest)
 	if err != nil {
@@ -275,7 +275,7 @@ func InstagramIncognito(post string) ([]string, string, []*http.Cookie, error) {
 	htmlRequest.Header.Add("x-ig-app-id", "936619743392459")
 	htmlRequest.Header.Add("Referer", "https://www.instagram.com/")
 
-	client := NewClient(false)
+	client := NewClient(nil)
 
 	htmlResponse, err := client.Do(htmlRequest)
 	if err != nil {

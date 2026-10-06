@@ -1,140 +1,37 @@
 package shared
 
 import (
-	"bufio"
-	"fmt"
-	"io"
+	"context"
+	"crypto/tls"
 	"net"
 	"net/http"
 	"net/http/cookiejar"
-	"sync"
+	"slices"
 	"time"
 
 	utls "github.com/refraction-networking/utls"
-	"golang.org/x/net/http2"
 )
 
-// based on https://github.com/refraction-networking/utls/issues/16#issuecomment-1285198375
-func NewBypassJA3Transport(helloID utls.ClientHelloID, disableHTTP2 bool) *BypassJA3Transport {
-	return &BypassJA3Transport{clientHello: helloID, disableHTTP2: disableHTTP2}
+type utlsConn struct {
+	*utls.UConn
 }
 
-type BypassJA3Transport struct {
-	tr1 http.Transport
-	tr2 http2.Transport
-
-	mu           sync.RWMutex
-	clientHello  utls.ClientHelloID
-	disableHTTP2 bool
-}
-
-type responseBodyCloser struct {
-	io.ReadCloser
-	closeFn func() error
-	once    sync.Once
-}
-
-func (b *responseBodyCloser) Close() error {
-	err := b.ReadCloser.Close()
-	b.once.Do(func() {
-		if closeErr := b.closeFn(); err == nil && closeErr != nil {
-			err = closeErr
-		}
-	})
-	return err
-}
-
-func (b *BypassJA3Transport) RoundTrip(req *http.Request) (*http.Response, error) {
-	switch req.URL.Scheme {
-	case "https":
-		return b.httpsRoundTrip(req)
-	case "http":
-		return b.tr1.RoundTrip(req)
-	default:
-		return nil, fmt.Errorf("unsupported scheme: %s", req.URL.Scheme)
+func (c *utlsConn) ConnectionState() tls.ConnectionState {
+	uState := c.UConn.ConnectionState()
+	return tls.ConnectionState{
+		Version:                     uState.Version,
+		HandshakeComplete:           uState.HandshakeComplete,
+		DidResume:                   uState.DidResume,
+		CipherSuite:                 uState.CipherSuite,
+		NegotiatedProtocol:          uState.NegotiatedProtocol,
+		NegotiatedProtocolIsMutual:  uState.NegotiatedProtocolIsMutual,
+		ServerName:                  uState.ServerName,
+		PeerCertificates:            uState.PeerCertificates,
+		VerifiedChains:              uState.VerifiedChains,
+		SignedCertificateTimestamps: uState.SignedCertificateTimestamps,
+		OCSPResponse:                uState.OCSPResponse,
+		TLSUnique:                   uState.TLSUnique,
 	}
-}
-
-func (b *BypassJA3Transport) httpsRoundTrip(req *http.Request) (*http.Response, error) {
-	port := req.URL.Port()
-	if port == "" {
-		port = "443"
-	}
-
-	conn, err := net.Dial("tcp", net.JoinHostPort(req.URL.Host, port))
-	if err != nil {
-		return nil, fmt.Errorf("tcp net dial fail: %w", err)
-	}
-
-	tlsConn, err := b.tlsConnect(conn, req)
-	if err != nil {
-		_ = conn.Close()
-		return nil, fmt.Errorf("tls connect fail: %w", err)
-	}
-
-	httpVersion := tlsConn.ConnectionState().NegotiatedProtocol
-	switch httpVersion {
-	case "h2":
-		clientConn, err := b.tr2.NewClientConn(tlsConn)
-		if err != nil {
-			_ = tlsConn.Close()
-			return nil, fmt.Errorf("create http2 client with connection fail: %w", err)
-		}
-
-		resp, err := clientConn.RoundTrip(req)
-		if err != nil {
-			_ = clientConn.Close()
-			return nil, err
-		}
-		resp.Body = &responseBodyCloser{ReadCloser: resp.Body, closeFn: clientConn.Close}
-		return resp, nil
-	case "http/1.1", "":
-		err := req.Write(tlsConn)
-		if err != nil {
-			_ = tlsConn.Close()
-			return nil, fmt.Errorf("write http1 tls connection fail: %w", err)
-		}
-
-		resp, err := http.ReadResponse(bufio.NewReader(tlsConn), req)
-		if err != nil {
-			_ = tlsConn.Close()
-			return nil, err
-		}
-		resp.Body = &responseBodyCloser{ReadCloser: resp.Body, closeFn: tlsConn.Close}
-		return resp, nil
-	default:
-		_ = tlsConn.Close()
-		return nil, fmt.Errorf("unsuported http version: %s", httpVersion)
-	}
-}
-
-func (b *BypassJA3Transport) getTLSConfig(req *http.Request) *utls.Config {
-	nextProtos := []string{}
-	if !b.disableHTTP2 {
-		nextProtos = []string{"h2"}
-	}
-	return &utls.Config{
-		ServerName:         req.URL.Host,
-		InsecureSkipVerify: true,
-		NextProtos:         nextProtos,
-	}
-}
-
-func (b *BypassJA3Transport) tlsConnect(conn net.Conn, req *http.Request) (*utls.UConn, error) {
-	b.mu.RLock()
-	tlsConn := utls.UClient(conn, b.getTLSConfig(req), b.clientHello)
-	b.mu.RUnlock()
-
-	if err := tlsConn.Handshake(); err != nil {
-		return nil, fmt.Errorf("tls handshake fail: %w", err)
-	}
-	return tlsConn, nil
-}
-
-func (b *BypassJA3Transport) SetClientHello(hello utls.ClientHelloID) {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	b.clientHello = hello
 }
 
 // BrowserHeaderRoundTripper injects browser-like headers into all requests
@@ -142,8 +39,16 @@ type BrowserHeaderRoundTripper struct {
 	transport http.RoundTripper
 }
 
+func NewBrowserHeaderRoundTripper(transport http.RoundTripper) *BrowserHeaderRoundTripper {
+	if transport == nil {
+		transport = http.DefaultTransport
+	}
+	return &BrowserHeaderRoundTripper{transport: transport}
+}
+
 // RoundTrip implements the http.RoundTripper interface by injecting browser headers
 func (b *BrowserHeaderRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
+	req = req.Clone(req.Context())
 	// Inject headers only if not already present (allows per-request override)
 	if req.Header.Get("User-Agent") == "" {
 		req.Header.Set("User-Agent", UserAgent)
@@ -169,22 +74,103 @@ func (b *BrowserHeaderRoundTripper) RoundTrip(req *http.Request) (*http.Response
 	if req.Header.Get("sec-ch-ua") == "" {
 		req.Header.Set("sec-ch-ua", `"Google Chrome";v="153", "Not.A/Brand";v="8", "Chromium";v="153"`)
 	}
+	if req.Header.Get("sec-ch-ua-mobile") == "" {
+		req.Header.Set("sec-ch-ua-mobile", "?0")
+	}
+	if req.Header.Get("sec-ch-ua-platform") == "" {
+		req.Header.Set("sec-ch-ua-platform", `"Linux"`)
+	}
+	if req.Header.Get("Upgrade-Insecure-Requests") == "" {
+		req.Header.Set("Upgrade-Insecure-Requests", "1")
+	}
 
-	return b.transport.RoundTrip(req)
+	tr := b.transport
+	if tr == nil {
+		tr = http.DefaultTransport
+	}
+	return tr.RoundTrip(req)
 }
 
-func NewClient(disableHTTP2 bool) *http.Client {
+func NewClient(nextProtos []string) *http.Client {
 	jar, _ := cookiejar.New(nil)
-	return NewClientWithJar(jar, disableHTTP2)
+	if len(nextProtos) == 0 {
+		return NewClientWithJar(jar, []string{"h2", "http/1.1"})
+	}
+	return NewClientWithJar(jar, nextProtos)
 }
 
-func NewClientWithJar(jar *cookiejar.Jar, disableHTTP2 bool) *http.Client {
-	baseTransport := NewBypassJA3Transport(utls.HelloChrome_Auto, disableHTTP2)
-	return &http.Client{
-		Jar:     jar,
-		Timeout: 30 * time.Second,
-		Transport: &BrowserHeaderRoundTripper{
-			transport: baseTransport,
+func NewClientWithJar(jar *cookiejar.Jar, nextProtos []string) *http.Client {
+	if len(nextProtos) == 0 {
+		nextProtos = []string{"h2", "http/1.1"}
+	}
+
+	hasHTTP2 := slices.Contains(nextProtos, "h2")
+	hasHTTP1 := slices.Contains(nextProtos, "http/1.1")
+
+	protocols := new(http.Protocols)
+	protocols.SetHTTP1(hasHTTP1)
+	protocols.SetHTTP2(hasHTTP2)
+
+	dialer := &net.Dialer{
+		Timeout:   30 * time.Second,
+		KeepAlive: 30 * time.Second,
+	}
+
+	transport := &http.Transport{
+		Proxy:                 http.ProxyFromEnvironment,
+		DialContext:           dialer.DialContext,
+		Protocols:             protocols,
+		ForceAttemptHTTP2:     hasHTTP2,
+		MaxIdleConns:          100,
+		IdleConnTimeout:       90 * time.Second,
+		TLSHandshakeTimeout:   10 * time.Second,
+		ExpectContinueTimeout: 1 * time.Second,
+		DialTLSContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
+			host, _, err := net.SplitHostPort(addr)
+			if err != nil {
+				host = addr
+			}
+
+			rawConn, err := dialer.DialContext(ctx, network, addr)
+			if err != nil {
+				return nil, err
+			}
+
+			config := &utls.Config{
+				ServerName: host,
+				NextProtos: nextProtos,
+			}
+
+			spec, err := utls.UTLSIdToSpec(utls.HelloChrome_Auto)
+			if err != nil {
+				_ = rawConn.Close()
+				return nil, err
+			}
+
+			for _, ext := range spec.Extensions {
+				if alpn, ok := ext.(*utls.ALPNExtension); ok {
+					alpn.AlpnProtocols = nextProtos
+				}
+			}
+
+			uConn := utls.UClient(rawConn, config, utls.HelloCustom)
+			if err := uConn.ApplyPreset(&spec); err != nil {
+				_ = rawConn.Close()
+				return nil, err
+			}
+
+			if err := uConn.HandshakeContext(ctx); err != nil {
+				_ = rawConn.Close()
+				return nil, err
+			}
+
+			return &utlsConn{UConn: uConn}, nil
 		},
+	}
+
+	return &http.Client{
+		Jar:       jar,
+		Timeout:   30 * time.Second,
+		Transport: NewBrowserHeaderRoundTripper(transport),
 	}
 }

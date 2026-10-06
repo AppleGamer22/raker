@@ -34,6 +34,9 @@ type VSCOPost struct {
 func findFirstURL(response io.ReadCloser) string {
 	scanner := bufio.NewScanner(response)
 	for scanner.Scan() {
+		if err := scanner.Err(); err != nil {
+			return ""
+		}
 		line := scanner.Text()
 		if strings.HasPrefix(line, "https://") {
 			return line
@@ -69,7 +72,7 @@ var vsco_regexp = regexp.MustCompile(`<script>window\.__PRELOADED_STATE__ =(.*?)
 func VSCO(owner, post string) ([]string, string, []*http.Cookie, error) {
 	postURL := fmt.Sprintf("https://vsco.co/%s/media/%s", owner, post)
 
-	client := NewClient(false)
+	client := NewClient([]string{"h2"})
 
 	htmlRequest, err := http.NewRequest(http.MethodGet, postURL, nil)
 	if err != nil {
