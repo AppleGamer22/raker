@@ -325,6 +325,7 @@ function HistoryPostTypeForm({
 										id={`${prefix}-${id}`}
 										name={typesField.name}
 										checked={typesField.value.includes(value)}
+										disabled={typesField.value.length === 1 && typesField.value[0] === value}
 										onCheckedChange={(checked) => {
 											typesField.onToggleType(value, !!checked);
 										}}
