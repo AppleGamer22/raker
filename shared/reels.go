@@ -30,7 +30,7 @@ func (instagram *Instagram) Highlights(id string) ([]string, string, error) {
 	htmlRequest.AddCookie(&instagram.sessionCookie)
 	htmlRequest.AddCookie(&instagram.userCookie)
 
-	client := NewClient(nil)
+	client := NewClient([]string{})
 
 	htmlResponse, err := client.Do(htmlRequest)
 	if err != nil {
@@ -120,7 +120,7 @@ func (instagram *Instagram) Story(username string) ([]string, string, error) {
 	htmlRequest.AddCookie(&instagram.sessionCookie)
 	htmlRequest.AddCookie(&instagram.userCookie)
 
-	client := NewClient(nil)
+	client := NewClient([]string{})
 
 	htmlResponse, err := client.Do(htmlRequest)
 	if err != nil {

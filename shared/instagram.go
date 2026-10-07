@@ -184,7 +184,7 @@ func (instagram *Instagram) Post(post string, incognito bool) ([]string, string,
 	htmlRequest.Header.Add("referer", "https://www.instagram.com/")
 	htmlRequest.Header.Add("Connection", "keep-alive")
 
-	client := NewClient(nil)
+	client := NewClient([]string{})
 
 	htmlResponse, err := client.Do(htmlRequest)
 	if err != nil {
@@ -275,7 +275,7 @@ func InstagramIncognito(post string) ([]string, string, []*http.Cookie, error) {
 	htmlRequest.Header.Add("x-ig-app-id", "936619743392459")
 	htmlRequest.Header.Add("Referer", "https://www.instagram.com/")
 
-	client := NewClient(nil)
+	client := NewClient([]string{})
 
 	htmlResponse, err := client.Do(htmlRequest)
 	if err != nil {

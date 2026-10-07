@@ -179,7 +179,7 @@ func (handler *storageHandler) Save(user db.User, media db.PostType, owner, file
 
 	// request.Header.Add("referer", "https://www.instagram.com/")
 
-	client := shared.NewClient(nil)
+	client := shared.NewClient([]string{})
 
 	response, err := client.Do(request)
 	if err != nil {

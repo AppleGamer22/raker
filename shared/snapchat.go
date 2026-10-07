@@ -57,7 +57,7 @@ var snapchatRegex = regexp.MustCompile(`<script id="__NEXT_DATA__" type="applica
 func SnapchatHighlight(owner, highlight string) (SnapchatHighlightResult, []*http.Cookie, error) {
 	postURL := fmt.Sprintf("https://www.snapchat.com/@%s/highlight/%s", owner, highlight)
 
-	client := NewClient(nil)
+	client := NewClient([]string{})
 
 	htmlRequest, err := http.NewRequest(http.MethodGet, postURL, nil)
 	if err != nil {
@@ -104,7 +104,7 @@ func SnapchatHighlight(owner, highlight string) (SnapchatHighlightResult, []*htt
 func SnapchatStory(owner string) (SnapchatHighlightResult, []*http.Cookie, error) {
 	postURL := fmt.Sprintf("https://www.snapchat.com/@%s", owner)
 
-	client := NewClient(nil)
+	client := NewClient([]string{})
 
 	htmlRequest, err := http.NewRequest(http.MethodGet, postURL, nil)
 	if err != nil {
