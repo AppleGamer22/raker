@@ -135,8 +135,8 @@ var (
 	instagramRegExpLSD                  = regexp.MustCompile(`lsd\":\"([0-9a-zA-Z-]+)`)
 	instagramRegExpScriptWithDocumentID = regexp.MustCompile(`<link rel=\"preload\" href=\"(.*?)\" as=\"script\" crossorigin=\"anonymous\" nonce=".*?" />`)
 	instagramRegExpDocumentID           = regexp.MustCompile(`__d\(\"PolarisPostActionLoadPostQueryQuery_instagramRelayOperation\",\[\],\(function\(a,b,c,d,e,f\){e\.exports=\"([0-9]+)\"}\),null\);`)
-	instagramRegExpPostJSON             = regexp.MustCompile(`<script type="application/json"\s*data-content-len="\d*"\s*data-sjs>.*"data":{"xdt_api__v1__media__shortcode__web_info":(.*)},"extensions":{"is_final":true}.*</script>`)
-	instagramIncognitoRegExpPostJSON    = regexp.MustCompile(`<script type="application/json"\s*data-content-len="\d*"\s*data-sjs>.*"if_not_gated_logged_out":(.*),"gating_ruling":null,.*</script>`)
+	instagramRegExpPostJSON             = regexp.MustCompile(`<script type="application/json"\s*nonce="\S*"\s*data-content-len="\d*"\s*data-sjs>.*"data":{"xdt_api__v1__media__shortcode__web_info":(.*)},"extensions":{"is_final":true}.*</script>`)
+	instagramIncognitoRegExpPostJSON    = regexp.MustCompile(`<script type="application/json"\s*nonce="\S*"\s*data-content-len="\d*"\s*data-sjs>.*"if_not_gated_logged_out":(.*),"gating_ruling":null,.*</script>`)
 )
 
 const scriptWithDocumentMatch = 1
