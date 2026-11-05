@@ -2,7 +2,7 @@ import { createFileRoute, stripSearchParams, useNavigate } from "@tanstack/react
 import * as maplibregl from "maplibre-gl";
 
 import "maplibre-gl/dist/maplibre-gl.css";
-import workerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url";
+import workerURL from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url";
 import { useMemo, useState, useCallback, createElement, type ComponentProps } from "react";
 import Map, {
 	Popup,
@@ -14,7 +14,7 @@ import Map, {
 } from "react-map-gl/maplibre";
 import z from "zod";
 
-maplibregl.setWorkerUrl(new URL(workerUrl, document.baseURI).href);
+maplibregl.setWorkerUrl(new URL(workerURL, document.baseURI).href);
 
 import { PostType, type ScrapeResponse } from "@/buf/raker/v1/raker_pb";
 import { CardContent } from "@/components/ui/card";

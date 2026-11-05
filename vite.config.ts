@@ -1,4 +1,5 @@
 import { execSync } from "node:child_process";
+import path from "node:path";
 
 import babel from "@rolldown/plugin-babel";
 import tailwindcss from "@tailwindcss/vite";
@@ -28,9 +29,24 @@ export default defineConfig(({ command }) => {
 			}),
 			devtools(),
 			react(),
+			reactCompilerPreset(),
 			babel({
-				presets: [reactCompilerPreset()],
+				presets: [],
 			}),
+			{
+				name: "copy-mediapipe-wasm-cp",
+				configResolved() {
+					// Destination directory inside public so Vite serves it out of the box
+					const destDir = path.resolve(__dirname, "public/wasm");
+					const srcDir = path.relative(__dirname, "node_modules/@mediapipe/tasks-vision/wasm");
+
+					try {
+						execSync(`mkdir -p "${destDir}" && cp -R "${srcDir}/"* "${destDir}/"`, { stdio: "inherit" });
+					} catch (error) {
+						console.error("[vite-plugin] Failed to copy WASM files:", error);
+					}
+				},
+			},
 		],
 		server: {
 			hmr: {
