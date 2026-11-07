@@ -804,7 +804,7 @@ function CropPreview({
 				</Button>
 				<Button
 					variant="outline"
-					disabled={cropFileMutation.isPending}
+					disabled={estimateCropMutation.isPending}
 					onClick={async () => {
 						try {
 							if (imageRef.current !== null) {
@@ -835,7 +835,7 @@ function CropPreview({
 				</Button>
 				<Button
 					variant="outline"
-					disabled={!cropFileMutation.isPending && (isFullImageCrop || cropRect === null)}
+					disabled={cropFileMutation.isPending || isFullImageCrop || cropRect === null}
 					onClick={async () => {
 						try {
 							await cropFileMutation.mutateAsync({
