@@ -1,7 +1,17 @@
 import { useMutation } from "@connectrpc/connect-query";
-import type { VariantProps } from "class-variance-authority";
-import { CheckIcon, CropIcon, ImageIcon, RotateCcwIcon, RotateCwIcon, ScanSquare, StickyNotesIcon, XIcon } from "lucide-react";
 import { FilesetResolver, ObjectDetector, type BoundingBox } from "@mediapipe/tasks-vision";
+import type { VariantProps } from "class-variance-authority";
+import {
+	CheckIcon,
+	CropIcon,
+	ImageIcon,
+	RotateCcwIcon,
+	RotateCwIcon,
+	ScanSquare,
+	StickyNotesIcon,
+	XIcon,
+} from "lucide-react";
+
 import "react-resizable/css/styles.css";
 
 import {
@@ -54,15 +64,24 @@ export function postTypeString(type: PostType): string {
 
 // oxlint-disable-next-line no-unused-vars
 async function estimateImageCrop(img: HTMLImageElement): Promise<BoundingBox> {
-	const vision = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm");
+	const vision = await FilesetResolver.forVisionTasks(
+		"https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm",
+	);
 	const objectDetector = await ObjectDetector.createFromOptions(vision, {
-		baseOptions: { modelAssetPath: "https://storage.googleapis.com/mediapipe-models/object_detector/efficientdet_lite0/float32/1/efficientdet_lite0.tflite", delegate: "GPU" },
+		baseOptions: {
+			modelAssetPath:
+				"https://storage.googleapis.com/mediapipe-models/object_detector/efficientdet_lite0/float32/1/efficientdet_lite0.tflite",
+			delegate: "GPU",
+		},
 		runningMode: "IMAGE",
 		scoreThreshold: 0.5,
 	});
 	const { detections } = objectDetector.detect(img);
 
-	const validDetections = detections.filter(({ boundingBox, categories }) => boundingBox !== undefined && categories.find(({categoryName}) => categoryName === "person") );
+	const validDetections = detections.filter(
+		({ boundingBox, categories }) =>
+			boundingBox !== undefined && categories.find(({ categoryName }) => categoryName === "person"),
+	);
 	if (validDetections.length === 0)
 		return {
 			height: 0,
@@ -484,7 +503,6 @@ function boxToRect(box: { x: number; y: number; width: number; height: number })
 	};
 }
 
-
 function handleStyle(handle: string): CSSProperties {
 	const base: CSSProperties = {
 		position: "absolute",
@@ -549,10 +567,15 @@ function CropPreview({
 	const [cropNatural, setCropNatural] = useState<CropRect | null>(null);
 
 	const [prevFile, setPrevFile] = useState(file);
+	const [prevCacheBuster, setPrevCacheBuster] = useState(cacheBuster);
 
-	if (prevFile !== file) {
+	// Reset crop state if the file or cacheBuster changes (e.g., after a successful save)
+	if (prevFile !== file || prevCacheBuster !== cacheBuster) {
 		setPrevFile(file);
+		setPrevCacheBuster(cacheBuster);
 		setCropNatural(null);
+		setCropRect(null);
+		setIsFullImageCrop(true);
 		setNaturalSize({ width: 0, height: 0 });
 		setDisplaySize({ width: 0, height: 0 });
 	}
@@ -642,19 +665,19 @@ function CropPreview({
 		[displaySize, scaleX, scaleY, setCropNatural],
 	);
 
-	const emitCropChange = useCallback(
-		(rect: CropRect | null) => {
-			if (!onCropChange) {
-				return;
-			}
-			if (!rect || naturalSize.width === 0 || naturalSize.height === 0) {
-				onCropChange();
-				return;
-			}
-			onCropChange();
-		},
-		[onCropChange, naturalSize],
-	);
+	// const emitCropChange = useCallback(
+	// 	(rect: CropRect | null) => {
+	// 		if (!onCropChange) {
+	// 			return;
+	// 		}
+	// 		if (!rect || naturalSize.width === 0 || naturalSize.height === 0) {
+	// 			onCropChange();
+	// 			return;
+	// 		}
+	// 		onCropChange();
+	// 	},
+	// 	[onCropChange, naturalSize],
+	// );
 
 	const handleResize = useCallback(
 		(_event: SyntheticEvent, data: ResizeCallbackData) => {
@@ -682,8 +705,16 @@ function CropPreview({
 	const handleResizeStop = useCallback(() => {
 		resizeHandleRef.current = null;
 		setActiveHandle(null);
-		emitCropChange(latestCropNaturalRef.current ?? initialNatural);
-	}, [emitCropChange, initialNatural]);
+
+		const finalNatural = latestCropNaturalRef.current ?? initialNatural;
+		setCropRect(finalNatural);
+		setIsFullImageCrop(false);
+
+		// emitCropChange(finalNatural);
+	}, [
+		// emitCropChange,
+		initialNatural,
+	]);
 
 	const handleDragStart = useCallback(
 		(event: ReactPointerEvent<HTMLDivElement>) => {
@@ -731,14 +762,24 @@ function CropPreview({
 				if (target.releasePointerCapture) {
 					target.releasePointerCapture(event.pointerId);
 				}
-				emitCropChange(latestCropNaturalRef.current ?? initialNatural);
+				const finalNatural = latestCropNaturalRef.current ?? initialNatural;
+				setCropRect(finalNatural);
+				setIsFullImageCrop(false);
+
+				// emitCropChange(finalNatural);
 			};
 
 			target.addEventListener("pointermove", handleMove);
 			target.addEventListener("pointerup", handleUp);
 			target.addEventListener("pointercancel", handleUp);
 		},
-		[cropDisplay, cropDisplayBox, updateFromDisplay, emitCropChange, initialNatural],
+		[
+			cropDisplay,
+			cropDisplayBox,
+			updateFromDisplay,
+			// emitCropChange,
+			initialNatural,
+		],
 	);
 
 	const url =
@@ -746,113 +787,118 @@ function CropPreview({
 		(cacheBuster ? `?v=${cacheBuster}` : "");
 
 	return (
-		<TabsContent
-								value="crop"
-								className="flex max-h-full min-h-0 w-auto flex-col items-center gap-2"
-							>
-								<ButtonGroup>
-									<Button
-										variant="outline"
-										disabled={!cropFileMutation.isPending && (isFullImageCrop || cropRect === null)}
-										onClick={() => {
-											setCropRect(null);
-											setIsFullImageCrop(true);
-										}}
-									>
-										<XIcon />
-										Clear
-									</Button>
-									<Button variant="outline" disabled={cropFileMutation.isPending} onClick={async () => {
-										try {
-											if (imageRef.current !== null) {
-												await estimateImageCrop(imageRef.current)
-											}
-										} catch (err) {
-											Toaster.error(err as Error);
-										}
-									}}>
-										<ScanSquare/>
-										Estimate
-									</Button>
-									<Button
-										variant="outline"
-										disabled={!cropFileMutation.isPending && (isFullImageCrop || cropRect === null)}
-										onClick={async () => {
-											try {
-												await cropFileMutation.mutateAsync({
-													fileRequest: {
-														postType: postType,
-														postOwner: postOwner,
-														post: post,
-														file,
-													},
-													corner1: {
-														x: cropRect?.x1,
-														y: cropRect?.y1,
-													},
-													corner2: {
-														x: cropRect?.x2,
-														y: cropRect?.y2,
-													},
-												});
-												onCropChange();
-											} catch (err) {
-												Toaster.error(err as Error);
-											}
-										}}
-									>
-										<CropIcon />
-										<CheckIcon />
-										Save Crop
-									</Button>
-								</ButtonGroup>
-								{cropFileMutation.isPending && (
-									<div className="w-full">
-										<Progress value={null} />
-									</div>
-								)}
-								<div className="flex min-h-0 flex-1 items-center justify-center px-10 sm:px-0">
-									<div className={cn("relative inline-block", className)}>
-										<img ref={imageRef} src={url} onLoad={handleImageLoad} className={className} />
-										{cropDisplayBox && (
-											<ResizableBox
-												width={cropDisplayBox.width}
-												height={cropDisplayBox.height}
-												className="crop-box absolute z-10 rounded-md border-2 border-primary/80"
-												style={{
-													left: cropDisplayBox.x,
-													top: cropDisplayBox.y,
-													position: "absolute",
-													borderTopColor: edgeContact.top ? "hsl(var(--secondary))" : undefined,
-													borderBottomColor: edgeContact.bottom ? "hsl(var(--secondary))" : undefined,
-													borderLeftColor: edgeContact.left ? "hsl(var(--secondary))" : undefined,
-													borderRightColor: edgeContact.right ? "hsl(var(--secondary))" : undefined,
-												}}
-												handleSize={[CROP_HANDLE_SIZE, CROP_HANDLE_SIZE]}
-												minConstraints={[MIN_CROP_SIZE, MIN_CROP_SIZE]}
-												maxConstraints={maxConstraints}
-												handle={(handle, ref) => (
-													<span
-														ref={ref}
-														className={`react-resizable-handle react-resizable-handle-${handle} crop-handle`}
-														style={handleStyle(handle)}
-														onPointerDown={(event) => event.stopPropagation()}
-													/>
-												)}
-												resizeHandles={["sw", "se", "nw", "ne", "w", "e", "n", "s"]}
-												onResizeStart={handleResizeStart}
-												onResize={handleResize}
-												onResizeStop={handleResizeStop}
-												lockAspectRatio={false}
-												axis="both"
-												transformScale={1}
-											>
-												<div className="h-full w-full cursor-move rounded-md bg-black/10" onPointerDown={handleDragStart} />
-											</ResizableBox>
-										)}
-									</div>
-								</div>
-							</TabsContent>
+		<TabsContent value="crop" className="flex max-h-full min-h-0 w-auto flex-col items-center gap-2">
+			<ButtonGroup>
+				<Button
+					variant="outline"
+					disabled={!cropFileMutation.isPending && (isFullImageCrop || cropRect === null)}
+					onClick={() => {
+						setCropRect(null);
+						setCropNatural(null);
+						setIsFullImageCrop(true);
+					}}
+				>
+					<XIcon />
+					Clear
+				</Button>
+				<Button
+					variant="outline"
+					disabled={cropFileMutation.isPending}
+					onClick={async () => {
+						try {
+							if (imageRef.current !== null) {
+								await estimateImageCrop(imageRef.current);
+							}
+						} catch (err) {
+							Toaster.error(err as Error);
+						}
+					}}
+				>
+					<ScanSquare />
+					Estimate
+				</Button>
+				<Button
+					variant="outline"
+					disabled={!cropFileMutation.isPending && (isFullImageCrop || cropRect === null)}
+					onClick={async () => {
+						try {
+							await cropFileMutation.mutateAsync({
+								fileRequest: {
+									postType: postType,
+									postOwner: postOwner,
+									post: post,
+									file,
+								},
+								corner1: {
+									x: cropRect?.x1,
+									y: cropRect?.y1,
+								},
+								corner2: {
+									x: cropRect?.x2,
+									y: cropRect?.y2,
+								},
+							});
+							onCropChange();
+						} catch (err) {
+							Toaster.error(err as Error);
+						}
+					}}
+				>
+					<CropIcon />
+					<CheckIcon />
+					Save Crop
+				</Button>
+			</ButtonGroup>
+			{cropFileMutation.isPending && (
+				<div className="w-full">
+					<Progress value={null} />
+				</div>
+			)}
+			<div className="flex min-h-0 flex-1 items-center justify-center px-10 sm:px-0">
+				<div className={cn("relative inline-block", className)}>
+					<img ref={imageRef} src={url} onLoad={handleImageLoad} className={className} />
+					{cropDisplayBox && (
+						<ResizableBox
+							width={cropDisplayBox.width}
+							height={cropDisplayBox.height}
+							className="crop-box absolute z-10 rounded-md border-2 border-primary/80"
+							style={{
+								left: cropDisplayBox.x,
+								top: cropDisplayBox.y,
+								position: "absolute",
+								borderTopColor: edgeContact.top ? "hsl(var(--secondary))" : undefined,
+								borderBottomColor: edgeContact.bottom ? "hsl(var(--secondary))" : undefined,
+								borderLeftColor: edgeContact.left ? "hsl(var(--secondary))" : undefined,
+								borderRightColor: edgeContact.right ? "hsl(var(--secondary))" : undefined,
+							}}
+							handleSize={[CROP_HANDLE_SIZE, CROP_HANDLE_SIZE]}
+							minConstraints={[MIN_CROP_SIZE, MIN_CROP_SIZE]}
+							maxConstraints={maxConstraints}
+							handle={(handle, ref) => (
+								<span
+									ref={ref}
+									className={`react-resizable-handle react-resizable-handle-${handle} crop-handle`}
+									style={handleStyle(handle)}
+									onPointerDown={(event) => event.stopPropagation()}
+								/>
+							)}
+							resizeHandles={["sw", "se", "nw", "ne", "w", "e", "n", "s"]}
+							onResizeStart={handleResizeStart}
+							onResize={handleResize}
+							onResizeStop={handleResizeStop}
+							lockAspectRatio={false}
+							axis="both"
+							transformScale={1}
+						>
+							<div
+								className="h-full w-full cursor-move rounded-md bg-black/10"
+								onPointerDown={handleDragStart}
+							/>
+						</ResizableBox>
+					)}
+				</div>
+			</div>
+		</TabsContent>
 	);
 }
 
@@ -868,9 +914,9 @@ export function FileSheet({
 	post: ScrapeResponse;
 }) {
 	const [selectedTab, setSelectedTab] = useState<"view" | "crop" | "rotate">("view");
-	
+
 	const [viewReloadKey, setViewReloadKey] = useState(0);
-	
+
 	const rotateMutation = useMutation(rotateFile);
 	const refreshEditedFile = useCallback(() => {
 		const nextKey = Date.now();
@@ -944,15 +990,15 @@ export function FileSheet({
 								/>
 							</TabsContent>
 							<CropPreview
-										file={file}
-										post={post}
-										username={username}
-										onCropChange={() => {
-											setSelectedTab("view");
-												refreshEditedFile();
-										}}
-										cacheBuster={viewReloadKey}
-									/>
+								file={file}
+								post={post}
+								username={username}
+								onCropChange={() => {
+									setSelectedTab("view");
+									refreshEditedFile();
+								}}
+								cacheBuster={viewReloadKey}
+							/>
 							<TabsContent
 								value="rotate"
 								className="flex max-h-full min-h-0 w-auto flex-col items-center gap-2"
