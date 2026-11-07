@@ -1,5 +1,6 @@
-import { useMutation } from "@connectrpc/connect-query";
+import { useMutation as useConnectMutation } from "@connectrpc/connect-query";
 import { FilesetResolver, ObjectDetector, type BoundingBox } from "@mediapipe/tasks-vision";
+import { useMutation } from "@tanstack/react-query";
 import type { VariantProps } from "class-variance-authority";
 import {
 	CheckIcon,
@@ -62,7 +63,6 @@ export function postTypeString(type: PostType): string {
 	}
 }
 
-// oxlint-disable-next-line no-unused-vars
 async function estimateImageCrop(img: HTMLImageElement): Promise<BoundingBox> {
 	const vision = await FilesetResolver.forVisionTasks(
 		"https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm",
@@ -382,7 +382,7 @@ export function DuplicateButton({
 	size?: VariantProps<typeof buttonVariants>["size"];
 	onDuplicateFile: (duplicateFileName: string) => void;
 }) {
-	const duplicateFileMutation = useMutation(duplicateFile);
+	const duplicateFileMutation = useConnectMutation(duplicateFile);
 	return (
 		<Button
 			className="dark:bg-secondary dark:hover:bg-secondary/80"
@@ -547,7 +547,10 @@ function CropPreview({
 	className?: string;
 	cacheBuster?: number | string;
 }) {
-	const cropFileMutation = useMutation(cropFile);
+	const cropFileMutation = useConnectMutation(cropFile);
+	const estimateCropMutation = useMutation({
+		mutationFn: estimateImageCrop,
+	});
 	const [cropRect, setCropRect] = useState<CropRect | null>(null);
 	const [isFullImageCrop, setIsFullImageCrop] = useState(true);
 	const imageRef = useRef<HTMLImageElement | null>(null);
@@ -807,7 +810,22 @@ function CropPreview({
 					onClick={async () => {
 						try {
 							if (imageRef.current !== null) {
-								await estimateImageCrop(imageRef.current);
+								const { originX, originY, width, height } = await estimateCropMutation.mutateAsync(
+									imageRef.current,
+								);
+
+								const cropEstimate = {
+									x1: originX,
+									y1: originY,
+									x2: originX + width,
+									y2: originY + height,
+								};
+
+								// Update cropNatural so the visual box moves on screen
+								setCropNatural(cropEstimate);
+								// Update cropRect so the Save mutation uses the correct coordinates
+								setCropRect(cropEstimate);
+								setIsFullImageCrop(false);
 							}
 						} catch (err) {
 							Toaster.error(err as Error);
@@ -849,7 +867,7 @@ function CropPreview({
 					Save Crop
 				</Button>
 			</ButtonGroup>
-			{cropFileMutation.isPending && (
+			{(cropFileMutation.isPending || estimateCropMutation.isPending) && (
 				<div className="w-full">
 					<Progress value={null} />
 				</div>
@@ -917,7 +935,7 @@ export function FileSheet({
 
 	const [viewReloadKey, setViewReloadKey] = useState(0);
 
-	const rotateMutation = useMutation(rotateFile);
+	const rotateMutation = useConnectMutation(rotateFile);
 	const refreshEditedFile = useCallback(() => {
 		const nextKey = Date.now();
 		setViewReloadKey(nextKey);
