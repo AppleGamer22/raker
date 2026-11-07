@@ -91,8 +91,6 @@ async function estimateImageCrop(img: HTMLImageElement): Promise<BoundingBox> {
 			angle: 0,
 		};
 
-	console.log(validDetections);
-
 	let minX = Infinity;
 	let minY = Infinity;
 	let maxX = -Infinity;
@@ -867,11 +865,11 @@ function CropPreview({
 					Save Crop
 				</Button>
 			</ButtonGroup>
-			{(cropFileMutation.isPending || estimateCropMutation.isPending) && (
-				<div className="w-full">
-					<Progress value={null} />
-				</div>
-			)}
+			<div
+				className={`w-full ${cropFileMutation.isPending || estimateCropMutation.isPending ? "visible" : "invisible"}`}
+			>
+				<Progress value={null} />
+			</div>
 			<div className="flex min-h-0 flex-1 items-center justify-center px-10 sm:px-0">
 				<div className={cn("relative inline-block", className)}>
 					<img ref={imageRef} src={url} onLoad={handleImageLoad} className={className} />
