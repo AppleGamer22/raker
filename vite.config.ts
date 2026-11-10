@@ -7,7 +7,7 @@ import tailwindcss from "@tailwindcss/vite";
 import { devtools } from "@tanstack/devtools-vite";
 import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import react, { reactCompilerPreset } from "@vitejs/plugin-react";
-import { defineConfig } from "vite";
+import { defineConfig, type PluginOption } from "vite";
 
 const version = execSync("git describe --tags --abbrev=0").toString().trim();
 
@@ -34,10 +34,10 @@ export default defineConfig(({ command }) => {
 			}),
 			devtools(),
 			react(),
-			reactCompilerPreset(),
+
 			babel({
-				presets: [],
-			}),
+				presets: [reactCompilerPreset()],
+			}) as PluginOption,
 			{
 				name: "setup-mediapipe-assets",
 				async configResolved() {
