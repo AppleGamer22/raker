@@ -2,6 +2,7 @@
 
 interface ImportMetaEnv {
 	readonly VITE_GIT_TAG: string;
+	readonly VITE_MODEL_URL: string;
 	readonly DEV: boolean;
 }
 

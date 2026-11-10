@@ -1,4 +1,5 @@
 import { execSync } from "node:child_process";
+import fs from "node:fs";
 import path from "node:path";
 
 import babel from "@rolldown/plugin-babel";
@@ -10,11 +11,15 @@ import { defineConfig } from "vite";
 
 const version = execSync("git describe --tags --abbrev=0").toString().trim();
 
+const MODEL_URL =
+	"https://storage.googleapis.com/mediapipe-models/object_detector/efficientdet_lite0/float32/1/efficientdet_lite0.tflite";
+
 export default defineConfig(({ command }) => {
 	const isProduction = command === "build";
 	return {
 		define: {
 			"import.meta.env.VITE_GIT_TAG": JSON.stringify(version),
+			"import.meta.env.VITE_MODEL_URL": JSON.stringify(`/${path.basename(MODEL_URL)}`),
 		},
 		resolve: {
 			tsconfigPaths: true,
@@ -34,16 +39,37 @@ export default defineConfig(({ command }) => {
 				presets: [],
 			}),
 			{
-				name: "copy-mediapipe-wasm-cp",
-				configResolved() {
-					// Destination directory inside public so Vite serves it out of the box
-					const destDir = path.resolve(import.meta.dirname, "public/wasm");
-					const srcDir = path.relative(import.meta.dirname, "node_modules/@mediapipe/tasks-vision/wasm");
+				name: "setup-mediapipe-assets",
+				async configResolved() {
+					const publicDir = path.resolve(import.meta.dirname, "public");
+					const wasmDestDir = path.join(publicDir, "wasm");
+					const srcDir = path.resolve(import.meta.dirname, "node_modules/@mediapipe/tasks-vision/wasm");
+					const modelDest = path.join(publicDir, "efficientdet_lite0.tflite");
 
 					try {
-						execSync(`mkdir -p "${destDir}" && cp -R "${srcDir}/"* "${destDir}/"`, { stdio: "inherit" });
+						// 1. Copy WASM files using cp
+						execSync(`mkdir -p "${wasmDestDir}" && cp -R "${srcDir}/"* "${wasmDestDir}/"`, {
+							stdio: "inherit",
+						});
+						console.log("Successfully copied WASM files.");
+
+						// 2. Download the model file if it doesn't already exist locally
+						if (!fs.existsSync(modelDest)) {
+							console.log("Downloading MediaPipe model weights...");
+							const response = await fetch(MODEL_URL);
+
+							if (!response.ok) {
+								throw new Error(`Failed to download model: ${response.status} ${response.statusText}`);
+							}
+
+							const arrayBuffer = await response.arrayBuffer();
+							fs.writeFileSync(modelDest, Buffer.from(arrayBuffer));
+							console.log("Successfully downloaded model weights to public/");
+						} else {
+							console.log("Model weights already exist locally, skipping download.");
+						}
 					} catch (error) {
-						console.error("[vite-plugin] Failed to copy WASM files:", error);
+						console.error("Failed to set up MediaPipe assets:", error);
 					}
 				},
 			},

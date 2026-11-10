@@ -69,8 +69,7 @@ async function estimateImageCrop(img: HTMLImageElement): Promise<BoundingBox> {
 	);
 	const objectDetector = await ObjectDetector.createFromOptions(vision, {
 		baseOptions: {
-			modelAssetPath:
-				"https://storage.googleapis.com/mediapipe-models/object_detector/efficientdet_lite0/float32/1/efficientdet_lite0.tflite",
+			modelAssetPath: import.meta.env.VITE_MODEL_URL,
 			delegate: "GPU",
 		},
 		runningMode: "IMAGE",
