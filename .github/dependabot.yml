@@ -20,6 +20,11 @@ updates:
       prefix: chore
     labels:
       - dependencies
+    groups:
+      oxc:
+        patterns:
+          - oxlint
+          - oxfmt
   - package-ecosystem: docker
     directory: /
     schedule:
