@@ -128,6 +128,8 @@ export function useExtractorForm<
 
 	const searchKey = JSON.stringify(search);
 	useEffect(() => {
+		// If the form is submitting, ignore incoming search props until it is done
+		if (form.state.isSubmitting) return;
 		for (const [key, value] of Object.entries(search)) {
 			form.setFieldValue(key as never, value as never);
 		}

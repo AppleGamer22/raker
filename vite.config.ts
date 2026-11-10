@@ -37,8 +37,8 @@ export default defineConfig(({ command }) => {
 				name: "copy-mediapipe-wasm-cp",
 				configResolved() {
 					// Destination directory inside public so Vite serves it out of the box
-					const destDir = path.resolve(__dirname, "public/wasm");
-					const srcDir = path.relative(__dirname, "node_modules/@mediapipe/tasks-vision/wasm");
+					const destDir = path.resolve(import.meta.dirname, "public/wasm");
+					const srcDir = path.relative(import.meta.dirname, "node_modules/@mediapipe/tasks-vision/wasm");
 
 					try {
 						execSync(`mkdir -p "${destDir}" && cp -R "${srcDir}/"* "${destDir}/"`, { stdio: "inherit" });
