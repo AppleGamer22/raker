@@ -78,33 +78,14 @@ export const historySearchDefaults = {
 	types: defaultPostTypes,
 };
 
-const dateRangeSchema = z
-	.object({
-		from: z.custom<Date | undefined>(),
-		to: z.date().max(new Date().getDate()).optional(),
-	})
-	.catch({ from: undefined })
-	.refine(
-		(data) => {
-			// Only validate order if both dates are present
-			if (data.from && data.to) {
-				return data.to >= data.from;
-			}
-			return true;
-		},
-		{
-			message: "The 'to' date cannot be earlier than the 'from' date.",
-			path: ["to"], // Attach the error message to the 'to' field
-		},
-	);
-
 export const Route = createFileRoute("/history")({
 	component: History,
 	validateSearch: z.object({
 		types: z.array(z.enum(PostType)).catch(historySearchDefaults.types),
 		exclusive: z.boolean().catch(historySearchDefaults.exclusive),
 		categories: z.array(z.string()).catch(historySearchDefaults.categories),
-		dates: dateRangeSchema,
+		from: z.coerce.date().optional().catch(undefined),
+		to: z.coerce.date().max(new Date()).optional().catch(undefined),
 		page: z.coerce.bigint().min(1n).catch(historySearchDefaults.page),
 		owners: z
 			.array(
@@ -129,7 +110,25 @@ const historyFormSchema = z.object({
 	types: z.array(z.enum(PostType)),
 	exclusive: z.boolean(),
 	categories: z.array(z.string()),
-	dates: dateRangeSchema,
+	dates: z
+		.object({
+			from: z.custom<Date | undefined>(),
+			to: z.date().max(new Date().getDate()).optional(),
+		})
+		.catch({ from: undefined })
+		.refine(
+			(data) => {
+				// Only validate order if both dates are present
+				if (data.from && data.to) {
+					return data.to >= data.from;
+				}
+				return true;
+			},
+			{
+				message: "The 'to' date cannot be earlier than the 'from' date.",
+				path: ["to"], // Attach the error message to the 'to' field
+			},
+		),
 	ownerSearchTerm: z.string(),
 	ownersSearchValue: z.array(
 		z.object({
@@ -424,7 +423,7 @@ export function HistoryCard({
 										exclusive: exclusive,
 										page: 1n,
 										owners: [],
-										dates: { from: undefined },
+										from: undefined,
 										types: defaultPostTypes,
 									}}
 									target={linkTarget}
@@ -940,7 +939,7 @@ export function HistorySearchForm({
 }
 
 function History() {
-	const { types, exclusive, categories, owners, page, dates } = Route.useSearch();
+	const { types, exclusive, categories, owners, page, from, to } = Route.useSearch();
 	const navigate = useNavigate({ from: Route.fullPath });
 	const { username } = useUser();
 	const linkTarget = inPWA() ? undefined : "_blank";
@@ -981,7 +980,7 @@ function History() {
 				exclusive={exclusive}
 				types={types}
 				currentPage={page}
-				dates={dates}
+				dates={{ from, to }}
 				autoSubmit={true}
 				setHistories={setHistories}
 				setTotalCount={setTotalCount}
@@ -993,7 +992,8 @@ function History() {
 							exclusive,
 							categories,
 							page,
-							dates,
+							from: dates.from,
+							to: dates.to,
 							owners: ownersSearchValue,
 						},
 						replace: true,
