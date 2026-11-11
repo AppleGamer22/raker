@@ -12,6 +12,7 @@ import {
 	type ReactNode,
 	type SetStateAction,
 } from "react";
+import type { DateRange } from "react-day-picker";
 import { z } from "zod";
 
 import { searchHistory, searchHistoryOwners } from "@/buf/raker/v1/raker-RakerServer_connectquery";
@@ -26,6 +27,7 @@ import {
 } from "@/components/result";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { DatePickerRange } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -105,6 +107,24 @@ const historyFormSchema = z.object({
 	types: z.array(z.enum(PostType)),
 	exclusive: z.boolean(),
 	categories: z.array(z.string()),
+	dates: z
+		.object({
+			from: z.custom<Date | undefined>(),
+			to: z.date().max(new Date().getDate()).optional(),
+		})
+		.refine(
+			(data) => {
+				// Only validate order if both dates are present
+				if (data.from && data.to) {
+					return data.to >= data.from;
+				}
+				return true;
+			},
+			{
+				message: "The 'to' date cannot be earlier than the 'from' date.",
+				path: ["to"], // Attach the error message to the 'to' field
+			},
+		),
 	ownerSearchTerm: z.string(),
 	ownersSearchValue: z.array(
 		z.object({
@@ -293,6 +313,26 @@ export function HistoryPostCategoryForm({
 				</FieldGroup>
 			</FieldSet>
 		</FieldGroup>
+	);
+}
+
+function HistoryPostDateRangeForm({
+	dateField,
+}: {
+	formPrefix?: string;
+	dateField: {
+		name: string;
+		value: HistoryFormValues["dates"];
+		onChange: (date: DateRange | undefined) => void;
+	};
+}) {
+	return (
+		<FieldSet className="justify-start">
+			<FieldLegend>Extraction Dates</FieldLegend>
+			<FieldGroup className="items-start">
+				<DatePickerRange label="" value={dateField.value} onChange={dateField.onChange} />
+			</FieldGroup>
+		</FieldSet>
 	);
 }
 
@@ -558,6 +598,10 @@ export function HistorySearchForm({
 			categories,
 			ownerSearchTerm: "",
 			ownersSearchValue: owners ?? [],
+			dates: {
+				from: new Date(),
+				to: new Date(),
+			},
 		} as HistoryFormValues,
 		validators: {
 			onChange: historyFormSchema,
@@ -656,6 +700,18 @@ export function HistorySearchForm({
 					)}
 				</form.Subscribe>
 				<CollapsibleContent className="mt-1">
+					<form.Field name="dates" mode="value">
+						{(datesField) => (
+							<HistoryPostDateRangeForm
+								dateField={{
+									name: datesField.name,
+									value: datesField.state.value,
+									onChange: (dates) => (!dates ? null : datesField.setValue(dates)),
+								}}
+							/>
+						)}
+					</form.Field>
+					<Separator className="my-2" />
 					<form.Field name="types" mode="array">
 						{(typesField) => (
 							<HistoryPostTypeForm

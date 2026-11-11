@@ -17,7 +17,9 @@
 	"categories": {
 		"correctness": "error"
 	},
-	"rules": {},
+	"rules": {
+		"react/purity": "warn"
+	},
 	"env": {
 		"builtin": true
 	}
