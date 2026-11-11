@@ -53,13 +53,13 @@ func PostTypePB2DB(pt v1.PostType) db.PostType {
 }
 
 func Timestamp2NullTime(timestamp *timestamppb.Timestamp) sql.NullTime {
-	if timestamp == nil {
+	if timestamp == nil || timestamp.GetSeconds() == 0 {
 		return sql.NullTime{}
 	}
 	t := timestamp.AsTime()
 	return sql.NullTime{
 		Time:  t,
-		Valid: t.IsZero(),
+		Valid: !t.IsZero(),
 	}
 }
 
