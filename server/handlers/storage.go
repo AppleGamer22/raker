@@ -238,14 +238,14 @@ func (handler *storageHandler) SaveBundle(user db.User, media db.PostType, owner
 
 	wg.Wait()
 
-	sucessfulFileNames := make([]string, 0, count)
+	successfulFileNames := make([]string, 0, count)
 	for _, fileName := range fileNames {
 		if fileName != "" {
-			sucessfulFileNames = append(sucessfulFileNames, fileName)
+			successfulFileNames = append(successfulFileNames, fileName)
 		}
 	}
 
-	return sucessfulFileNames, err
+	return successfulFileNames, err
 }
 
 func (handler *storageHandler) Delete(user db.User, media db.PostType, owner, fileName string) error {

@@ -184,7 +184,7 @@ export function DatePickerRange({
 	className = "w-fit",
 }: {
 	value?: DateRange;
-	onChange?: (date: DateRange | undefined) => void;
+	onChange?: (dates: DateRange | undefined) => void;
 	label?: string;
 	id?: string;
 	className?: string;
