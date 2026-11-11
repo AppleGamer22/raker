@@ -189,6 +189,10 @@ WHERE
 				unnest(sqlc.slice(post_owners)::text[]) AS owner_filter(OWNER)
 			WHERE
 				Histories.post_owner LIKE FORMAT('%%%s%%', owner_filter.owner)))
+	AND ((post_date >= sqlc.narg(from_date)::date
+			OR sqlc.narg(from_date) IS NULL)
+		AND (post_date <= sqlc.narg(to_date)::date
+			OR sqlc.narg(to_date) IS NULL))
 	AND username = sqlc.arg(username)::text
 	AND (NOT sqlc.arg(only_with_coordinates)::boolean
 		OR (sqlc.arg(only_with_coordinates)::boolean
@@ -226,6 +230,10 @@ WHERE
 				unnest(sqlc.slice(post_owners)::text[]) AS owner_filter(OWNER)
 			WHERE
 				Histories.post_owner LIKE FORMAT('%%%s%%', owner_filter.owner)))
+	AND ((post_date >= sqlc.narg(from_date)::date
+			OR sqlc.narg(from_date) IS NULL)
+		AND (post_date <= sqlc.narg(to_date)::date
+			OR sqlc.narg(to_date) IS NULL))
 	AND username = sqlc.arg(username)::text
 	AND (NOT sqlc.arg(only_with_coordinates)::boolean
 		OR (sqlc.arg(only_with_coordinates)::boolean
@@ -250,6 +258,10 @@ WHERE
 				OR (COALESCE(sqlc.slice(categories)::text[], ARRAY[]::text[]) = COALESCE(sqlc.slice(user_categories)::text[], ARRAY[]::text[])
 					AND cardinality(categories) = 0))))
 	AND post_owner LIKE FORMAT('%%%s%%', sqlc.arg(post_owner)::text)
+	AND ((post_date >= sqlc.narg(from_date)::date
+			OR sqlc.narg(from_date) IS NULL)
+		AND (post_date <= sqlc.narg(to_date)::date
+			OR sqlc.narg(to_date) IS NULL))
 	AND username = sqlc.arg(username)::text
 	AND (NOT sqlc.arg(only_with_coordinates)::boolean
 		OR (sqlc.arg(only_with_coordinates)::boolean

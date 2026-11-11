@@ -96,6 +96,8 @@ message HistoryOwnersRequest {
   int32 page_size = 5;
   repeated string categories = 6;
   repeated PostType types = 7;
+  optional google.protobuf.Timestamp from_date = 8;
+  optional google.protobuf.Timestamp to_date = 9;
 }
 
 message HistoryRequest {
@@ -106,6 +108,8 @@ message HistoryRequest {
   repeated string owners = 5;
   repeated string categories = 6;
   repeated PostType types = 7;
+  optional google.protobuf.Timestamp from_date = 8;
+  optional google.protobuf.Timestamp to_date = 9;
 }
 
 message HistoryResponse {

@@ -198,6 +198,7 @@ export function Menu({
 												owners: [],
 												types: defaultPostTypes,
 												page: 1n,
+												dates: { from: undefined },
 											}}
 											onClick={() => onNavigate?.()}
 										/>

@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"math"
 	"sort"
@@ -51,6 +52,17 @@ func PostTypePB2DB(pt v1.PostType) db.PostType {
 	}
 }
 
+func Timestamp2NullTime(timestamp *timestamppb.Timestamp) sql.NullTime {
+	if timestamp == nil {
+		return sql.NullTime{}
+	}
+	t := timestamp.AsTime()
+	return sql.NullTime{
+		Time:  t,
+		Valid: t.IsZero(),
+	}
+}
+
 func HistoryToScrapeResponse(user db.User, history db.History) *v1.ScrapeResponse {
 	return &v1.ScrapeResponse{
 		PostOwner:  history.PostOwner,
@@ -96,6 +108,8 @@ func (server *RakerServer) SearchHistory(ctx context.Context, request *v1.Histor
 			PostOwners:          request.Owners,
 			Username:            user.Username,
 			OnlyWithCoordinates: request.OnlyWithCoordinates,
+			FromDate:            Timestamp2NullTime(request.FromDate),
+			ToDate:              Timestamp2NullTime(request.ToDate),
 		})
 		if err != nil {
 			return &v1.HistoryResponse{}, connect.NewError(connect.CodeInternal, err)
@@ -106,7 +120,7 @@ func (server *RakerServer) SearchHistory(ctx context.Context, request *v1.Histor
 	pages := int64(math.Ceil(float64(count) / float64(request.PageSize)))
 	if pages == 0 {
 		page = 1
-		pages = 1
+		// pages = 1
 	} else if page > pages {
 		page = pages
 	}
@@ -125,6 +139,8 @@ func (server *RakerServer) SearchHistory(ctx context.Context, request *v1.Histor
 		Page:                int32((page - 1) * int64(request.PageSize)),
 		PageSize:            30,
 		OnlyWithCoordinates: request.OnlyWithCoordinates,
+		FromDate:            Timestamp2NullTime(request.FromDate),
+		ToDate:              Timestamp2NullTime(request.ToDate),
 	})
 
 	if err != nil {
@@ -167,6 +183,8 @@ func (server *RakerServer) SearchHistoryOwners(ctx context.Context, request *v1.
 		PostOwner:           request.Owner,
 		Username:            user.Username,
 		OnlyWithCoordinates: request.OnlyWithCoordinates,
+		FromDate:            Timestamp2NullTime(request.FromDate),
+		ToDate:              Timestamp2NullTime(request.ToDate),
 	})
 
 	if err != nil {

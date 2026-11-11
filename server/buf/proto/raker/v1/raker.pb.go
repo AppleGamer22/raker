@@ -724,6 +724,8 @@ type HistoryOwnersRequest struct {
 	PageSize            int32                  `protobuf:"varint,5,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
 	Categories          []string               `protobuf:"bytes,6,rep,name=categories,proto3" json:"categories,omitempty"`
 	Types               []PostType             `protobuf:"varint,7,rep,packed,name=types,proto3,enum=raker.v1.PostType" json:"types,omitempty"`
+	FromDate            *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=from_date,json=fromDate,proto3,oneof" json:"from_date,omitempty"`
+	ToDate              *timestamppb.Timestamp `protobuf:"bytes,9,opt,name=to_date,json=toDate,proto3,oneof" json:"to_date,omitempty"`
 	unknownFields       protoimpl.UnknownFields
 	sizeCache           protoimpl.SizeCache
 }
@@ -807,6 +809,20 @@ func (x *HistoryOwnersRequest) GetTypes() []PostType {
 	return nil
 }
 
+func (x *HistoryOwnersRequest) GetFromDate() *timestamppb.Timestamp {
+	if x != nil {
+		return x.FromDate
+	}
+	return nil
+}
+
+func (x *HistoryOwnersRequest) GetToDate() *timestamppb.Timestamp {
+	if x != nil {
+		return x.ToDate
+	}
+	return nil
+}
+
 type HistoryRequest struct {
 	state               protoimpl.MessageState `protogen:"open.v1"`
 	OnlyWithCoordinates bool                   `protobuf:"varint,1,opt,name=only_with_coordinates,json=onlyWithCoordinates,proto3" json:"only_with_coordinates,omitempty"`
@@ -816,6 +832,8 @@ type HistoryRequest struct {
 	Owners              []string               `protobuf:"bytes,5,rep,name=owners,proto3" json:"owners,omitempty"`
 	Categories          []string               `protobuf:"bytes,6,rep,name=categories,proto3" json:"categories,omitempty"`
 	Types               []PostType             `protobuf:"varint,7,rep,packed,name=types,proto3,enum=raker.v1.PostType" json:"types,omitempty"`
+	FromDate            *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=from_date,json=fromDate,proto3,oneof" json:"from_date,omitempty"`
+	ToDate              *timestamppb.Timestamp `protobuf:"bytes,9,opt,name=to_date,json=toDate,proto3,oneof" json:"to_date,omitempty"`
 	unknownFields       protoimpl.UnknownFields
 	sizeCache           protoimpl.SizeCache
 }
@@ -895,6 +913,20 @@ func (x *HistoryRequest) GetCategories() []string {
 func (x *HistoryRequest) GetTypes() []PostType {
 	if x != nil {
 		return x.Types
+	}
+	return nil
+}
+
+func (x *HistoryRequest) GetFromDate() *timestamppb.Timestamp {
+	if x != nil {
+		return x.FromDate
+	}
+	return nil
+}
+
+func (x *HistoryRequest) GetToDate() *timestamppb.Timestamp {
+	if x != nil {
+		return x.ToDate
 	}
 	return nil
 }
@@ -1348,7 +1380,7 @@ const file_raker_v1_raker_proto_rawDesc = "" +
 	"\x04post\x18\x03 \x01(\tR\x04post\x12\x1e\n" +
 	"\n" +
 	"categories\x18\x04 \x03(\tR\n" +
-	"categories\"\xf9\x01\n" +
+	"categories\"\x8b\x03\n" +
 	"\x14HistoryOwnersRequest\x122\n" +
 	"\x15only_with_coordinates\x18\x01 \x01(\bR\x13onlyWithCoordinates\x12\x1c\n" +
 	"\texclusive\x18\x02 \x01(\bR\texclusive\x12\x14\n" +
@@ -1358,7 +1390,13 @@ const file_raker_v1_raker_proto_rawDesc = "" +
 	"\n" +
 	"categories\x18\x06 \x03(\tR\n" +
 	"categories\x12(\n" +
-	"\x05types\x18\a \x03(\x0e2\x12.raker.v1.PostTypeR\x05types\"\xf5\x01\n" +
+	"\x05types\x18\a \x03(\x0e2\x12.raker.v1.PostTypeR\x05types\x12<\n" +
+	"\tfrom_date\x18\b \x01(\v2\x1a.google.protobuf.TimestampH\x00R\bfromDate\x88\x01\x01\x128\n" +
+	"\ato_date\x18\t \x01(\v2\x1a.google.protobuf.TimestampH\x01R\x06toDate\x88\x01\x01B\f\n" +
+	"\n" +
+	"_from_dateB\n" +
+	"\n" +
+	"\b_to_date\"\x87\x03\n" +
 	"\x0eHistoryRequest\x122\n" +
 	"\x15only_with_coordinates\x18\x01 \x01(\bR\x13onlyWithCoordinates\x12\x1c\n" +
 	"\texclusive\x18\x02 \x01(\bR\texclusive\x12\x12\n" +
@@ -1368,7 +1406,13 @@ const file_raker_v1_raker_proto_rawDesc = "" +
 	"\n" +
 	"categories\x18\x06 \x03(\tR\n" +
 	"categories\x12(\n" +
-	"\x05types\x18\a \x03(\x0e2\x12.raker.v1.PostTypeR\x05types\"j\n" +
+	"\x05types\x18\a \x03(\x0e2\x12.raker.v1.PostTypeR\x05types\x12<\n" +
+	"\tfrom_date\x18\b \x01(\v2\x1a.google.protobuf.TimestampH\x00R\bfromDate\x88\x01\x01\x128\n" +
+	"\ato_date\x18\t \x01(\v2\x1a.google.protobuf.TimestampH\x01R\x06toDate\x88\x01\x01B\f\n" +
+	"\n" +
+	"_from_dateB\n" +
+	"\n" +
+	"\b_to_date\"j\n" +
 	"\x0fHistoryResponse\x12\x1f\n" +
 	"\vtotal_count\x18\x01 \x01(\x03R\n" +
 	"totalCount\x126\n" +
@@ -1487,70 +1531,74 @@ var file_raker_v1_raker_proto_depIdxs = []int32{
 	0,  // 3: raker.v1.RemoveFilesRequest.type:type_name -> raker.v1.PostType
 	0,  // 4: raker.v1.UpdateCategoriesRequest.type:type_name -> raker.v1.PostType
 	0,  // 5: raker.v1.HistoryOwnersRequest.types:type_name -> raker.v1.PostType
-	0,  // 6: raker.v1.HistoryRequest.types:type_name -> raker.v1.PostType
-	8,  // 7: raker.v1.HistoryResponse.histories:type_name -> raker.v1.ScrapeResponse
-	18, // 8: raker.v1.HistoryOwnersResponse.owners:type_name -> raker.v1.HistoryOwnersResponse.HistoryOwner
-	0,  // 9: raker.v1.FileSubRequest.post_type:type_name -> raker.v1.PostType
-	15, // 10: raker.v1.CropFileRequest.file_request:type_name -> raker.v1.FileSubRequest
-	19, // 11: raker.v1.CropFileRequest.corner1:type_name -> raker.v1.CropFileRequest.PixelCoordinate
-	19, // 12: raker.v1.CropFileRequest.corner2:type_name -> raker.v1.CropFileRequest.PixelCoordinate
-	15, // 13: raker.v1.RotateFileRequest.file_request:type_name -> raker.v1.FileSubRequest
-	0,  // 14: raker.v1.HistoryOwnersResponse.HistoryOwner.type:type_name -> raker.v1.PostType
-	22, // 15: raker.v1.RakerServer.BeginSignUp:input_type -> raker.v1.passkey.BeginSignUpRequest
-	23, // 16: raker.v1.RakerServer.FinishSignUp:input_type -> raker.v1.passkey.FinishSignUpRequest
-	24, // 17: raker.v1.RakerServer.BeginSignIn:input_type -> raker.v1.passkey.BeginSignInRequest
-	25, // 18: raker.v1.RakerServer.FinishSignIn:input_type -> raker.v1.passkey.FinishSignInRequest
-	26, // 19: raker.v1.RakerServer.RenamePasskey:input_type -> raker.v1.passkey.Passkey
-	26, // 20: raker.v1.RakerServer.DeletePasskey:input_type -> raker.v1.passkey.Passkey
-	27, // 21: raker.v1.RakerServer.GetPasskeysList:input_type -> google.protobuf.Empty
-	1,  // 22: raker.v1.RakerServer.SignUpInstagram:input_type -> raker.v1.SignUpRequest
-	2,  // 23: raker.v1.RakerServer.SignInInstagram:input_type -> raker.v1.SignInRequest
-	5,  // 24: raker.v1.RakerServer.EditUserCredentials:input_type -> raker.v1.EditUserCredentialsRequest
-	4,  // 25: raker.v1.RakerServer.EditCategory:input_type -> raker.v1.EditCategoryRequest
-	27, // 26: raker.v1.RakerServer.GetUserCategories:input_type -> google.protobuf.Empty
-	6,  // 27: raker.v1.RakerServer.ScrapeInstagram:input_type -> raker.v1.UnaryScrapeRequest
-	6,  // 28: raker.v1.RakerServer.ScrapeHighlight:input_type -> raker.v1.UnaryScrapeRequest
-	6,  // 29: raker.v1.RakerServer.ScrapeStory:input_type -> raker.v1.UnaryScrapeRequest
-	7,  // 30: raker.v1.RakerServer.ScrapeTikTok:input_type -> raker.v1.BinaryScrapeRequest
-	7,  // 31: raker.v1.RakerServer.ScrapeSnapchat:input_type -> raker.v1.BinaryScrapeRequest
-	7,  // 32: raker.v1.RakerServer.ScrapeVSCO:input_type -> raker.v1.BinaryScrapeRequest
-	9,  // 33: raker.v1.RakerServer.RemoveFiles:input_type -> raker.v1.RemoveFilesRequest
-	10, // 34: raker.v1.RakerServer.UpdateCategories:input_type -> raker.v1.UpdateCategoriesRequest
-	12, // 35: raker.v1.RakerServer.SearchHistory:input_type -> raker.v1.HistoryRequest
-	11, // 36: raker.v1.RakerServer.SearchHistoryOwners:input_type -> raker.v1.HistoryOwnersRequest
-	16, // 37: raker.v1.RakerServer.CropFile:input_type -> raker.v1.CropFileRequest
-	17, // 38: raker.v1.RakerServer.RotateFile:input_type -> raker.v1.RotateFileRequest
-	15, // 39: raker.v1.RakerServer.DuplicateFile:input_type -> raker.v1.FileSubRequest
-	28, // 40: raker.v1.RakerServer.BeginSignUp:output_type -> raker.v1.passkey.BeginSignUpResponse
-	27, // 41: raker.v1.RakerServer.FinishSignUp:output_type -> google.protobuf.Empty
-	29, // 42: raker.v1.RakerServer.BeginSignIn:output_type -> raker.v1.passkey.BeginSignInResponse
-	27, // 43: raker.v1.RakerServer.FinishSignIn:output_type -> google.protobuf.Empty
-	27, // 44: raker.v1.RakerServer.RenamePasskey:output_type -> google.protobuf.Empty
-	27, // 45: raker.v1.RakerServer.DeletePasskey:output_type -> google.protobuf.Empty
-	30, // 46: raker.v1.RakerServer.GetPasskeysList:output_type -> raker.v1.passkey.PasskeysSettingsDisplay
-	27, // 47: raker.v1.RakerServer.SignUpInstagram:output_type -> google.protobuf.Empty
-	27, // 48: raker.v1.RakerServer.SignInInstagram:output_type -> google.protobuf.Empty
-	27, // 49: raker.v1.RakerServer.EditUserCredentials:output_type -> google.protobuf.Empty
-	27, // 50: raker.v1.RakerServer.EditCategory:output_type -> google.protobuf.Empty
-	3,  // 51: raker.v1.RakerServer.GetUserCategories:output_type -> raker.v1.UserCategoriesResponse
-	8,  // 52: raker.v1.RakerServer.ScrapeInstagram:output_type -> raker.v1.ScrapeResponse
-	8,  // 53: raker.v1.RakerServer.ScrapeHighlight:output_type -> raker.v1.ScrapeResponse
-	8,  // 54: raker.v1.RakerServer.ScrapeStory:output_type -> raker.v1.ScrapeResponse
-	8,  // 55: raker.v1.RakerServer.ScrapeTikTok:output_type -> raker.v1.ScrapeResponse
-	8,  // 56: raker.v1.RakerServer.ScrapeSnapchat:output_type -> raker.v1.ScrapeResponse
-	8,  // 57: raker.v1.RakerServer.ScrapeVSCO:output_type -> raker.v1.ScrapeResponse
-	8,  // 58: raker.v1.RakerServer.RemoveFiles:output_type -> raker.v1.ScrapeResponse
-	27, // 59: raker.v1.RakerServer.UpdateCategories:output_type -> google.protobuf.Empty
-	13, // 60: raker.v1.RakerServer.SearchHistory:output_type -> raker.v1.HistoryResponse
-	14, // 61: raker.v1.RakerServer.SearchHistoryOwners:output_type -> raker.v1.HistoryOwnersResponse
-	27, // 62: raker.v1.RakerServer.CropFile:output_type -> google.protobuf.Empty
-	27, // 63: raker.v1.RakerServer.RotateFile:output_type -> google.protobuf.Empty
-	15, // 64: raker.v1.RakerServer.DuplicateFile:output_type -> raker.v1.FileSubRequest
-	40, // [40:65] is the sub-list for method output_type
-	15, // [15:40] is the sub-list for method input_type
-	15, // [15:15] is the sub-list for extension type_name
-	15, // [15:15] is the sub-list for extension extendee
-	0,  // [0:15] is the sub-list for field type_name
+	20, // 6: raker.v1.HistoryOwnersRequest.from_date:type_name -> google.protobuf.Timestamp
+	20, // 7: raker.v1.HistoryOwnersRequest.to_date:type_name -> google.protobuf.Timestamp
+	0,  // 8: raker.v1.HistoryRequest.types:type_name -> raker.v1.PostType
+	20, // 9: raker.v1.HistoryRequest.from_date:type_name -> google.protobuf.Timestamp
+	20, // 10: raker.v1.HistoryRequest.to_date:type_name -> google.protobuf.Timestamp
+	8,  // 11: raker.v1.HistoryResponse.histories:type_name -> raker.v1.ScrapeResponse
+	18, // 12: raker.v1.HistoryOwnersResponse.owners:type_name -> raker.v1.HistoryOwnersResponse.HistoryOwner
+	0,  // 13: raker.v1.FileSubRequest.post_type:type_name -> raker.v1.PostType
+	15, // 14: raker.v1.CropFileRequest.file_request:type_name -> raker.v1.FileSubRequest
+	19, // 15: raker.v1.CropFileRequest.corner1:type_name -> raker.v1.CropFileRequest.PixelCoordinate
+	19, // 16: raker.v1.CropFileRequest.corner2:type_name -> raker.v1.CropFileRequest.PixelCoordinate
+	15, // 17: raker.v1.RotateFileRequest.file_request:type_name -> raker.v1.FileSubRequest
+	0,  // 18: raker.v1.HistoryOwnersResponse.HistoryOwner.type:type_name -> raker.v1.PostType
+	22, // 19: raker.v1.RakerServer.BeginSignUp:input_type -> raker.v1.passkey.BeginSignUpRequest
+	23, // 20: raker.v1.RakerServer.FinishSignUp:input_type -> raker.v1.passkey.FinishSignUpRequest
+	24, // 21: raker.v1.RakerServer.BeginSignIn:input_type -> raker.v1.passkey.BeginSignInRequest
+	25, // 22: raker.v1.RakerServer.FinishSignIn:input_type -> raker.v1.passkey.FinishSignInRequest
+	26, // 23: raker.v1.RakerServer.RenamePasskey:input_type -> raker.v1.passkey.Passkey
+	26, // 24: raker.v1.RakerServer.DeletePasskey:input_type -> raker.v1.passkey.Passkey
+	27, // 25: raker.v1.RakerServer.GetPasskeysList:input_type -> google.protobuf.Empty
+	1,  // 26: raker.v1.RakerServer.SignUpInstagram:input_type -> raker.v1.SignUpRequest
+	2,  // 27: raker.v1.RakerServer.SignInInstagram:input_type -> raker.v1.SignInRequest
+	5,  // 28: raker.v1.RakerServer.EditUserCredentials:input_type -> raker.v1.EditUserCredentialsRequest
+	4,  // 29: raker.v1.RakerServer.EditCategory:input_type -> raker.v1.EditCategoryRequest
+	27, // 30: raker.v1.RakerServer.GetUserCategories:input_type -> google.protobuf.Empty
+	6,  // 31: raker.v1.RakerServer.ScrapeInstagram:input_type -> raker.v1.UnaryScrapeRequest
+	6,  // 32: raker.v1.RakerServer.ScrapeHighlight:input_type -> raker.v1.UnaryScrapeRequest
+	6,  // 33: raker.v1.RakerServer.ScrapeStory:input_type -> raker.v1.UnaryScrapeRequest
+	7,  // 34: raker.v1.RakerServer.ScrapeTikTok:input_type -> raker.v1.BinaryScrapeRequest
+	7,  // 35: raker.v1.RakerServer.ScrapeSnapchat:input_type -> raker.v1.BinaryScrapeRequest
+	7,  // 36: raker.v1.RakerServer.ScrapeVSCO:input_type -> raker.v1.BinaryScrapeRequest
+	9,  // 37: raker.v1.RakerServer.RemoveFiles:input_type -> raker.v1.RemoveFilesRequest
+	10, // 38: raker.v1.RakerServer.UpdateCategories:input_type -> raker.v1.UpdateCategoriesRequest
+	12, // 39: raker.v1.RakerServer.SearchHistory:input_type -> raker.v1.HistoryRequest
+	11, // 40: raker.v1.RakerServer.SearchHistoryOwners:input_type -> raker.v1.HistoryOwnersRequest
+	16, // 41: raker.v1.RakerServer.CropFile:input_type -> raker.v1.CropFileRequest
+	17, // 42: raker.v1.RakerServer.RotateFile:input_type -> raker.v1.RotateFileRequest
+	15, // 43: raker.v1.RakerServer.DuplicateFile:input_type -> raker.v1.FileSubRequest
+	28, // 44: raker.v1.RakerServer.BeginSignUp:output_type -> raker.v1.passkey.BeginSignUpResponse
+	27, // 45: raker.v1.RakerServer.FinishSignUp:output_type -> google.protobuf.Empty
+	29, // 46: raker.v1.RakerServer.BeginSignIn:output_type -> raker.v1.passkey.BeginSignInResponse
+	27, // 47: raker.v1.RakerServer.FinishSignIn:output_type -> google.protobuf.Empty
+	27, // 48: raker.v1.RakerServer.RenamePasskey:output_type -> google.protobuf.Empty
+	27, // 49: raker.v1.RakerServer.DeletePasskey:output_type -> google.protobuf.Empty
+	30, // 50: raker.v1.RakerServer.GetPasskeysList:output_type -> raker.v1.passkey.PasskeysSettingsDisplay
+	27, // 51: raker.v1.RakerServer.SignUpInstagram:output_type -> google.protobuf.Empty
+	27, // 52: raker.v1.RakerServer.SignInInstagram:output_type -> google.protobuf.Empty
+	27, // 53: raker.v1.RakerServer.EditUserCredentials:output_type -> google.protobuf.Empty
+	27, // 54: raker.v1.RakerServer.EditCategory:output_type -> google.protobuf.Empty
+	3,  // 55: raker.v1.RakerServer.GetUserCategories:output_type -> raker.v1.UserCategoriesResponse
+	8,  // 56: raker.v1.RakerServer.ScrapeInstagram:output_type -> raker.v1.ScrapeResponse
+	8,  // 57: raker.v1.RakerServer.ScrapeHighlight:output_type -> raker.v1.ScrapeResponse
+	8,  // 58: raker.v1.RakerServer.ScrapeStory:output_type -> raker.v1.ScrapeResponse
+	8,  // 59: raker.v1.RakerServer.ScrapeTikTok:output_type -> raker.v1.ScrapeResponse
+	8,  // 60: raker.v1.RakerServer.ScrapeSnapchat:output_type -> raker.v1.ScrapeResponse
+	8,  // 61: raker.v1.RakerServer.ScrapeVSCO:output_type -> raker.v1.ScrapeResponse
+	8,  // 62: raker.v1.RakerServer.RemoveFiles:output_type -> raker.v1.ScrapeResponse
+	27, // 63: raker.v1.RakerServer.UpdateCategories:output_type -> google.protobuf.Empty
+	13, // 64: raker.v1.RakerServer.SearchHistory:output_type -> raker.v1.HistoryResponse
+	14, // 65: raker.v1.RakerServer.SearchHistoryOwners:output_type -> raker.v1.HistoryOwnersResponse
+	27, // 66: raker.v1.RakerServer.CropFile:output_type -> google.protobuf.Empty
+	27, // 67: raker.v1.RakerServer.RotateFile:output_type -> google.protobuf.Empty
+	15, // 68: raker.v1.RakerServer.DuplicateFile:output_type -> raker.v1.FileSubRequest
+	44, // [44:69] is the sub-list for method output_type
+	19, // [19:44] is the sub-list for method input_type
+	19, // [19:19] is the sub-list for extension type_name
+	19, // [19:19] is the sub-list for extension extendee
+	0,  // [0:19] is the sub-list for field type_name
 }
 
 func init() { file_raker_v1_raker_proto_init() }
@@ -1563,6 +1611,8 @@ func file_raker_v1_raker_proto_init() {
 	file_raker_v1_raker_proto_msgTypes[5].OneofWrappers = []any{}
 	file_raker_v1_raker_proto_msgTypes[6].OneofWrappers = []any{}
 	file_raker_v1_raker_proto_msgTypes[7].OneofWrappers = []any{}
+	file_raker_v1_raker_proto_msgTypes[10].OneofWrappers = []any{}
+	file_raker_v1_raker_proto_msgTypes[11].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{

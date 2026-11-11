@@ -7,6 +7,7 @@ package db
 
 import (
 	"context"
+	"database/sql"
 	"time"
 
 	"github.com/lib/pq"
@@ -181,20 +182,26 @@ WHERE
 				unnest($5::text[]) AS owner_filter(OWNER)
 			WHERE
 				Histories.post_owner LIKE FORMAT('%%%s%%', owner_filter.owner)))
-	AND username = $6::text
-	AND (NOT $7::boolean
-		OR ($7::boolean
+	AND ((post_date >= $6::date
+			OR $6 IS NULL)
+		AND (post_date <= $7::date
+			OR $7 IS NULL))
+	AND username = $8::text
+	AND (NOT $9::boolean
+		OR ($9::boolean
 			AND coordinates IS NOT NULL))
 `
 
 type HistoryCountParams struct {
-	PostTypes           []PostType `json:"post_types"`
-	Exclusive           bool       `json:"exclusive"`
-	Categories          []string   `json:"categories"`
-	UserCategories      []string   `json:"user_categories"`
-	PostOwners          []string   `json:"post_owners"`
-	Username            string     `json:"username"`
-	OnlyWithCoordinates bool       `json:"only_with_coordinates"`
+	PostTypes           []PostType   `json:"post_types"`
+	Exclusive           bool         `json:"exclusive"`
+	Categories          []string     `json:"categories"`
+	UserCategories      []string     `json:"user_categories"`
+	PostOwners          []string     `json:"post_owners"`
+	FromDate            sql.NullTime `json:"from_date"`
+	ToDate              sql.NullTime `json:"to_date"`
+	Username            string       `json:"username"`
+	OnlyWithCoordinates bool         `json:"only_with_coordinates"`
 }
 
 func (q *Queries) HistoryCount(ctx context.Context, arg HistoryCountParams) (int64, error) {
@@ -204,6 +211,8 @@ func (q *Queries) HistoryCount(ctx context.Context, arg HistoryCountParams) (int
 		pq.Array(arg.Categories),
 		pq.Array(arg.UserCategories),
 		pq.Array(arg.PostOwners),
+		arg.FromDate,
+		arg.ToDate,
 		arg.Username,
 		arg.OnlyWithCoordinates,
 	)
@@ -339,33 +348,39 @@ WHERE
 				unnest($5::text[]) AS owner_filter(OWNER)
 			WHERE
 				Histories.post_owner LIKE FORMAT('%%%s%%', owner_filter.owner)))
-	AND username = $6::text
-	AND (NOT $7::boolean
-		OR ($7::boolean
+	AND ((post_date >= $6::date
+			OR $6 IS NULL)
+		AND (post_date <= $7::date
+			OR $7 IS NULL))
+	AND username = $8::text
+	AND (NOT $9::boolean
+		OR ($9::boolean
 			AND coordinates IS NOT NULL))
 ORDER BY
 	post_date DESC
-LIMIT CASE WHEN NOT $7::boolean THEN
-	$9::int
+LIMIT CASE WHEN NOT $9::boolean THEN
+	$11::int
 ELSE
 	NULL
-END OFFSET CASE WHEN NOT $7::boolean THEN
-	$8::int
+END OFFSET CASE WHEN NOT $9::boolean THEN
+	$10::int
 ELSE
 	0
 END
 `
 
 type HistoryGetPageParams struct {
-	PostTypes           []PostType `json:"post_types"`
-	Exclusive           bool       `json:"exclusive"`
-	Categories          []string   `json:"categories"`
-	UserCategories      []string   `json:"user_categories"`
-	PostOwners          []string   `json:"post_owners"`
-	Username            string     `json:"username"`
-	OnlyWithCoordinates bool       `json:"only_with_coordinates"`
-	Page                int32      `json:"page"`
-	PageSize            int32      `json:"page_size"`
+	PostTypes           []PostType   `json:"post_types"`
+	Exclusive           bool         `json:"exclusive"`
+	Categories          []string     `json:"categories"`
+	UserCategories      []string     `json:"user_categories"`
+	PostOwners          []string     `json:"post_owners"`
+	FromDate            sql.NullTime `json:"from_date"`
+	ToDate              sql.NullTime `json:"to_date"`
+	Username            string       `json:"username"`
+	OnlyWithCoordinates bool         `json:"only_with_coordinates"`
+	Page                int32        `json:"page"`
+	PageSize            int32        `json:"page_size"`
 }
 
 // https://docs.sqlc.dev/en/stable/howto/select.html#passing-a-slice-as-a-parameter-to-a-query
@@ -377,6 +392,8 @@ func (q *Queries) HistoryGetPage(ctx context.Context, arg HistoryGetPageParams) 
 		pq.Array(arg.Categories),
 		pq.Array(arg.UserCategories),
 		pq.Array(arg.PostOwners),
+		arg.FromDate,
+		arg.ToDate,
 		arg.Username,
 		arg.OnlyWithCoordinates,
 		arg.Page,
@@ -432,20 +449,26 @@ WHERE
 				OR (COALESCE($3::text[], ARRAY[]::text[]) = COALESCE($4::text[], ARRAY[]::text[])
 					AND cardinality(categories) = 0))))
 	AND post_owner LIKE FORMAT('%%%s%%', $5::text)
-	AND username = $6::text
-	AND (NOT $7::boolean
-		OR ($7::boolean
+	AND ((post_date >= $6::date
+			OR $6 IS NULL)
+		AND (post_date <= $7::date
+			OR $7 IS NULL))
+	AND username = $8::text
+	AND (NOT $9::boolean
+		OR ($9::boolean
 			AND coordinates IS NOT NULL))
 `
 
 type HistoryOwnersParams struct {
-	PostTypes           []PostType `json:"post_types"`
-	Exclusive           bool       `json:"exclusive"`
-	Categories          []string   `json:"categories"`
-	UserCategories      []string   `json:"user_categories"`
-	PostOwner           string     `json:"post_owner"`
-	Username            string     `json:"username"`
-	OnlyWithCoordinates bool       `json:"only_with_coordinates"`
+	PostTypes           []PostType   `json:"post_types"`
+	Exclusive           bool         `json:"exclusive"`
+	Categories          []string     `json:"categories"`
+	UserCategories      []string     `json:"user_categories"`
+	PostOwner           string       `json:"post_owner"`
+	FromDate            sql.NullTime `json:"from_date"`
+	ToDate              sql.NullTime `json:"to_date"`
+	Username            string       `json:"username"`
+	OnlyWithCoordinates bool         `json:"only_with_coordinates"`
 }
 
 type HistoryOwnersRow struct {
@@ -460,6 +483,8 @@ func (q *Queries) HistoryOwners(ctx context.Context, arg HistoryOwnersParams) ([
 		pq.Array(arg.Categories),
 		pq.Array(arg.UserCategories),
 		arg.PostOwner,
+		arg.FromDate,
+		arg.ToDate,
 		arg.Username,
 		arg.OnlyWithCoordinates,
 	)

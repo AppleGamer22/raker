@@ -1,3 +1,4 @@
+import { timestampFromDate } from "@bufbuild/protobuf/wkt";
 import { useMutation } from "@connectrpc/connect-query";
 import { useForm } from "@tanstack/react-form";
 import { createFileRoute, Link, stripSearchParams, useNavigate } from "@tanstack/react-router";
@@ -77,12 +78,33 @@ export const historySearchDefaults = {
 	types: defaultPostTypes,
 };
 
+const dateRangeSchema = z
+	.object({
+		from: z.custom<Date | undefined>(),
+		to: z.date().max(new Date().getDate()).optional(),
+	})
+	.catch({ from: undefined })
+	.refine(
+		(data) => {
+			// Only validate order if both dates are present
+			if (data.from && data.to) {
+				return data.to >= data.from;
+			}
+			return true;
+		},
+		{
+			message: "The 'to' date cannot be earlier than the 'from' date.",
+			path: ["to"], // Attach the error message to the 'to' field
+		},
+	);
+
 export const Route = createFileRoute("/history")({
 	component: History,
 	validateSearch: z.object({
 		types: z.array(z.enum(PostType)).catch(historySearchDefaults.types),
 		exclusive: z.boolean().catch(historySearchDefaults.exclusive),
 		categories: z.array(z.string()).catch(historySearchDefaults.categories),
+		dates: dateRangeSchema,
 		page: z.coerce.bigint().min(1n).catch(historySearchDefaults.page),
 		owners: z
 			.array(
@@ -107,24 +129,7 @@ const historyFormSchema = z.object({
 	types: z.array(z.enum(PostType)),
 	exclusive: z.boolean(),
 	categories: z.array(z.string()),
-	dates: z
-		.object({
-			from: z.custom<Date | undefined>(),
-			to: z.date().max(new Date().getDate()).optional(),
-		})
-		.refine(
-			(data) => {
-				// Only validate order if both dates are present
-				if (data.from && data.to) {
-					return data.to >= data.from;
-				}
-				return true;
-			},
-			{
-				message: "The 'to' date cannot be earlier than the 'from' date.",
-				path: ["to"], // Attach the error message to the 'to' field
-			},
-		),
+	dates: dateRangeSchema,
 	ownerSearchTerm: z.string(),
 	ownersSearchValue: z.array(
 		z.object({
@@ -419,6 +424,7 @@ export function HistoryCard({
 										exclusive: exclusive,
 										page: 1n,
 										owners: [],
+										dates: { from: undefined },
 										types: defaultPostTypes,
 									}}
 									target={linkTarget}
@@ -464,12 +470,14 @@ function serializeSearchParams({
 	categories,
 	owners,
 	page,
+	dates,
 }: {
 	types: PostType[];
 	exclusive: boolean;
 	categories: string[];
 	owners?: OwnerPostType[];
 	page: bigint;
+	dates: DateRange;
 }) {
 	return JSON.stringify({
 		types: [...types].sort(),
@@ -479,6 +487,8 @@ function serializeSearchParams({
 			.map(({ owner, type }) => ({ owner, type }))
 			.sort((a, b) => a.owner.localeCompare(b.owner) || a.type - b.type),
 		page: page.toString(),
+		from: dates.from,
+		to: dates.to,
 	});
 }
 
@@ -491,6 +501,7 @@ export function HistorySearchForm({
 	categories = [],
 	currentPage = 1n,
 	pageSize = 30,
+	dates,
 	autoSubmit = true,
 	setHistories,
 	setTotalCount,
@@ -508,6 +519,7 @@ export function HistorySearchForm({
 	categories?: string[];
 	currentPage?: bigint;
 	pageSize?: number;
+	dates: DateRange;
 	autoSubmit?: boolean;
 	onlyWithCoordinates?: boolean;
 	setHistories?: Dispatch<SetStateAction<ScrapeResponse[]>>;
@@ -522,12 +534,14 @@ export function HistorySearchForm({
 		ownersSearchValue: OwnerPostType[];
 		types: PostType[];
 		page: bigint;
+		dates: DateRange;
 	}) => void;
 	onResult?: (formValue: {
 		categories: string[];
 		exclusive: boolean;
 		ownersSearchValue: OwnerPostType[];
 		types: PostType[];
+		dates: DateRange;
 	}) => void;
 }) {
 	const { username, isCategoriesPending, categories: availableCategories } = useUser();
@@ -547,6 +561,7 @@ export function HistorySearchForm({
 		types: PostType[];
 		owners: OwnerPostType[];
 		page: bigint;
+		dates: DateRange;
 	}) => {
 		const key = serializeSearchParams({
 			types: searchParams.types,
@@ -554,6 +569,7 @@ export function HistorySearchForm({
 			categories: searchParams.categories,
 			owners: searchParams.owners,
 			page: searchParams.page,
+			dates: searchParams.dates,
 		});
 
 		lastExecutedSearch.current = key;
@@ -566,6 +582,7 @@ export function HistorySearchForm({
 			ownersSearchValue: searchParams.owners,
 			types: searchParams.types,
 			page: searchParams.page,
+			dates: searchParams.dates,
 		});
 
 		try {
@@ -577,6 +594,8 @@ export function HistorySearchForm({
 				page: searchParams.page,
 				pageSize,
 				onlyWithCoordinates,
+				fromDate: searchParams.dates.from ? timestampFromDate(searchParams.dates.from) : undefined,
+				toDate: searchParams.dates.to ? timestampFromDate(searchParams.dates.to) : undefined,
 			});
 
 			setTotalCount?.(totalCount);
@@ -598,20 +617,18 @@ export function HistorySearchForm({
 			categories,
 			ownerSearchTerm: "",
 			ownersSearchValue: owners ?? [],
-			dates: {
-				from: new Date(),
-				to: new Date(),
-			},
+			dates,
 		} as HistoryFormValues,
 		validators: {
 			onChange: historyFormSchema,
 			onSubmit: historyFormSchema,
 		},
-		onSubmit: async ({ value: { categories, exclusive, ownersSearchValue, types } }) => {
+		onSubmit: async ({ value: { categories, exclusive, ownersSearchValue, types, dates } }) => {
 			await executeSearch({
 				categories,
 				exclusive,
 				types,
+				dates,
 				owners: ownersSearchValue,
 				page: currentPage,
 			});
@@ -625,6 +642,7 @@ export function HistorySearchForm({
 		categories: validSearchCategories,
 		owners,
 		page: currentPage,
+		dates,
 	});
 
 	useEffect(() => {
@@ -647,6 +665,7 @@ export function HistorySearchForm({
 			types,
 			owners: owners ?? [],
 			page: currentPage,
+			dates,
 		});
 	}, [autoSubmit, incomingSearchKey, isCategoriesPending, username]);
 
@@ -921,7 +940,7 @@ export function HistorySearchForm({
 }
 
 function History() {
-	const { types, exclusive, categories, owners, page } = Route.useSearch();
+	const { types, exclusive, categories, owners, page, dates } = Route.useSearch();
 	const navigate = useNavigate({ from: Route.fullPath });
 	const { username } = useUser();
 	const linkTarget = inPWA() ? undefined : "_blank";
@@ -962,17 +981,19 @@ function History() {
 				exclusive={exclusive}
 				types={types}
 				currentPage={page}
+				dates={dates}
 				autoSubmit={true}
 				setHistories={setHistories}
 				setTotalCount={setTotalCount}
 				setHistorySearchPending={setIsSearching}
-				onSearchSubmit={async ({ categories, exclusive, ownersSearchValue, types, page }) => {
+				onSearchSubmit={async ({ categories, exclusive, ownersSearchValue, types, page, dates }) => {
 					await navigate({
 						search: {
 							types,
 							exclusive,
 							categories,
 							page,
+							dates,
 							owners: ownersSearchValue,
 						},
 						replace: true,
