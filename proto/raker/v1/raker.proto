@@ -19,9 +19,10 @@ enum PostType {
   Instagram = 0;
   Highlight = 1;
   Story = 2;
-  TikTok = 3;
-  Snapchat = 4;
-  VSCO = 5;
+  Threads = 3;
+  TikTok = 4;
+  Snapchat = 5;
+  VSCO = 6;
 }
 
 message SignUpRequest {
@@ -169,6 +170,7 @@ service RakerServer {
   rpc ScrapeStory(UnaryScrapeRequest) returns (ScrapeResponse);
   rpc ScrapeTikTok(BinaryScrapeRequest) returns (ScrapeResponse);
   rpc ScrapeSnapchat(BinaryScrapeRequest) returns (ScrapeResponse);
+  rpc ScrapeThreads(BinaryScrapeRequest) returns (ScrapeResponse);
   rpc ScrapeVSCO(BinaryScrapeRequest) returns (ScrapeResponse);
 
   rpc RemoveFiles(RemoveFilesRequest) returns (ScrapeResponse);

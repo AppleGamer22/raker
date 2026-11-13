@@ -22,6 +22,8 @@ func PostTypeDB2PB(pt db.PostType) v1.PostType {
 		return v1.PostType_Highlight
 	case db.PostTypeStory:
 		return v1.PostType_Story
+	case db.PostTypeThreads:
+		return v1.PostType_Threads
 	case db.PostTypeTiktok:
 		return v1.PostType_TikTok
 	case db.PostTypeSnapchat:
@@ -41,6 +43,8 @@ func PostTypePB2DB(pt v1.PostType) db.PostType {
 		return db.PostTypeHighlight
 	case v1.PostType_Story:
 		return db.PostTypeStory
+	case v1.PostType_Threads:
+		return db.PostTypeThreads
 	case v1.PostType_TikTok:
 		return db.PostTypeTiktok
 	case v1.PostType_Snapchat:

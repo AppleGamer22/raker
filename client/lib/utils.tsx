@@ -26,6 +26,7 @@ export const defaultPostTypes = [
 	PostType.Instagram,
 	PostType.Highlight,
 	PostType.Story,
+	PostType.Threads,
 	PostType.TikTok,
 	PostType.Snapchat,
 	PostType.VSCO,

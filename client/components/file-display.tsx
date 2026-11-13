@@ -54,6 +54,8 @@ export function postTypeString(type: PostType): string {
 			return "highlight";
 		case PostType.Story:
 			return "story";
+		case PostType.Threads:
+			return "threads";
 		case PostType.TikTok:
 			return "tiktok";
 		case PostType.Snapchat:

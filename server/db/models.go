@@ -75,6 +75,7 @@ const (
 	PostTypeTiktok    PostType = "tiktok"
 	PostTypeVsco      PostType = "vsco"
 	PostTypeSnapchat  PostType = "snapchat"
+	PostTypeThreads   PostType = "threads"
 )
 
 func (e *PostType) Scan(src interface{}) error {
@@ -119,7 +120,8 @@ func (e PostType) Valid() bool {
 		PostTypeStory,
 		PostTypeTiktok,
 		PostTypeVsco,
-		PostTypeSnapchat:
+		PostTypeSnapchat,
+		PostTypeThreads:
 		return true
 	}
 	return false

@@ -22,6 +22,7 @@ import { DockerIcon } from "@/components/ui/svgs/docker";
 import { GitHubIcon } from "@/components/ui/svgs/github";
 import { InstagramIcon } from "@/components/ui/svgs/instagram";
 import { SnapchatIcon } from "@/components/ui/svgs/snapchat";
+import { ThreadsIcon } from "@/components/ui/svgs/threads";
 import { TikTokIcon } from "@/components/ui/svgs/tiktok";
 import { VSCOIcon } from "@/components/ui/svgs/vsco";
 import { useUser } from "@/hooks/user-provider";
@@ -126,6 +127,23 @@ export function Menu({
 								>
 									<InstagramIcon className="h-4 w-4" />
 									Instagram Story
+								</SidebarMenuButton>
+							</SidebarMenuItem>
+							<SidebarMenuItem>
+								<SidebarMenuButton
+									disabled={!isSignedIn}
+									isActive={isActiveRoute("/threads")}
+									render={
+										<Link
+											disabled={!isSignedIn}
+											to="/threads"
+											search={{ owner: "", post: "" }}
+											onClick={() => onNavigate?.()}
+										/>
+									}
+								>
+									<ThreadsIcon className="h-4 w-4" />
+									Threads Post
 								</SidebarMenuButton>
 							</SidebarMenuItem>
 							<SidebarMenuItem>

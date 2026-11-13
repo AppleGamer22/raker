@@ -33,6 +33,7 @@ import { Progress } from "@/components/ui/progress";
 import { GoogleMapsLink } from "@/components/ui/svgs/google";
 import { InstagramIcon } from "@/components/ui/svgs/instagram";
 import { SnapchatIcon } from "@/components/ui/svgs/snapchat";
+import { ThreadsIcon } from "@/components/ui/svgs/threads";
 import { TikTokIcon } from "@/components/ui/svgs/tiktok";
 import { VSCOIcon } from "@/components/ui/svgs/vsco";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -48,6 +49,8 @@ export function PlatformIcon({ type }: { type: PostType | -1 }) {
 		case PostType.Highlight:
 		case PostType.Story:
 			return <InstagramIcon className="w-4" />;
+		case PostType.Threads:
+			return <ThreadsIcon className="w-4" />;
 		case PostType.TikTok:
 			return <TikTokIcon className="w-4" />;
 		case PostType.Snapchat:
@@ -78,6 +81,12 @@ export function ResultLink({ result, children }: { result: ScrapeResponse; child
 		case PostType.Story:
 			return (
 				<Link to="/story" search={{ owner: result.post }} target={target}>
+					{children}
+				</Link>
+			);
+		case PostType.Threads:
+			return (
+				<Link to="/threads" search={{ owner: result.postOwner, post: result.post }} target={target}>
 					{children}
 				</Link>
 			);
@@ -127,6 +136,13 @@ export function PostTypeIconLabel({ type }: { type: PostType }) {
 				<span className="inline-flex items-center gap-1 align-middle leading-none whitespace-nowrap">
 					<InstagramIcon className="w-4" />
 					Story
+				</span>
+			);
+		case PostType.Threads:
+			return (
+				<span className="inline-flex items-center gap-1 align-middle leading-none whitespace-nowrap">
+					<ThreadsIcon className="w-4" />
+					Post
 				</span>
 			);
 		case PostType.TikTok:
@@ -191,6 +207,8 @@ export function PostOwnerContextMenuContext({
 								case PostType.Highlight:
 								case PostType.Story:
 									return `https://www.instagram.com/${result.postOwner}`;
+								case PostType.Threads:
+									return `https://www.threads.net/@${result.postOwner}`;
 								case PostType.TikTok:
 									return `https://www.tiktok.com/@${result.postOwner}`;
 								case PostType.Snapchat:
@@ -279,9 +297,9 @@ export function ResultHeader({
 										href={(() => {
 											switch (result.postType) {
 												case PostType.Instagram:
-												case PostType.Highlight:
-												case PostType.Story:
 													return `https://www.instagram.com/p/${result.post}`;
+												case PostType.Threads:
+													return `https://www.threads.com/@${result.postOwner}/post/${result.post}`;
 												case PostType.TikTok:
 													return `https://www.tiktok.com/@${result.postOwner}/video/${result.post}`;
 												case PostType.Snapchat:

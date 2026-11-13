@@ -16,6 +16,7 @@ import { Route as InstagramRouteImport } from './routes/instagram'
 import { Route as MapRouteImport } from './routes/map'
 import { Route as SnapchatRouteImport } from './routes/snapchat'
 import { Route as StoryRouteImport } from './routes/story'
+import { Route as ThreadsRouteImport } from './routes/threads'
 import { Route as TiktokRouteImport } from './routes/tiktok'
 import { Route as VscoRouteImport } from './routes/vsco'
 
@@ -54,6 +55,11 @@ const StoryRoute = StoryRouteImport.update({
   path: '/story',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ThreadsRoute = ThreadsRouteImport.update({
+  id: '/threads',
+  path: '/threads',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TiktokRoute = TiktokRouteImport.update({
   id: '/tiktok',
   path: '/tiktok',
@@ -73,6 +79,7 @@ export interface FileRoutesByFullPath {
   '/map': typeof MapRoute
   '/snapchat': typeof SnapchatRoute
   '/story': typeof StoryRoute
+  '/threads': typeof ThreadsRoute
   '/tiktok': typeof TiktokRoute
   '/vsco': typeof VscoRoute
 }
@@ -84,6 +91,7 @@ export interface FileRoutesByTo {
   '/map': typeof MapRoute
   '/snapchat': typeof SnapchatRoute
   '/story': typeof StoryRoute
+  '/threads': typeof ThreadsRoute
   '/tiktok': typeof TiktokRoute
   '/vsco': typeof VscoRoute
 }
@@ -96,6 +104,7 @@ export interface FileRoutesById {
   '/map': typeof MapRoute
   '/snapchat': typeof SnapchatRoute
   '/story': typeof StoryRoute
+  '/threads': typeof ThreadsRoute
   '/tiktok': typeof TiktokRoute
   '/vsco': typeof VscoRoute
 }
@@ -109,6 +118,7 @@ export interface FileRouteTypes {
     | '/map'
     | '/snapchat'
     | '/story'
+    | '/threads'
     | '/tiktok'
     | '/vsco'
   fileRoutesByTo: FileRoutesByTo
@@ -120,6 +130,7 @@ export interface FileRouteTypes {
     | '/map'
     | '/snapchat'
     | '/story'
+    | '/threads'
     | '/tiktok'
     | '/vsco'
   id:
@@ -131,6 +142,7 @@ export interface FileRouteTypes {
     | '/map'
     | '/snapchat'
     | '/story'
+    | '/threads'
     | '/tiktok'
     | '/vsco'
   fileRoutesById: FileRoutesById
@@ -143,6 +155,7 @@ export interface RootRouteChildren {
   MapRoute: typeof MapRoute
   SnapchatRoute: typeof SnapchatRoute
   StoryRoute: typeof StoryRoute
+  ThreadsRoute: typeof ThreadsRoute
   TiktokRoute: typeof TiktokRoute
   VscoRoute: typeof VscoRoute
 }
@@ -198,6 +211,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StoryRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/threads': {
+      id: '/threads'
+      path: '/threads'
+      fullPath: '/threads'
+      preLoaderRoute: typeof ThreadsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/tiktok': {
       id: '/tiktok'
       path: '/tiktok'
@@ -223,6 +243,7 @@ const rootRouteChildren: RootRouteChildren = {
   MapRoute: MapRoute,
   SnapchatRoute: SnapchatRoute,
   StoryRoute: StoryRoute,
+  ThreadsRoute: ThreadsRoute,
   TiktokRoute: TiktokRoute,
   VscoRoute: VscoRoute,
 }

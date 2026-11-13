@@ -1,4 +1,4 @@
-CREATE TYPE post_type AS ENUM (
+CREATE TYPE post_type AS ENUM(
 	'instagram',
 	'highlight',
 	'story',
@@ -6,6 +6,15 @@ CREATE TYPE post_type AS ENUM (
 	'vsco'
 );
 
-ALTER TYPE post_type ADD VALUE 'snapchat';
+ALTER TYPE post_type
+	ADD VALUE 'snapchat';
 
-CREATE TYPE network_type AS ENUM ('instagram', 'tiktok', 'vsco');
+ALTER TYPE post_type
+	ADD VALUE 'threads';
+
+CREATE TYPE network_type AS ENUM(
+	'instagram',
+	'tiktok',
+	'vsco'
+);
+

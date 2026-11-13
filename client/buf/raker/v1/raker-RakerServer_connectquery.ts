@@ -90,6 +90,11 @@ export const scrapeTikTok = RakerServer.method.scrapeTikTok;
 export const scrapeSnapchat = RakerServer.method.scrapeSnapchat;
 
 /**
+ * @generated from rpc raker.v1.RakerServer.ScrapeThreads
+ */
+export const scrapeThreads = RakerServer.method.scrapeThreads;
+
+/**
  * @generated from rpc raker.v1.RakerServer.ScrapeVSCO
  */
 export const scrapeVSCO = RakerServer.method.scrapeVSCO;

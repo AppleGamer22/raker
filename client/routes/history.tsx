@@ -63,6 +63,7 @@ import { Separator } from "@/components/ui/separator";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { InstagramIcon } from "@/components/ui/svgs/instagram";
 import { SnapchatIcon } from "@/components/ui/svgs/snapchat";
+import { ThreadsIcon } from "@/components/ui/svgs/threads";
 import { TikTokIcon } from "@/components/ui/svgs/tiktok";
 import { VSCOIcon } from "@/components/ui/svgs/vsco";
 import { Switch } from "@/components/ui/switch";
@@ -144,6 +145,7 @@ const postTypeOptions = [
 	{ id: "post-type-instagram", value: PostType.Instagram, label: "Post", Icon: InstagramIcon },
 	{ id: "post-type-highlight", value: PostType.Highlight, label: "Highlight", Icon: InstagramIcon },
 	{ id: "post-type-story", value: PostType.Story, label: "Story", Icon: InstagramIcon },
+	{ id: "post-type-threads", value: PostType.Threads, label: "Post", Icon: ThreadsIcon },
 	{ id: "post-type-tiktok", value: PostType.TikTok, label: "Post", Icon: TikTokIcon },
 	{ id: "post-type-snapchat", value: PostType.Snapchat, label: "Highlight", Icon: SnapchatIcon },
 	{ id: "post-type-vsco", value: PostType.VSCO, label: "Post", Icon: VSCOIcon },
