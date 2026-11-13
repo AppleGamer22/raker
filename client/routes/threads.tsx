@@ -57,7 +57,7 @@ function Threads() {
 					<ExtractorTextField
 						field={field}
 						label="post"
-						placeholder="https://www.threads.net/@owner/post/<POST>"
+						placeholder="https://www.threads.com/@owner/post/<POST>"
 					/>
 				)}
 			</form.Field>

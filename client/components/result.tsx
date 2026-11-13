@@ -208,7 +208,7 @@ export function PostOwnerContextMenuContext({
 								case PostType.Story:
 									return `https://www.instagram.com/${result.postOwner}`;
 								case PostType.Threads:
-									return `https://www.threads.net/@${result.postOwner}`;
+									return `https://www.threads.com/@${result.postOwner}`;
 								case PostType.TikTok:
 									return `https://www.tiktok.com/@${result.postOwner}`;
 								case PostType.Snapchat:

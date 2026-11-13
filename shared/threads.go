@@ -19,7 +19,7 @@ func Threads(owner, post string) ([]string, string, error) {
 		return []string{}, "", err
 	}
 
-	htmlRequest.Header.Add("Referer", "https://www.threads.net/")
+	htmlRequest.Header.Add("Referer", "https://www.threads.com/")
 
 	client := NewClient([]string{})
 
@@ -42,7 +42,7 @@ func Threads(owner, post string) ([]string, string, error) {
 		// } else {
 		// 	fmt.Println("saved html body to", filename)
 		// }
-		fmt.Println(string(htmlBody))
+		// fmt.Println(string(htmlBody))
 		return []string{}, "", fmt.Errorf("could not find JSON ID: %d matches", len(jsonMatch))
 	}
 
