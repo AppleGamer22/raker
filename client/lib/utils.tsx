@@ -82,6 +82,16 @@ export const dateFormatter = new Intl.DateTimeFormat(navigator.language, {
 	timeZoneName: "longOffset",
 });
 
+export const dateOnlyFormatter = new Intl.DateTimeFormat(navigator.language, {
+	day: "2-digit",
+	month: "2-digit",
+	year: "numeric",
+});
+
+export function formatDateOnly(date: Date): string {
+	return dateOnlyFormatter.format(date);
+}
+
 export function timestampFormat(date: Timestamp): string {
 	return dateFormatter.format(timestampDate(date));
 }

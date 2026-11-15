@@ -730,7 +730,8 @@ export function HistorySearchForm({
 								dateField={{
 									name: datesField.name,
 									value: datesField.state.value,
-									onChange: (dates) => (!dates ? null : datesField.setValue(dates)),
+									onChange: (dates) =>
+										datesField.setValue(dates ?? { from: undefined }),
 								}}
 							/>
 						)}

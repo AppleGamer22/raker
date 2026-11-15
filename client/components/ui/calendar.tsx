@@ -1,6 +1,6 @@
 import { cn } from "cn";
-import { format } from "date-fns";
-import { ChevronLeftIcon, ChevronRightIcon, ChevronDownIcon } from "lucide-react";
+import { addMonths, endOfDay, format, isAfter, isSameMonth, isValid, parse } from "date-fns";
+import { ChevronLeftIcon, ChevronRightIcon, ChevronDownIcon, XIcon } from "lucide-react";
 import { CalendarIcon } from "lucide-react";
 import * as React from "react";
 import { DayPicker, getDefaultClassNames, type DayButton, type Locale } from "react-day-picker";
@@ -8,7 +8,9 @@ import { type DateRange } from "react-day-picker";
 
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Field, FieldLabel } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { dateOnlyFormatter, formatDateOnly } from "@/lib/utils";
 
 export function Calendar({
 	className,
@@ -42,7 +44,7 @@ export function Calendar({
 			}}
 			classNames={{
 				root: cn("w-fit", defaultClassNames.root),
-				months: cn("relative flex flex-col gap-4 md:flex-row", defaultClassNames.months),
+				months: cn("relative flex flex-col gap-4 sm:flex-row", defaultClassNames.months),
 				month: cn("flex w-full flex-col gap-4", defaultClassNames.month),
 				nav: cn(
 					"absolute inset-x-0 top-0 flex w-full items-center justify-between gap-1",
@@ -176,6 +178,80 @@ export function CalendarDayButton({
 	);
 }
 
+function parseDateInput(text: string): Date | undefined {
+	const trimmed = text.trim();
+	if (!trimmed) return undefined;
+
+	// Check whether day precedes month in user's locale (e.g. en-AU: dd/mm/yyyy)
+	const parts = dateOnlyFormatter.formatToParts(new Date(2026, 0, 1));
+	const isDayFirst = parts.findIndex((p) => p.type === "day") < parts.findIndex((p) => p.type === "month");
+
+	const localeFormats = isDayFirst
+		? [
+				"dd/MM/yyyy",
+				"d/M/yyyy",
+				"dd/MM/yy",
+				"d/M/yy",
+				"dd-MM-yyyy",
+				"d-M-yyyy",
+				"dd.MM.yyyy",
+				"d.M.yyyy",
+				"MM/dd/yyyy",
+				"M/d/yyyy",
+			]
+		: ["MM/dd/yyyy", "M/d/yyyy", "MM/dd/yy", "M/d/yy", "MM-dd-yyyy", "M-d-yyyy", "dd/MM/yyyy", "d/M/yyyy"];
+
+	const otherFormats = [
+		"yyyy-MM-dd",
+		"yyyy-M-d",
+		"yyyy/MM/dd",
+		"yyyy/M/d",
+		"LLL dd, y",
+		"LLL d, y",
+		"LLLL dd, y",
+		"LLLL d, y",
+		"dd LLL yyyy",
+		"d LLL yyyy",
+		"dd LLLL yyyy",
+		"d LLLL yyyy",
+	];
+
+	for (const fmt of [...localeFormats, ...otherFormats]) {
+		const parsed = parse(trimmed, fmt, new Date());
+		if (isValid(parsed) && parsed.getFullYear() > 1900 && parsed.getFullYear() < 2100) {
+			return parsed;
+		}
+	}
+
+	const fallback = new Date(trimmed);
+	if (
+		isValid(fallback) &&
+		!isNaN(fallback.getTime()) &&
+		fallback.getFullYear() > 1900 &&
+		fallback.getFullYear() < 2100
+	) {
+		return fallback;
+	}
+
+	return undefined;
+}
+
+function useMediaQuery(query: string): boolean {
+	const subscribe = React.useCallback(
+		(callback: () => void) => {
+			const media = window.matchMedia(query);
+			media.addEventListener("change", callback);
+			return () => media.removeEventListener("change", callback);
+		},
+		[query],
+	);
+
+	const getSnapshot = () => window.matchMedia(query).matches;
+	const getServerSnapshot = () => false;
+
+	return React.useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+}
+
 export function DatePickerRange({
 	value,
 	onChange,
@@ -189,21 +265,109 @@ export function DatePickerRange({
 	id?: string;
 	className?: string;
 }) {
+	const isSmallScreen = useMediaQuery("(max-width: 640px)");
+	const [month, setMonth] = React.useState<Date | undefined>(value?.from ?? new Date());
+
+	const fromTime = value?.from?.getTime();
+	const toTime = value?.to?.getTime();
+	const [prevFromTime, setPrevFromTime] = React.useState(fromTime);
+	const [prevToTime, setPrevToTime] = React.useState(toTime);
+
+	const [fromText, setFromText] = React.useState(value?.from ? formatDateOnly(value.from) : "");
+	const [toText, setToText] = React.useState(value?.to ? formatDateOnly(value.to) : "");
+
+	if (fromTime !== prevFromTime) {
+		setPrevFromTime(fromTime);
+		setFromText(value?.from ? formatDateOnly(value.from) : "");
+	}
+
+	if (toTime !== prevToTime) {
+		setPrevToTime(toTime);
+		setToText(value?.to ? formatDateOnly(value.to) : "");
+	}
+
+	// oxlint-disable-next-line react/purity
+	const today = new Date();
+	const currentMonth = month ?? today;
+	const isCurrentMonthInView = isSmallScreen
+		? isSameMonth(today, currentMonth)
+		: isSameMonth(today, currentMonth) || isSameMonth(today, addMonths(currentMonth, 1));
+
+	const commitFrom = () => {
+		if (!fromText.trim()) {
+			if (value?.from) {
+				onChange?.(value.to ? { from: undefined, to: value.to } : undefined);
+			}
+			return;
+		}
+		const parsed = parseDateInput(fromText);
+		if (parsed && !isAfter(parsed, endOfDay(today))) {
+			if (value?.to && isAfter(parsed, value.to)) {
+				setFromText(formatDateOnly(value.to));
+				setToText(formatDateOnly(parsed));
+				setMonth(value.to);
+				onChange?.({ from: value.to, to: parsed });
+			} else {
+				setFromText(formatDateOnly(parsed));
+				setMonth(parsed);
+				onChange?.({ from: parsed, to: value?.to });
+			}
+		} else {
+			setFromText(value?.from ? formatDateOnly(value.from) : "");
+		}
+	};
+
+	const commitTo = () => {
+		if (!toText.trim()) {
+			if (value?.to) {
+				onChange?.(value.from ? { from: value.from, to: undefined } : undefined);
+			}
+			return;
+		}
+		const parsed = parseDateInput(toText);
+		if (parsed && !isAfter(parsed, endOfDay(today))) {
+			if (value?.from && isAfter(value.from, parsed)) {
+				setFromText(formatDateOnly(parsed));
+				setToText(formatDateOnly(value.from));
+				setMonth(parsed);
+				onChange?.({ from: parsed, to: value.from });
+			} else {
+				setToText(formatDateOnly(parsed));
+				setMonth(parsed);
+				onChange?.({ from: value?.from, to: parsed });
+			}
+		} else {
+			setToText(value?.to ? formatDateOnly(value.to) : "");
+		}
+	};
+
 	return (
 		<Field className={className}>
 			{label && <FieldLabel htmlFor={id}>{label}</FieldLabel>}
-			<Popover>
+			<Popover
+				onOpenChange={(open) => {
+					if (open) {
+						setMonth(value?.from ?? new Date());
+						setFromText(value?.from ? formatDateOnly(value.from) : "");
+						setToText(value?.to ? formatDateOnly(value.to) : "");
+					}
+				}}
+			>
 				<PopoverTrigger
 					render={
-						<Button variant="outline" id="date-picker-range" className="justify-start px-2.5 font-normal">
+						<Button
+							variant="outline"
+							id={id}
+							className="max-w-full justify-start truncate px-2.5 font-normal"
+						>
 							<CalendarIcon data-icon="inline-start" />
 							{value?.from ? (
 								value.to ? (
-									<>
+									<span className="truncate">
 										{format(value.from, "LLL dd, y")} - {format(value.to, "LLL dd, y")}
-									</>
+									</span>
 								) : (
-									format(value.from, "LLL dd, y")
+									<span className="truncate">{format(value.from, "LLL dd, y")}</span>
 								)
 							) : (
 								<span>Pick a date</span>
@@ -211,19 +375,87 @@ export function DatePickerRange({
 						</Button>
 					}
 				/>
-				<PopoverContent className="w-auto p-0" align="start">
+				<PopoverContent className="w-auto max-w-[calc(100vw-1.5rem)] overflow-x-auto p-0" align="start">
+					<div className="flex flex-col items-stretch gap-2 border-b px-3 py-2.5 sm:flex-row sm:items-center sm:gap-4 sm:px-4">
+						<div className="min-w-0 flex-1">
+							<Input
+								id={`${id}-from`}
+								aria-label="Start date"
+								placeholder="Start date"
+								className="h-8 w-full min-w-0 text-xs"
+								value={fromText}
+								onChange={(e) => setFromText(e.target.value)}
+								onBlur={commitFrom}
+								onKeyDown={(e) => {
+									if (e.key === "Enter") {
+										e.preventDefault();
+										commitFrom();
+									}
+								}}
+							/>
+						</div>
+						<div className="min-w-0 flex-1">
+							<Input
+								id={`${id}-to`}
+								aria-label="End date"
+								placeholder="End date"
+								className="h-8 w-full min-w-0 text-xs"
+								value={toText}
+								onChange={(e) => setToText(e.target.value)}
+								onBlur={commitTo}
+								onKeyDown={(e) => {
+									if (e.key === "Enter") {
+										e.preventDefault();
+										commitTo();
+									}
+								}}
+							/>
+						</div>
+					</div>
 					<Calendar
 						mode="range"
-						defaultMonth={value?.from}
+						month={month}
+						onMonthChange={setMonth}
 						selected={value}
 						onSelect={onChange}
-						numberOfMonths={2}
+						numberOfMonths={isSmallScreen ? 1 : 2}
+						className="w-full max-w-full"
 						disabled={[
 							{
+								// oxlint-disable-next-line react/purity
 								after: new Date(),
 							},
 						]}
 					/>
+					<div className="flex items-center justify-between border-t p-2">
+						<Button
+							variant="ghost"
+							size="sm"
+							type="button"
+							disabled={!value?.from && !value?.to && !fromText && !toText}
+							onClick={() => {
+								onChange?.({ from: undefined, to: undefined });
+								setFromText("");
+								setToText("");
+							}}
+						>
+							<XIcon />
+							Clear
+						</Button>
+						<Button
+							variant="outline"
+							size="sm"
+							type="button"
+							disabled={isCurrentMonthInView}
+							onClick={() => {
+								if (!isCurrentMonthInView) {
+									setMonth(new Date());
+								}
+							}}
+						>
+							Today's Month
+						</Button>
+					</div>
 				</PopoverContent>
 			</Popover>
 		</Field>
