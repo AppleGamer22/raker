@@ -1,5 +1,5 @@
 import { MatchRoute } from "@tanstack/react-router";
-import { DatabaseSearchIcon, SidebarIcon, UserKeyIcon } from "lucide-react";
+import { DatabaseSearchIcon, MapIcon, SidebarIcon, UserKeyIcon } from "lucide-react";
 
 import { RakerLogo } from "@/components/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { InstagramIcon } from "@/components/ui/svgs/instagram";
 import { SnapchatIcon } from "@/components/ui/svgs/snapchat";
+import { ThreadsIcon } from "@/components/ui/svgs/threads";
 import { TikTokIcon } from "@/components/ui/svgs/tiktok";
 import { VSCOIcon } from "@/components/ui/svgs/vsco";
 
@@ -39,6 +40,10 @@ export default function Header({ toggleMenu }: { toggleMenu: () => void }) {
 							<InstagramIcon className="h-4" />
 							<Label>Story</Label>
 						</MatchRoute>
+						<MatchRoute to="/threads">
+							<ThreadsIcon className="h-4" />
+							<Label>Post</Label>
+						</MatchRoute>
 						<MatchRoute to="/tiktok">
 							<TikTokIcon className="h-4" />
 							<Label>Post</Label>
@@ -53,6 +58,9 @@ export default function Header({ toggleMenu }: { toggleMenu: () => void }) {
 						</MatchRoute>
 						<MatchRoute to="/history">
 							<DatabaseSearchIcon className="h-4" />
+						</MatchRoute>
+						<MatchRoute to="/map">
+							<MapIcon className="h-4" />
 						</MatchRoute>
 					</div>
 				</div>

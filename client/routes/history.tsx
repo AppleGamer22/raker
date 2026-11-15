@@ -69,7 +69,7 @@ import { TikTokIcon } from "@/components/ui/svgs/tiktok";
 import { VSCOIcon } from "@/components/ui/svgs/vsco";
 import { Switch } from "@/components/ui/switch";
 import { useUser } from "@/hooks/user-provider";
-import { timestampFormat, Toaster } from "@/lib/utils";
+import { formatDateOnly, timestampFormat, Toaster } from "@/lib/utils";
 import { defaultPostTypes, inPWA } from "@/lib/utils";
 
 export const historySearchDefaults = {
@@ -662,6 +662,7 @@ export function HistorySearchForm({
 		form.setFieldValue("types", types);
 		form.setFieldValue("exclusive", exclusive);
 		form.setFieldValue("categories", validSearchCategories);
+		form.setFieldValue("dates", dates);
 		form.setFieldValue("ownersSearchValue", owners ?? []);
 
 		executeSearch({
@@ -684,8 +685,40 @@ export function HistorySearchForm({
 		>
 			<Collapsible open={isOpen} onOpenChange={setIsOpen}>
 				<form.Subscribe selector={(state) => state.values}>
-					{({ types, exclusive, categories }) => (
+					{({ types, exclusive, categories, dates }) => (
 						<CollapsibleTrigger className="w-full rounded-md border px-3 py-2 text-left hover:bg-muted/40">
+							{(dates.from !== undefined || dates.to !== undefined) && (
+								<div className="flex flex-wrap items-center gap-2">
+									{dates.from !== undefined &&
+										dates.to !== undefined &&
+										formatDateOnly(dates.from) === formatDateOnly(dates.to) && (
+											<label>
+												On <Badge variant="secondary">{formatDateOnly(dates.from)}</Badge>
+											</label>
+										)}
+									{dates.from !== undefined &&
+										dates.to !== undefined &&
+										formatDateOnly(dates.from) !== formatDateOnly(dates.to) && (
+											<label>
+												From <Badge variant="secondary">{formatDateOnly(dates.from)}</Badge>
+												to <Badge variant="secondary">{formatDateOnly(dates.to)}</Badge>
+											</label>
+										)}
+									{dates.from !== undefined && dates.to === undefined && (
+										<label>
+											From <Badge variant="secondary">{formatDateOnly(dates.from)}</Badge>
+										</label>
+									)}
+									{dates.to !== undefined && dates.from === undefined && (
+										<label>
+											To <Badge variant="secondary">{formatDateOnly(dates.to)}</Badge>
+										</label>
+									)}
+								</div>
+							)}
+							{(dates.from !== undefined || dates.to !== undefined) && availablePostTypes.length >= 1 && (
+								<Separator className="my-2" />
+							)}
 							{availablePostTypes.length > 1 && (
 								<div className="flex flex-wrap items-center gap-2">
 									{types.length > 0 ? (
@@ -730,8 +763,7 @@ export function HistorySearchForm({
 								dateField={{
 									name: datesField.name,
 									value: datesField.state.value,
-									onChange: (dates) =>
-										datesField.setValue(dates ?? { from: undefined }),
+									onChange: (dates) => datesField.setValue(dates ?? { from: undefined }),
 								}}
 							/>
 						)}
@@ -867,8 +899,12 @@ export function HistorySearchForm({
 															if (ownerSearchQuery.length === 4) {
 																try {
 																	const dates = form.getFieldValue("dates");
-																	const fromDate = dates?.from ? startOfDay(dates.from) : undefined;
-																	const toDate = dates?.to ? endOfDay(dates.to) : undefined;
+																	const fromDate = dates?.from
+																		? startOfDay(dates.from)
+																		: undefined;
+																	const toDate = dates?.to
+																		? endOfDay(dates.to)
+																		: undefined;
 
 																	const { owners } = await ownersMutation.mutateAsync(
 																		{
@@ -878,8 +914,12 @@ export function HistorySearchForm({
 																			types: form.getFieldValue("types"),
 																			owner: ownerSearchQuery,
 																			onlyWithCoordinates,
-																			fromDate: fromDate ? timestampFromDate(fromDate) : undefined,
-																			toDate: toDate ? timestampFromDate(toDate) : undefined,
+																			fromDate: fromDate
+																				? timestampFromDate(fromDate)
+																				: undefined,
+																			toDate: toDate
+																				? timestampFromDate(toDate)
+																				: undefined,
 																		},
 																	);
 																	setOwnersSearchOptions(owners);

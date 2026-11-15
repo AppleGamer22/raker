@@ -32,6 +32,8 @@ export const Route = createFileRoute("/map")({
 		exclusive: z.boolean().catch(historySearchDefaults.exclusive),
 		categories: z.array(z.string()).catch(historySearchDefaults.categories),
 		page: z.coerce.bigint().min(1n).catch(historySearchDefaults.page),
+		from: z.coerce.date().optional().catch(undefined),
+		to: z.coerce.date().max(new Date()).optional().catch(undefined),
 		owners: z
 			.array(
 				z.object({
@@ -67,7 +69,7 @@ function CleanLayer(props: ComponentProps<typeof Layer>) {
 }
 
 function MapSearch() {
-	const { types, exclusive, categories, owners, page } = Route.useSearch();
+	const { types, exclusive, categories, owners, page, from, to } = Route.useSearch();
 	const navigate = useNavigate({ from: Route.fullPath });
 	const { username } = useUser();
 	const { computedTheme } = useTheme();
@@ -138,21 +140,25 @@ function MapSearch() {
 				exclusive={exclusive}
 				types={types}
 				currentPage={page}
+				dates={{ from, to }}
 				setHistories={setHistories}
 				setTotalCount={setTotalCount}
 				setHistorySearchPending={setIsSearching}
-				onSearchSubmit={async ({ categories, exclusive, ownersSearchValue, types, page }) => {
+				onSearchSubmit={async ({ categories, exclusive, ownersSearchValue, types, page, dates }) => {
 					await navigate({
 						search: {
 							types,
 							exclusive,
 							categories,
 							page,
+							from: dates.from,
+							to: dates.to,
 							owners: ownersSearchValue,
 						},
 						replace: true,
 					});
 				}}
+				// set to true if you want to reset the search result when clicking on the menu item
 				autoSubmit={false}
 				onlyWithCoordinates
 			/>

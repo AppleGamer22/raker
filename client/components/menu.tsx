@@ -217,6 +217,7 @@ export function Menu({
 												types: defaultPostTypes,
 												page: 1n,
 												from: undefined,
+												to: undefined,
 											}}
 											onClick={() => onNavigate?.()}
 										/>
@@ -240,6 +241,8 @@ export function Menu({
 												owners: [],
 												types: defaultPostTypes,
 												page: 1n,
+												from: undefined,
+												to: undefined,
 											}}
 											onClick={() => onNavigate?.()}
 										/>
