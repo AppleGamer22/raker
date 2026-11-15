@@ -2,6 +2,7 @@ import { timestampFromDate } from "@bufbuild/protobuf/wkt";
 import { useMutation } from "@connectrpc/connect-query";
 import { useForm } from "@tanstack/react-form";
 import { createFileRoute, Link, stripSearchParams, useNavigate } from "@tanstack/react-router";
+import { endOfDay, startOfDay } from "date-fns";
 import { EllipsisIcon, SearchIcon } from "lucide-react";
 import {
 	Fragment,
@@ -587,6 +588,9 @@ export function HistorySearchForm({
 		});
 
 		try {
+			const fromDate = searchParams.dates.from ? startOfDay(searchParams.dates.from) : undefined;
+			const toDate = searchParams.dates.to ? endOfDay(searchParams.dates.to) : undefined;
+
 			const { histories, totalCount } = await searchHistoryMutation.mutateAsync({
 				categories: searchParams.categories,
 				exclusive: searchParams.exclusive,
@@ -595,8 +599,8 @@ export function HistorySearchForm({
 				page: searchParams.page,
 				pageSize,
 				onlyWithCoordinates,
-				fromDate: searchParams.dates.from ? timestampFromDate(searchParams.dates.from) : undefined,
-				toDate: searchParams.dates.to ? timestampFromDate(searchParams.dates.to) : undefined,
+				fromDate: fromDate ? timestampFromDate(fromDate) : undefined,
+				toDate: toDate ? timestampFromDate(toDate) : undefined,
 			});
 
 			setTotalCount?.(totalCount);
@@ -861,6 +865,10 @@ export function HistorySearchForm({
 															searchField.handleChange(e.target.value);
 															if (ownerSearchQuery.length === 4) {
 																try {
+																	const dates = form.getFieldValue("dates");
+																	const fromDate = dates?.from ? startOfDay(dates.from) : undefined;
+																	const toDate = dates?.to ? endOfDay(dates.to) : undefined;
+
 																	const { owners } = await ownersMutation.mutateAsync(
 																		{
 																			categories:
@@ -869,6 +877,8 @@ export function HistorySearchForm({
 																			types: form.getFieldValue("types"),
 																			owner: ownerSearchQuery,
 																			onlyWithCoordinates,
+																			fromDate: fromDate ? timestampFromDate(fromDate) : undefined,
+																			toDate: toDate ? timestampFromDate(toDate) : undefined,
 																		},
 																	);
 																	setOwnersSearchOptions(owners);

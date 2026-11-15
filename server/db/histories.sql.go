@@ -182,10 +182,10 @@ WHERE
 				unnest($5::text[]) AS owner_filter(OWNER)
 			WHERE
 				Histories.post_owner LIKE FORMAT('%%%s%%', owner_filter.owner)))
-	AND ((post_date >= $6::date
+	AND (post_date >= $6::timestamptz
 			OR $6 IS NULL)
-		AND (post_date <= $7::date
-			OR $7 IS NULL))
+	AND (post_date <= $7::timestamptz
+			OR $7 IS NULL)
 	AND username = $8::text
 	AND (NOT $9::boolean
 		OR ($9::boolean
@@ -348,10 +348,10 @@ WHERE
 				unnest($5::text[]) AS owner_filter(OWNER)
 			WHERE
 				Histories.post_owner LIKE FORMAT('%%%s%%', owner_filter.owner)))
-	AND ((post_date >= $6::date
+	AND (post_date >= $6::timestamptz
 			OR $6 IS NULL)
-		AND (post_date <= $7::date
-			OR $7 IS NULL))
+	AND (post_date <= $7::timestamptz
+			OR $7 IS NULL)
 	AND username = $8::text
 	AND (NOT $9::boolean
 		OR ($9::boolean
@@ -449,10 +449,10 @@ WHERE
 				OR (COALESCE($3::text[], ARRAY[]::text[]) = COALESCE($4::text[], ARRAY[]::text[])
 					AND cardinality(categories) = 0))))
 	AND post_owner LIKE FORMAT('%%%s%%', $5::text)
-	AND ((post_date >= $6::date
+	AND (post_date >= $6::timestamptz
 			OR $6 IS NULL)
-		AND (post_date <= $7::date
-			OR $7 IS NULL))
+	AND (post_date <= $7::timestamptz
+			OR $7 IS NULL)
 	AND username = $8::text
 	AND (NOT $9::boolean
 		OR ($9::boolean
