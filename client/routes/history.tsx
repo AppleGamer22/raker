@@ -700,8 +700,8 @@ export function HistorySearchForm({
 										dates.to !== undefined &&
 										formatDateOnly(dates.from) !== formatDateOnly(dates.to) && (
 											<label>
-												From <Badge variant="secondary">{formatDateOnly(dates.from)}</Badge>
-												to <Badge variant="secondary">{formatDateOnly(dates.to)}</Badge>
+												From <Badge variant="secondary">{formatDateOnly(dates.from)}</Badge> to{" "}
+												<Badge variant="secondary">{formatDateOnly(dates.to)}</Badge>
 											</label>
 										)}
 									{dates.from !== undefined && dates.to === undefined && (

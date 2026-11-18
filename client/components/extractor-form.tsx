@@ -5,7 +5,16 @@ import { useForm } from "@tanstack/react-form";
 import type { StandardSchemaV1 } from "@tanstack/react-form";
 import type { UseNavigateResult } from "@tanstack/router-core";
 import { SprayCanIcon } from "lucide-react";
-import { useEffect, useRef, useState, type Dispatch, type ReactNode, type SetStateAction } from "react";
+import {
+	createContext,
+	useContext,
+	useEffect,
+	useRef,
+	useState,
+	type Dispatch,
+	type ReactNode,
+	type SetStateAction,
+} from "react";
 
 import type { ScrapeResponse } from "@/buf/raker/v1/raker_pb";
 import { Result } from "@/components/result";
@@ -17,7 +26,7 @@ import { Progress } from "@/components/ui/progress";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "@/components/ui/toast";
 import { useUser } from "@/hooks/user-provider";
-import { Toaster } from "@/lib/utils";
+import { cn, Toaster } from "@/lib/utils";
 
 type ExtractorSearchValues = Record<string, string | boolean>;
 
@@ -148,19 +157,27 @@ export function useExtractorForm<
 	};
 }
 
+export const ExtractorFormContext = createContext<{ isPending: boolean }>({
+	isPending: false,
+});
+
 export function ExtractorTextField({
 	field,
 	label,
 	placeholder,
+	disabled,
 }: {
 	field: AnyFieldApi;
 	label: string;
 	placeholder: string;
+	disabled?: boolean;
 }) {
+	const { isPending } = useContext(ExtractorFormContext);
+	const isDisabled = disabled ?? isPending;
 	const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
 
 	return (
-		<Field>
+		<Field data-disabled={isDisabled}>
 			<FieldLabel htmlFor={field.name}>{label}</FieldLabel>
 			<Input
 				id={field.name}
@@ -173,21 +190,34 @@ export function ExtractorTextField({
 				autoCorrect="off"
 				onChange={(e) => field.handleChange(e.target.value)}
 				placeholder={placeholder}
+				disabled={isDisabled}
 			/>
 			{isInvalid && <FieldError errors={field.state.meta.errors} />}
 		</Field>
 	);
 }
 
-export function ExtractorSwitchField({ field, label }: { field: AnyFieldApi; label: string }) {
+export function ExtractorSwitchField({
+	field,
+	label,
+	disabled,
+}: {
+	field: AnyFieldApi;
+	label: string;
+	disabled?: boolean;
+}) {
+	const { isPending } = useContext(ExtractorFormContext);
+	const isDisabled = disabled ?? isPending;
+
 	return (
-		<Field orientation="horizontal" className="w-fit">
+		<Field orientation="horizontal" className="w-fit" data-disabled={isDisabled}>
 			<FieldLabel htmlFor={field.name}>{label}</FieldLabel>
 			<Switch
 				id={field.name}
 				name={field.name}
 				checked={field.state.value}
 				onCheckedChange={field.handleChange}
+				disabled={isDisabled}
 			/>
 		</Field>
 	);
@@ -198,20 +228,30 @@ export function ExtractorSprayControls({
 	onEnabledChange,
 	times,
 	onTimesChange,
+	disabled,
 }: {
 	enabled: boolean;
 	onEnabledChange: (enabled: boolean) => void;
 	times: number;
 	onTimesChange: (times: number) => void;
+	disabled?: boolean;
 }) {
+	const { isPending } = useContext(ExtractorFormContext);
+	const isDisabled = disabled ?? isPending;
+
 	return (
 		<div className="flex flex-row items-center gap-2 sm:gap-4">
-			<Field orientation="horizontal" className="w-fit">
-				<Switch id="spray-mode" checked={enabled} onCheckedChange={onEnabledChange} />
-				<SprayCanIcon onClick={() => onEnabledChange(!enabled)} />
+			<Field orientation="horizontal" className="w-fit" data-disabled={isDisabled}>
+				<Switch id="spray-mode" checked={enabled} onCheckedChange={onEnabledChange} disabled={isDisabled} />
+				<SprayCanIcon
+					className={cn(isDisabled && "pointer-events-none cursor-not-allowed opacity-50")}
+					onClick={() => {
+						if (!isDisabled) onEnabledChange(!enabled);
+					}}
+				/>
 				{/* <FieldLabel htmlFor="spray-mode">Spray Mode</FieldLabel> */}
 			</Field>
-			<Field className="w-fit">
+			<Field className="w-fit" data-disabled={isDisabled || !enabled}>
 				{/* <FieldLabel htmlFor="spray-times">Spray Times</FieldLabel> */}
 				<Input
 					id="spray-times"
@@ -220,7 +260,7 @@ export function ExtractorSprayControls({
 					max="100"
 					value={times}
 					onChange={(e) => onTimesChange(Math.max(1, parseInt(e.target.value) || 1))}
-					disabled={!enabled}
+					disabled={isDisabled || !enabled}
 					placeholder="Number of attempts"
 					className="w-20"
 				/>
@@ -253,40 +293,42 @@ export function ExtractorFormShell({
 	onSprayTimesChange?: (times: number) => void;
 }) {
 	return (
-		<form
-			onSubmit={(e) => {
-				e.preventDefault();
-				form.handleSubmit();
-			}}
-		>
-			<CardContent>
-				<FieldGroup>
-					{children}
-					{sprayConfigEnabled && (
-						<ExtractorSprayControls
-							enabled={sprayModeEnabled}
-							onEnabledChange={onSprayModeChange || (() => {})}
-							times={sprayTimes}
-							onTimesChange={onSprayTimesChange || (() => {})}
-						/>
-					)}
-					<Field orientation="horizontal">
-						<Button type="submit" disabled={isPending} className="mb-3 w-full sm:w-auto">
-							Submit
-						</Button>
-					</Field>
-					{isPending && (
-						<Field>
-							<Progress value={null} className="pb-2" />
+		<ExtractorFormContext.Provider value={{ isPending }}>
+			<form
+				onSubmit={(e) => {
+					e.preventDefault();
+					form.handleSubmit();
+				}}
+			>
+				<CardContent>
+					<FieldGroup>
+						{children}
+						{sprayConfigEnabled && (
+							<ExtractorSprayControls
+								enabled={sprayModeEnabled}
+								onEnabledChange={onSprayModeChange || (() => {})}
+								times={sprayTimes}
+								onTimesChange={onSprayTimesChange || (() => {})}
+							/>
+						)}
+						<Field orientation="horizontal">
+							<Button type="submit" disabled={isPending} className="mb-3 w-full sm:w-auto">
+								Submit
+							</Button>
 						</Field>
-					)}
-				</FieldGroup>
-			</CardContent>
-			{result && (
-				<CardFooter>
-					<Result result={result} setResult={setResult} />
-				</CardFooter>
-			)}
-		</form>
+						{isPending && (
+							<Field>
+								<Progress value={null} className="pb-2" />
+							</Field>
+						)}
+					</FieldGroup>
+				</CardContent>
+				{result && (
+					<CardFooter>
+						<Result result={result} setResult={setResult} />
+					</CardFooter>
+				)}
+			</form>
+		</ExtractorFormContext.Provider>
 	);
 }
