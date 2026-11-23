@@ -19,7 +19,7 @@
 		"@mediapipe/tasks-vision": "^1.2.3",
 		"@simplewebauthn/browser": "^14.0.0",
 		"@tailwindcss/vite": "^4.3.5",
-		"@tanstack/react-devtools": "^0.10.14",
+		"@tanstack/react-devtools": "^0.10.15",
 		"@tanstack/react-form": "^1.33.5",
 		"@tanstack/react-query": "^5.105.1",
 		"@tanstack/react-query-devtools": "^5.108.0",
